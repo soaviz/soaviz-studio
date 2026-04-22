@@ -1,0 +1,4020 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>soaviz studio — Voice · Transcript · Summary</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+  <style>
+    :root {
+      --bg: #08080B; --bg-elev: #0F0F13;
+      --bg-card: rgba(255,255,255,0.025);
+      --bg-card-hover: rgba(255,255,255,0.045);
+      --border: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.14);
+      --text: #ECECEF; --text-dim: #9B9BA3; --text-faint: #5C5C66;
+      --accent: #8B5CF6; --accent-2: #6366F1;
+      --accent-soft: rgba(139,92,246,0.14);
+      --danger: #F43F5E; --success: #10B981;
+      --warn: #F59E0B;
+      --radius: 14px; --radius-sm: 10px;
+      --shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased; letter-spacing: -0.01em;
+    }
+    body {
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(139,92,246,0.08), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 20%, rgba(99,102,241,0.05), transparent 60%);
+      background-attachment: fixed;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: transparent; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .hidden { display: none !important; }
+    .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ============ TOPBAR ============ */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(8,8,11,0.75);
+      backdrop-filter: saturate(160%) blur(14px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.02em; }
+    .brand-mark {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      position: relative; box-shadow: 0 0 22px rgba(139,92,246,0.45);
+    }
+    .brand-mark::after { content: ""; position: absolute; inset: 6px; border-radius: 3px; background: #08080B; }
+    .brand-mark::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--accent); }
+    .brand-name { font-size: 15px; }
+    .brand-sub {
+      font-size: 12px; color: var(--text-faint);
+      padding-left: 10px; margin-left: 4px;
+      border-left: 1px solid var(--border); font-weight: 400; letter-spacing: 0;
+    }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: grid; place-items: center;
+      color: var(--text-dim); transition: 0.18s;
+    }
+    .icon-btn:hover { background: var(--bg-card); color: var(--text); }
+    .kbd {
+      height: 28px; padding: 0 10px;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 7px;
+    }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, #E9E4FF, #B8A9FF);
+      color: #2A1B66; font-weight: 700; font-size: 13px;
+      display: grid; place-items: center; margin-left: 4px;
+    }
+
+    /* ============ LAYOUT ============ */
+    .layout {
+      padding-top: 56px;
+      display: grid; grid-template-columns: 84px 1fr;
+      max-width: 1400px; margin: 0 auto; min-height: 100vh;
+      transition: grid-template-columns 0.25s ease;
+    }
+    .layout.sidebar-collapsed {
+      grid-template-columns: 0 1fr;
+    }
+    .sidebar {
+      padding: 14px 8px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      gap: 2px;
+      position: sticky; top: 56px; height: calc(100vh - 56px);
+      overflow: hidden auto;
+      transition: opacity 0.2s ease, padding 0.25s ease;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+    .layout.sidebar-collapsed .sidebar {
+      padding: 14px 0;
+      opacity: 0;
+      pointer-events: none;
+      border-right-color: transparent;
+    }
+
+    /* Sidebar toggle in topbar */
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .sidebar-toggle {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: grid; place-items: center;
+      color: var(--text-dim);
+      transition: 0.15s;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover {
+      background: var(--bg-card);
+      color: var(--text);
+    }
+    .sidebar-toggle svg {
+      transition: transform 0.25s ease;
+    }
+    .layout.sidebar-collapsed ~ * .sidebar-toggle svg,
+    body.sidebar-closed .sidebar-toggle svg {
+      transform: rotate(180deg);
+    }
+    .nav-group { display: flex; flex-direction: column; gap: 2px; }
+    .nav-divider {
+      height: 1px; background: var(--border);
+      margin: 8px 14px;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      padding: 12px 4px;
+      border-radius: 12px;
+      font-size: 10px; font-weight: 500;
+      color: var(--text-faint);
+      transition: 0.18s; cursor: pointer;
+      position: relative;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+    .nav-item .icon {
+      width: 20px; height: 20px;
+      stroke-width: 1.6;
+    }
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--text-dim);
+    }
+    .nav-item:hover .icon { color: var(--text); }
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .nav-item.active .icon { color: var(--accent); }
+    .nav-item.active::before {
+      content: ""; position: absolute;
+      left: -8px; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 22px; border-radius: 2px;
+      background: var(--accent);
+    }
+    .nav-spacer { flex: 1; min-height: 12px; }
+    .nav-upgrade {
+      margin: 8px 4px 0;
+      padding: 10px 0;
+      font-size: 10px; font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid rgba(139,92,246,0.35);
+      border-radius: 10px;
+      transition: 0.18s;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+    }
+    .nav-upgrade:hover { background: rgba(139,92,246,0.22); }
+
+    /* ============ MAIN ============ */
+    .main { padding: 36px 40px 80px; max-width: 880px; width: 100%; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-head { margin-bottom: 28px; }
+    .page-head h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+    .page-head p { margin: 6px 0 0; color: var(--text-dim); font-size: 14px; }
+
+    /* ============ DROPZONE ============ */
+    .dropzone {
+      position: relative;
+      border: 1.5px dashed var(--border-strong);
+      border-radius: var(--radius);
+      padding: 56px 24px;
+      text-align: center;
+      background:
+        radial-gradient(ellipse at center, rgba(139,92,246,0.04), transparent 60%),
+        var(--bg-card);
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .dropzone:hover,
+    .dropzone.dragging {
+      border-color: var(--accent);
+      background:
+        radial-gradient(ellipse at center, rgba(139,92,246,0.12), transparent 60%),
+        var(--bg-card-hover);
+    }
+    .drop-icon-wrap {
+      width: 56px; height: 56px; margin: 0 auto 18px;
+      border-radius: 16px;
+      background: var(--accent-soft); color: var(--accent);
+      display: grid; place-items: center;
+    }
+    .drop-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .drop-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 18px; }
+    .drop-btn {
+      padding: 10px 22px;
+      background: var(--text); color: #08080B;
+      font-weight: 600; font-size: 13px;
+      border-radius: 9px; transition: 0.18s;
+      pointer-events: auto;
+    }
+    .drop-btn:hover { background: white; transform: translateY(-1px); }
+    .drop-info {
+      margin-top: 22px;
+      font-size: 12px; color: var(--text-faint);
+      display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+    }
+    .drop-info span::before {
+      content: "·"; margin-right: 12px; color: var(--border-strong);
+    }
+    .drop-info span:first-child::before { display: none; }
+
+    /* ============ URL INPUT ============ */
+    .divider-or {
+      display: flex; align-items: center; gap: 16px;
+      margin: 24px 0;
+      color: var(--text-faint); font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .divider-or::before, .divider-or::after {
+      content: ""; flex: 1; height: 1px; background: var(--border);
+    }
+    .url-form { display: flex; gap: 8px; }
+    .url-input-wrap { flex: 1; position: relative; }
+    .url-input {
+      width: 100%; height: 46px;
+      padding: 0 44px 0 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: var(--text);
+      font-family: inherit; font-size: 14px;
+      outline: none; transition: 0.18s;
+    }
+    .url-input:focus {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    .url-input::placeholder { color: var(--text-faint); }
+    .url-input-wrap .link-ico {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-faint); pointer-events: none;
+    }
+    .url-submit {
+      padding: 0 22px; height: 46px;
+      background: var(--text); color: #08080B;
+      font-weight: 600; font-size: 13px;
+      border-radius: 11px; transition: 0.18s;
+    }
+    .url-submit:hover:not(:disabled) { background: white; transform: translateY(-1px); }
+    .url-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .url-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 12px; font-size: 11px; color: var(--text-faint);
+      flex-wrap: wrap; gap: 8px;
+    }
+    .server-status { display: inline-flex; align-items: center; gap: 6px; }
+    .server-status .sdot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--text-faint); transition: 0.2s;
+    }
+    .server-status.online .sdot {
+      background: var(--success); box-shadow: 0 0 6px var(--success);
+    }
+    .server-status.offline .sdot { background: var(--danger); }
+    .server-status.checking .sdot {
+      background: var(--text-faint);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse-dot { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .legal-note {
+      text-align: center;
+      font-size: 11px; color: var(--text-faint);
+      margin-top: 16px; line-height: 1.6;
+    }
+
+    /* ============ PROCESSING ============ */
+    .processing { text-align: center; padding: 40px 20px; }
+    .file-badge {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 10px 16px 10px 10px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 99px; margin-bottom: 40px;
+      max-width: 100%;
+    }
+    .file-badge video, .file-badge .url-ico {
+      width: 44px; height: 44px; object-fit: cover;
+      border-radius: 99px; background: #1a1a1f;
+      flex-shrink: 0;
+    }
+    .file-badge .url-ico {
+      display: grid; place-items: center;
+      color: var(--accent);
+    }
+    .file-badge .meta { text-align: left; }
+    .file-badge .name {
+      font-size: 13px; font-weight: 500;
+      max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .file-badge .sub { font-size: 11px; color: var(--text-faint); }
+
+    .ring { width: 140px; height: 140px; margin: 0 auto 24px; position: relative; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring .track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 4; }
+    .ring .fill {
+      fill: none; stroke: url(#grad); stroke-width: 4; stroke-linecap: round;
+      stroke-dasharray: 339.292; stroke-dashoffset: 339.292;
+      transition: stroke-dashoffset 0.4s ease-out;
+    }
+    .ring .pct {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      font-size: 30px; font-weight: 600; letter-spacing: -0.02em;
+    }
+    .proc-label { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+    .proc-eta { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; }
+    .steps {
+      display: inline-flex; flex-direction: column; gap: 10px;
+      padding: 18px 24px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-width: 260px; text-align: left;
+    }
+    .step {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--text-faint);
+    }
+    .step .indic {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 1.5px solid var(--border-strong);
+      display: grid; place-items: center;
+      font-size: 10px; flex-shrink: 0;
+    }
+    .step.done { color: var(--text); }
+    .step.done .indic { background: var(--success); border-color: var(--success); color: white; }
+    .step.active { color: var(--text); }
+    .step.active .indic { border-color: var(--accent); background: var(--accent); position: relative; }
+    .step.active .indic::after {
+      content: ""; position: absolute; inset: -4px; border-radius: 50%;
+      border: 2px solid var(--accent);
+      animation: ring-pulse 1.4s ease-out infinite;
+    }
+    @keyframes ring-pulse {
+      0% { transform: scale(0.8); opacity: 0.7; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .assurance { margin-top: 28px; font-size: 12px; color: var(--text-faint); }
+    .btn-cancel {
+      margin-top: 18px; padding: 8px 16px;
+      font-size: 12px; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 8px;
+      transition: 0.18s;
+    }
+    .btn-cancel:hover { background: var(--bg-card-hover); color: var(--text); }
+
+    /* ============ RESULT HEAD ============ */
+    .result-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .success-badge {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(16,185,129,0.15); color: var(--success);
+      display: grid; place-items: center;
+    }
+    .result-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .result-head .fname {
+      font-size: 12px; color: var(--text-dim);
+      padding: 3px 9px; border-radius: 5px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ============ STAGE ============ */
+    .stage {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .stage-header {
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent);
+      display: grid; place-items: center;
+      font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .stage-num.done { background: var(--success); color: white; }
+    .stage-title { font-size: 14px; font-weight: 600; flex: 1; }
+    .stage-sub { font-size: 11px; color: var(--text-faint); }
+    .stage-body { padding: 16px; }
+
+    .next-btn {
+      width: 100%;
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; margin-bottom: 14px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(139,92,246,0.35);
+      border-radius: var(--radius);
+      color: var(--text); text-align: left;
+      transition: 0.18s; cursor: pointer;
+    }
+    .next-btn:hover:not(:disabled) {
+      background: rgba(139,92,246,0.22); transform: translateY(-1px);
+    }
+    .next-btn:disabled { opacity: 0.85; cursor: wait; }
+    .next-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: grid; place-items: center;
+      font-size: 12px; font-weight: 600; flex-shrink: 0;
+    }
+    .next-content { flex: 1; }
+    .next-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .next-desc { font-size: 12px; color: var(--text-dim); }
+    .next-arrow { color: var(--accent); font-size: 18px; font-weight: 400; }
+    .next-btn .loader { margin-left: auto; }
+
+    /* Player */
+    .player-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .player-format {
+      font-size: 11px; color: var(--text-faint);
+      padding: 3px 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.04);
+    }
+    .player-row { display: flex; align-items: center; gap: 14px; }
+    .play-big {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--accent); color: white;
+      display: grid; place-items: center;
+      flex-shrink: 0; transition: 0.18s;
+    }
+    .play-big:hover { transform: scale(1.05); }
+    .wave-big { flex: 1; height: 44px; display: flex; align-items: center; gap: 2px; }
+    .wave-big span {
+      flex: 1; background: var(--text-faint);
+      border-radius: 99px; opacity: 0.4; transition: 0.15s;
+    }
+    .wave-big span.elapsed { background: var(--accent); opacity: 1; }
+    .player-time {
+      font-size: 12px; color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+      min-width: 80px; text-align: right;
+    }
+    .ba-toggle {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 99px;
+      margin: 14px 0 0;
+    }
+    .ba-toggle button {
+      padding: 6px 14px;
+      font-size: 12px; color: var(--text-dim);
+      border-radius: 99px; transition: 0.18s;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .ba-toggle button:disabled { cursor: not-allowed; }
+    .ba-toggle button.active { background: var(--accent-soft); color: var(--text); }
+
+    /* ========== WAVEFORM SELECTION (CapCut-style dual handles) ========== */
+    .wave-wrap {
+      position: relative;
+      flex: 1; height: 44px;
+      user-select: none;
+      touch-action: none;
+      overflow: visible;
+    }
+    .wave-wrap .wave-big {
+      position: relative; z-index: 1;
+      pointer-events: none;
+    }
+    .wave-dim {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: rgba(8, 8, 11, 0.62);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .wave-selection {
+      position: absolute; top: 0; bottom: 0;
+      border-top: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+      border-left: 2px solid var(--accent);
+      border-right: 2px solid var(--accent);
+      background: linear-gradient(180deg, rgba(139,92,246,0.22), rgba(99,102,241,0.18));
+      pointer-events: none;
+      z-index: 3;
+      box-shadow: inset 0 0 24px rgba(139,92,246,0.35), 0 0 14px rgba(139,92,246,0.25);
+      border-radius: 4px;
+    }
+    /* 선택 구간 내부의 파형 바를 보라색으로 강조 */
+    .wave-big span.in-selection {
+      background: var(--accent) !important;
+      opacity: 1 !important;
+    }
+    .wave-big span.in-selection.elapsed {
+      background: #FFFFFF !important;
+    }
+    .wave-handle {
+      position: absolute;
+      top: -6px; bottom: -6px;
+      width: 14px;
+      background: var(--accent);
+      border-radius: 4px;
+      cursor: ew-resize;
+      z-index: 10;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+      box-shadow: 0 2px 12px rgba(139,92,246,0.55), 0 0 0 1px rgba(255,255,255,0.14);
+      transition: background 0.15s, box-shadow 0.15s;
+      touch-action: none;
+    }
+    .wave-handle:hover { background: #A882FF; }
+    .wave-handle.dragging {
+      background: #FFFFFF;
+      box-shadow: 0 2px 16px rgba(255,255,255,0.45), 0 0 0 1px rgba(255,255,255,0.35);
+    }
+    .wave-handle .grip {
+      width: 1.5px; height: 16px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 1px;
+    }
+    .wave-handle.dragging .grip { background: var(--accent); }
+    .wave-handle .tip {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%; transform: translateX(-50%);
+      font-size: 10px; color: var(--text);
+      padding: 3px 8px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
+      white-space: nowrap;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-variant-numeric: tabular-nums;
+      opacity: 0;
+      transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .wave-handle:hover .tip,
+    .wave-handle.dragging .tip { opacity: 1; }
+    .select-hint {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 11px; color: var(--text-faint);
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .select-hint kbd {
+      display: inline-flex; align-items: center;
+      padding: 1px 6px; border-radius: 4px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      font-size: 10px; font-family: 'SF Mono', Menlo, monospace;
+      color: var(--text-dim);
+    }
+    .selection-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      margin-top: 12px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(139,92,246,0.35);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+    .selection-bar .sel-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+    .selection-bar .sel-label {
+      font-weight: 500; color: var(--text);
+    }
+    .selection-bar .sel-time {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      padding: 3px 9px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 5px;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+    }
+    .selection-bar .sel-duration-text {
+      color: var(--accent); font-weight: 600;
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+    }
+    .sel-actions {
+      margin-left: auto;
+      display: flex; gap: 6px;
+    }
+    .sel-actions button {
+      padding: 6px 12px;
+      font-size: 11px; color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      transition: 0.18s;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .sel-actions button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .sel-actions button.primary {
+      background: var(--accent); color: white; border-color: var(--accent);
+    }
+    .sel-actions button.primary:hover {
+      background: var(--accent-2);
+    }
+
+    /* Segments */
+    .segments {
+      max-height: 360px; overflow-y: auto;
+      padding: 4px; margin: -4px;
+    }
+    .segments::-webkit-scrollbar { width: 8px; }
+    .segments::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1); border-radius: 4px;
+    }
+    .segment {
+      display: flex; gap: 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px; line-height: 1.65;
+      transition: 0.15s;
+      cursor: pointer;
+    }
+    .segment:hover { background: var(--bg-card-hover); }
+    .segment.active {
+      background: var(--accent-soft);
+    }
+    .seg-time {
+      color: var(--text-faint);
+      font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+      padding-top: 3px;
+      min-width: 48px; flex-shrink: 0;
+    }
+    .segment.active .seg-time { color: var(--accent); }
+    .seg-text { color: var(--text); flex: 1; }
+
+    /* Summary */
+    .summary-section { margin-bottom: 20px; }
+    .summary-section:last-child { margin-bottom: 0; }
+    .summary-section h4 {
+      margin: 0 0 8px;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-faint);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .summary-section h4::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+    }
+    .summary-section p {
+      margin: 0;
+      font-size: 14px; line-height: 1.7;
+      color: var(--text);
+    }
+    .summary-section ul {
+      margin: 0; padding-left: 1.2em;
+      font-size: 13px; line-height: 1.8;
+      color: var(--text);
+    }
+    .summary-section ul li { margin-bottom: 4px; }
+    .summary-section ul li::marker { color: var(--accent); }
+    .keywords { display: flex; gap: 6px; flex-wrap: wrap; }
+    .kw {
+      font-size: 11px; font-weight: 500;
+      padding: 3px 9px; border-radius: 5px;
+      background: var(--accent-soft); color: var(--accent);
+    }
+
+    .stage-actions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .stage-actions button, .stage-actions a {
+      padding: 7px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      font-size: 12px; color: var(--text);
+      background: transparent;
+      transition: 0.18s;
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .stage-actions button:hover,
+    .stage-actions a:hover { background: var(--bg-card-hover); }
+    .stage-actions .primary {
+      background: var(--accent-soft);
+      border-color: rgba(139,92,246,0.35); color: var(--text);
+    }
+    .stage-actions .primary:hover { background: rgba(139,92,246,0.22); }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white; font-weight: 600; font-size: 13px;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px -4px rgba(139,92,246,0.45);
+      transition: 0.18s;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover { transform: translateY(-1px); }
+
+    .retry-row {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 20px;
+    }
+    .retry-row button {
+      padding: 8px 16px;
+      font-size: 12px; color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: 0.18s;
+    }
+    .retry-row button:hover { color: var(--text); background: var(--bg-card-hover); }
+    .retention-note {
+      text-align: center; margin-top: 16px;
+      font-size: 11px; color: var(--text-faint);
+    }
+
+    /* ============ TTS STUDIO PAGE ============ */
+    .persona-card {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px; background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .persona-av {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, #EBE3FF, #B8A9FF);
+      position: relative; overflow: hidden; flex-shrink: 0;
+    }
+    .persona-av::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(99,102,241,0.3), transparent 60%);
+    }
+    .persona-info { flex: 1; }
+    .persona-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .persona-name { font-size: 15px; font-weight: 600; }
+    .persona-verified {
+      font-size: 10px; font-weight: 600; color: var(--accent);
+      padding: 2px 7px; border-radius: 99px; background: var(--accent-soft);
+      letter-spacing: 0.02em;
+    }
+    .persona-desc { color: var(--text-dim); font-size: 13px; }
+    .persona-switch {
+      padding: 9px 14px; font-size: 13px;
+      border: 1px solid var(--border-strong); border-radius: 9px;
+      color: var(--text); transition: 0.18s;
+    }
+    .persona-switch:hover { background: var(--bg-card-hover); }
+    .persona-switch .chev { color: var(--text-dim); margin-left: 6px; }
+    .persona-dropdown { position: relative; }
+    .persona-menu {
+      position: absolute; right: 0; top: calc(100% + 6px);
+      min-width: 280px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      padding: 6px; display: none; z-index: 20;
+    }
+    .persona-menu.open { display: block; }
+    .persona-option {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px; border-radius: 8px; cursor: pointer;
+    }
+    .persona-option:hover { background: var(--bg-card-hover); }
+    .persona-option .mini-av { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0; }
+    .persona-option .meta { font-size: 13px; flex: 1; }
+    .persona-option .meta b { display: block; font-weight: 600; }
+    .persona-option .meta span { color: var(--text-faint); font-size: 12px; }
+
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+    }
+    .editor-tools {
+      display: flex; flex-direction: column;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .tag-row {
+      display: flex; align-items: center;
+      gap: 5px; flex-wrap: wrap;
+    }
+    .tag-row-label {
+      font-size: 10px; font-weight: 500;
+      color: var(--text-faint);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 2px 8px 2px 0;
+      min-width: 36px;
+    }
+    .tag-btn {
+      font-size: 12px; padding: 6px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text-dim); transition: 0.15s;
+      white-space: nowrap;
+    }
+    .tag-btn:hover {
+      background: var(--accent-soft); color: var(--text);
+      border-color: var(--accent);
+    }
+    .tag-btn code {
+      color: var(--accent); font-family: 'SF Mono', Menlo, monospace;
+      font-size: 11px; margin-right: 4px;
+    }
+    .tag-btn.emo {
+      padding: 5px 11px;
+      font-size: 12px;
+    }
+    .tag-btn.selected {
+      border-color: #FFFFFF;
+      color: #FFFFFF;
+      background: var(--bg-card-hover);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
+    }
+    .tag-btn.selected:hover {
+      border-color: #FFFFFF;
+      background: var(--bg-card-hover);
+    }
+    .tag-btn.selected code { color: #FFFFFF; }
+    .tool-divider { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+    .tag-row.emotion-row { align-items: flex-start; }
+    .emotion-tags {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      flex: 1;
+      max-height: 160px;
+      overflow-y: auto;
+      padding: 2px 8px 2px 0;
+    }
+    .emotion-tags::-webkit-scrollbar { width: 6px; }
+    .emotion-tags::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.08);
+      border-radius: 3px;
+    }
+    .emotion-tags::-webkit-scrollbar-track { background: transparent; }
+    .emo-count {
+      display: inline-block; margin-left: 4px;
+      padding: 1px 6px; border-radius: 99px;
+      background: var(--bg-card); color: var(--text-faint);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0;
+    }
+    .tag-actions-inline {
+      display: flex; align-items: center; gap: 6px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .tag-action-btn {
+      padding: 4px 10px;
+      font-size: 10px; color: var(--text-faint);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: 0.15s;
+    }
+    .tag-action-btn:hover {
+      color: var(--text); border-color: var(--border-strong);
+    }
+    #editor {
+      width: 100%; min-height: 180px;
+      background: transparent; border: none; outline: none;
+      color: var(--text); font-family: inherit;
+      font-size: 15px; line-height: 1.65; resize: vertical;
+    }
+    #editor::placeholder { color: var(--text-faint); }
+    .editor-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px; padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--text-faint);
+    }
+    .editor-footer strong { color: var(--text-dim); font-weight: 500; }
+    .controls {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .control-card {
+      padding: 14px 16px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .control-card.full { grid-column: 1 / -1; }
+    .control-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .control-label { font-size: 13px; color: var(--text-dim); }
+    .control-value { font-size: 13px; font-weight: 500; color: var(--text); }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text); cursor: pointer;
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.18);
+      transition: 0.14s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 6px rgba(139,92,246,0.25); }
+    .range-ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+    .emotion-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      padding: 7px 14px; font-size: 13px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text-dim); transition: 0.18s;
+    }
+    .pill:hover { color: var(--text); border-color: var(--border-strong); }
+    .pill.active { background: var(--accent-soft); color: var(--text); border-color: var(--accent); }
+    .generate-row { display: flex; gap: 10px; margin-bottom: 32px; }
+    .btn-generate {
+      flex: 1; height: 52px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white; font-weight: 600; font-size: 15px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px -6px rgba(139,92,246,0.5);
+      transition: 0.18s; position: relative; overflow: hidden;
+    }
+    .btn-generate:hover { transform: translateY(-1px); box-shadow: 0 12px 28px -8px rgba(139,92,246,0.6); }
+    .btn-generate:disabled { opacity: 0.75; cursor: wait; transform: none; }
+    .btn-generate .eta {
+      font-weight: 400; font-size: 13px; opacity: 0.8;
+      padding-left: 8px; border-left: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-icon-lg {
+      width: 52px; height: 52px;
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      color: var(--text-dim); transition: 0.18s;
+    }
+    .btn-icon-lg:hover { background: var(--bg-card-hover); color: var(--text); }
+    .loader { display: inline-flex; gap: 4px; }
+    .loader span {
+      width: 6px; height: 6px; border-radius: 50%; background: white;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .loader span:nth-child(2) { animation-delay: 0.15s; }
+    .loader span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: scale(0.6); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .loader.dark span { background: var(--accent); }
+
+    .history-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .history-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .history-head .count { font-size: 12px; color: var(--text-faint); }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .history-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); transition: 0.18s;
+    }
+    .history-item:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+    .history-item.new { animation: slideIn 0.4s ease-out; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .play-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent);
+      display: grid; place-items: center;
+      flex-shrink: 0; transition: 0.18s;
+    }
+    .play-btn:hover { background: var(--accent); color: white; }
+    .play-btn.playing { background: var(--accent); color: white; }
+    .wave { flex: 1; display: flex; align-items: center; gap: 2px; height: 32px; }
+    .wave span {
+      flex: 1; background: var(--text-faint);
+      border-radius: 99px; opacity: 0.5; transition: 0.2s;
+    }
+    .history-item:hover .wave span { opacity: 0.8; }
+    .history-item.playing .wave span {
+      background: var(--accent); opacity: 1;
+      animation: pulse-bar 0.8s ease-in-out infinite;
+    }
+    @keyframes pulse-bar {
+      0%,100% { transform: scaleY(0.85); }
+      50% { transform: scaleY(1.08); }
+    }
+    .history-meta { min-width: 210px; max-width: 260px; }
+    .history-title {
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .history-sub { font-size: 11px; color: var(--text-faint); display: flex; gap: 8px; }
+    .history-sub .sep { color: var(--border-strong); }
+    .persona-chip {
+      font-size: 10px; font-weight: 500;
+      padding: 2px 6px; border-radius: 5px;
+      background: var(--accent-soft); color: var(--accent);
+    }
+    .history-actions { display: flex; gap: 4px; }
+    .mini-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      color: var(--text-faint);
+      display: grid; place-items: center; transition: 0.18s;
+    }
+    .mini-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    /* ============ TOAST ============ */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      padding: 12px 18px; border-radius: 10px;
+      font-size: 13px; box-shadow: var(--shadow);
+      opacity: 0; pointer-events: none; transition: 0.25s;
+      z-index: 200;
+      display: flex; align-items: center; gap: 10px;
+      max-width: calc(100vw - 48px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast .ok {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--success);
+      display: grid; place-items: center;
+      color: white; font-size: 11px; flex-shrink: 0;
+    }
+    .toast.error .ok { background: var(--danger); }
+    .toast.warn .ok { background: var(--warn); }
+
+    /* ============ SOUND EFFECTS PAGE ============ */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--text-faint);
+      margin-bottom: 10px;
+    }
+    .breadcrumb .crumb-sep { color: var(--border-strong); }
+    .breadcrumb .crumb-current { color: var(--text); }
+    .sfx-head {
+      margin: 0 0 20px; font-size: 28px; font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .sfx-tabs {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .sfx-tabs .tab-group { display: flex; gap: 4px; }
+    .sfx-tab {
+      padding: 10px 18px;
+      font-size: 14px; font-weight: 500;
+      color: var(--text-faint);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: 0.15s;
+    }
+    .sfx-tab:hover { color: var(--text-dim); }
+    .sfx-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    .soundboard-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      font-size: 13px; color: var(--text-dim);
+      border: 1px solid var(--border); border-radius: 9px;
+      transition: 0.15s;
+    }
+    .soundboard-btn:hover { background: var(--bg-card-hover); color: var(--text); }
+
+    .sfx-carousel { position: relative; margin-bottom: 24px; }
+    .carousel-arrow {
+      position: absolute; top: 50%;
+      transform: translateY(-50%);
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      display: grid; place-items: center;
+      color: var(--text-dim);
+      z-index: 5;
+      box-shadow: var(--shadow);
+      transition: 0.15s;
+      font-size: 18px; font-weight: 500;
+    }
+    .carousel-arrow:hover { background: var(--bg-card-hover); color: var(--text); }
+    .carousel-arrow.left { left: -14px; }
+    .carousel-arrow.right { right: -14px; }
+    .category-cards {
+      display: flex; gap: 12px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      padding: 2px 4px;
+    }
+    .category-cards::-webkit-scrollbar { display: none; }
+    .cat-card {
+      position: relative;
+      flex: 0 0 200px; height: 170px;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .cat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px -6px rgba(0,0,0,0.5); }
+    .cat-img { position: absolute; inset: 0; background-size: cover; }
+    .cat-card[data-cat="booms"] .cat-img     { background: radial-gradient(circle at 40% 40%, #FCA5A5, #7C3AED 70%); }
+    .cat-card[data-cat="braams"] .cat-img    { background: radial-gradient(circle at 40% 40%, #F97316, #3730A3 70%); }
+    .cat-card[data-cat="brass"] .cat-img     { background: radial-gradient(circle at 40% 40%, #F472B6, #0F172A 70%); }
+    .cat-card[data-cat="cymbals"] .cat-img   { background: radial-gradient(circle at 40% 40%, #FCD34D, #1E3A8A 70%); }
+    .cat-card[data-cat="devices"] .cat-img   { background: radial-gradient(circle at 40% 40%, #F59E0B, #1E40AF 70%); }
+    .cat-card[data-cat="electronic"] .cat-img{ background: radial-gradient(circle at 40% 40%, #06B6D4, #3B82F6 70%); }
+    .cat-card[data-cat="footsteps"] .cat-img { background: radial-gradient(circle at 40% 40%, #A78BFA, #5B21B6 70%); }
+    .cat-card[data-cat="impacts"] .cat-img   { background: radial-gradient(circle at 40% 40%, #FB7185, #9F1239 70%); }
+    .cat-card[data-cat="nature"] .cat-img    { background: radial-gradient(circle at 40% 40%, #6EE7B7, #064E3B 70%); }
+    .cat-card[data-cat="rain"] .cat-img      { background: radial-gradient(circle at 40% 40%, #93C5FD, #1E3A8A 70%); }
+    .cat-card[data-cat="urban"] .cat-img     { background: radial-gradient(circle at 40% 40%, #CBD5E1, #334155 70%); }
+    .cat-card[data-cat="whooshes"] .cat-img  { background: radial-gradient(circle at 40% 40%, #A5F3FC, #0E7490 70%); }
+    .cat-card::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6));
+      z-index: 1;
+    }
+    .cat-label {
+      position: absolute;
+      bottom: 14px; left: 14px;
+      display: flex; align-items: center; gap: 8px;
+      color: white;
+      font-weight: 600; font-size: 14px;
+      z-index: 2;
+      letter-spacing: -0.01em;
+    }
+    .cat-label .ico {
+      width: 16px; height: 16px;
+      stroke: white; fill: none; stroke-width: 1.8;
+    }
+
+    .sfx-search-row {
+      display: grid; grid-template-columns: 1fr 160px;
+      gap: 10px; margin-bottom: 12px;
+    }
+    .sfx-search { position: relative; }
+    .sfx-search svg {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--text-faint);
+      width: 15px; height: 15px;
+    }
+    .sfx-search input {
+      width: 100%; height: 42px;
+      padding: 0 14px 0 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 11px;
+      color: var(--text); font-family: inherit; font-size: 13px;
+      outline: none; transition: 0.15s;
+    }
+    .sfx-search input:focus {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+    .sort-dropdown {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px; height: 42px;
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 11px;
+      font-size: 13px; color: var(--text);
+      cursor: pointer;
+    }
+    .sort-dropdown:hover { background: var(--bg-card-hover); }
+
+    .sfx-filters {
+      display: flex; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .filter-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px;
+      font-size: 12px; color: var(--text-dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 99px;
+      transition: 0.15s;
+    }
+    .filter-pill:hover { background: var(--bg-card-hover); color: var(--text); }
+    .filter-pill.active { background: var(--accent-soft); color: var(--text); border-color: var(--accent); }
+
+    .sfx-list-head {
+      display: grid;
+      grid-template-columns: 2.2fr 2.6fr 80px 100px 110px;
+      gap: 16px;
+      padding: 0 16px 10px;
+      font-size: 12px; color: var(--text-faint);
+      border-bottom: 1px solid var(--border);
+    }
+    .sfx-list {
+      display: flex; flex-direction: column;
+      margin-bottom: 160px;
+    }
+    .sfx-item {
+      display: grid;
+      grid-template-columns: 2.2fr 2.6fr 80px 100px 110px;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      transition: 0.15s;
+    }
+    .sfx-item:hover { background: var(--bg-card); }
+    .sfx-title-col { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .sfx-play {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg-card); color: var(--text-dim);
+      display: grid; place-items: center;
+      flex-shrink: 0; transition: 0.15s;
+    }
+    .sfx-play:hover { background: var(--accent); color: white; }
+    .sfx-play.playing { background: var(--accent); color: white; }
+    .sfx-info { min-width: 0; }
+    .sfx-info .title {
+      font-size: 14px; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .sfx-info .cat {
+      font-size: 11px; color: var(--text-faint);
+      display: flex; gap: 5px; align-items: center; flex-wrap: wrap;
+    }
+    .sfx-info .cat .arrow { color: var(--border-strong); }
+    .sfx-wave-col {
+      display: flex; align-items: center;
+      height: 32px; gap: 1px;
+    }
+    .sfx-wave-col .bar {
+      flex: 1; min-width: 1px;
+      background: var(--text-faint);
+      opacity: 0.4;
+      border-radius: 99px;
+    }
+    .sfx-item.playing .sfx-wave-col .bar {
+      background: var(--accent); opacity: 1;
+      animation: pulse-bar 0.8s infinite ease-in-out;
+    }
+    .sfx-duration, .sfx-downloads {
+      font-size: 13px; color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+    }
+    .sfx-actions {
+      display: flex; gap: 2px; justify-content: flex-end;
+    }
+    .sfx-action-btn {
+      width: 32px; height: 32px; border-radius: 7px;
+      color: var(--text-faint);
+      display: grid; place-items: center;
+      transition: 0.15s;
+    }
+    .sfx-action-btn:hover { background: var(--bg-card-hover); color: var(--text); }
+    .sfx-action-btn.favorited { color: #FCD34D; }
+    .sfx-action-btn.favorited svg { fill: #FCD34D; }
+
+    /* Floating prompt panel */
+    .sfx-prompt {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      width: min(720px, calc(100vw - 48px));
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.6);
+      z-index: 40;
+    }
+    .prompt-suggestions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .prompt-suggestion {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      font-size: 12px; color: var(--text-dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      transition: 0.15s;
+    }
+    .prompt-suggestion:hover { background: var(--bg-card-hover); color: var(--text); }
+    .prompt-suggestion .ico {
+      width: 13px; height: 13px;
+      color: var(--accent);
+      stroke: currentColor; fill: none; stroke-width: 1.8;
+    }
+    .prompt-input-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .prompt-input {
+      flex: 1; height: 38px;
+      padding: 0 12px;
+      background: transparent;
+      border: none; outline: none;
+      color: var(--text); font-family: inherit;
+      font-size: 14px;
+    }
+    .prompt-input::placeholder { color: var(--text-faint); }
+    .prompt-close {
+      width: 28px; height: 28px; border-radius: 7px;
+      color: var(--text-faint);
+      border: 1px solid var(--border);
+      background: transparent;
+      display: grid; place-items: center;
+      font-size: 16px; line-height: 1;
+    }
+    .prompt-close:hover { background: var(--bg-card-hover); color: var(--text); }
+    .prompt-controls {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap;
+    }
+    .prompt-ctrl {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; color: var(--text-dim);
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: 0.15s;
+      background: transparent;
+    }
+    .prompt-ctrl:hover { background: var(--bg-card); color: var(--text); }
+    .prompt-ctrl .ico {
+      width: 13px; height: 13px;
+      stroke: currentColor; fill: none; stroke-width: 1.8;
+    }
+    .prompt-credits {
+      margin-left: auto;
+      font-size: 11px; color: var(--text-faint);
+      font-variant-numeric: tabular-nums;
+    }
+    .prompt-send {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-dim);
+      display: grid; place-items: center;
+      transition: 0.15s;
+    }
+    .prompt-send:hover,
+    .prompt-send.active {
+      background: var(--accent); color: white;
+    }
+
+    /* ============ LIBRARY PAGE ============ */
+    .lib-tabs {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .lib-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      font-size: 13px; color: var(--text-dim);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      transition: 0.15s;
+    }
+    .lib-tab:hover { background: var(--bg-card-hover); color: var(--text); }
+    .lib-tab.active {
+      background: var(--accent-soft); color: var(--text);
+      border-color: var(--accent);
+    }
+    .lib-count {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-faint);
+      font-weight: 600;
+    }
+    .lib-tab.active .lib-count {
+      background: var(--accent); color: white;
+    }
+
+    .lib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .lib-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      transition: 0.15s;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      gap: 10px;
+    }
+    .lib-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+    }
+    .lib-card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px;
+    }
+    .lib-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 99px;
+      letter-spacing: 0.02em;
+    }
+    .lib-badge.voice { background: rgba(139,92,246,0.15); color: #C4B5FD; }
+    .lib-badge.music { background: rgba(99,102,241,0.15); color: #A5B4FC; }
+    .lib-badge.tts   { background: rgba(16,185,129,0.15); color: #6EE7B7; }
+    .lib-badge.sfx   { background: rgba(245,158,11,0.15); color: #FCD34D; }
+    .lib-badge .ico {
+      width: 10px; height: 10px;
+      stroke: currentColor; fill: none; stroke-width: 1.8;
+    }
+    .lib-date {
+      font-size: 10px; color: var(--text-faint);
+    }
+    .lib-thumb {
+      height: 48px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      display: flex; align-items: center; gap: 1px;
+      padding: 6px 10px;
+    }
+    .lib-thumb span {
+      flex: 1; min-width: 1px;
+      background: var(--text-faint);
+      border-radius: 99px;
+      opacity: 0.5;
+    }
+    .lib-card.voice .lib-thumb span { background: var(--accent); opacity: 0.7; }
+    .lib-card.music .lib-thumb span { background: var(--accent-2); opacity: 0.7; }
+    .lib-card.tts .lib-thumb span { background: var(--success); opacity: 0.7; }
+    .lib-card.sfx .lib-thumb span { background: #FCD34D; opacity: 0.7; }
+    .lib-card-title {
+      font-size: 13px; font-weight: 500;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lib-card-sub {
+      font-size: 11px; color: var(--text-faint);
+      display: flex; gap: 8px; align-items: center;
+    }
+    .lib-card-sub .sep { color: var(--border-strong); }
+    .lib-card-actions {
+      display: flex; gap: 4px;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .lib-card-actions button {
+      flex: 1;
+      height: 28px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      background: transparent;
+      transition: 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .lib-card-actions button:hover {
+      background: rgba(255,255,255,0.05); color: var(--text);
+    }
+
+    .lib-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-faint);
+      font-size: 13px;
+    }
+    .lib-empty .big {
+      font-size: 36px; opacity: 0.3;
+      margin-bottom: 12px;
+    }
+
+    /* ============ PRESS FLASH (누르면 흰색) ============ */
+    .press-flash {
+      color: #FFFFFF !important;
+      border-color: #FFFFFF !important;
+      background: rgba(255,255,255,0.08) !important;
+      transition: all 0.08s !important;
+    }
+    .press-flash svg,
+    .press-flash .icon { color: #FFFFFF !important; }
+    button:active,
+    a:active,
+    .nav-item:active,
+    .cat-card:active,
+    .sfx-item:active,
+    .lib-card:active {
+      outline: 1px solid rgba(255,255,255,0.55);
+      outline-offset: 1px;
+    }
+
+    @media (max-width: 880px) {
+      /* 좁은 화면에서도 사이드바는 토글로 유지. 닫힌 상태가 기본. */
+      .layout { grid-template-columns: 84px 1fr; }
+      .layout.sidebar-collapsed { grid-template-columns: 0 1fr; }
+      .main { padding: 24px 20px 60px; }
+      .controls { grid-template-columns: 1fr; }
+      .history-meta { min-width: 0; }
+    }
+    @media (max-width: 620px) {
+      /* 아주 좁으면 사이드바가 오버레이 모드 */
+      .layout { grid-template-columns: 0 1fr; }
+      .sidebar {
+        position: fixed; left: 0; top: 56px;
+        z-index: 60; width: 84px;
+        background: var(--bg);
+        border-right: 1px solid var(--border);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        padding: 14px 8px; opacity: 1;
+      }
+      body.sidebar-open .sidebar {
+        transform: translateX(0);
+        box-shadow: 8px 0 30px rgba(0,0,0,0.4);
+      }
+      body.sidebar-open::after {
+        content: "";
+        position: fixed; inset: 56px 0 0 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 55;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="사이드바 토글" title="사이드바 열기/닫기">
+      <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px;stroke-width:1.8">
+        <rect x="3" y="4" width="18" height="16" rx="2"/>
+        <line x1="9" y1="4" x2="9" y2="20"/>
+      </svg>
+    </button>
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <span class="brand-name">soaviz studio</span>
+      <span class="brand-sub">Voice · Transcript · Summary</span>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="kbd">⌘K · 빠른 실행</span>
+    <button class="icon-btn" aria-label="알림">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/><path d="M9 17a3 3 0 0 0 6 0"/></svg>
+    </button>
+    <button class="icon-btn" aria-label="설정">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <div class="avatar">은</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <a class="nav-item" data-page="studio" title="Text to Speech">
+      <svg class="icon" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="15" height="12" rx="2"/>
+        <path d="M18 9c1.5 0 3 1 3 3s-1.5 3-3 3"/>
+        <path d="M8 14V9l2-2 2 2v5M8 11h4"/>
+      </svg>
+      Speech
+    </a>
+    <a class="nav-item" data-page="voices" title="Voices">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="8" cy="9" r="3"/>
+        <path d="M2 20c0-3 2-5 6-5s6 2 6 5"/>
+        <line x1="17" y1="8" x2="17" y2="10"/>
+        <line x1="20" y1="7" x2="20" y2="11"/>
+        <line x1="23" y1="8" x2="23" y2="10"/>
+      </svg>
+      Voices
+    </a>
+    <a class="nav-item" data-page="effects" title="Sound Effects">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/>
+      </svg>
+      Effects
+    </a>
+    <a class="nav-item" data-page="music" title="Music">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+      Music
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a class="nav-item active" data-page="extract" title="Speech to Text">
+      <svg class="icon" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <line x1="7" y1="10" x2="17" y2="10"/>
+        <line x1="7" y1="13" x2="15" y2="13"/>
+        <line x1="7" y1="16" x2="13" y2="16"/>
+      </svg>
+      Transcribe
+    </a>
+    <a class="nav-item" data-page="clean" title="Voice Isolator">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M6 4v16M18 4v16M6 4h2M18 4h-2M6 20h2M18 20h-2"/>
+        <line x1="10" y1="11" x2="10" y2="13"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="14" y1="10" x2="14" y2="14"/>
+      </svg>
+      Isolator
+    </a>
+    <a class="nav-item" data-page="sync" title="Image & Video">
+      <svg class="icon" viewBox="0 0 24 24">
+        <rect x="3" y="6" width="14" height="12" rx="2"/>
+        <rect x="7" y="10" width="14" height="10" rx="2"/>
+        <polygon points="12 12 16 14 12 16 12 12" fill="currentColor" stroke="none"/>
+      </svg>
+      Video
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <a class="nav-item" data-page="history" title="History">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+      History
+    </a>
+
+    <div class="nav-spacer"></div>
+
+    <a class="nav-item" data-page="library" title="Library">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+      </svg>
+      Library
+    </a>
+
+    <button class="nav-upgrade" id="nav-upgrade-btn">
+      PRO<br/>업그레이드
+    </button>
+  </aside>
+
+  <main class="main">
+
+    <!-- ================ PAGE: EXTRACT ================ -->
+    <section id="page-extract" class="page active">
+      <div class="page-head">
+        <h1>영상에서 음성·자막·요약까지</h1>
+        <p>영상을 올리면 목소리만 추출하고 → 자막을 만들고 → 내용을 요약합니다.</p>
+      </div>
+
+      <!-- STATE A: DROP -->
+      <div id="state-drop" class="state">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="영상 업로드">
+          <input type="file" id="file-input" accept="video/*,audio/*" hidden />
+          <div class="drop-icon-wrap">
+            <svg class="icon" viewBox="0 0 24 24" style="width:24px;height:24px;stroke-width:1.6">
+              <path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 20h14"/>
+            </svg>
+          </div>
+          <div class="drop-title">영상을 올리세요</div>
+          <div class="drop-sub">드래그하거나 아래 버튼으로 선택</div>
+          <button type="button" class="drop-btn" id="drop-btn">파일 선택</button>
+          <div class="drop-info">
+            <span>MP4 · MOV · WebM · M4A · MP3</span>
+            <span>최대 500MB</span>
+            <span>24시간 후 자동 삭제</span>
+          </div>
+        </div>
+
+        <div class="divider-or">또는 URL로 가져오기</div>
+
+        <form class="url-form" id="url-form" onsubmit="return false;">
+          <div class="url-input-wrap">
+            <input type="url" class="url-input" id="url-input"
+                   placeholder="YouTube · Vimeo · SoundCloud 등 영상 URL"
+                   autocomplete="off" spellcheck="false" />
+            <svg class="icon link-ico" viewBox="0 0 24 24" style="width:16px;height:16px">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/>
+            </svg>
+          </div>
+          <button type="submit" class="url-submit" id="url-submit">가져오기</button>
+        </form>
+
+        <div class="url-footer">
+          <span class="server-status checking" id="server-status">
+            <span class="sdot"></span>
+            <span id="server-status-text">서버 확인 중</span>
+          </span>
+          <span>yt-dlp 기반 · 1,000+ 사이트 지원</span>
+        </div>
+
+        <div class="legal-note">
+          본인 소유 영상 또는 사용권이 확보된 콘텐츠에만 이용해 주세요.<br/>
+          파일은 24시간 뒤 자동 삭제됩니다.
+        </div>
+      </div>
+
+      <!-- STATE B: PROCESSING -->
+      <div id="state-processing" class="state hidden">
+        <div class="processing">
+          <div class="file-badge">
+            <video id="proc-thumb" muted playsinline style="display:none"></video>
+            <div class="url-ico" id="proc-url-ico" style="display:none">
+              <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/>
+              </svg>
+            </div>
+            <div class="meta">
+              <div class="name" id="proc-name">파일</div>
+              <div class="sub" id="proc-sub">—</div>
+            </div>
+          </div>
+
+          <div class="ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="track" cx="60" cy="60" r="54"/>
+              <circle class="fill" id="ring-fill" cx="60" cy="60" r="54"/>
+            </svg>
+            <div class="pct" id="ring-pct">0%</div>
+          </div>
+
+          <div class="proc-label" id="proc-label">준비 중</div>
+          <div class="proc-eta" id="proc-eta">잠시만요</div>
+
+          <div class="steps">
+            <div class="step active" data-step="extract"><span class="indic">●</span> 오디오 추출</div>
+            <div class="step" data-step="separate"><span class="indic">○</span> 보컬 분리</div>
+            <div class="step" data-step="master"><span class="indic">○</span> 최종 마스터링</div>
+          </div>
+
+          <div class="assurance">탭을 닫아도 작업은 계속됩니다.</div>
+          <button class="btn-cancel" id="btn-cancel">취소</button>
+        </div>
+      </div>
+
+      <!-- STATE C: RESULT -->
+      <div id="state-result" class="state hidden">
+        <div class="result-head">
+          <div class="success-badge">
+            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2>추출 완료</h2>
+          <span class="fname" id="result-fname">filename</span>
+        </div>
+
+        <!-- STAGE 1: VOICE -->
+        <section class="stage" id="stage-voice">
+          <div class="stage-header">
+            <div class="stage-num done">✓</div>
+            <div class="stage-title">음성 추출</div>
+            <div class="stage-sub">WAV · 48kHz</div>
+          </div>
+          <div class="stage-body">
+            <div class="player-top">
+              <div style="font-size:13px; font-weight:500" id="voice-filename">voice.wav</div>
+              <div class="player-format" id="voice-format">WAV · 48kHz · stereo</div>
+            </div>
+            <div class="player-row">
+              <button class="play-big" id="result-play">
+                <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              <div class="wave-wrap">
+                <div class="wave-big" id="result-wave"></div>
+                <div class="wave-dim" id="wave-dim-left"></div>
+                <div class="wave-dim" id="wave-dim-right"></div>
+                <div class="wave-selection" id="wave-selection"></div>
+                <div class="wave-handle" id="wave-handle-left">
+                  <span class="tip" id="tip-left">0:00</span>
+                  <span class="grip"></span><span class="grip"></span>
+                </div>
+                <div class="wave-handle" id="wave-handle-right">
+                  <span class="tip" id="tip-right">0:00</span>
+                  <span class="grip"></span><span class="grip"></span>
+                </div>
+              </div>
+              <div class="player-time" id="result-time">0:00 / 0:00</div>
+            </div>
+
+            <div class="select-hint">
+              양쪽 <kbd>핸들</kbd> 을 좌·우로 드래그해서 저장할 구간을 지정하세요
+            </div>
+
+            <div class="selection-bar hidden" id="selection-bar">
+              <span class="sel-dot"></span>
+              <span class="sel-label">선택 구간</span>
+              <span class="sel-time"><span id="sel-start">0:00</span> → <span id="sel-end">0:00</span></span>
+              <span class="sel-duration-text" id="sel-duration-text">0초</span>
+              <div class="sel-actions">
+                <button id="sel-preview">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:10px;height:10px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  구간 재생
+                </button>
+                <button id="sel-clear">초기화</button>
+              </div>
+            </div>
+
+            <div class="ba-toggle" id="ba-toggle">
+              <button class="active" data-mode="voice">
+                <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/></svg>
+                음성만
+              </button>
+              <button data-mode="music">
+                <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                음악만
+              </button>
+              <button data-mode="original">
+                <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+                원본
+              </button>
+            </div>
+            <div class="stage-actions">
+              <a class="primary" id="dl-voice-wav" download="voice.wav">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                전체 WAV 다운로드
+              </a>
+              <button id="dl-selection" class="hidden" style="border-color: var(--accent); color: var(--text);">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;color:var(--accent)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                선택 구간 저장
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA 2: TRANSCRIBE -->
+        <button class="next-btn" id="cta-transcribe">
+          <div class="next-num">02</div>
+          <div class="next-content">
+            <div class="next-title">자막 추출하기</div>
+            <div class="next-desc" id="cta-transcribe-desc">Whisper AI가 음성을 타임코드 포함 텍스트로 변환해요 · 약 30초</div>
+          </div>
+          <span class="next-arrow">→</span>
+        </button>
+
+        <!-- STAGE 2: TRANSCRIPT -->
+        <section class="stage hidden" id="stage-transcript">
+          <div class="stage-header">
+            <div class="stage-num done">✓</div>
+            <div class="stage-title">자막 추출</div>
+            <div class="stage-sub"><span id="tr-seg-count">0</span>개 세그먼트 · <span id="tr-word-count">0</span>자</div>
+          </div>
+          <div class="stage-body">
+            <div class="segments" id="segments"></div>
+            <div class="stage-actions">
+              <button id="dl-srt">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                SRT 다운로드
+              </button>
+              <button id="dl-txt">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                TXT 다운로드
+              </button>
+              <button id="copy-txt">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                전체 복사
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA 3: SUMMARY -->
+        <button class="next-btn hidden" id="cta-summary">
+          <div class="next-num">03</div>
+          <div class="next-content">
+            <div class="next-title">내용 요약하기</div>
+            <div class="next-desc">핵심 포인트 · 액션 아이템 · 키워드로 정리해요 · 약 10초</div>
+          </div>
+          <span class="next-arrow">→</span>
+        </button>
+
+        <!-- STAGE 3: SUMMARY -->
+        <section class="stage hidden" id="stage-summary">
+          <div class="stage-header">
+            <div class="stage-num done">✓</div>
+            <div class="stage-title">내용 요약</div>
+            <div class="stage-sub">GPT 기반</div>
+          </div>
+          <div class="stage-body">
+            <div class="summary-section">
+              <h4>한 줄 요약</h4>
+              <p id="sum-tldr"></p>
+            </div>
+            <div class="summary-section">
+              <h4>핵심 포인트</h4>
+              <ul id="sum-points"></ul>
+            </div>
+            <div class="summary-section">
+              <h4>액션 아이템</h4>
+              <ul id="sum-actions"></ul>
+            </div>
+            <div class="summary-section">
+              <h4>키워드</h4>
+              <div class="keywords" id="sum-keywords"></div>
+            </div>
+            <div class="stage-actions">
+              <button id="copy-summary">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                요약 복사
+              </button>
+              <button id="goto-studio" class="primary">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/></svg>
+                TTS 스튜디오로 →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div class="retry-row">
+          <button id="btn-retry">다른 파일로 다시 시작</button>
+        </div>
+        <div class="retention-note">파일은 24시간 뒤 자동 삭제됩니다</div>
+      </div>
+    </section>
+
+    <!-- ================ PAGE: STUDIO ================ -->
+    <section id="page-studio" class="page">
+      <div class="page-head">
+        <h1>TTS 스튜디오</h1>
+        <p>페르소나의 목소리로 텍스트를 음성으로 만드세요.</p>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-av" id="persona-av"></div>
+        <div class="persona-info">
+          <div class="persona-row">
+            <div class="persona-name" id="persona-name">낮의 은교</div>
+            <span class="persona-verified">본인 인증됨</span>
+          </div>
+          <div class="persona-desc" id="persona-desc">차분하고 나지막한 내레이션 톤 · 일치도 94%</div>
+        </div>
+        <div class="persona-dropdown">
+          <button class="persona-switch" id="persona-btn">페르소나 바꾸기 <span class="chev">▾</span></button>
+          <div class="persona-menu" id="persona-menu"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="editor-tools">
+          <div class="tag-row">
+            <span class="tag-row-label">표현</span>
+            <button class="tag-btn" data-tag="[쉼]"><code>[쉼]</code>0.5초</button>
+            <button class="tag-btn" data-tag="[강]"><code>[강]</code>강조</button>
+            <button class="tag-btn" data-tag="[숨]"><code>[숨]</code>숨결</button>
+            <button class="tag-btn" data-tag="[느리게]"><code>[느리게]</code></button>
+            <button class="tag-btn" data-tag="[빠르게]"><code>[빠르게]</code></button>
+          </div>
+          <div class="tag-row emotion-row">
+            <span class="tag-row-label">감정<span class="emo-count" id="emo-count">0/100</span></span>
+            <div class="emotion-tags" id="emotion-tags">
+              <button class="tag-btn emo" data-tag="[기쁨]">기쁨</button>
+              <button class="tag-btn emo" data-tag="[슬픔]">슬픔</button>
+              <button class="tag-btn emo" data-tag="[분노]">분노</button>
+              <button class="tag-btn emo" data-tag="[놀람]">놀람</button>
+              <button class="tag-btn emo" data-tag="[두려움]">두려움</button>
+              <button class="tag-btn emo" data-tag="[혐오]">혐오</button>
+              <button class="tag-btn emo" data-tag="[설렘]">설렘</button>
+              <button class="tag-btn emo" data-tag="[행복]">행복</button>
+              <button class="tag-btn emo" data-tag="[사랑]">사랑</button>
+              <button class="tag-btn emo" data-tag="[증오]">증오</button>
+              <button class="tag-btn emo" data-tag="[희망]">희망</button>
+              <button class="tag-btn emo" data-tag="[절망]">절망</button>
+              <button class="tag-btn emo" data-tag="[환희]">환희</button>
+              <button class="tag-btn emo" data-tag="[황홀]">황홀</button>
+              <button class="tag-btn emo" data-tag="[격분]">격분</button>
+              <button class="tag-btn emo" data-tag="[비통]">비통</button>
+              <button class="tag-btn emo" data-tag="[통곡]">통곡</button>
+              <button class="tag-btn emo" data-tag="[광희]">광희</button>
+              <button class="tag-btn emo" data-tag="[감격]">감격</button>
+              <button class="tag-btn emo" data-tag="[격앙]">격앙</button>
+              <button class="tag-btn emo" data-tag="[격정]">격정</button>
+              <button class="tag-btn emo" data-tag="[들뜸]">들뜸</button>
+              <button class="tag-btn emo" data-tag="[고양]">고양</button>
+              <button class="tag-btn emo" data-tag="[흥분]">흥분</button>
+              <button class="tag-btn emo" data-tag="[따뜻]">따뜻</button>
+              <button class="tag-btn emo" data-tag="[차분]">차분</button>
+              <button class="tag-btn emo" data-tag="[진지]">진지</button>
+              <button class="tag-btn emo" data-tag="[침착]">침착</button>
+              <button class="tag-btn emo" data-tag="[고요]">고요</button>
+              <button class="tag-btn emo" data-tag="[평온]">평온</button>
+              <button class="tag-btn emo" data-tag="[안정]">안정</button>
+              <button class="tag-btn emo" data-tag="[몰입]">몰입</button>
+              <button class="tag-btn emo" data-tag="[담담]">담담</button>
+              <button class="tag-btn emo" data-tag="[묵직]">묵직</button>
+              <button class="tag-btn emo" data-tag="[깊음]">깊음</button>
+              <button class="tag-btn emo" data-tag="[은은]">은은</button>
+              <button class="tag-btn emo" data-tag="[긴장]">긴장</button>
+              <button class="tag-btn emo" data-tag="[초조]">초조</button>
+              <button class="tag-btn emo" data-tag="[불안]">불안</button>
+              <button class="tag-btn emo" data-tag="[공포]">공포</button>
+              <button class="tag-btn emo" data-tag="[경악]">경악</button>
+              <button class="tag-btn emo" data-tag="[충격]">충격</button>
+              <button class="tag-btn emo" data-tag="[의심]">의심</button>
+              <button class="tag-btn emo" data-tag="[경계]">경계</button>
+              <button class="tag-btn emo" data-tag="[혼란]">혼란</button>
+              <button class="tag-btn emo" data-tag="[당황]">당황</button>
+              <button class="tag-btn emo" data-tag="[공감]">공감</button>
+              <button class="tag-btn emo" data-tag="[동정]">동정</button>
+              <button class="tag-btn emo" data-tag="[신뢰]">신뢰</button>
+              <button class="tag-btn emo" data-tag="[친근]">친근</button>
+              <button class="tag-btn emo" data-tag="[다정]">다정</button>
+              <button class="tag-btn emo" data-tag="[애틋]">애틋</button>
+              <button class="tag-btn emo" data-tag="[그리움]">그리움</button>
+              <button class="tag-btn emo" data-tag="[애정]">애정</button>
+              <button class="tag-btn emo" data-tag="[포근]">포근</button>
+              <button class="tag-btn emo" data-tag="[살가움]">살가움</button>
+              <button class="tag-btn emo" data-tag="[우울]">우울</button>
+              <button class="tag-btn emo" data-tag="[상실]">상실</button>
+              <button class="tag-btn emo" data-tag="[회한]">회한</button>
+              <button class="tag-btn emo" data-tag="[후회]">후회</button>
+              <button class="tag-btn emo" data-tag="[죄책]">죄책</button>
+              <button class="tag-btn emo" data-tag="[수치]">수치</button>
+              <button class="tag-btn emo" data-tag="[무력]">무력</button>
+              <button class="tag-btn emo" data-tag="[씁쓸]">씁쓸</button>
+              <button class="tag-btn emo" data-tag="[속삭임]">속삭임</button>
+              <button class="tag-btn emo" data-tag="[외침]">외침</button>
+              <button class="tag-btn emo" data-tag="[웃음]">웃음</button>
+              <button class="tag-btn emo" data-tag="[울음]">울음</button>
+              <button class="tag-btn emo" data-tag="[한숨]">한숨</button>
+              <button class="tag-btn emo" data-tag="[흐느낌]">흐느낌</button>
+              <button class="tag-btn emo" data-tag="[떨림]">떨림</button>
+              <button class="tag-btn emo" data-tag="[단호]">단호</button>
+              <button class="tag-btn emo" data-tag="[또박또박]">또박또박</button>
+              <button class="tag-btn emo" data-tag="[부드러움]">부드러움</button>
+              <button class="tag-btn emo" data-tag="[거침]">거침</button>
+              <button class="tag-btn emo" data-tag="[낮은]">낮은</button>
+              <button class="tag-btn emo" data-tag="[장난]">장난</button>
+              <button class="tag-btn emo" data-tag="[냉소]">냉소</button>
+              <button class="tag-btn emo" data-tag="[열정]">열정</button>
+              <button class="tag-btn emo" data-tag="[자신감]">자신감</button>
+              <button class="tag-btn emo" data-tag="[수줍음]">수줍음</button>
+              <button class="tag-btn emo" data-tag="[당당]">당당</button>
+              <button class="tag-btn emo" data-tag="[의기양양]">의기양양</button>
+              <button class="tag-btn emo" data-tag="[오만]">오만</button>
+              <button class="tag-btn emo" data-tag="[거만]">거만</button>
+              <button class="tag-btn emo" data-tag="[비굴]">비굴</button>
+              <button class="tag-btn emo" data-tag="[비꼬는]">비꼬는</button>
+              <button class="tag-btn emo" data-tag="[반항]">반항</button>
+              <button class="tag-btn emo" data-tag="[신비]">신비</button>
+              <button class="tag-btn emo" data-tag="[몽환]">몽환</button>
+              <button class="tag-btn emo" data-tag="[그윽]">그윽</button>
+              <button class="tag-btn emo" data-tag="[은근]">은근</button>
+              <button class="tag-btn emo" data-tag="[몽롱]">몽롱</button>
+              <button class="tag-btn emo" data-tag="[아득]">아득</button>
+              <button class="tag-btn emo" data-tag="[고즈넉]">고즈넉</button>
+              <button class="tag-btn emo" data-tag="[아련]">아련</button>
+              <button class="tag-btn emo" data-tag="[극적]">극적</button>
+              <button class="tag-btn emo" data-tag="[애절]">애절</button>
+              <button class="tag-btn emo" data-tag="[비장]">비장</button>
+              <button class="tag-btn emo" data-tag="[장엄]">장엄</button>
+            </div>
+            <div class="tag-actions-inline">
+              <button class="tag-action-btn" id="clear-emo-selection">모두 해제</button>
+            </div>
+          </div>
+        </div>
+        <textarea id="editor" placeholder="읽을 내용을 입력하세요. [쉼] 으로 0.5초 정지, [강] 으로 강조할 수 있어요."></textarea>
+        <div class="editor-footer">
+          <span><strong id="char-count">0</strong> / 2,000자</span>
+          <span>예상 길이 약 <strong id="duration">0</strong>초</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-card">
+          <div class="control-head"><span class="control-label">톤</span><span class="control-value" id="tone-val">차분</span></div>
+          <input type="range" id="tone" min="0" max="100" value="25" />
+          <div class="range-ticks"><span>차분</span><span>또렷</span></div>
+        </div>
+        <div class="control-card">
+          <div class="control-head"><span class="control-label">속도</span><span class="control-value" id="speed-val">1.00x</span></div>
+          <input type="range" id="speed" min="70" max="130" value="100" />
+          <div class="range-ticks"><span>0.7x</span><span>1.3x</span></div>
+        </div>
+      </div>
+
+      <div class="generate-row">
+        <button id="generate" class="btn-generate">
+          <svg class="icon" viewBox="0 0 24 24" style="width:18px;height:18px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span id="gen-label">생성하기</span>
+          <span class="eta" id="gen-eta">약 8초 소요</span>
+        </button>
+        <button class="btn-icon-lg" aria-label="더보기">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+        </button>
+      </div>
+
+      <section>
+        <div class="history-head"><h2>최근 생성</h2><span class="count" id="history-count">0개</span></div>
+        <div class="history-list" id="history-list"></div>
+      </section>
+    </section>
+
+    <!-- ================ PAGE: SOUND EFFECTS ================ -->
+    <section id="page-effects" class="page">
+      <div class="breadcrumb">
+        <span>Sound Effects</span>
+        <span class="crumb-sep">›</span>
+        <span class="crumb-current">Explore</span>
+      </div>
+      <h1 class="sfx-head">Sound Effects</h1>
+
+      <div class="sfx-tabs">
+        <div class="tab-group">
+          <button class="sfx-tab active" data-tab="explore">Explore</button>
+          <button class="sfx-tab" data-tab="history">History</button>
+          <button class="sfx-tab" data-tab="favorites">Favorites</button>
+        </div>
+        <button class="soundboard-btn">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:1.8">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Soundboard
+        </button>
+      </div>
+
+      <div class="sfx-carousel">
+        <button class="carousel-arrow left" id="sfx-prev">‹</button>
+        <div class="category-cards" id="category-cards"></div>
+        <button class="carousel-arrow right" id="sfx-next">›</button>
+      </div>
+
+      <div class="sfx-search-row">
+        <div class="sfx-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="21" y1="21" x2="16" y2="16"/>
+          </svg>
+          <input type="text" id="sfx-search-input" placeholder="Search sound effects..."/>
+        </div>
+        <div class="sort-dropdown" id="sort-dropdown">
+          <span>Trending</span>
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="sfx-filters">
+        <button class="filter-pill" data-filter="looping">Looping</button>
+        <button class="filter-pill" data-filter="duration">
+          <svg class="icon" viewBox="0 0 24 24" style="width:11px;height:11px;stroke-width:2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Duration
+        </button>
+      </div>
+
+      <div class="sfx-list-head">
+        <span>Description</span>
+        <span></span>
+        <span>Duration</span>
+        <span>Downloads</span>
+        <span></span>
+      </div>
+      <div class="sfx-list" id="sfx-list"></div>
+    </section>
+
+    <!-- ================ PAGE: LIBRARY ================ -->
+    <section id="page-library" class="page">
+      <div class="page-head">
+        <h1>Library</h1>
+        <p>지금까지 만든 모든 결과물을 한눈에 볼 수 있어요.</p>
+      </div>
+
+      <div class="lib-tabs">
+        <button class="lib-tab active" data-lib="all">
+          전체 <span class="lib-count" id="lib-count-all">0</span>
+        </button>
+        <button class="lib-tab" data-lib="voice">
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/></svg>
+          음성
+        </button>
+        <button class="lib-tab" data-lib="music">
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          음악
+        </button>
+        <button class="lib-tab" data-lib="tts">
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><rect x="3" y="5" width="15" height="12" rx="2"/><path d="M8 14V9l2-2 2 2v5M8 11h4"/></svg>
+          TTS
+        </button>
+        <button class="lib-tab" data-lib="sfx">
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:1.8"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
+          SFX
+        </button>
+      </div>
+
+      <div class="lib-grid" id="lib-grid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Floating prompt (Sound Effects 생성 입력) -->
+<div class="sfx-prompt" id="sfx-prompt" style="display:none">
+  <div class="prompt-suggestions">
+    <button class="prompt-suggestion" data-prompt="Footsteps on gravel">
+      <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
+      Footsteps on gravel
+    </button>
+    <button class="prompt-suggestion" data-prompt="Rain on window">
+      <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
+      Rain on window
+    </button>
+    <button class="prompt-suggestion" data-prompt="Cat purring">
+      <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
+      Cat purring
+    </button>
+  </div>
+  <div class="prompt-input-row">
+    <input type="text" class="prompt-input" id="prompt-input" placeholder="Describe a sound..."/>
+    <button class="prompt-close" id="prompt-close">×</button>
+  </div>
+  <div class="prompt-controls">
+    <button class="prompt-ctrl" title="Looping"><svg class="ico" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>Off</button>
+    <button class="prompt-ctrl" title="Duration"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Auto</button>
+    <button class="prompt-ctrl" title="Variation"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>30%</button>
+    <button class="prompt-ctrl" title="AI"><svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>On</button>
+    <span class="prompt-credits">50 credits / 205,818 credits</span>
+    <button class="prompt-send" id="prompt-send">
+      <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="ok">✓</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+/* =============================================================
+   soaviz studio — end-to-end prototype
+   ============================================================= */
+const BACKEND_URL = 'http://127.0.0.1:8787';
+const MAX_BYTES = 500 * 1024 * 1024;
+const KR_CPS = 6.2;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+/* ---------------- Utilities ---------------- */
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function formatTime(s) {
+  s = Math.floor(s || 0);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, '0')}`;
+}
+function formatSrtTime(sec) {
+  const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+  const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+  const s = String(Math.floor(sec % 60)).padStart(2, '0');
+  const ms = String(Math.floor((sec % 1) * 1000)).padStart(3, '0');
+  return `${h}:${m}:${s},${ms}`;
+}
+function downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+}
+function copyText(text) {
+  if (navigator.clipboard) return navigator.clipboard.writeText(text);
+  // fallback
+  const t = document.createElement('textarea');
+  t.value = text; document.body.appendChild(t); t.select();
+  document.execCommand('copy'); t.remove();
+  return Promise.resolve();
+}
+
+/* ---------------- Toast ---------------- */
+let toastTimer;
+function showToast(msg, type = 'ok') {
+  $('#toast-msg').textContent = msg;
+  const t = $('#toast');
+  t.classList.remove('error', 'warn');
+  if (type === 'error') t.classList.add('error');
+  if (type === 'warn') t.classList.add('warn');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ---------------- Press flash (모든 버튼/링크 누르면 흰색) ---------------- */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('button, a, .nav-item, .cat-card, .sfx-item, .lib-card, .tag-btn, .pill, .sfx-tab, .lib-tab, .filter-pill, .prompt-ctrl, .prompt-suggestion, .ba-toggle button');
+  if (!el) return;
+  el.classList.add('press-flash');
+  setTimeout(() => el.classList.remove('press-flash'), 220);
+}, true);
+
+/* ---------------- Global error surfacing (디버깅용) ---------------- */
+window.addEventListener('error', (ev) => {
+  console.error('[soaviz] error:', ev.error || ev.message, ev.filename, ev.lineno);
+  try {
+    showToast(`오류: ${(ev.error?.message || ev.message || 'unknown').slice(0, 80)}`, 'error');
+  } catch {}
+});
+window.addEventListener('unhandledrejection', (ev) => {
+  console.error('[soaviz] unhandled rejection:', ev.reason);
+  try {
+    const msg = ev.reason?.message || String(ev.reason);
+    showToast(`오류: ${msg.slice(0, 80)}`, 'error');
+  } catch {}
+});
+
+/* ---------------- Sidebar toggle ---------------- */
+const layoutEl = document.querySelector('.layout');
+function applySidebarInitial() {
+  // 기본: 넓은 화면 열림, 좁으면 닫힘
+  if (window.innerWidth < 880) {
+    layoutEl.classList.add('sidebar-collapsed');
+  } else {
+    layoutEl.classList.remove('sidebar-collapsed');
+  }
+}
+applySidebarInitial();
+
+$('#sidebar-toggle').addEventListener('click', () => {
+  // 아주 좁은 모바일에서는 body 클래스로 오버레이 모드
+  if (window.innerWidth <= 620) {
+    document.body.classList.toggle('sidebar-open');
+  } else {
+    layoutEl.classList.toggle('sidebar-collapsed');
+  }
+});
+
+// 오버레이 모드에서 배경(dim) 클릭 시 닫힘
+document.addEventListener('click', (e) => {
+  if (!document.body.classList.contains('sidebar-open')) return;
+  if (e.target.closest('.sidebar') || e.target.closest('#sidebar-toggle')) return;
+  document.body.classList.remove('sidebar-open');
+});
+
+// 리사이즈 시 모드 전환
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 620) {
+    document.body.classList.remove('sidebar-open');
+  }
+});
+
+/* ---------------- Page routing ---------------- */
+function showPage(name) {
+  $$('.page').forEach(p => p.classList.remove('active'));
+  const page = $(`#page-${name}`);
+  if (page) {
+    page.classList.add('active');
+    $$('.nav-item[data-page]').forEach(n => n.classList.toggle('active', n.dataset.page === name));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  // 플로팅 프롬프트는 Sound Effects 페이지에서만 표시
+  const promptEl = $('#sfx-prompt');
+  if (promptEl) promptEl.style.display = (name === 'effects') ? '' : 'none';
+  // Library 페이지 진입 시 리스트 새로고침
+  if (name === 'library' && typeof renderLibrary === 'function') renderLibrary();
+  if (name === 'effects' && typeof renderSFXList === 'function' && $('#sfx-list')?.children.length === 0) {
+    renderSFXList();
+  }
+}
+// 메뉴 → 페이지 매핑
+//   voices → 페르소나(studio 페이지 재사용)
+//   studio(Speech) → TTS 스튜디오
+//   extract(Transcribe) → 영상 추출
+// 나머지는 준비 중 토스트
+const NAV_MAP = {
+  voices: { page: 'studio', label: '페르소나 라이브러리' },
+  studio: { page: 'studio', label: 'TTS 스튜디오' },
+  extract: { page: 'extract', label: '영상 추출' },
+  effects: { page: 'effects', label: 'Sound Effects' },
+  library: { page: 'library', label: 'Library' },
+};
+$$('.nav-item[data-page]').forEach(n => {
+  n.addEventListener('click', e => {
+    e.preventDefault();
+    const p = n.dataset.page;
+    const map = NAV_MAP[p];
+    if (map) {
+      // 활성 탭 표시
+      $$('.nav-item[data-page]').forEach(x => x.classList.remove('active'));
+      n.classList.add('active');
+      showPage(map.page);
+    } else {
+      showToast(`${n.textContent.trim()} — 준비 중이에요`, 'warn');
+    }
+  });
+});
+$('#nav-upgrade-btn')?.addEventListener('click', () => showToast('Pro 플랜 — 준비 중이에요', 'warn'));
+
+function showExtractState(which) {
+  ['drop', 'processing', 'result'].forEach(s => {
+    $(`#state-${s}`).classList.toggle('hidden', s !== which);
+  });
+}
+
+/* ---------------- Backend health ---------------- */
+async function checkBackend() {
+  const statusEl = $('#server-status');
+  const textEl = $('#server-status-text');
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 2500);
+    const r = await fetch(`${BACKEND_URL}/api/health`, { signal: controller.signal });
+    if (!r.ok) throw new Error('bad response');
+    const data = await r.json();
+    statusEl.classList.remove('checking', 'offline');
+    if (data.ok) {
+      statusEl.classList.add('online');
+      textEl.textContent = 'URL 추출 서버 연결됨';
+    } else {
+      statusEl.classList.add('offline');
+      const missing = Object.entries(data.checks || {}).filter(([_, v]) => !v).map(([k]) => k);
+      textEl.textContent = `의존성 부족: ${missing.join(', ')}`;
+    }
+  } catch {
+    statusEl.classList.remove('checking', 'online');
+    statusEl.classList.add('offline');
+    textEl.textContent = 'URL 추출은 로컬 서버 실행 필요';
+  }
+}
+
+/* ---------------- Dropzone (div, not label — no nested-label bug) ---------------- */
+const fileInput = $('#file-input');
+const dropzone = $('#dropzone');
+
+dropzone.addEventListener('click', (e) => {
+  // 버튼 자체가 클릭되면 버튼 핸들러에서 처리
+  if (e.target.closest('#drop-btn')) return;
+  fileInput.click();
+});
+dropzone.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+});
+$('#drop-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragging'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) handleFile(file);
+  fileInput.value = ''; // 같은 파일 재선택 허용
+});
+
+async function handleFile(file) {
+  console.log('[soaviz] handleFile:', file.name, file.type, file.size);
+  if (!file || file.size === 0) return showToast('빈 파일이에요', 'error');
+  if (file.size > MAX_BYTES) return showToast('500MB를 초과한 파일이에요', 'error');
+  if (!/^(video|audio)\//.test(file.type) &&
+      !/\.(mp4|mov|webm|mkv|m4v|mp3|wav|m4a|aac|ogg)$/i.test(file.name)) {
+    return showToast('지원하지 않는 파일 형식이에요', 'error');
+  }
+  try {
+    await runLocalPipeline(file);
+  } catch (err) {
+    console.error('[soaviz] pipeline failed:', err);
+    showToast(err?.message || '처리 중 오류가 생겼어요', 'error');
+    showExtractState('drop');
+  }
+}
+
+/* ---------------- URL submit ---------------- */
+const urlForm = $('#url-form');
+const urlInput = $('#url-input');
+
+urlForm.addEventListener('submit', async () => {
+  const url = urlInput.value.trim();
+  if (!/^https?:\/\//i.test(url)) return showToast('올바른 URL (http/https)을 입력해 주세요', 'error');
+
+  // 서버 오프라인이면 차단
+  if ($('#server-status').classList.contains('offline')) {
+    return showToast('URL 추출은 로컬 백엔드가 필요해요 (README 참고)', 'error');
+  }
+
+  try { await runUrlPipeline(url); }
+  catch (err) {
+    console.error(err);
+    showToast(err.message || '서버 연결 실패', 'error');
+    showExtractState('drop');
+  }
+});
+
+/* ============================================================
+   LOCAL PIPELINE (브라우저 내 오디오 처리)
+   ============================================================ */
+let audioPlayer = null;
+let extractedBlobs = { voice: null, music: null, original: null };
+let extractedBuffers = { voice: null, music: null, original: null };
+let currentAudioBuffer = null;
+let currentBaseName = 'voice';
+let currentMode = 'voice';
+
+async function runLocalPipeline(file) {
+  showExtractState('processing');
+  resetStages();
+  $('#proc-thumb').style.display = 'block';
+  $('#proc-url-ico').style.display = 'none';
+  $('#proc-name').textContent = file.name;
+  $('#proc-sub').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB`;
+
+  const isVideo = /^video\//.test(file.type) || /\.(mp4|mov|webm|mkv|m4v)$/i.test(file.name);
+  if (isVideo) $('#proc-thumb').src = URL.createObjectURL(file);
+
+  setStep('extract', 'active');
+  setLabel('오디오를 꺼내는 중', '잠시만요');
+  await animateRingTo(25, 1200);
+
+  const arrayBuffer = await file.arrayBuffer();
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AudioCtor();
+  let audioBuffer;
+  try {
+    audioBuffer = await new Promise((resolve, reject) => {
+      const p = ctx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
+      if (p && typeof p.then === 'function') p.then(resolve, reject);
+    });
+  } catch {
+    throw new Error('이 파일의 오디오를 읽을 수 없어요. 다른 포맷으로 시도해 주세요.');
+  }
+
+  const durationSec = audioBuffer.duration;
+  $('#proc-sub').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · ${formatTime(durationSec)}`;
+  setStep('extract', 'done');
+  await animateRingTo(40, 500);
+
+  setStep('separate', 'active');
+  setLabel('음성을 분리하고 있어요', `예상 ${Math.max(1, Math.ceil(durationSec / 60))}분`);
+  await animateRingTo(55, Math.min(2500, 900 + durationSec * 18));
+  const voiceBuffer = await applyVocalFilter(audioBuffer);
+
+  setLabel('음악을 분리하고 있어요', '조금만 더요');
+  await animateRingTo(85, Math.min(2200, 900 + durationSec * 16));
+  const musicBuffer = await applyMusicFilter(audioBuffer);
+
+  setStep('separate', 'done');
+  await animateRingTo(92, 400);
+
+  setStep('master', 'active');
+  setLabel('마무리하는 중', '거의 다 됐어요');
+  await animateRingTo(100, 500);
+
+  extractedBlobs.original = new Blob([audioBufferToWav(audioBuffer)], { type: 'audio/wav' });
+  extractedBlobs.voice = new Blob([audioBufferToWav(voiceBuffer)], { type: 'audio/wav' });
+  extractedBlobs.music = new Blob([audioBufferToWav(musicBuffer)], { type: 'audio/wav' });
+  extractedBuffers.original = audioBuffer;
+  extractedBuffers.voice = voiceBuffer;
+  extractedBuffers.music = musicBuffer;
+
+  currentAudioBuffer = voiceBuffer;
+  currentBaseName = file.name.replace(/\.[^.]+$/, '');
+
+  setStep('master', 'done');
+  showResult({
+    baseName: currentBaseName,
+    duration: durationSec,
+    peaks: computePeaks(voiceBuffer, 64),
+    hasAllStems: true,
+  });
+}
+
+/* ============================================================
+   URL PIPELINE (FastAPI + SSE)
+   ============================================================ */
+let currentEventSource = null;
+let currentJobId = null;
+
+async function runUrlPipeline(url) {
+  showExtractState('processing');
+  resetStages();
+  $('#proc-thumb').style.display = 'none';
+  $('#proc-url-ico').style.display = 'grid';
+  $('#proc-name').textContent = shortenUrl(url);
+  $('#proc-sub').textContent = '영상 정보 가져오는 중';
+
+  setStep('extract', 'active');
+  setLabel('영상 정보 가져오는 중', '잠시만요');
+
+  const res = await fetch(`${BACKEND_URL}/api/extract`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(`서버 에러 (${res.status})${t ? ': ' + t : ''}`);
+  }
+  const { job_id } = await res.json();
+  currentJobId = job_id;
+
+  let streamTitle = null;
+  let streamDuration = null;
+  let stepState = 'extract';
+
+  await new Promise((resolve, reject) => {
+    const es = new EventSource(`${BACKEND_URL}/api/job/${job_id}/stream`);
+    currentEventSource = es;
+
+    es.addEventListener('end', () => { es.close(); currentEventSource = null; });
+    es.onerror = () => {
+      es.close(); currentEventSource = null;
+      reject(new Error('서버 스트림이 끊겼어요. 서버 로그를 확인해 주세요.'));
+    };
+    es.onmessage = (e) => {
+      try {
+        const evt = JSON.parse(e.data);
+        if (typeof evt.progress === 'number') animateRingTo(evt.progress, 400);
+        if (evt.title && evt.title !== streamTitle) {
+          streamTitle = evt.title;
+          $('#proc-name').textContent = evt.title;
+        }
+        if (evt.duration && evt.duration !== streamDuration) {
+          streamDuration = evt.duration;
+          $('#proc-sub').textContent = `URL · ${formatTime(evt.duration)}`;
+        }
+        if (evt.step && evt.step !== stepState) {
+          if (stepState === 'extract' && ['separate', 'master', 'done'].includes(evt.step)) setStep('extract', 'done');
+          if (stepState === 'separate' && ['master', 'done'].includes(evt.step)) setStep('separate', 'done');
+          if (evt.step === 'download' || evt.step === 'extract') setStep('extract', 'active');
+          if (evt.step === 'separate') setStep('separate', 'active');
+          if (evt.step === 'master') setStep('master', 'active');
+          stepState = evt.step;
+        }
+        if (evt.message) setLabel(evt.message, streamDuration ? formatTime(streamDuration) : '');
+        if (evt.status === 'done') {
+          setStep('master', 'done');
+          es.close(); currentEventSource = null;
+          resolve();
+        }
+        if (evt.status === 'error') {
+          es.close(); currentEventSource = null;
+          reject(new Error(evt.error || '처리 실패'));
+        }
+      } catch (err) { console.warn('SSE parse error:', err); }
+    };
+  });
+
+  // 결과 다운로드 → 브라우저에서 디코드 → 피크/플레이어 구성
+  const dlRes = await fetch(`${BACKEND_URL}/api/job/${job_id}/download`);
+  if (!dlRes.ok) throw new Error('결과 파일을 가져올 수 없어요');
+  const blob = await dlRes.blob();
+  extractedBlobs.voice = blob;
+  extractedBlobs.music = null;
+  extractedBlobs.original = null;
+
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AudioCtor();
+  const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+  extractedBuffers.voice = buf;
+  extractedBuffers.music = null;
+  extractedBuffers.original = null;
+  currentAudioBuffer = buf;
+  currentBaseName = (streamTitle || 'voice').replace(/[\/\\?%*:|"<>]/g, '_').slice(0, 40);
+
+  showResult({
+    baseName: currentBaseName,
+    duration: buf.duration,
+    peaks: computePeaks(buf, 64),
+    hasAllStems: false,
+  });
+}
+
+function shortenUrl(url) {
+  try { const u = new URL(url); return `${u.hostname}${u.pathname}`.slice(0, 60); }
+  catch { return url.slice(0, 60); }
+}
+
+/* ---------------- Processing UI helpers ---------------- */
+function resetStages() {
+  ['extract', 'separate', 'master'].forEach(s => {
+    const el = $(`.step[data-step="${s}"]`);
+    el.classList.remove('active', 'done');
+    el.querySelector('.indic').textContent = '○';
+  });
+  $(`.step[data-step="extract"]`).classList.add('active');
+  $(`.step[data-step="extract"]`).querySelector('.indic').textContent = '●';
+  $('#ring-fill').style.strokeDashoffset = 339.292;
+  $('#ring-pct').textContent = '0%';
+  // Hide extended stages
+  $('#cta-transcribe').classList.remove('hidden');
+  $('#stage-transcript').classList.add('hidden');
+  $('#cta-summary').classList.add('hidden');
+  $('#stage-summary').classList.add('hidden');
+  transcriptSegments = [];
+}
+function setStep(name, state) {
+  const el = $(`.step[data-step="${name}"]`);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  const indic = el.querySelector('.indic');
+  if (state === 'active') { el.classList.add('active'); indic.textContent = '●'; }
+  else if (state === 'done') { el.classList.add('done'); indic.textContent = '✓'; }
+  else { indic.textContent = '○'; }
+}
+function setLabel(main, eta) {
+  $('#proc-label').textContent = main;
+  $('#proc-eta').textContent = eta || '';
+}
+function animateRingTo(target, duration = 500) {
+  return new Promise(resolve => {
+    const ring = $('#ring-fill'); const pct = $('#ring-pct');
+    const CIRC = 339.292;
+    const current = parseFloat(pct.textContent) || 0;
+    const start = performance.now();
+    function tick(now) {
+      const t = Math.min(1, (now - start) / Math.max(50, duration));
+      const eased = 1 - Math.pow(1 - t, 2);
+      const v = current + (target - current) * eased;
+      ring.style.strokeDashoffset = CIRC * (1 - v / 100);
+      pct.textContent = `${Math.round(v)}%`;
+      if (t < 1) requestAnimationFrame(tick); else resolve();
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+$('#btn-cancel').addEventListener('click', () => {
+  if (currentEventSource) { currentEventSource.close(); currentEventSource = null; }
+  showExtractState('drop');
+  showToast('취소했어요');
+});
+
+/* ---------------- Stem separation filters (local simulation) ---------------- */
+// 음성 강조 필터 — 보컬 대역 부스트 + 저음/고음 컷
+async function applyVocalFilter(buffer) {
+  const offline = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+  const src = offline.createBufferSource(); src.buffer = buffer;
+  const hp = offline.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 140;
+  const peak = offline.createBiquadFilter(); peak.type = 'peaking'; peak.frequency.value = 1600; peak.Q.value = 1.1; peak.gain.value = 4;
+  const lp = offline.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7500;
+  const comp = offline.createDynamicsCompressor();
+  comp.threshold.value = -24; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.15;
+  src.connect(hp); hp.connect(peak); peak.connect(lp); lp.connect(comp); comp.connect(offline.destination);
+  src.start();
+  return offline.startRendering();
+}
+
+// 음악(MR) 강조 필터 — 보컬 대역을 깎고 저음/고음 살리기
+async function applyMusicFilter(buffer) {
+  const offline = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+  const src = offline.createBufferSource(); src.buffer = buffer;
+
+  // 보컬 중심 대역(~1.2kHz) 깎기
+  const vocalCut1 = offline.createBiquadFilter();
+  vocalCut1.type = 'peaking'; vocalCut1.frequency.value = 1200; vocalCut1.Q.value = 0.9; vocalCut1.gain.value = -10;
+
+  // 보컬 하이포먼트(~3kHz) 추가 컷
+  const vocalCut2 = offline.createBiquadFilter();
+  vocalCut2.type = 'peaking'; vocalCut2.frequency.value = 3000; vocalCut2.Q.value = 1.1; vocalCut2.gain.value = -6;
+
+  // 저음 살짝 부스트 (음악감)
+  const bass = offline.createBiquadFilter();
+  bass.type = 'lowshelf'; bass.frequency.value = 180; bass.gain.value = 3;
+
+  // 고음(심벌/하이햇) 살짝 부스트
+  const air = offline.createBiquadFilter();
+  air.type = 'highshelf'; air.frequency.value = 6000; air.gain.value = 2;
+
+  src.connect(vocalCut1); vocalCut1.connect(vocalCut2); vocalCut2.connect(bass); bass.connect(air); air.connect(offline.destination);
+  src.start();
+  return offline.startRendering();
+}
+
+/* ---------------- WAV encoder ---------------- */
+function audioBufferToWav(buffer) {
+  const numCh = buffer.numberOfChannels, sr = buffer.sampleRate;
+  const samples = interleave(buffer);
+  const dataSize = samples.length * 2;
+  const ab = new ArrayBuffer(44 + dataSize);
+  const v = new DataView(ab);
+  const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, numCh, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * numCh * 2, true);
+  v.setUint16(32, numCh * 2, true); v.setUint16(34, 16, true);
+  writeStr(36, 'data'); v.setUint32(40, dataSize, true);
+  let o = 44;
+  for (let i = 0; i < samples.length; i++, o += 2) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return ab;
+}
+function interleave(buffer) {
+  const chs = [];
+  for (let i = 0; i < buffer.numberOfChannels; i++) chs.push(buffer.getChannelData(i));
+  const len = buffer.length; const out = new Float32Array(len * chs.length);
+  let idx = 0;
+  for (let i = 0; i < len; i++) for (let c = 0; c < chs.length; c++) out[idx++] = chs[c][i];
+  return out;
+}
+
+function computePeaks(buffer, bins = 64) {
+  const ch = buffer.getChannelData(0);
+  const block = Math.floor(ch.length / bins);
+  const peaks = [];
+  for (let i = 0; i < bins; i++) {
+    let max = 0;
+    for (let j = 0; j < block; j++) {
+      const val = Math.abs(ch[i * block + j] || 0);
+      if (val > max) max = val;
+    }
+    peaks.push(Math.max(0.08, Math.min(1, max * 1.4)));
+  }
+  return peaks;
+}
+
+/* ---------------- Audio slicing (구간 저장) ---------------- */
+function sliceAudioBuffer(buffer, startSec, endSec) {
+  const sr = buffer.sampleRate;
+  const startSample = Math.max(0, Math.floor(startSec * sr));
+  const endSample = Math.min(buffer.length, Math.floor(endSec * sr));
+  const length = endSample - startSample;
+  if (length <= 0) return null;
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AudioCtor();
+  const newBuf = ctx.createBuffer(buffer.numberOfChannels, length, sr);
+  for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
+    const src = buffer.getChannelData(ch);
+    const dst = newBuf.getChannelData(ch);
+    for (let i = 0; i < length; i++) dst[i] = src[startSample + i];
+  }
+  return newBuf;
+}
+
+/* ---------------- Selection state (CapCut-style dual handles) ---------------- */
+let selFraction = { start: 0, end: 1 };   // 0~1 범위
+let dragHandle = null;                    // 'left' | 'right' | null
+let selectionCleanup = null;
+
+function isFullSelection() {
+  return selFraction.start < 0.004 && selFraction.end > 0.996;
+}
+function getSelectionSec() {
+  const total = audioPlayer?.duration || 0;
+  return {
+    start: selFraction.start * total,
+    end: selFraction.end * total,
+    duration: (selFraction.end - selFraction.start) * total,
+  };
+}
+function getSelectionEndSec() { return getSelectionSec().end; }
+
+function clearSelection() {
+  selFraction = { start: 0, end: 1 };
+  refreshSelectionUI();
+}
+
+function refreshSelectionUI() {
+  const startPct = selFraction.start * 100;
+  const endPct = selFraction.end * 100;
+
+  const sel = $('#wave-selection');
+  const dL = $('#wave-dim-left');
+  const dR = $('#wave-dim-right');
+  const hL = $('#wave-handle-left');
+  const hR = $('#wave-handle-right');
+
+  if (sel) {
+    sel.style.left = `${startPct}%`;
+    sel.style.width = `${endPct - startPct}%`;
+  }
+  if (dL) {
+    dL.style.left = '0';
+    dL.style.width = `${startPct}%`;
+  }
+  if (dR) {
+    dR.style.left = `${endPct}%`;
+    dR.style.width = `${100 - endPct}%`;
+  }
+  if (hL) hL.style.left = `${startPct}%`;
+  if (hR) hR.style.left = `${endPct}%`;
+
+  // 선택 구간 내부의 파형 바에 .in-selection 부여 (보라색 강조)
+  const bars = $$('#result-wave span');
+  if (bars.length > 0) {
+    bars.forEach((bar, i) => {
+      const pct = (i + 0.5) / bars.length;
+      const inside = pct >= selFraction.start && pct <= selFraction.end && !isFullSelection();
+      bar.classList.toggle('in-selection', inside);
+    });
+  }
+
+  // 시간 라벨
+  const { start, end, duration } = getSelectionSec();
+  $('#tip-left') && ($('#tip-left').textContent = formatTime(start));
+  $('#tip-right') && ($('#tip-right').textContent = formatTime(end));
+  $('#sel-start') && ($('#sel-start').textContent = formatTime(start));
+  $('#sel-end') && ($('#sel-end').textContent = formatTime(end));
+  $('#sel-duration-text') && ($('#sel-duration-text').textContent = formatTime(duration));
+
+  // 부분 선택 상태에서만 구간 저장 UI 노출
+  const sb = $('#selection-bar');
+  const dlBtn = $('#dl-selection');
+  if (isFullSelection()) {
+    sb?.classList.add('hidden');
+    dlBtn?.classList.add('hidden');
+  } else {
+    sb?.classList.remove('hidden');
+    dlBtn?.classList.remove('hidden');
+  }
+}
+
+function setupSelection() {
+  if (selectionCleanup) selectionCleanup();
+
+  const waveEl = $('#result-wave');
+  const hL = $('#wave-handle-left');
+  const hR = $('#wave-handle-right');
+  const MIN_GAP = 0.02;   // 최소 2% 구간 유지
+
+  let dragInitialPct = null; // 드래그 시작 시점 핸들 위치 (실제 이동 여부 판단용)
+
+  // 초기화
+  clearSelection();
+
+  function pctFromEvent(e) {
+    const rect = waveEl.getBoundingClientRect();
+    const clientX = (e.clientX != null) ? e.clientX
+                    : (e.touches && e.touches[0]) ? e.touches[0].clientX : 0;
+    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  }
+
+  // 선택 시작점부터 자동 재생
+  function playFromSelectionStart() {
+    if (!audioPlayer) return;
+    const { start } = getSelectionSec();
+    try {
+      audioPlayer.currentTime = start;
+      const p = audioPlayer.play();
+      if (p && typeof p.then === 'function') {
+        p.then(() => { $('#result-play').innerHTML = pauseIcon(); })
+         .catch(() => { /* autoplay 차단 등 */ });
+      } else {
+        $('#result-play').innerHTML = pauseIcon();
+      }
+    } catch (err) {
+      console.warn('autoplay failed:', err);
+    }
+  }
+
+  const onMove = (e) => {
+    if (!dragHandle) return;
+    e.preventDefault();
+    const pct = pctFromEvent(e);
+    if (dragHandle === 'left') {
+      selFraction.start = Math.max(0, Math.min(pct, selFraction.end - MIN_GAP));
+    } else if (dragHandle === 'right') {
+      selFraction.end = Math.min(1, Math.max(pct, selFraction.start + MIN_GAP));
+    }
+    refreshSelectionUI();
+  };
+  const endDrag = () => {
+    if (!dragHandle) return;
+    const side = dragHandle;
+    $(`#wave-handle-${side}`)?.classList.remove('dragging');
+    dragHandle = null;
+
+    // 실제로 핸들이 움직였는지 체크 후 자동 재생
+    const currentPct = side === 'left' ? selFraction.start : selFraction.end;
+    const moved = dragInitialPct != null && Math.abs(currentPct - dragInitialPct) > 0.001;
+    dragInitialPct = null;
+    if (moved) playFromSelectionStart();
+  };
+  const startDrag = (side) => (e) => {
+    dragHandle = side;
+    dragInitialPct = side === 'left' ? selFraction.start : selFraction.end;
+    $(`#wave-handle-${side}`)?.classList.add('dragging');
+    // 드래그 시작 시 재생 중이면 일시정지 (스크럽 잡음 방지)
+    if (audioPlayer && !audioPlayer.paused) {
+      audioPlayer.pause();
+      $('#result-play').innerHTML = playIcon();
+    }
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const mdL = startDrag('left');
+  const mdR = startDrag('right');
+  hL.addEventListener('mousedown', mdL);
+  hR.addEventListener('mousedown', mdR);
+  hL.addEventListener('touchstart', mdL, { passive: false });
+  hR.addEventListener('touchstart', mdR, { passive: false });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', endDrag);
+
+  selectionCleanup = () => {
+    hL.removeEventListener('mousedown', mdL);
+    hR.removeEventListener('mousedown', mdR);
+    hL.removeEventListener('touchstart', mdL);
+    hR.removeEventListener('touchstart', mdR);
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', endDrag);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', endDrag);
+  };
+
+  // 컨트롤 버튼
+  $('#sel-clear').onclick = () => {
+    clearSelection();
+    showToast('선택을 초기화했어요');
+  };
+  $('#sel-preview').onclick = () => {
+    if (!audioPlayer) return;
+    const { start } = getSelectionSec();
+    audioPlayer.currentTime = start;
+    audioPlayer.play();
+    $('#result-play').innerHTML = pauseIcon();
+  };
+  $('#dl-selection').onclick = () => {
+    const { start, end, duration } = getSelectionSec();
+    if (duration < 0.2) return showToast('선택 구간이 너무 짧아요 (최소 0.2초)', 'error');
+    if (!currentAudioBuffer) return showToast('오디오 데이터가 없어요', 'error');
+    const sliced = sliceAudioBuffer(currentAudioBuffer, start, end);
+    if (!sliced) return showToast('구간 추출에 실패했어요', 'error');
+    const wav = audioBufferToWav(sliced);
+    const blob = new Blob([wav], { type: 'audio/wav' });
+    const s = Math.round(start);
+    const ee = Math.round(end);
+    downloadBlob(blob, `${currentBaseName}_${s}s-${ee}s.wav`);
+    showToast(`선택 구간 ${formatTime(duration)} 저장 완료`);
+  };
+}
+
+/* ============================================================
+   STAGE 1: RESULT (voice player)
+   ============================================================ */
+function showResult({ baseName, duration, peaks, hasAllStems }) {
+  showExtractState('result');
+  $('#result-fname').textContent = baseName;
+  $('#voice-filename').textContent = `${baseName}_voice.wav`;
+  currentMode = 'voice';
+
+  // Download link (기본: 음성)
+  const dl = $('#dl-voice-wav');
+  dl.href = URL.createObjectURL(extractedBlobs.voice);
+  dl.download = `${baseName}_voice.wav`;
+
+  // Waveform
+  $('#result-wave').innerHTML = peaks.map(h =>
+    `<span style="height:${h * 100}%"></span>`
+  ).join('');
+
+  // Player (기본: 음성 스템)
+  if (audioPlayer) { audioPlayer.pause(); audioPlayer.src = ''; }
+  audioPlayer = new Audio(URL.createObjectURL(extractedBlobs.voice));
+  audioPlayer.addEventListener('loadedmetadata', () => {
+    $('#result-time').textContent = `0:00 / ${formatTime(audioPlayer.duration || duration)}`;
+    // duration 확보된 뒤 라벨 최신화
+    refreshSelectionUI();
+  });
+  audioPlayer.addEventListener('timeupdate', () => {
+    const cur = audioPlayer.currentTime, total = audioPlayer.duration || duration;
+    $('#result-time').textContent = `${formatTime(cur)} / ${formatTime(total)}`;
+    const progress = total ? cur / total : 0;
+    $$('#result-wave span').forEach((bar, i, arr) => {
+      bar.classList.toggle('elapsed', i / arr.length < progress);
+    });
+    // 선택 구간 끝에서 자동 정지 (부분 선택일 때만)
+    if (!isFullSelection()) {
+      const endSec = getSelectionEndSec();
+      if (cur >= endSec - 0.02) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = endSec;
+        $('#result-play').innerHTML = playIcon();
+      }
+    }
+    // 자막 세그먼트 하이라이트
+    if (transcriptSegments.length > 0) {
+      const activeIdx = transcriptSegments.findIndex(s => cur >= s.start && cur < s.end);
+      $$('.segment').forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+    }
+  });
+  audioPlayer.addEventListener('ended', () => {
+    $('#result-play').innerHTML = playIcon();
+    $('#result-wave').classList.remove('playing');
+  });
+
+  $('#result-play').onclick = () => {
+    if (audioPlayer.paused) {
+      audioPlayer.play();
+      $('#result-play').innerHTML = pauseIcon();
+    } else {
+      audioPlayer.pause();
+      $('#result-play').innerHTML = playIcon();
+    }
+  };
+
+  // 3-mode toggle: 음성만 / 음악만 / 원본
+  const MODE_FILES = { voice: 'voice', music: 'music', original: 'full' };
+  const MODE_LABELS = { voice: '음성만', music: '음악만', original: '원본' };
+
+  $$('#ba-toggle button').forEach(btn => {
+    const m = btn.dataset.mode;
+    const available = !!(extractedBlobs[m] && extractedBuffers[m]);
+    btn.disabled = !available;
+    btn.style.opacity = available ? '' : '0.35';
+    btn.title = available ? '' : 'URL 추출은 현재 음성만 지원해요';
+    btn.classList.toggle('active', m === 'voice');
+
+    btn.onclick = () => {
+      if (btn.disabled) return;
+      const blob = extractedBlobs[m];
+      const buf = extractedBuffers[m];
+      if (!blob || !buf) return;
+
+      $$('#ba-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = m;
+
+      const wasPlaying = !audioPlayer.paused;
+      const t = audioPlayer.currentTime;
+
+      currentAudioBuffer = buf;
+      audioPlayer.src = URL.createObjectURL(blob);
+      audioPlayer.addEventListener('loadedmetadata', function seek() {
+        audioPlayer.currentTime = Math.min(t, audioPlayer.duration || t);
+        audioPlayer.removeEventListener('loadedmetadata', seek);
+        if (wasPlaying) audioPlayer.play();
+      });
+
+      // 파형 재생성 (스템마다 다르게)
+      const newPeaks = computePeaks(buf, 64);
+      $('#result-wave').innerHTML = newPeaks.map(h =>
+        `<span style="height:${h * 100}%"></span>`
+      ).join('');
+
+      // 다운로드 링크/파일명 업데이트
+      dl.href = URL.createObjectURL(blob);
+      dl.download = `${baseName}_${MODE_FILES[m]}.wav`;
+      $('#voice-filename').textContent = `${baseName}_${MODE_FILES[m]}.wav`;
+
+      showToast(`${MODE_LABELS[m]}로 전환`);
+    };
+  });
+
+  $('#btn-retry').onclick = () => {
+    audioPlayer?.pause();
+    urlInput.value = '';
+    clearSelection();
+    showExtractState('drop');
+  };
+
+  // 파형 드래그 구간 선택 활성화
+  setupSelection();
+
+  showToast('음성 추출이 완료됐어요');
+}
+function playIcon() {
+  return `<svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+}
+function pauseIcon() {
+  return `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>`;
+}
+
+/* ============================================================
+   STAGE 2: TRANSCRIPTION (mock with realistic Korean segments)
+   ============================================================ */
+const MOCK_SCRIPT_POOL = [
+  "안녕하세요, 오늘은 soaviz studio 작업 세션에 오신 걸 환영합니다.",
+  "이 영상에서는 음성 추출부터 자막 생성, 요약까지의 파이프라인을 함께 살펴볼게요.",
+  "먼저 영상 파일을 올리면 백엔드가 yt-dlp로 오디오만 분리해 가져옵니다.",
+  "FFmpeg가 그 오디오를 48kHz WAV로 정규화하고, Demucs 모델이 목소리만 따로 뽑아내요.",
+  "분리된 목소리를 Whisper 모델에 넣으면 타임코드가 붙은 자막이 만들어집니다.",
+  "마지막으로 GPT가 자막을 읽고 핵심 내용과 액션 아이템을 정리해주죠.",
+  "노션의 녹음 요약 기능과 비슷한 흐름이라고 보시면 돼요.",
+  "이렇게 만들어진 목소리는 TTS 스튜디오에서 페르소나 보이스로도 활용할 수 있어요.",
+  "크리에이터라면 자기 목소리를 일관되게 콘텐츠에 녹이는 게 중요하잖아요.",
+  "영상 몇 분만 있으면 나만의 AI 보이스가 만들어지는 거죠.",
+  "다음 세션에서는 TTS 스튜디오의 감정·속도 컨트롤을 깊게 다뤄볼 예정입니다.",
+  "시청해주셔서 감사합니다. 좋은 하루 보내세요.",
+];
+
+let transcriptSegments = [];
+
+function mockTranscribe(durationSec) {
+  const segs = [];
+  let t = 0, i = 0;
+  while (t < durationSec - 1) {
+    const text = MOCK_SCRIPT_POOL[i % MOCK_SCRIPT_POOL.length];
+    const segDur = Math.min(
+      durationSec - t,
+      Math.max(2.2, text.length / 5.5)
+    );
+    segs.push({ start: t, end: t + segDur, text });
+    t += segDur + 0.4;
+    i++;
+    if (i > 120) break; // safety
+  }
+  if (segs.length === 0) {
+    segs.push({ start: 0, end: durationSec, text: MOCK_SCRIPT_POOL[0] });
+  }
+  return segs;
+}
+
+function segmentsToSrt(segments) {
+  return segments.map((s, i) =>
+    `${i + 1}\n${formatSrtTime(s.start)} --> ${formatSrtTime(s.end)}\n${s.text}\n`
+  ).join('\n');
+}
+
+$('#cta-transcribe').addEventListener('click', async () => {
+  const btn = $('#cta-transcribe');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const titleEl = btn.querySelector('.next-title');
+  const originalTitle = titleEl.textContent;
+  titleEl.innerHTML = `자막 생성 중 <span class="loader dark" style="margin-left:8px"><span></span><span></span><span></span></span>`;
+  btn.querySelector('.next-arrow').style.display = 'none';
+
+  // 실제 처리 시간 느낌으로 1.8~2.6s 지연
+  await new Promise(r => setTimeout(r, 2000));
+
+  const duration = audioPlayer?.duration || currentAudioBuffer?.duration || 60;
+  transcriptSegments = mockTranscribe(duration);
+
+  // Render
+  $('#segments').innerHTML = transcriptSegments.map((s, i) => `
+    <div class="segment" data-idx="${i}" data-time="${s.start}">
+      <span class="seg-time">${formatTime(s.start)}</span>
+      <span class="seg-text">${escapeHTML(s.text)}</span>
+    </div>
+  `).join('');
+  $$('.segment').forEach(el => {
+    el.addEventListener('click', () => {
+      const t = parseFloat(el.dataset.time);
+      if (audioPlayer) {
+        audioPlayer.currentTime = t;
+        audioPlayer.play();
+        $('#result-play').innerHTML = pauseIcon();
+      }
+    });
+  });
+
+  $('#tr-seg-count').textContent = transcriptSegments.length;
+  $('#tr-word-count').textContent = transcriptSegments.reduce((n, s) => n + s.text.length, 0).toLocaleString();
+
+  btn.classList.add('hidden');
+  $('#stage-transcript').classList.remove('hidden');
+  $('#cta-summary').classList.remove('hidden');
+
+  $('#stage-transcript').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast('자막이 생성됐어요');
+
+  titleEl.textContent = originalTitle;
+  btn.querySelector('.next-arrow').style.display = '';
+
+  // Bind download / copy
+  $('#dl-srt').onclick = () => {
+    downloadBlob(
+      new Blob([segmentsToSrt(transcriptSegments)], { type: 'text/plain' }),
+      `${currentBaseName}.srt`
+    );
+    showToast('SRT 파일을 저장했어요');
+  };
+  $('#dl-txt').onclick = () => {
+    downloadBlob(
+      new Blob([transcriptSegments.map(s => s.text).join('\n')], { type: 'text/plain' }),
+      `${currentBaseName}.txt`
+    );
+    showToast('TXT 파일을 저장했어요');
+  };
+  $('#copy-txt').onclick = async () => {
+    await copyText(transcriptSegments.map(s => s.text).join('\n'));
+    showToast('전체 자막을 복사했어요');
+  };
+});
+
+/* ============================================================
+   STAGE 3: SUMMARY (mock)
+   ============================================================ */
+function mockSummarize(segments) {
+  const fullText = segments.map(s => s.text).join(' ');
+  // 간이 키워드 추출: 3글자 이상 명사/동사 후보
+  const stopwords = new Set(['여러분', '이렇게', '해주세요', '있어요', '입니다', '보시면', '있잖아요']);
+  const tokens = fullText.match(/[가-힣]{2,}/g) || [];
+  const freq = {};
+  tokens.forEach(t => {
+    if (stopwords.has(t)) return;
+    freq[t] = (freq[t] || 0) + 1;
+  });
+  const keywords = Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([w]) => w);
+
+  return {
+    tldr: '영상은 soaviz studio의 음성 → 자막 → 요약 파이프라인을 소개하며, yt-dlp · FFmpeg · Demucs · Whisper · GPT를 차례로 연결해 크리에이터용 AI 보이스 워크플로우를 완성합니다.',
+    points: [
+      '영상에서 오디오를 분리해 48kHz WAV로 정규화',
+      'Demucs 모델이 보컬만 추출해 깨끗한 목소리 파일을 생성',
+      'Whisper가 타임코드 포함 자막을 자동 생성',
+      'GPT가 자막을 읽고 핵심 포인트·액션 아이템·키워드로 정리',
+      '결과 보이스는 TTS 스튜디오의 페르소나로도 연결 가능',
+    ],
+    actions: [
+      '본인 소유 영상으로 파이프라인 전체 흐름 테스트',
+      'TTS 스튜디오에서 추출한 보이스로 페르소나 생성',
+      '생성된 SRT 자막을 Premiere/DaVinci에 바로 적용',
+      '요약을 블로그·뉴스레터 초안으로 재활용',
+    ],
+    keywords: keywords.length ? keywords : ['음성추출', '자막', '요약', 'AI보이스'],
+  };
+}
+
+$('#cta-summary').addEventListener('click', async () => {
+  const btn = $('#cta-summary');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const titleEl = btn.querySelector('.next-title');
+  const originalTitle = titleEl.textContent;
+  titleEl.innerHTML = `요약 중 <span class="loader dark" style="margin-left:8px"><span></span><span></span><span></span></span>`;
+  btn.querySelector('.next-arrow').style.display = 'none';
+
+  await new Promise(r => setTimeout(r, 1600));
+
+  const summary = mockSummarize(transcriptSegments);
+  $('#sum-tldr').textContent = summary.tldr;
+  $('#sum-points').innerHTML = summary.points.map(p => `<li>${escapeHTML(p)}</li>`).join('');
+  $('#sum-actions').innerHTML = summary.actions.map(a => `<li>${escapeHTML(a)}</li>`).join('');
+  $('#sum-keywords').innerHTML = summary.keywords.map(k => `<span class="kw">${escapeHTML(k)}</span>`).join('');
+
+  btn.classList.add('hidden');
+  $('#stage-summary').classList.remove('hidden');
+  $('#stage-summary').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast('요약이 완성됐어요');
+
+  titleEl.textContent = originalTitle;
+  btn.querySelector('.next-arrow').style.display = '';
+
+  $('#copy-summary').onclick = async () => {
+    const text =
+      `[한 줄 요약]\n${summary.tldr}\n\n` +
+      `[핵심 포인트]\n${summary.points.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\n` +
+      `[액션 아이템]\n${summary.actions.map((a, i) => `${i + 1}. ${a}`).join('\n')}\n\n` +
+      `[키워드] ${summary.keywords.join(', ')}`;
+    await copyText(text);
+    showToast('요약을 복사했어요');
+  };
+
+  $('#goto-studio').onclick = () => {
+    addPersona({
+      id: 'ext-' + Date.now(),
+      name: `${currentBaseName.slice(0, 10)}의 목소리`,
+      desc: '방금 추출한 목소리 · 일치도 89%',
+      grad: 'linear-gradient(135deg, #C8B8FF, #6D4BE6)',
+    });
+    switchPersona(personas[personas.length - 1]);
+    showPage('studio');
+    showToast('TTS 스튜디오로 이동했어요');
+  };
+});
+
+/* ============================================================
+   TTS STUDIO
+   ============================================================ */
+const personas = [
+  { id: 'day', name: '낮의 은교', desc: '차분하고 나지막한 내레이션 톤 · 일치도 94%', grad: 'linear-gradient(135deg, #EBE3FF, #B8A9FF)' },
+  { id: 'night', name: '밤의 은교', desc: '깊고 또렷한 대사 톤 · 일치도 91%', grad: 'linear-gradient(135deg, #2C2250, #5B4BAA)' },
+  { id: 'warm', name: '주말의 은교', desc: '따뜻하고 편안한 대화 톤 · 일치도 92%', grad: 'linear-gradient(135deg, #FFE4C4, #FFB489)' },
+];
+let currentPersona = personas[0];
+
+function renderPersonaMenu() {
+  $('#persona-menu').innerHTML = personas.map(p => `
+    <div class="persona-option" data-id="${p.id}">
+      <div class="mini-av" style="background:${p.grad}"></div>
+      <div class="meta"><b>${escapeHTML(p.name)}</b><span>${escapeHTML(p.desc.split('·')[0].trim())}</span></div>
+    </div>`).join('');
+  $$('.persona-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const p = personas.find(x => x.id === opt.dataset.id);
+      if (p) { switchPersona(p); $('#persona-menu').classList.remove('open'); }
+    });
+  });
+}
+function switchPersona(p) {
+  currentPersona = p;
+  $('#persona-name').textContent = p.name;
+  $('#persona-desc').textContent = p.desc;
+  $('#persona-av').style.background = p.grad;
+}
+function addPersona(p) { personas.push(p); renderPersonaMenu(); }
+
+$('#persona-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  $('#persona-menu').classList.toggle('open');
+});
+document.addEventListener('click', () => $('#persona-menu').classList.remove('open'));
+
+const editor = $('#editor');
+function updateEditor() {
+  const len = editor.value.length;
+  $('#char-count').textContent = len.toLocaleString();
+  const speed = parseInt($('#speed').value, 10) / 100;
+  $('#duration').textContent = Math.max(0, Math.round(len / (KR_CPS * speed)));
+  $('#gen-eta').textContent = `약 ${Math.max(3, Math.round(len / 40))}초 소요`;
+}
+editor.addEventListener('input', updateEditor);
+
+function updateEmoCount() {
+  const selected = $$('.tag-btn.emo.selected').length;
+  const counter = $('#emo-count');
+  if (counter) counter.textContent = `${selected}/100`;
+}
+$$('.tag-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tag = btn.dataset.tag;
+    const s = editor.selectionStart, e = editor.selectionEnd, v = editor.value;
+    editor.value = v.slice(0, s) + tag + v.slice(e);
+    editor.focus();
+    editor.setSelectionRange(s + tag.length, s + tag.length);
+    updateEditor();
+    // 다중 선택 토글 — 여러 태그 동시에 흰 테두리 유지 가능
+    btn.classList.toggle('selected');
+    updateEmoCount();
+  });
+});
+// 감정 태그 전체 해제
+$('#clear-emo-selection')?.addEventListener('click', () => {
+  $$('.tag-btn.emo.selected').forEach(b => b.classList.remove('selected'));
+  updateEmoCount();
+  showToast('감정 태그 선택을 모두 해제했어요');
+});
+
+const toneLabels = ['차분', '차분', '차분', '편안', '또렷', '또렷'];
+$('#tone').addEventListener('input', e => {
+  $('#tone-val').textContent = toneLabels[Math.min(5, Math.floor(e.target.value / 20))];
+});
+$('#speed').addEventListener('input', e => {
+  $('#speed-val').textContent = (e.target.value / 100).toFixed(2) + 'x';
+  updateEditor();
+});
+// (하단 감정 pill 영역은 상단 100개 태그로 통합됨)
+
+function randomWaveBars(n = 56, seed = Math.random()) {
+  const bars = []; let v = 0.3 + seed * 0.3;
+  for (let i = 0; i < n; i++) {
+    v += (Math.random() - 0.5) * 0.35;
+    v = Math.max(0.12, Math.min(1, v));
+    const env = Math.sin((i / n) * Math.PI) * 0.5 + 0.5;
+    bars.push(v * env * 0.9 + 0.1);
+  }
+  return bars;
+}
+function waveHTML(bars) { return bars.map(h => `<span style="height:${h * 100}%;width:3px"></span>`).join(''); }
+
+let history = [];
+function renderHistory() {
+  const list = $('#history-list');
+  if (history.length === 0) {
+    list.innerHTML = `<div style="padding:30px;text-align:center;color:var(--text-faint);font-size:13px">아직 생성한 음성이 없어요</div>`;
+  } else {
+    list.innerHTML = history.map((h, i) => `
+      <div class="history-item ${h.isNew ? 'new' : ''}" data-idx="${i}">
+        <button class="play-btn" data-action="play">${playIcon()}</button>
+        <div class="wave">${waveHTML(h.bars)}</div>
+        <div class="history-meta">
+          <div class="history-title">${escapeHTML(h.title)}</div>
+          <div class="history-sub">
+            <span class="persona-chip">${escapeHTML(h.persona)}</span>
+            <span>${h.dur}</span><span class="sep">·</span>
+            <span>${h.chars}자</span><span class="sep">·</span>
+            <span>${h.time}</span>
+          </div>
+        </div>
+        <div class="history-actions">
+          <button class="mini-btn" data-action="copy"><svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+          <button class="mini-btn" data-action="dl"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+        </div>
+      </div>`).join('');
+  }
+  $('#history-count').textContent = `${history.length}개`;
+  bindHistory();
+}
+let playingEl = null, playingTimer = null;
+function bindHistory() {
+  $$('.history-item').forEach(el => {
+    const idx = +el.dataset.idx;
+    el.querySelector('[data-action="play"]').onclick = () => togglePlayHistory(el, idx);
+    el.querySelector('[data-action="copy"]').onclick = () => { copyText(history[idx].title); showToast('대본을 복사했어요'); };
+    el.querySelector('[data-action="dl"]').onclick = () => showToast('다운로드 (데모)');
+  });
+}
+function togglePlayHistory(el, idx) {
+  if (playingEl && playingEl !== el) {
+    playingEl.classList.remove('playing');
+    playingEl.querySelector('.play-btn').classList.remove('playing');
+    playingEl.querySelector('.play-btn').innerHTML = playIcon();
+  }
+  clearTimeout(playingTimer);
+  const btn = el.querySelector('.play-btn');
+  const on = el.classList.toggle('playing');
+  btn.classList.toggle('playing', on);
+  if (on) {
+    btn.innerHTML = pauseIcon();
+    playingEl = el;
+    playingTimer = setTimeout(() => togglePlayHistory(el, idx), 3500);
+  } else {
+    btn.innerHTML = playIcon();
+    playingEl = null;
+  }
+}
+
+$('#generate').addEventListener('click', () => {
+  const text = editor.value.trim();
+  if (!text) { showToast('먼저 읽을 내용을 입력해 주세요', 'error'); editor.focus(); return; }
+  if (text.length > 2000) { showToast('2,000자를 초과했어요', 'error'); return; }
+  const btn = $('#generate');
+  btn.disabled = true;
+  $('#gen-label').innerHTML = `<span class="loader"><span></span><span></span><span></span></span>`;
+  $('#gen-eta').textContent = '목소리를 만드는 중…';
+  const delay = Math.min(3200, 900 + text.length * 8);
+  setTimeout(() => {
+    const title = text.length > 42 ? text.slice(0, 42) + '…' : text;
+    const durSec = Math.max(3, Math.round(text.length / (KR_CPS * ($('#speed').value / 100))));
+    history.unshift({
+      title, persona: currentPersona.name,
+      dur: `${Math.floor(durSec / 60)}:${String(durSec % 60).padStart(2, '0')}`,
+      chars: text.length, time: '방금 전',
+      bars: randomWaveBars(56, Math.random()), isNew: true,
+    });
+    history = history.slice(0, 6);
+    renderHistory();
+    setTimeout(() => history.forEach(h => delete h.isNew), 800);
+    btn.disabled = false;
+    $('#gen-label').textContent = '생성하기';
+    updateEditor();
+    showToast(`${currentPersona.name}의 목소리로 생성됐어요`);
+  }, delay);
+});
+
+/* ---------------- Shortcuts ---------------- */
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    const active = $('.page.active');
+    if (active && active.id === 'page-studio') $('#generate').click();
+  }
+});
+
+/* ============================================================
+   SOUND EFFECTS PAGE
+   ============================================================ */
+const SFX_CATEGORIES = [
+  { id: 'booms', label: 'Booms' },
+  { id: 'braams', label: 'Braams' },
+  { id: 'brass', label: 'Brass' },
+  { id: 'cymbals', label: 'Cymbals' },
+  { id: 'devices', label: 'Devices' },
+  { id: 'electronic', label: 'Electronic' },
+  { id: 'footsteps', label: 'Footsteps' },
+  { id: 'impacts', label: 'Impacts' },
+  { id: 'nature', label: 'Nature' },
+  { id: 'rain', label: 'Rain' },
+  { id: 'urban', label: 'Urban' },
+  { id: 'whooshes', label: 'Whooshes' },
+];
+
+let SFX_DATA = [
+  { title: 'Gentle paper page turn', cat: ['Paper', 'Friction'], duration: '2s', downloads: 442 },
+  { title: 'Urban outdoor ambience at night', cat: ['Ambience', 'Urban'], duration: '9.8s', downloads: 795 },
+  { title: 'Suspense hit for cinematic scene', cat: ['Designed', 'Impact'], duration: '2s', downloads: 555 },
+  { title: 'Clear, satisfying footstep on wood', cat: ['Footsteps', 'Wood'], duration: '1.1s', downloads: 100 },
+  { title: 'Heavy door slam echo', cat: ['Impact', 'Door'], duration: '1.5s', downloads: 320 },
+  { title: 'Rain on rooftop steady', cat: ['Nature', 'Rain'], duration: '12s', downloads: 890 },
+  { title: 'Cat purring close mic', cat: ['Animals', 'Cat'], duration: '5.4s', downloads: 615 },
+  { title: 'Cinematic boom impact', cat: ['Boom', 'Cinema'], duration: '3s', downloads: 1242 },
+  { title: 'Glass shatter on floor', cat: ['Impact', 'Glass'], duration: '1.2s', downloads: 540 },
+  { title: 'Whoosh transition fast', cat: ['Whoosh', 'Fast'], duration: '0.8s', downloads: 780 },
+  { title: 'Mechanical device startup', cat: ['Devices', 'Startup'], duration: '2.3s', downloads: 215 },
+  { title: 'Brass fanfare short', cat: ['Brass', 'Fanfare'], duration: '2.8s', downloads: 188 },
+];
+
+const SFX_GEN_HISTORY = []; // 생성한 사운드 저장
+
+function sfxWaveBarsHTML(count = 48, seed = Math.random()) {
+  let bars = ''; let v = 0.3 + seed * 0.3;
+  for (let i = 0; i < count; i++) {
+    v += (Math.random() - 0.5) * 0.4;
+    v = Math.max(0.1, Math.min(1, v));
+    const env = Math.sin((i / count) * Math.PI) * 0.5 + 0.5;
+    bars += `<span class="bar" style="height:${(v * env * 0.9 + 0.1) * 100}%"></span>`;
+  }
+  return bars;
+}
+function formatDownloads(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(n);
+}
+
+function renderCategories() {
+  const container = $('#category-cards');
+  if (!container) return;
+  container.innerHTML = SFX_CATEGORIES.map(c => `
+    <div class="cat-card" data-cat="${c.id}">
+      <div class="cat-img"></div>
+      <div class="cat-label">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+        ${escapeHTML(c.label)}
+      </div>
+    </div>
+  `).join('');
+  $$('.cat-card').forEach(card => {
+    card.addEventListener('click', () => {
+      showToast(`${card.querySelector('.cat-label').textContent.trim()} 카테고리 필터는 준비 중`, 'warn');
+    });
+  });
+}
+
+function renderSFXList(filter = '') {
+  const container = $('#sfx-list');
+  if (!container) return;
+  const list = SFX_DATA.filter(s =>
+    !filter || s.title.toLowerCase().includes(filter.toLowerCase()) ||
+    s.cat.some(c => c.toLowerCase().includes(filter.toLowerCase()))
+  );
+  if (list.length === 0) {
+    container.innerHTML = `<div style="padding:60px; text-align:center; color:var(--text-faint); font-size:13px">검색 결과가 없어요</div>`;
+    return;
+  }
+  container.innerHTML = list.map((s, i) => `
+    <div class="sfx-item" data-idx="${i}">
+      <div class="sfx-title-col">
+        <button class="sfx-play" data-action="play">
+          <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <div class="sfx-info">
+          <div class="title">${escapeHTML(s.title)}</div>
+          <div class="cat">${s.cat.map((c, j) => j === 0 ? escapeHTML(c) : `<span class="arrow">›</span>${escapeHTML(c)}`).join(' ')}</div>
+        </div>
+      </div>
+      <div class="sfx-wave-col">${sfxWaveBarsHTML(56, (i + 1) * 0.17)}</div>
+      <div class="sfx-duration">${escapeHTML(s.duration)}</div>
+      <div class="sfx-downloads">${formatDownloads(s.downloads)}</div>
+      <div class="sfx-actions">
+        <button class="sfx-action-btn" data-action="link" title="링크 복사">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"/></svg>
+        </button>
+        <button class="sfx-action-btn" data-action="download" title="다운로드">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="sfx-action-btn" data-action="favorite" title="즐겨찾기">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px"><polygon points="12 2 15 9 22 9 17 14 18 22 12 18 6 22 7 14 2 9 9 9 12 2"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  $$('.sfx-item').forEach(el => {
+    const idx = +el.dataset.idx;
+    el.querySelector('[data-action="play"]').addEventListener('click', () => toggleSfxPlay(el, idx));
+    el.querySelector('[data-action="link"]').addEventListener('click', () => {
+      copyText(window.location.href);
+      showToast('링크를 복사했어요');
+    });
+    el.querySelector('[data-action="download"]').addEventListener('click', () => {
+      showToast(`"${list[idx].title}" 다운로드 (데모)`);
+    });
+    el.querySelector('[data-action="favorite"]').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      btn.classList.toggle('favorited');
+      const svg = btn.querySelector('svg');
+      if (btn.classList.contains('favorited')) svg.setAttribute('fill', '#FCD34D');
+      else svg.setAttribute('fill', 'none');
+    });
+  });
+}
+
+let sfxPlayingEl = null; let sfxPlayTimer = null;
+function toggleSfxPlay(el) {
+  if (sfxPlayingEl && sfxPlayingEl !== el) {
+    sfxPlayingEl.classList.remove('playing');
+    sfxPlayingEl.querySelector('.sfx-play').classList.remove('playing');
+  }
+  clearTimeout(sfxPlayTimer);
+  const on = el.classList.toggle('playing');
+  el.querySelector('.sfx-play').classList.toggle('playing', on);
+  if (on) {
+    sfxPlayingEl = el;
+    sfxPlayTimer = setTimeout(() => toggleSfxPlay(el), 3500);
+  } else {
+    sfxPlayingEl = null;
+  }
+}
+
+// Effects 탭
+$$('.sfx-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.sfx-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const t = tab.dataset.tab;
+    if (t === 'explore') renderSFXList();
+    else if (t === 'history') {
+      $('#sfx-list').innerHTML = SFX_GEN_HISTORY.length === 0
+        ? `<div style="padding:60px; text-align:center; color:var(--text-faint); font-size:13px">아직 생성한 사운드가 없어요</div>`
+        : '';
+      if (SFX_GEN_HISTORY.length > 0) {
+        // Show generated items
+        const backup = SFX_DATA.slice();
+        SFX_DATA = SFX_GEN_HISTORY;
+        renderSFXList();
+        SFX_DATA = backup;
+      }
+    } else {
+      $('#sfx-list').innerHTML = `<div style="padding:60px; text-align:center; color:var(--text-faint); font-size:13px">즐겨찾기한 사운드가 없어요</div>`;
+    }
+  });
+});
+
+// Carousel arrows
+$('#sfx-prev')?.addEventListener('click', () => $('#category-cards')?.scrollBy({ left: -240, behavior: 'smooth' }));
+$('#sfx-next')?.addEventListener('click', () => $('#category-cards')?.scrollBy({ left: 240, behavior: 'smooth' }));
+
+// Search
+let sfxSearchTimer;
+$('#sfx-search-input')?.addEventListener('input', (e) => {
+  clearTimeout(sfxSearchTimer);
+  sfxSearchTimer = setTimeout(() => renderSFXList(e.target.value), 150);
+});
+
+// Filter pills
+$$('.filter-pill').forEach(p => p.addEventListener('click', () => p.classList.toggle('active')));
+
+// Sort dropdown
+$('#sort-dropdown')?.addEventListener('click', () => showToast('정렬 옵션 준비 중', 'warn'));
+
+// Floating prompt
+$$('.prompt-suggestion').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $('#prompt-input').value = btn.dataset.prompt;
+    $('#prompt-input').focus();
+    updatePromptSend();
+  });
+});
+function updatePromptSend() {
+  const has = $('#prompt-input')?.value.trim().length > 0;
+  $('#prompt-send')?.classList.toggle('active', has);
+}
+$('#prompt-input')?.addEventListener('input', updatePromptSend);
+$('#prompt-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); $('#prompt-send')?.click(); }
+});
+$('#prompt-send')?.addEventListener('click', () => {
+  const text = $('#prompt-input').value.trim();
+  if (!text) return showToast('먼저 사운드를 묘사해 주세요', 'error');
+  showToast(`"${text}" 생성 중...`);
+  setTimeout(() => {
+    const newSfx = {
+      title: text.charAt(0).toUpperCase() + text.slice(1),
+      cat: ['Generated', 'AI'],
+      duration: (2 + Math.random() * 5).toFixed(1) + 's',
+      downloads: 0,
+    };
+    SFX_DATA.unshift(newSfx);
+    SFX_GEN_HISTORY.unshift(newSfx);
+    renderSFXList();
+    $('#prompt-input').value = '';
+    updatePromptSend();
+    showToast('사운드가 생성됐어요');
+  }, 1600);
+});
+$('#prompt-close')?.addEventListener('click', () => {
+  $('#sfx-prompt').style.display = 'none';
+});
+$$('.prompt-ctrl').forEach(c => c.addEventListener('click', () => showToast('옵션 상세 설정 준비 중', 'warn')));
+
+/* ============================================================
+   LIBRARY PAGE
+   ============================================================ */
+function buildLibraryItems() {
+  const items = [];
+  const now = new Date();
+  const fmt = (d) => d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+
+  // 추출된 음성/음악/원본
+  if (extractedBlobs?.voice) {
+    items.push({
+      type: 'voice', title: `${currentBaseName}_voice.wav`,
+      sub: `WAV · 48kHz · ${formatTime(extractedBuffers.voice?.duration || 0)}`,
+      date: fmt(now), blob: extractedBlobs.voice,
+      bars: 32, seed: 0.4,
+    });
+  }
+  if (extractedBlobs?.music) {
+    items.push({
+      type: 'music', title: `${currentBaseName}_music.wav`,
+      sub: `WAV · 48kHz · ${formatTime(extractedBuffers.music?.duration || 0)}`,
+      date: fmt(now), blob: extractedBlobs.music,
+      bars: 32, seed: 0.6,
+    });
+  }
+  // TTS 생성
+  history?.forEach(h => {
+    items.push({
+      type: 'tts', title: h.title,
+      sub: `${h.persona} · ${h.dur} · ${h.chars}자`,
+      date: h.time || fmt(now),
+      bars: 32, seed: Math.random(),
+    });
+  });
+  // SFX 생성
+  SFX_GEN_HISTORY.forEach(s => {
+    items.push({
+      type: 'sfx', title: s.title,
+      sub: `${s.cat.join(' · ')} · ${s.duration}`,
+      date: '방금 전',
+      bars: 32, seed: Math.random(),
+    });
+  });
+  return items;
+}
+
+function libMiniWave(count, seed) {
+  let bars = ''; let v = 0.3 + seed * 0.3;
+  for (let i = 0; i < count; i++) {
+    v += (Math.random() - 0.5) * 0.35;
+    v = Math.max(0.15, Math.min(1, v));
+    const env = Math.sin((i / count) * Math.PI) * 0.5 + 0.5;
+    bars += `<span style="height:${(v * env * 0.85 + 0.15) * 100}%"></span>`;
+  }
+  return bars;
+}
+
+let libCurrentFilter = 'all';
+function renderLibrary() {
+  const items = buildLibraryItems();
+  const counts = {
+    all: items.length,
+    voice: items.filter(i => i.type === 'voice').length,
+    music: items.filter(i => i.type === 'music').length,
+    tts: items.filter(i => i.type === 'tts').length,
+    sfx: items.filter(i => i.type === 'sfx').length,
+  };
+  // 카운트 배지 업데이트
+  $('#lib-count-all') && ($('#lib-count-all').textContent = counts.all);
+
+  const filtered = libCurrentFilter === 'all' ? items : items.filter(i => i.type === libCurrentFilter);
+  const grid = $('#lib-grid');
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="lib-empty">
+        <div class="big">◌</div>
+        <div>아직 이 카테고리에 저장된 항목이 없어요</div>
+      </div>`;
+    return;
+  }
+
+  const TYPE_LABELS = { voice: '음성 추출', music: '음악 추출', tts: 'TTS', sfx: 'SFX' };
+  const TYPE_ICONS = {
+    voice: '<path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/>',
+    music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    tts:   '<rect x="3" y="5" width="15" height="12" rx="2"/><path d="M8 14V9l2-2 2 2v5M8 11h4"/>',
+    sfx:   '<path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/>',
+  };
+
+  grid.innerHTML = filtered.map(item => `
+    <div class="lib-card ${item.type}">
+      <div class="lib-card-head">
+        <span class="lib-badge ${item.type}">
+          <svg class="ico" viewBox="0 0 24 24">${TYPE_ICONS[item.type]}</svg>
+          ${TYPE_LABELS[item.type]}
+        </span>
+        <span class="lib-date">${escapeHTML(item.date)}</span>
+      </div>
+      <div class="lib-thumb">${libMiniWave(item.bars || 32, item.seed || 0.5)}</div>
+      <div>
+        <div class="lib-card-title">${escapeHTML(item.title)}</div>
+        <div class="lib-card-sub">${escapeHTML(item.sub)}</div>
+      </div>
+      <div class="lib-card-actions">
+        <button data-act="play">
+          <svg class="icon" viewBox="0 0 24 24" style="width:11px;height:11px;stroke-width:2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          재생
+        </button>
+        <button data-act="download">
+          <svg class="icon" viewBox="0 0 24 24" style="width:11px;height:11px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          다운로드
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  // 아이템 액션
+  $$('.lib-card').forEach((card, idx) => {
+    const item = filtered[idx];
+    card.querySelector('[data-act="play"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (item.blob) {
+        const audio = new Audio(URL.createObjectURL(item.blob));
+        audio.play();
+        showToast(`${item.title} 재생 중`);
+      } else {
+        showToast('재생 (데모)');
+      }
+    });
+    card.querySelector('[data-act="download"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (item.blob) {
+        downloadBlob(item.blob, item.title);
+        showToast('다운로드 시작');
+      } else {
+        showToast('이 항목은 다운로드 가능한 파일이 없어요', 'warn');
+      }
+    });
+  });
+}
+
+// Library 탭
+$$('.lib-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.lib-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    libCurrentFilter = tab.dataset.lib;
+    renderLibrary();
+  });
+});
+
+// 초기 렌더
+renderCategories();
+renderSFXList();
+
+/* ---------------- Init ---------------- */
+renderPersonaMenu();
+editor.value = '사월의 바람이 창문을 지나 [쉼] 낯선 이름을 조용히 부른다. 나는 그 목소리를 [강]정확히[강] 기억한다.';
+updateEditor();
+renderHistory();
+checkBackend();
+setInterval(checkBackend, 20000);
+</script>
+</body>
+</html>
