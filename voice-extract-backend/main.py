@@ -196,7 +196,7 @@ async def run_ffmpeg_normalize(jid: str, src: Path, dst: Path) -> None:
 
 async def run_demucs(jid: str, wav: Path, work: Path, model: str) -> Path:
     emit(jid, step="separate", progress=42,
-         message="목소리를 분리하고 있어요 (첫 실행 시 모델 다운로드로 수 분 소요)")
+         message="목소리를 분리하고 있어요")
     env = {**os.environ, "PYTORCH_ENABLE_MPS_FALLBACK": "1"}
     proc = await asyncio.create_subprocess_exec(
         sys.executable, "-m", "demucs.separate",
@@ -249,12 +249,14 @@ async def pipeline(jid: str, url: str, model: str) -> None:
             final = RESULTS_DIR / f"{jid}_voice.wav"
             shutil.copy2(vocals, final)
 
+            emit(jid, step="finalizing", progress=98, message="곧 완료됩니다")
+
             emit(jid,
                  status="done", step="done", progress=100,
                  message="완료", result_file=str(final))
     except Exception as e:
         emit(jid, status="error", error=str(e),
-             message=f"실패: {e}")
+             message="문제가 생겼어요. 다시 시도해 주세요.")
 
 
 # --------------------------------------------------------------------------

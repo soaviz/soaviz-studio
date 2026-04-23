@@ -108,7 +108,9 @@ def check_demucs() -> None:
 # --------------------------------------------------------------------------
 # 파이프라인
 # --------------------------------------------------------------------------
-def extract_audio(src: Path, dst: Path) -> None:
+def extract_audio(src: Path | str, dst: Path | str) -> None:
+    src = Path(src)
+    dst = Path(dst)
     step(f"오디오 추출 중 — {src.name}")
     cmd = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",

@@ -8,12 +8,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
   <style>
     :root {
-      --bg: #08080B; --bg-elev: #0F0F13;
+      --bg: #0B0B0F; --bg-elev: #121218;
       --bg-card: rgba(255,255,255,0.025);
       --bg-card-hover: rgba(255,255,255,0.045);
       --border: rgba(255,255,255,0.07);
       --border-strong: rgba(255,255,255,0.14);
-      --text: #ECECEF; --text-dim: #9B9BA3; --text-faint: #5C5C66;
+      --text: #E8E8EA; --text-dim: #B3B3BC; --text-faint: #7B7B86;
       --accent: #8B5CF6; --accent-2: #6366F1;
       --accent-soft: rgba(139,92,246,0.14);
       --danger: #F43F5E; --success: #10B981;
@@ -52,12 +52,33 @@
     }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.02em; }
     .brand-mark {
-      width: 22px; height: 22px; border-radius: 6px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      position: relative; box-shadow: 0 0 22px rgba(139,92,246,0.45);
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle at 32% 32%, #E8DAFF 0 18%, #B78BFF 42%, #7C3AED 72%, #5B21B6 100%);
+      box-shadow: 0 0 22px rgba(139,92,246,0.45);
+      overflow: hidden;
     }
-    .brand-mark::after { content: ""; position: absolute; inset: 6px; border-radius: 3px; background: #08080B; }
-    .brand-mark::before { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: var(--accent); }
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      top: -6px; left: 2px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--bg);
+      opacity: 0.96;
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      top: 4px; left: 15px;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      box-shadow:
+        -9px 2px 0 rgba(255,255,255,0.62),
+        -5px 10px 0 rgba(255,255,255,0.45);
+    }
     .brand-name { font-size: 15px; }
     .brand-sub {
       font-size: 12px; color: var(--text-faint);
@@ -214,6 +235,14 @@
         radial-gradient(ellipse at center, rgba(139,92,246,0.12), transparent 60%),
         var(--bg-card-hover);
     }
+    .dropzone:focus-visible {
+      outline: 3px solid rgba(139,92,246,0.42);
+      outline-offset: 3px;
+      border-color: var(--accent);
+      background:
+        radial-gradient(ellipse at center, rgba(139,92,246,0.12), transparent 60%),
+        var(--bg-card-hover);
+    }
     .drop-icon-wrap {
       width: 56px; height: 56px; margin: 0 auto 18px;
       border-radius: 16px;
@@ -303,6 +332,32 @@
       text-align: center;
       font-size: 11px; color: var(--text-faint);
       margin-top: 16px; line-height: 1.6;
+    }
+    .notice-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .notice-card {
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: left;
+    }
+    .notice-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-bottom: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+      color: var(--text);
+    }
+    .notice-label.warn { color: #FFCC85; }
+    .notice-label.info { color: #A5B4FC; }
+    .notice-copy {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.55;
     }
 
     /* ============ PROCESSING ============ */
@@ -769,6 +824,376 @@
       text-align: center; margin-top: 16px;
       font-size: 11px; color: var(--text-faint);
     }
+    .onboarding-flow {
+      margin-top: 28px;
+      display: grid;
+      gap: 18px;
+    }
+    .flow-intro {
+      padding: 18px 20px;
+      background: linear-gradient(180deg, rgba(139,92,246,0.08), rgba(255,255,255,0.02));
+      border: 1px solid rgba(139,92,246,0.24);
+      border-radius: var(--radius);
+    }
+    .flow-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .flow-intro h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .flow-intro p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+    .onboarding-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .onboarding-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+    .mock-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-dim);
+    }
+    .mock-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-faint);
+      font-size: 11px;
+    }
+    .onboarding-body {
+      padding: 26px 20px 20px;
+    }
+    .onboarding-body h3 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .onboarding-sub {
+      margin: 0 0 22px;
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .score-block {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 14px;
+    }
+    .score-block h4,
+    .mock-section-title {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .score-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .score-row:last-child { margin-bottom: 0; }
+    .score-row .label { color: var(--text-dim); }
+    .score-row .value { color: var(--text); font-weight: 600; }
+    .score-dots {
+      display: flex;
+      gap: 5px;
+    }
+    .score-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+    }
+    .score-dots span.on { background: var(--accent); }
+    .inline-alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.22);
+      color: #FFCC85;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .sentence-card {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(139,92,246,0.3);
+      background: rgba(139,92,246,0.08);
+      font-size: 18px;
+      line-height: 1.7;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .record-btn {
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 24px -12px rgba(139,92,246,0.6);
+    }
+    .record-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .helper-copy {
+      margin-top: 10px;
+      color: var(--text-faint);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .verify-result {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.22);
+      color: #9EF0C8;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .footer-cta {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .full-btn {
+      width: 100%;
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+    .identity-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .field-block label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 7px;
+    }
+    .mock-input,
+    .mock-textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 13px 14px;
+      font-size: 14px;
+    }
+    .mock-textarea {
+      min-height: 92px;
+      resize: none;
+      line-height: 1.55;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .preview-card {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .preview-card .tag {
+      display: inline-flex;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-faint);
+      font-size: 10px;
+      margin-bottom: 10px;
+    }
+    .preview-card h5 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .preview-card p {
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      min-height: 54px;
+    }
+    .mini-play {
+      min-height: 36px;
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .studio-shell {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      padding: 16px;
+    }
+    .studio-shell-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .studio-shell-head h4 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .studio-shell-head p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .studio-status {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--accent);
+      background: rgba(139,92,246,0.1);
+      border: 1px solid rgba(139,92,246,0.24);
+    }
+    .slider-grid {
+      display: grid;
+      gap: 12px;
+      margin: 14px 0 16px;
+    }
+    .slider-card {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .slider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .mock-slider {
+      position: relative;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .mock-slider::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--fill, 50%);
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+    .mock-slider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: var(--fill, 50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      transform: translate(-50%, -50%);
+    }
+    .history-mock {
+      margin-top: 16px;
+      display: grid;
+      gap: 10px;
+    }
+    .history-mock-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .history-mock-item .meta {
+      min-width: 0;
+    }
+    .history-mock-item .title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .history-mock-item .sub {
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+    .ghost-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+    }
 
     /* ============ TTS STUDIO PAGE ============ */
     .persona-card {
@@ -1090,6 +1515,13 @@
     }
     .toast.error .ok { background: var(--danger); }
     .toast.warn .ok { background: var(--warn); }
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0);
+      white-space: nowrap; border: 0;
+    }
 
     /* ============ SOUND EFFECTS PAGE ============ */
     .breadcrumb {
@@ -1127,6 +1559,625 @@
       transition: 0.15s;
     }
     .soundboard-btn:hover { background: var(--bg-card-hover); color: var(--text); }
+
+    /* ============ MUSIC PAGE ============ */
+    .music-shell {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 16px;
+      min-height: calc(100vh - 140px);
+    }
+    .music-left,
+    .music-right {
+      min-width: 0;
+    }
+    .music-left {
+      display: grid;
+      align-content: start;
+      gap: 16px;
+    }
+    .music-right {
+      display: grid;
+      align-content: start;
+      gap: 16px;
+    }
+    .music-panel-head,
+    .music-workspace-head {
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--bg-card);
+      box-shadow: none;
+    }
+    .music-pill-row,
+    .music-head-row,
+    .music-filter-row,
+    .music-card-actions,
+    .music-player {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .music-head-row { justify-content: space-between; }
+    .music-pills {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: rgba(255,255,255,0.03);
+    }
+    .music-pill {
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+    .music-pill.active {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+    .music-create-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .music-create-tab {
+      min-height: 56px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim);
+      border-right: 1px solid var(--border);
+      background: transparent;
+    }
+    .music-create-tab:last-child { border-right: 0; }
+    .music-create-tab.active {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+    .music-panel-body {
+      padding: 0;
+      display: grid;
+      gap: 16px;
+    }
+    .music-form-card {
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--bg-card);
+      overflow: hidden;
+      box-shadow: none;
+    }
+    .music-form-head {
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .music-form-body {
+      padding: 18px;
+    }
+    .music-textarea {
+      min-height: 200px;
+      color: var(--text-faint);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .music-style-guide {
+      margin-bottom: 12px;
+      color: var(--text-faint);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .music-style-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .music-style-picker {
+      max-height: 220px;
+      overflow: auto;
+      padding-right: 4px;
+      align-content: flex-start;
+      margin-top: 14px;
+    }
+    .music-style-picker::-webkit-scrollbar { width: 6px; }
+    .music-style-picker::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.08);
+      border-radius: 0;
+    }
+    .music-chip {
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 0;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-dim);
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+    }
+    .music-chip.selected {
+      background: rgba(139,92,246,0.16);
+      border-color: rgba(139,92,246,0.26);
+      color: var(--text);
+    }
+    .music-create-btn {
+      min-height: 52px;
+      justify-content: center;
+      border-radius: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: none;
+    }
+    .music-workspace-head h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+    .music-workspace-head p {
+      margin: 6px 0 0;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+    .music-search,
+    .music-filter,
+    .music-page-btn,
+    .music-page-num {
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 0;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-dim);
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .music-search { flex: 1; justify-content: flex-start; }
+    .music-page-num { min-width: 56px; color: var(--text); }
+    .music-list {
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+    .music-item {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr) 44px;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: rgba(255,255,255,0.02);
+    }
+    .music-cover {
+      width: 76px;
+      height: 76px;
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #4c1d95, #8b5cf6);
+    }
+    .music-cover.two { background: linear-gradient(135deg, #312e81, #7c3aed); }
+    .music-cover.three { background: linear-gradient(135deg, #6d28d9, #c4b5fd); }
+    .music-duration {
+      position: absolute;
+      left: 8px;
+      bottom: 8px;
+      padding: 4px 7px;
+      border-radius: 0;
+      background: rgba(11,11,15,0.65);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .music-meta h3 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .music-meta p {
+      margin: 0 0 8px;
+      color: var(--text-faint);
+      font-size: 12px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .music-meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .music-tag {
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 0;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text-faint);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 600;
+    }
+    .music-icon-btn,
+    .music-more-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 0;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-dim);
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+    }
+    .music-more-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+    .music-player-bar {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      padding: 14px 16px;
+      background: rgba(18,18,24,0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      display: grid;
+      gap: 12px;
+      box-shadow: none;
+    }
+    .music-player {
+      justify-content: space-between;
+    }
+    .music-player .play {
+      width: 46px;
+      height: 46px;
+      border-radius: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      display: grid;
+      place-items: center;
+      box-shadow: none;
+      font-size: 13px;
+    }
+    .music-progress-bar {
+      height: 6px;
+      border-radius: 0;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .music-bottom-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 4px;
+    }
+    .music-progress-bar::before {
+      content: "";
+      display: block;
+      width: 62%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), rgba(255,255,255,0.75));
+    }
+
+    /* ============ VOICES PAGE ============ */
+    .voices-page-head {
+      display: block;
+      margin-bottom: 28px;
+    }
+    .voices-page-head .page-head {
+      margin: 0;
+    }
+    .voices-page-head .page-head p {
+      max-width: 580px;
+    }
+    .voices-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .voices-sidebar-panel,
+    .voices-library-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .voices-sidebar-panel {
+      padding: 16px;
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 76px;
+    }
+    .voices-filter-group {
+      display: grid;
+      gap: 10px;
+    }
+    .voices-filter-group h3 {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-faint);
+      font-weight: 600;
+    }
+    .voices-toggle-grid,
+    .voices-gender-grid {
+      display: grid;
+      gap: 8px;
+    }
+    .voices-toggle-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .voices-gender-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .voices-chip,
+    .voices-list-btn,
+    .voices-select,
+    .voices-cta {
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.18s;
+    }
+    .voices-chip.active,
+    .voices-list-btn.active {
+      background: var(--accent-soft);
+      border-color: rgba(139,92,246,0.24);
+      color: var(--text);
+    }
+    .voices-list-stack {
+      display: grid;
+      gap: 8px;
+    }
+    .voices-list-btn {
+      justify-content: flex-start;
+    }
+    .voices-select {
+      justify-content: space-between;
+      color: var(--text);
+    }
+    .voices-upgrade-card {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .voices-upgrade-card p {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .voices-cta {
+      width: 100%;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.16));
+      border-color: rgba(139,92,246,0.26);
+      color: white;
+    }
+    .voices-library-panel {
+      padding: 18px;
+    }
+    .voices-library-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .voices-tabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+    }
+    .voices-tab {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .voices-tab.active {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+    .voices-count {
+      color: var(--text-faint);
+      font-size: 13px;
+    }
+    .voices-search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .voices-search-box,
+    .voices-filter-button {
+      min-height: 44px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      color: var(--text-faint);
+      font-size: 13px;
+    }
+    .voices-filter-button {
+      justify-content: center;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .voices-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .voice-card {
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at top left, rgba(139,92,246,0.08), transparent 26%),
+        rgba(255,255,255,0.02);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 288px;
+      transition: 0.18s;
+    }
+    .voice-card:hover {
+      background:
+        radial-gradient(circle at top left, rgba(139,92,246,0.12), transparent 26%),
+        rgba(255,255,255,0.03);
+      border-color: var(--border-strong);
+    }
+    .voice-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .voice-card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .voice-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.16), transparent 44%), var(--avatar-bg, linear-gradient(135deg, #C04B29, #5B1F19));
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .voice-avatar::before {
+      content: attr(data-face);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+    }
+    .voice-title-meta {
+      min-width: 0;
+    }
+    .voice-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .voice-lang {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-faint);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .voice-favorite {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-faint);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .voice-favorite svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 1.8;
+    }
+    .voice-desc {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-dim);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 64px;
+    }
+    .voice-tag-list,
+    .voice-meta-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .voice-tag,
+    .voice-meta-pill {
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .voice-tag {
+      color: var(--accent);
+      background: rgba(139,92,246,0.1);
+      border-color: rgba(139,92,246,0.16);
+    }
+    .voice-meta-pills {
+      margin-top: auto;
+    }
+    .voice-meta-pill {
+      color: var(--text-faint);
+    }
 
     .sfx-carousel { position: relative; margin-bottom: 24px; }
     .carousel-arrow {
@@ -1564,6 +2615,15 @@
       .main { padding: 24px 20px 60px; }
       .controls { grid-template-columns: 1fr; }
       .history-meta { min-width: 0; }
+      .voices-page-head,
+      .voices-layout { grid-template-columns: 1fr; }
+      .voices-page-head { display: grid; }
+      .voices-sidebar-panel { position: static; }
+      .voices-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .music-shell { grid-template-columns: 1fr; }
+      .music-left { border-right: 0; border-bottom: 1px solid var(--border); }
+      .music-slider-wrap { width: 100%; justify-content: space-between; }
+      .music-option-card { flex-direction: column; align-items: flex-start; }
     }
     @media (max-width: 620px) {
       /* 아주 좁으면 사이드바가 오버레이 모드 */
@@ -1587,6 +2647,26 @@
         background: rgba(0,0,0,0.4);
         z-index: 55;
       }
+      .voices-toggle-grid,
+      .voices-gender-grid,
+      .voices-search-row,
+      .voices-grid {
+        grid-template-columns: 1fr;
+      }
+      .voices-tabs { width: 100%; justify-content: space-between; }
+      .voices-tab { flex: 1; justify-content: center; }
+      .notice-grid { grid-template-columns: 1fr; }
+      .preview-grid { grid-template-columns: 1fr; }
+      .onboarding-body { padding: 22px 16px 18px; }
+      .onboarding-body h3 { font-size: 22px; }
+      .music-create-tabs { grid-template-columns: 1fr; }
+      .music-create-tab { border-right: 0; border-bottom: 1px solid var(--border); }
+      .music-item { grid-template-columns: 80px minmax(0,1fr); }
+      .music-more-btn { display: none; }
+      .music-filter-row { flex-wrap: wrap; }
+      .music-tick-slider { gap: 10px; }
+      .music-tick-slider span { height: 24px; }
+      .music-tick-slider span.active { height: 48px; }
     }
   </style>
 </head>
@@ -1728,7 +2808,7 @@
 
       <!-- STATE A: DROP -->
       <div id="state-drop" class="state">
-        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="영상 업로드">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="영상 업로드. Enter 키로 파일 선택" aria-describedby="dropzone-help">
           <input type="file" id="file-input" accept="video/*,audio/*" hidden />
           <div class="drop-icon-wrap">
             <svg class="icon" viewBox="0 0 24 24" style="width:24px;height:24px;stroke-width:1.6">
@@ -1743,6 +2823,7 @@
             <span>최대 500MB</span>
             <span>24시간 후 자동 삭제</span>
           </div>
+          <div class="sr-only" id="dropzone-help">키보드로 접근할 때 Enter 또는 Space 키를 누르면 파일 선택 창이 열립니다.</div>
         </div>
 
         <div class="divider-or">또는 URL로 가져오기</div>
@@ -1769,8 +2850,31 @@
         </div>
 
         <div class="legal-note">
-          본인 소유 영상 또는 사용권이 확보된 콘텐츠에만 이용해 주세요.<br/>
-          파일은 24시간 뒤 자동 삭제됩니다.
+          URL만 붙여넣으면 바로 추출을 시작합니다. 업로드 단계 없이 진행되지만,
+          아래 정책은 꼭 확인해 주세요.
+        </div>
+
+        <div class="notice-grid">
+          <div class="notice-card">
+            <div class="notice-label warn">
+              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              저작권 경고
+            </div>
+            <div class="notice-copy">
+              본인 소유 콘텐츠 또는 사용권이 확보된 콘텐츠에만 이용해 주세요.
+              타인의 영상이나 음원을 무단으로 추출하는 용도로는 사용할 수 없습니다.
+            </div>
+          </div>
+          <div class="notice-card">
+            <div class="notice-label info">
+              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 8v4"/><path d="M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
+              보관 및 처리 안내
+            </div>
+            <div class="notice-copy">
+              평균 작업 시간은 2~5분이며, 결과 파일은 24시간 뒤 자동 삭제됩니다.
+              필요한 파일은 작업 완료 후 바로 내려받는 것을 권장합니다.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1791,7 +2895,7 @@
             </div>
           </div>
 
-          <div class="ring">
+          <div class="ring" aria-hidden="true">
             <svg viewBox="0 0 120 120">
               <circle class="track" cx="60" cy="60" r="54"/>
               <circle class="fill" id="ring-fill" cx="60" cy="60" r="54"/>
@@ -1799,8 +2903,10 @@
             <div class="pct" id="ring-pct">0%</div>
           </div>
 
-          <div class="proc-label" id="proc-label">준비 중</div>
-          <div class="proc-eta" id="proc-eta">잠시만요</div>
+          <div aria-live="polite" aria-atomic="true">
+            <div class="proc-label" id="proc-label">준비 중</div>
+            <div class="proc-eta" id="proc-eta">잠시만요</div>
+          </div>
 
           <div class="steps">
             <div class="step active" data-step="extract"><span class="indic">●</span> 오디오 추출</div>
@@ -1988,6 +3094,471 @@
           <button id="btn-retry">다른 파일로 다시 시작</button>
         </div>
         <div class="retention-note">파일은 24시간 뒤 자동 삭제됩니다</div>
+
+        <section class="onboarding-flow" id="persona-onboarding-mockup">
+          <div class="flow-intro">
+            <div class="flow-kicker">Persona Onboarding</div>
+            <h3>④→⑥ 온보딩 목업</h3>
+            <p>추출 결과 다음 단계에서 이어지는 보이스 검수, 페르소나 등록, TTS 스튜디오 화면 흐름을 한 번에 볼 수 있는 목업입니다.</p>
+          </div>
+
+          <article class="onboarding-card">
+            <div class="onboarding-topbar">
+              <span class="mock-link">← 뒤로</span>
+              <span class="mock-chip">건너뛰기</span>
+            </div>
+            <div class="onboarding-body">
+              <h3>내 목소리, 맞는지 확인할게요</h3>
+              <p class="onboarding-sub">클론 생성 전에 2단계 검수를 거칩니다.</p>
+
+              <div class="score-block">
+                <h4>음성 품질 점수</h4>
+                <div class="score-row">
+                  <span class="label">음질</span>
+                  <div class="score-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
+                  <span class="value">Good</span>
+                </div>
+                <div class="score-row">
+                  <span class="label">선명도</span>
+                  <div class="score-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
+                  <span class="value">Excellent</span>
+                </div>
+                <div class="score-row">
+                  <span class="label">길이</span>
+                  <div class="value" style="grid-column: 2 / 4;">1분 24초 (권장 30초↑)</div>
+                </div>
+                <div class="inline-alert">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0;"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                  <span>노이즈가 많아요. 더 조용한 구간을 골라주세요.</span>
+                </div>
+              </div>
+
+              <div class="score-block">
+                <div class="mock-section-title">본인 인증</div>
+                <p class="onboarding-sub" style="margin-bottom:12px;">아래 문장을 15초 안에 녹음해 주세요</p>
+                <div class="sentence-card">"사월의 바람은 창문을 지나<br/>낯선 이름을 부른다."</div>
+                <button class="record-btn"><span class="record-dot"></span>녹음 시작</button>
+                <div class="helper-copy">이 문장은 매번 무작위로 바뀌어요. 녹음은 서버에 저장되지 않아요.</div>
+                <div class="verify-result">동일 화자로 확인됐어요 (일치도 94%)</div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="full-btn">다음: 페르소나 만들기</button>
+            </div>
+          </article>
+
+          <article class="onboarding-card">
+            <div class="onboarding-topbar">
+              <span class="mock-link">← 뒤로</span>
+              <span class="mock-chip">Step 5</span>
+            </div>
+            <div class="onboarding-body">
+              <h3>이 목소리를 어떻게 소개할까요?</h3>
+              <p class="onboarding-sub">이름과 설명을 붙이면 나만의 페르소나로 저장할 수 있어요.</p>
+
+              <div class="identity-grid">
+                <div class="field-block">
+                  <label>페르소나 이름</label>
+                  <input class="mock-input" value="은교 내레이션" readonly />
+                </div>
+                <div class="field-block">
+                  <label>한 줄 설명</label>
+                  <textarea class="mock-textarea" readonly>차분하고 또렷한 브랜드 내레이션 톤</textarea>
+                </div>
+                <div class="field-block">
+                  <label>샘플로 먼저 들어보세요</label>
+                  <div class="preview-grid">
+                    <div class="preview-card">
+                      <span class="tag">Preview 01</span>
+                      <h5>뉴스</h5>
+                      <p>오늘 주요 소식을 차분하고 또렷하게 전해드리겠습니다.</p>
+                      <button class="mini-play">재생</button>
+                    </div>
+                    <div class="preview-card">
+                      <span class="tag">Preview 02</span>
+                      <h5>내레이션</h5>
+                      <p>사월의 바람은 창문을 지나 낯선 이름을 부른다.</p>
+                      <button class="mini-play">재생</button>
+                    </div>
+                    <div class="preview-card">
+                      <span class="tag">Preview 03</span>
+                      <h5>대화</h5>
+                      <p>안녕하세요, 오늘은 새로 만든 페르소나 목소리를 함께 들어볼게요.</p>
+                      <button class="mini-play">재생</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="full-btn">페르소나 등록하기</button>
+            </div>
+          </article>
+
+          <article class="onboarding-card">
+            <div class="onboarding-topbar">
+              <span class="mock-link">은교 내레이션</span>
+              <span class="mock-chip">Step 6</span>
+            </div>
+            <div class="onboarding-body">
+              <h3>내 페르소나로 바로 만들어볼게요</h3>
+              <p class="onboarding-sub">텍스트를 입력하면 내 목소리 톤으로 자연스럽게 읽어줘요.</p>
+
+              <div class="studio-shell">
+                <div class="studio-shell-head">
+                  <div>
+                    <h4>은교 내레이션</h4>
+                    <p>차분하고 또렷한 브랜드 내레이션 톤</p>
+                  </div>
+                  <span class="studio-status">본인 인증됨</span>
+                </div>
+
+                <div class="field-block">
+                  <label>읽을 문장을 입력해 주세요</label>
+                  <textarea class="mock-textarea" readonly>안녕하세요. 오늘은 새로 만든 페르소나 목소리로 첫 문장을 읽어볼게요.</textarea>
+                </div>
+
+                <div class="slider-grid">
+                  <div class="slider-card">
+                    <div class="slider-head"><span>감정</span><strong>차분</strong></div>
+                    <div class="mock-slider" style="--fill: 42%;"></div>
+                  </div>
+                  <div class="slider-card">
+                    <div class="slider-head"><span>속도</span><strong>1.0x</strong></div>
+                    <div class="mock-slider" style="--fill: 50%;"></div>
+                  </div>
+                  <div class="slider-card">
+                    <div class="slider-head"><span>피치</span><strong>기본</strong></div>
+                    <div class="mock-slider" style="--fill: 56%;"></div>
+                  </div>
+                </div>
+
+                <button class="full-btn">음성 생성하기</button>
+
+                <div class="history-mock">
+                  <div class="mock-section-title" style="margin-bottom:0;">최근 생성한 음성</div>
+                  <div class="history-mock-item">
+                    <div class="meta">
+                      <div class="title">브랜드 소개 오프닝</div>
+                      <div class="sub">방금 생성됨 · 00:14 · WAV</div>
+                    </div>
+                    <button class="ghost-btn">재생</button>
+                  </div>
+                  <div class="history-mock-item">
+                    <div class="meta">
+                      <div class="title">유튜브 쇼츠 인트로</div>
+                      <div class="sub">5분 전 · 00:08 · MP3</div>
+                    </div>
+                    <button class="ghost-btn">다운로드</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================ PAGE: VOICES ================ -->
+    <section id="page-voices" class="page">
+      <div class="voices-page-head">
+        <div class="page-head">
+          <h1>보이스 라이브러리</h1>
+          <p>페르소나 제작과 TTS 스튜디오에 바로 쓸 수 있는 목소리를 골라보세요.</p>
+        </div>
+      </div>
+
+      <div class="voices-layout">
+        <aside class="voices-sidebar-panel">
+          <div class="voices-filter-group">
+            <h3>보이스 컬렉션</h3>
+            <div class="voices-toggle-grid">
+              <button class="voices-chip active">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+                전체 보이스
+              </button>
+              <button class="voices-chip">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-8"/></svg>
+                내 라이브러리
+              </button>
+            </div>
+          </div>
+
+          <div class="voices-filter-group">
+            <h3>성별</h3>
+            <div class="voices-gender-grid">
+              <button class="voices-chip active">전체</button>
+              <button class="voices-chip">남성</button>
+              <button class="voices-chip">여성</button>
+            </div>
+          </div>
+
+          <div class="voices-filter-group">
+            <h3>언어</h3>
+            <button class="voices-select">
+              <span>전체 언어</span>
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+
+          <div class="voices-filter-group">
+            <h3>정렬</h3>
+            <div class="voices-list-stack">
+              <button class="voices-list-btn active">이름순</button>
+              <button class="voices-list-btn">최신순</button>
+              <button class="voices-list-btn">인기순</button>
+            </div>
+          </div>
+
+          <div class="voices-upgrade-card">
+            <p>더 높은 품질의 합성과 더 많은 렌더링이 필요하다면 Pro 플랜으로 확장할 수 있어요.</p>
+            <button class="voices-cta">유료로 업그레이드</button>
+          </div>
+        </aside>
+
+        <div class="voices-library-panel">
+          <div class="voices-library-top">
+            <div class="voices-tabs">
+              <button class="voices-tab active">전체 보이스</button>
+              <button class="voices-tab">내 라이브러리</button>
+            </div>
+            <div class="voices-count">30 / 201 voices</div>
+          </div>
+
+          <div class="voices-search-row">
+            <div class="voices-search-box">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+              <span>이름이나 스타일로 검색</span>
+            </div>
+            <button class="voices-filter-button">
+              <svg class="icon" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              필터
+            </button>
+          </div>
+
+          <div class="voices-grid">
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #9f2f1a, #38150d);" data-face="🧑🏽‍🦰"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">가란</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">전장을 누비며 목소리마저 굳어버린 노련한 퇴역 장수 같은 굵고 건조한 톤.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#거친</span>
+                <span class="voice-tag">#묵직한</span>
+                <span class="voice-tag">#연륜있는</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">MALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #7a6835, #2f2415);" data-face="🧓🏾"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">가야</div>
+                    <div class="voice-lang">ENGLISH</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">대지의 생명력을 관장하며 숲을 수호하는 거대한 존재처럼 장엄하고 따뜻한 울림.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#장엄한</span>
+                <span class="voice-tag">#따뜻한</span>
+                <span class="voice-tag">#신비로운</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">FEMALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #c6a451, #5c4320);" data-face="👩🏽‍🦱"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">가이</div>
+                    <div class="voice-lang">ENGLISH</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">대하드라마나 대형 다큐멘터리에 어울리는 깊고 단단한 서사형 보이스.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#신뢰감있는</span>
+                <span class="voice-tag">#울림있는</span>
+                <span class="voice-tag">#내레이션</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">FEMALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #d9ce84, #8c6d4e);" data-face="👱🏻‍♀️"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">강나영</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">범죄자들을 때려잡는 거칠고 터프한 베테랑 강력반 형사 같은 저음의 카리스마.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#터프한</span>
+                <span class="voice-tag">#거친</span>
+                <span class="voice-tag">#위협적인</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">FEMALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #7dd9de, #2b4f80);" data-face="🧑🏻‍🎤"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">강철</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">신체의 절반을 기계로 개조한 냉혹한 사이버네틱 영웅 같은 직선적이고 빠른 톤.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#기계적인</span>
+                <span class="voice-tag">#묵직한</span>
+                <span class="voice-tag">#파괴적인</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">MALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #895f3f, #38221a);" data-face="🧑🏾"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">건호</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">깊이 있고 담백한 중저음 내레이터. 기록과 다큐, 인문 교양 톤에 특히 잘 어울려요.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#다큐멘터리</span>
+                <span class="voice-tag">#인문학</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">MALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #69467e, #2a1a3d);" data-face="🧒🏻"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">건희</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">누구와도 닮지 않은 독특한 비성이 매력적인 톤. 게임 캐릭터나 개성 강한 숏폼에 적합해요.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#유니크</span>
+                <span class="voice-tag">#어린</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">MALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #44d02d, #17602b);" data-face="🧓🏽"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">경숙</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">손주들에게 옛날이야기를 들려주는 인자한 할머니처럼 편안하고 따뜻한 정서의 목소리.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#연륜</span>
+                <span class="voice-tag">#따뜻함</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">FEMALE</span>
+              </div>
+            </article>
+
+            <article class="voice-card">
+              <div class="voice-card-head">
+                <div class="voice-card-title-row">
+                  <div class="voice-avatar" style="--avatar-bg: linear-gradient(135deg, #d35c2d, #5f2114);" data-face="🧑🏻‍🦰"></div>
+                  <div class="voice-title-meta">
+                    <div class="voice-title">고만석</div>
+                    <div class="voice-lang">KOREAN</div>
+                  </div>
+                </div>
+                <button class="voice-favorite" aria-label="즐겨찾기">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M12 20.4s-6.8-4.35-9.19-8.05C.83 9.28 2.1 5.5 5.88 4.6c2.14-.51 4.06.31 5.12 1.95 1.06-1.64 2.98-2.46 5.12-1.95 3.78.9 5.05 4.68 3.07 7.75C18.8 16.05 12 20.4 12 20.4z"/></svg>
+                </button>
+              </div>
+              <p class="voice-desc">동네 어귀에서 작은 구멍가게를 운영하는 목장 주인처럼 사람 냄새 나고 정겨운 목소리.</p>
+              <div class="voice-tag-list">
+                <span class="voice-tag">#친근한</span>
+                <span class="voice-tag">#일상적인</span>
+              </div>
+              <div class="voice-meta-pills">
+                <span class="voice-meta-pill">GENERAL</span>
+                <span class="voice-meta-pill">MALE</span>
+              </div>
+            </article>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2174,22 +3745,22 @@
       <div class="breadcrumb">
         <span>Sound Effects</span>
         <span class="crumb-sep">›</span>
-        <span class="crumb-current">Explore</span>
+        <span class="crumb-current">탐색</span>
       </div>
-      <h1 class="sfx-head">Sound Effects</h1>
+      <h1 class="sfx-head">사운드 이펙트</h1>
 
       <div class="sfx-tabs">
         <div class="tab-group">
-          <button class="sfx-tab active" data-tab="explore">Explore</button>
-          <button class="sfx-tab" data-tab="history">History</button>
-          <button class="sfx-tab" data-tab="favorites">Favorites</button>
+          <button class="sfx-tab active" data-tab="explore">탐색</button>
+          <button class="sfx-tab" data-tab="history">히스토리</button>
+          <button class="sfx-tab" data-tab="favorites">즐겨찾기</button>
         </div>
         <button class="soundboard-btn">
           <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:1.8">
             <circle cx="12" cy="12" r="10"/>
             <circle cx="12" cy="12" r="3"/>
           </svg>
-          Soundboard
+          사운드보드
         </button>
       </div>
 
@@ -2205,30 +3776,269 @@
             <circle cx="11" cy="11" r="7"/>
             <line x1="21" y1="21" x2="16" y2="16"/>
           </svg>
-          <input type="text" id="sfx-search-input" placeholder="Search sound effects..."/>
+          <input type="text" id="sfx-search-input" placeholder="사운드 이펙트를 검색해 보세요..."/>
         </div>
         <div class="sort-dropdown" id="sort-dropdown">
-          <span>Trending</span>
+          <span>인기순</span>
           <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
 
       <div class="sfx-filters">
-        <button class="filter-pill" data-filter="looping">Looping</button>
+        <button class="filter-pill" data-filter="looping">루프</button>
         <button class="filter-pill" data-filter="duration">
           <svg class="icon" viewBox="0 0 24 24" style="width:11px;height:11px;stroke-width:2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Duration
+          길이
         </button>
       </div>
 
       <div class="sfx-list-head">
-        <span>Description</span>
+        <span>설명</span>
         <span></span>
-        <span>Duration</span>
-        <span>Downloads</span>
+        <span>길이</span>
+        <span>다운로드</span>
         <span></span>
       </div>
       <div class="sfx-list" id="sfx-list"></div>
+    </section>
+
+    <!-- ================ PAGE: MUSIC ================ -->
+    <section id="page-music" class="page">
+      <div class="music-shell">
+        <div class="music-left">
+          <div class="music-panel-head">
+            <div class="music-head-row">
+              <div class="music-pills">
+                <button class="music-pill">간편</button>
+                <button class="music-pill active">고급</button>
+                <button class="music-pill">사운드</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="music-create-tabs">
+            <button class="music-create-tab active">＋ 오디오</button>
+            <button class="music-create-tab">＋ 보이스</button>
+            <button class="music-create-tab">＋ 인스포</button>
+          </div>
+
+          <div class="music-panel-body">
+            <section class="music-form-card">
+              <div class="music-form-head">
+                <strong>가사</strong>
+                <span>✦</span>
+              </div>
+              <div class="music-form-body">
+                <div class="music-textarea">가사를 직접 적거나 비워 두면 인스트루멘털 중심으로 곡을 만들어요. 지금은 발라드와 시네마틱 무드가 선택된 상태입니다.</div>
+              </div>
+            </section>
+
+            <section class="music-form-card">
+              <div class="music-form-head">
+                <strong>스타일</strong>
+                <span>✦</span>
+              </div>
+              <div class="music-form-body">
+                <div class="music-style-guide">원하는 무드와 장르를 태그로 골라 조합해 보세요. 여러 개를 함께 선택할수록 곡의 방향이 더 또렷해집니다.</div>
+                <div class="music-style-picker">
+                  <span class="music-chip selected">K-pop</span>
+                  <span class="music-chip selected">발라드</span>
+                  <span class="music-chip selected">시네마틱</span>
+                  <span class="music-chip selected">여성 보컬</span>
+                  <span class="music-chip">남성 보컬</span>
+                  <span class="music-chip">듀엣</span>
+                  <span class="music-chip">솔로</span>
+                  <span class="music-chip">어쿠스틱</span>
+                  <span class="music-chip">피아노</span>
+                  <span class="music-chip">건반</span>
+                  <span class="music-chip">스트링</span>
+                  <span class="music-chip">오케스트라</span>
+                  <span class="music-chip">신스팝</span>
+                  <span class="music-chip">신스웨이브</span>
+                  <span class="music-chip">드림팝</span>
+                  <span class="music-chip">에테리얼</span>
+                  <span class="music-chip">몽환적</span>
+                  <span class="music-chip">다크팝</span>
+                  <span class="music-chip">인디팝</span>
+                  <span class="music-chip">인디록</span>
+                  <span class="music-chip">록</span>
+                  <span class="music-chip">팝록</span>
+                  <span class="music-chip">메탈</span>
+                  <span class="music-chip">그런지 메탈</span>
+                  <span class="music-chip">전자 융합</span>
+                  <span class="music-chip">EDM</span>
+                  <span class="music-chip">하우스</span>
+                  <span class="music-chip">딥하우스</span>
+                  <span class="music-chip">테크노</span>
+                  <span class="music-chip">트랜스</span>
+                  <span class="music-chip">드럼앤베이스</span>
+                  <span class="music-chip">브레이크비트</span>
+                  <span class="music-chip">로파이</span>
+                  <span class="music-chip">칠</span>
+                  <span class="music-chip">앰비언트</span>
+                  <span class="music-chip">뉴에이지</span>
+                  <span class="music-chip">재즈</span>
+                  <span class="music-chip">스윙</span>
+                  <span class="music-chip">보사노바</span>
+                  <span class="music-chip">블루스</span>
+                  <span class="music-chip">소울</span>
+                  <span class="music-chip">R&amp;B</span>
+                  <span class="music-chip">훵크</span>
+                  <span class="music-chip">디스코</span>
+                  <span class="music-chip">시티팝</span>
+                  <span class="music-chip">트랩</span>
+                  <span class="music-chip">힙합</span>
+                  <span class="music-chip">랩</span>
+                  <span class="music-chip">붐뱁</span>
+                  <span class="music-chip">오토튠</span>
+                  <span class="music-chip">808</span>
+                  <span class="music-chip">딥 808</span>
+                  <span class="music-chip">서브베이스</span>
+                  <span class="music-chip">펀치 킥</span>
+                  <span class="music-chip">타이트 드럼</span>
+                  <span class="music-chip">라이브 드럼</span>
+                  <span class="music-chip">드럼 루프</span>
+                  <span class="music-chip">기타 리프</span>
+                  <span class="music-chip">일렉 기타</span>
+                  <span class="music-chip">어쿠스틱 기타</span>
+                  <span class="music-chip">베이스 중심</span>
+                  <span class="music-chip">멜로디 중심</span>
+                  <span class="music-chip">코러스 강한</span>
+                  <span class="music-chip">후렴 폭발</span>
+                  <span class="music-chip">빌드업</span>
+                  <span class="music-chip">드롭</span>
+                  <span class="music-chip">미니멀</span>
+                  <span class="music-chip">맥시멀</span>
+                  <span class="music-chip">깔끔한 믹스</span>
+                  <span class="music-chip">빈티지</span>
+                  <span class="music-chip">레트로</span>
+                  <span class="music-chip">Y2K</span>
+                  <span class="music-chip">네온 무드</span>
+                  <span class="music-chip">새벽 감성</span>
+                  <span class="music-chip">밤 드라이브</span>
+                  <span class="music-chip">비 오는 밤</span>
+                  <span class="music-chip">찬란한 엔딩</span>
+                  <span class="music-chip">희망적</span>
+                  <span class="music-chip">쓸쓸한</span>
+                  <span class="music-chip">애절한</span>
+                  <span class="music-chip">격정적인</span>
+                  <span class="music-chip">서정적인</span>
+                  <span class="music-chip">감성적인</span>
+                  <span class="music-chip">우아한</span>
+                  <span class="music-chip">신비로운</span>
+                  <span class="music-chip">장엄한</span>
+                  <span class="music-chip">극적인</span>
+                  <span class="music-chip">웅장한</span>
+                  <span class="music-chip">잔잔한</span>
+                  <span class="music-chip">따뜻한</span>
+                  <span class="music-chip">차가운</span>
+                  <span class="music-chip">밝은</span>
+                  <span class="music-chip">어두운</span>
+                  <span class="music-chip">러브송</span>
+                  <span class="music-chip">이별송</span>
+                  <span class="music-chip">청춘</span>
+                  <span class="music-chip">성장 서사</span>
+                  <span class="music-chip">영화 OST</span>
+                  <span class="music-chip">애니메이션 엔딩</span>
+                  <span class="music-chip">게임 OST</span>
+                  <span class="music-chip">브랜드 필름</span>
+                  <span class="music-chip">광고음악</span>
+                  <span class="music-chip">인트로</span>
+                  <span class="music-chip">아웃트로</span>
+                  <span class="music-chip">틱톡 감성</span>
+                  <span class="music-chip">쇼츠 배경음</span>
+                  <span class="music-chip">보컬 챱</span>
+                  <span class="music-chip">속삭이는 보컬</span>
+                  <span class="music-chip">파워 보컬</span>
+                  <span class="music-chip">코러스 패드</span>
+                  <span class="music-chip">공간감 큰 리버브</span>
+                  <span class="music-chip">로우파이 질감</span>
+                </div>
+              </div>
+            </section>
+
+            <button class="music-create-btn">곡 만들기</button>
+          </div>
+        </div>
+
+        <div class="music-right">
+          <div class="music-player-bar">
+            <div class="music-player">
+              <button class="music-icon-btn" aria-label="셔플">⤮</button>
+              <button class="music-icon-btn" aria-label="이전">⏮</button>
+              <button class="play" aria-label="재생">▶</button>
+              <button class="music-icon-btn" aria-label="다음">⏭</button>
+              <button class="music-icon-btn" aria-label="반복">↻</button>
+            </div>
+            <div class="music-progress-bar"></div>
+          </div>
+
+          <div class="music-workspace-head">
+            <h1>뮤직 워크스페이스</h1>
+            <p>현재 작업 중인 곡과 프롬프트, 보이스 프리셋을 한 화면에서 정리해 보세요.</p>
+          </div>
+
+          <div class="music-panel-body" style="padding-bottom:0;">
+            <div class="music-filter-row">
+              <div class="music-search">검색</div>
+              <button class="music-filter">필터 3개 ▾</button>
+              <button class="music-filter">최신순 ▾</button>
+              <button class="music-page-btn">◀</button>
+              <button class="music-page-num">1</button>
+              <button class="music-page-btn">▶</button>
+            </div>
+          </div>
+
+          <div class="music-list">
+            <article class="music-item">
+              <div class="music-cover">
+                <div class="music-duration">4:23</div>
+              </div>
+              <div class="music-meta">
+                <h3>아키텍트</h3>
+                <p>감성적인 K-pop 솔로 발라드 팝, 시네마틱 빌드, 강한 신스 질감, 늦은 밤 도시의 에너지를 담은 트랙.</p>
+                <div class="music-meta-tags">
+                  <span class="music-tag">내 목소리 · 은교</span>
+                </div>
+              </div>
+              <button class="music-more-btn">⋯</button>
+            </article>
+
+            <article class="music-item">
+              <div class="music-cover two">
+                <div class="music-duration">3:59</div>
+              </div>
+              <div class="music-meta">
+                <h3>아키텍트</h3>
+                <p>감성적인 K-pop 솔로 발라드 팝, 시네마틱 전개, 강한 코드 진행과 네온 블루 무드가 살아 있는 곡.</p>
+                <div class="music-meta-tags">
+                  <span class="music-tag">내 목소리 · 은교</span>
+                </div>
+              </div>
+              <button class="music-more-btn">⋯</button>
+            </article>
+
+            <article class="music-item">
+              <div class="music-cover three">
+                <div class="music-duration">4:07</div>
+              </div>
+              <div class="music-meta">
+                <h3>네 이름을 불렀어</h3>
+                <p>시네마틱 K-pop 발라드, 어두운 에테리얼 팝, 여성 솔로 보컬 톤과 깊은 홀 리버브가 감정을 끌어올리는 곡.</p>
+                <div class="music-meta-tags">
+                  <span class="music-tag">이은교 보이스 레퍼런스</span>
+                </div>
+              </div>
+              <button class="music-more-btn">⋯</button>
+            </article>
+          </div>
+          <div class="music-bottom-bar">
+            <button class="music-page-btn">◀</button>
+            <button class="music-page-num">1</button>
+            <button class="music-page-btn">▶</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ================ PAGE: LIBRARY ================ -->
@@ -2269,37 +4079,37 @@
 <!-- Floating prompt (Sound Effects 생성 입력) -->
 <div class="sfx-prompt" id="sfx-prompt" style="display:none">
   <div class="prompt-suggestions">
-    <button class="prompt-suggestion" data-prompt="Footsteps on gravel">
+    <button class="prompt-suggestion" data-prompt="자갈길 위를 걷는 발소리">
       <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
-      Footsteps on gravel
+      자갈길 발소리
     </button>
-    <button class="prompt-suggestion" data-prompt="Rain on window">
+    <button class="prompt-suggestion" data-prompt="창문에 떨어지는 빗소리">
       <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
-      Rain on window
+      창문 빗소리
     </button>
-    <button class="prompt-suggestion" data-prompt="Cat purring">
+    <button class="prompt-suggestion" data-prompt="고양이가 골골거리는 소리">
       <svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>
-      Cat purring
+      고양이 골골
     </button>
   </div>
   <div class="prompt-input-row">
-    <input type="text" class="prompt-input" id="prompt-input" placeholder="Describe a sound..."/>
+    <input type="text" class="prompt-input" id="prompt-input" placeholder="원하는 소리를 묘사해 보세요..."/>
     <button class="prompt-close" id="prompt-close">×</button>
   </div>
   <div class="prompt-controls">
-    <button class="prompt-ctrl" title="Looping"><svg class="ico" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>Off</button>
-    <button class="prompt-ctrl" title="Duration"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Auto</button>
-    <button class="prompt-ctrl" title="Variation"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>30%</button>
-    <button class="prompt-ctrl" title="AI"><svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>On</button>
-    <span class="prompt-credits">50 credits / 205,818 credits</span>
+    <button class="prompt-ctrl" title="루프"><svg class="ico" viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>끔</button>
+    <button class="prompt-ctrl" title="길이"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>자동</button>
+    <button class="prompt-ctrl" title="변주"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>30%</button>
+    <button class="prompt-ctrl" title="AI"><svg class="ico" viewBox="0 0 24 24"><path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/></svg>켬</button>
+    <span class="prompt-credits">50 크레딧 / 205,818 크레딧</span>
     <button class="prompt-send" id="prompt-send">
       <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
     </button>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <span class="ok">✓</span>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+  <span class="ok" id="toast-icon" aria-hidden="true">✓</span>
   <span id="toast-msg"></span>
 </div>
 
@@ -2435,15 +4245,16 @@ function showPage(name) {
   }
 }
 // 메뉴 → 페이지 매핑
-//   voices → 페르소나(studio 페이지 재사용)
+//   voices → AI 보이스 라이브러리
 //   studio(Speech) → TTS 스튜디오
 //   extract(Transcribe) → 영상 추출
 // 나머지는 준비 중 토스트
 const NAV_MAP = {
-  voices: { page: 'studio', label: '페르소나 라이브러리' },
+  voices: { page: 'voices', label: 'AI 보이스 라이브러리' },
   studio: { page: 'studio', label: 'TTS 스튜디오' },
   extract: { page: 'extract', label: '영상 추출' },
   effects: { page: 'effects', label: 'Sound Effects' },
+  music: { page: 'music', label: 'Music' },
   library: { page: 'library', label: 'Library' },
 };
 $$('.nav-item[data-page]').forEach(n => {
@@ -2608,7 +4419,7 @@ async function runLocalPipeline(file) {
   await animateRingTo(40, 500);
 
   setStep('separate', 'active');
-  setLabel('음성을 분리하고 있어요', `예상 ${Math.max(1, Math.ceil(durationSec / 60))}분`);
+  setLabel('목소리를 분리하고 있어요', `예상 ${Math.max(1, Math.ceil(durationSec / 60))}분`);
   await animateRingTo(55, Math.min(2500, 900 + durationSec * 18));
   const voiceBuffer = await applyVocalFilter(audioBuffer);
 
@@ -2620,7 +4431,7 @@ async function runLocalPipeline(file) {
   await animateRingTo(92, 400);
 
   setStep('master', 'active');
-  setLabel('마무리하는 중', '거의 다 됐어요');
+  setLabel('마무리하는 중', '곧 완료됩니다');
   await animateRingTo(100, 500);
 
   extractedBlobs.original = new Blob([audioBufferToWav(audioBuffer)], { type: 'audio/wav' });
