@@ -1,0 +1,935 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<title>soaviz studio v3 — Architecture Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 22mm 18mm; }
+* { box-sizing: border-box; }
+html { font-size: 14.5px; }
+body {
+  font-family: 'Pretendard','-apple-system','Apple SD Gothic Neo','맑은 고딕',Malgun Gothic,sans-serif;
+  color: #1a1a1a; line-height: 1.6;
+  max-width: 880px; margin: 32px auto; padding: 0 24px 64px;
+  background: #fff;
+}
+h1 { font-size: 30px; border-bottom: 2px solid #6d28d9; padding-bottom: 10px; color: #2e1065; margin-top: 36px; }
+h1:first-child { font-size: 38px; }
+h2 { font-size: 22px; color: #4c1d95; border-left: 4px solid #a78bfa; padding-left: 12px; margin-top: 32px; }
+h3 { font-size: 17px; color: #5b21b6; margin-top: 22px; }
+h4 { font-size: 14px; color: #6d28d9; margin-top: 16px; }
+p { margin: 8px 0; }
+strong { color: #2e1065; font-weight: 700; }
+hr { border: 0; border-top: 1px solid #e5e5e5; margin: 28px 0; }
+ul,ol { margin: 8px 0 8px 22px; padding: 0; }
+li { margin: 4px 0; }
+blockquote {
+  margin: 14px 0; padding: 12px 18px; background: #f5f3ff;
+  border-left: 4px solid #a78bfa; color: #4c1d95;
+}
+code {
+  font-family: 'JetBrains Mono','Menlo',monospace; font-size: 12.5px;
+  background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #c026d3;
+}
+pre {
+  background: #1f1535; color: #ede9fe; padding: 14px 18px; border-radius: 8px;
+  font-family: 'JetBrains Mono','Menlo',monospace; font-size: 12px; line-height: 1.5;
+  overflow-x: auto; page-break-inside: avoid; margin: 14px 0;
+}
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 13.5px; }
+th { background: #6d28d9; color: white; padding: 9px 10px; text-align: left; font-weight: 700; font-size: 13px; }
+td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+tr:nth-child(even) td { background: #faf9ff; }
+tr { page-break-inside: avoid; }
+@media print { body { margin: 0; max-width: none; padding: 0; } }
+.print-hint { position: fixed; top: 12px; right: 12px; background: #6d28d9; color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+@media print { .print-hint { display: none; } }
+</style></head><body>
+<button class="print-hint" onclick="window.print()">⌘+P → PDF로 저장</button>
+<h1 id="soaviz-studio-v3-architecture-data-model-spec">soaviz studio v3 — Architecture &amp; Data Model Spec</h1>
+<p><strong>For</strong>: 상위 1% AI 영화 제작자 / 크리에이터
+<strong>By</strong>: 은교 × Anthropic-style senior review
+<strong>Date</strong>: 2026-04-24
+<strong>Status</strong>: Draft for review</p>
+<hr />
+<h2 id="0-north-star">0. North Star</h2>
+<blockquote>
+<p><strong>"AI 영화 제작 OS"</strong> — 도구 모음(tool collection)에서 제작 운영체제(production OS)로.
+한 줄 아이디어가 → 캐릭터 시트 → 스토리보드 → 모델 비교 생성 → 편집본까지 <strong>끊김 없이</strong> 흐른다.</p>
+</blockquote>
+<h3 id="5">5가지 설계 원칙</h3>
+<ol>
+<li><strong>Pipeline first.</strong> 모든 객체는 Episode → Scene → Shot 트리에 위치를 가진다.</li>
+<li><strong>Memory in, never out.</strong> 한 번 만든 캐릭터·스타일·프롬프트는 다음 생성에 자동 주입된다.</li>
+<li><strong>Compare by default.</strong> 단일 결과물이 아니라 후보군. 선택과 비교가 1급 시민.</li>
+<li><strong>Reference is currency.</strong> 영감 → 프롬프트 변환을 시스템이 한다.</li>
+<li><strong>Local-first, sync-ready.</strong> IndexedDB 기반, 추후 협업 동기화 가능 구조.</li>
+</ol>
+<h3 id="-out-of-scope-v3">비-목표 (out of scope, v3)</h3>
+<ul>
+<li>실시간 멀티플레이 협업 (v4)</li>
+<li>모바일 앱 네이티브 (v4)</li>
+<li>실제 NLE 편집 타임라인 (v4 — Premiere/DaVinci 연동으로 대체)</li>
+</ul>
+<hr />
+<h2 id="1-information-architecture-ia">1. Information Architecture (IA)</h2>
+<h3 id="11">1.1 사이드바 (개정안)</h3>
+<div class="codehilite"><pre><span></span><code>MAIN
+  Today               (현재 유지)
+  Pipeline            ← NEW · Episode/Scene/Shot 트리
+  Library             (현재 유지, 확장)
+
+CREATE
+  Personas            (세계관/스토리텔링/대본 — 유지)
+  Voice Studio
+  Music Studio
+  SFX Studio
+  Video Studio
+  Compare Mode        ← NEW · A/B/C 패널
+
+REFERENCE                ← NEW SECTION
+  Character Bible     ← NEW
+  Style Bible         ← NEW
+  Cinema Library      ← NEW
+
+MEMORY
+  Prompts             (유지)
+  Activities          (유지)
+  Versions            ← NEW · 버전 트리
+
+SYSTEM
+  Settings
+</code></pre></div>
+
+<h3 id="12-5">1.2 신규 페이지 5개</h3>
+<table>
+<thead>
+<tr>
+<th>페이지</th>
+<th>1줄 정의</th>
+<th>핵심 객체</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>시리즈를 Episode → Scene → Shot 트리로 본다</td>
+<td>Episode, Scene, Shot</td>
+</tr>
+<tr>
+<td><strong>Character Bible</strong></td>
+<td>캐릭터 시트(얼굴·보이스·성격) 카드</td>
+<td>Character</td>
+</tr>
+<tr>
+<td><strong>Style Bible</strong></td>
+<td>룩북(컬러·카메라·라이팅) 카드</td>
+<td>StylePreset</td>
+</tr>
+<tr>
+<td><strong>Cinema Library</strong></td>
+<td>참고 영상 임베드 + 타임코드 메모</td>
+<td>Reference, RefClip</td>
+</tr>
+<tr>
+<td><strong>Compare Mode</strong></td>
+<td>같은 프롬프트 N개 모델 동시 생성 비교</td>
+<td>CompareSession</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-mermaid">1.3 객체 관계도 (mermaid)</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">erDiagram</span><span class="w"></span>
+<span class="w">  </span><span class="n">Project</span><span class="w"> </span><span class="o">||--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Episode</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">has</span><span class="w"></span>
+<span class="w">  </span><span class="n">Episode</span><span class="w"> </span><span class="o">||--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Scene</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">has</span><span class="w"></span>
+<span class="w">  </span><span class="n">Scene</span><span class="w">   </span><span class="o">||--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Shot</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">has</span><span class="w"></span>
+<span class="w">  </span><span class="n">Shot</span><span class="w">    </span><span class="p">}</span><span class="n">o</span><span class="o">--||</span><span class="w"> </span><span class="n">Character</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;casts (n)&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Shot</span><span class="w">    </span><span class="p">}</span><span class="n">o</span><span class="o">--||</span><span class="w"> </span><span class="n">StylePreset</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uses (1)&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Shot</span><span class="w">    </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Asset</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;produces&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Shot</span><span class="w">    </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Prompt</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;drives&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Asset</span><span class="w">   </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Asset</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;variant_of&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">CompareSession</span><span class="w"> </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Asset</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;compares&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Reference</span><span class="w"> </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Shot</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspires&quot;</span><span class="w"></span>
+<span class="w">  </span><span class="n">Character</span><span class="w"> </span><span class="p">}</span><span class="n">o</span><span class="o">--</span><span class="n">o</span><span class="p">{</span><span class="w"> </span><span class="n">Asset</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;voice_ref / face_ref&quot;</span><span class="w"></span>
+</code></pre></div>
+
+<hr />
+<h2 id="2-data-model-typescript">2. Data Model (TypeScript 시그니처)</h2>
+<blockquote>
+<p>모든 객체는 <code>id</code>, <code>createdAt</code>, <code>updatedAt</code>, <code>projectId</code> 공통 필드.
+저장: IndexedDB (Dexie.js) — localStorage에서 점진 마이그레이션.</p>
+</blockquote>
+<h3 id="21">2.1 공통 타입</h3>
+<div class="codehilite"><pre><span></span><code><span class="kr">type</span> <span class="nx">ID</span> <span class="o">=</span> <span class="kt">string</span><span class="p">;</span>            <span class="c1">// ULID 권장 (시간 정렬)</span>
+<span class="kr">type</span> <span class="nx">ISODate</span> <span class="o">=</span> <span class="kt">string</span><span class="p">;</span>       <span class="c1">// 2026-04-24</span>
+<span class="kr">type</span> <span class="nx">Timestamp</span> <span class="o">=</span> <span class="kt">number</span><span class="p">;</span>     <span class="c1">// Date.now()</span>
+<span class="kr">type</span> <span class="nx">Uri</span> <span class="o">=</span> <span class="kt">string</span><span class="p">;</span>           <span class="c1">// blob: | https: | file:</span>
+
+<span class="kd">interface</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">id</span>: <span class="kt">ID</span><span class="p">;</span>
+  <span class="nx">projectId</span>: <span class="kt">ID</span><span class="p">;</span>
+  <span class="nx">createdAt</span>: <span class="kt">Timestamp</span><span class="p">;</span>
+  <span class="nx">updatedAt</span>: <span class="kt">Timestamp</span><span class="p">;</span>
+  <span class="nx">archived?</span>: <span class="kt">boolean</span><span class="p">;</span>
+  <span class="nx">tags?</span>: <span class="kt">string</span><span class="p">[];</span>
+<span class="p">}</span>
+
+<span class="kr">type</span> <span class="nx">Status</span> <span class="o">=</span> <span class="s1">&#39;draft&#39;</span> <span class="o">|</span> <span class="s1">&#39;generated&#39;</span> <span class="o">|</span> <span class="s1">&#39;approved&#39;</span> <span class="o">|</span> <span class="s1">&#39;final&#39;</span> <span class="o">|</span> <span class="s1">&#39;failed&#39;</span> <span class="o">|</span> <span class="s1">&#39;archived&#39;</span><span class="p">;</span>
+</code></pre></div>
+
+<h3 id="22-module-1-storyboard-pipeline">2.2 Module 1 — Storyboard Pipeline</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">Project</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">title</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">logline</span>: <span class="kt">string</span><span class="p">;</span>          <span class="c1">// 1줄 컨셉</span>
+  <span class="nx">genre</span>: <span class="kt">string</span><span class="p">[];</span>
+  <span class="nx">format</span><span class="o">:</span> <span class="s1">&#39;short&#39;</span> <span class="o">|</span> <span class="s1">&#39;series&#39;</span> <span class="o">|</span> <span class="s1">&#39;film&#39;</span> <span class="o">|</span> <span class="s1">&#39;mv&#39;</span> <span class="o">|</span> <span class="s1">&#39;ad&#39;</span><span class="p">;</span>
+  <span class="nx">targetRuntime?</span>: <span class="kt">number</span><span class="p">;</span>   <span class="c1">// 분</span>
+  <span class="nx">deadline?</span>: <span class="kt">ISODate</span><span class="p">;</span>       <span class="c1">// 기존 goal과 1:1 매핑</span>
+  <span class="nx">color</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">coverAssetId?</span>: <span class="kt">ID</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">Episode</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">parentId</span>: <span class="kt">ID</span><span class="p">;</span>             <span class="c1">// Project</span>
+  <span class="kt">number</span><span class="o">:</span> <span class="kt">number</span><span class="p">;</span>           <span class="c1">// E01</span>
+  <span class="nx">title</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">synopsis</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">targetDuration</span>: <span class="kt">number</span><span class="p">;</span>   <span class="c1">// 초</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">Scene</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">parentId</span>: <span class="kt">ID</span><span class="p">;</span>             <span class="c1">// Episode</span>
+  <span class="kt">number</span><span class="o">:</span> <span class="kt">number</span><span class="p">;</span>           <span class="c1">// S03</span>
+  <span class="nx">heading</span>: <span class="kt">string</span><span class="p">;</span>          <span class="c1">// INT. 우주선 — 새벽</span>
+  <span class="nx">beat</span>: <span class="kt">string</span><span class="p">;</span>             <span class="c1">// 1줄 의도 (&quot;주인공 각성&quot;)</span>
+  <span class="nx">characterIds</span>: <span class="kt">ID</span><span class="p">[];</span>
+  <span class="nx">styleId?</span>: <span class="kt">ID</span><span class="p">;</span>             <span class="c1">// StylePreset</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">Shot</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">parentId</span>: <span class="kt">ID</span><span class="p">;</span>             <span class="c1">// Scene</span>
+  <span class="kt">number</span><span class="o">:</span> <span class="kt">number</span><span class="p">;</span>           <span class="c1">// 03</span>
+  <span class="kr">type</span><span class="o">:</span> <span class="s1">&#39;wide&#39;</span> <span class="o">|</span> <span class="s1">&#39;medium&#39;</span> <span class="o">|</span> <span class="s1">&#39;cu&#39;</span> <span class="o">|</span> <span class="s1">&#39;ecu&#39;</span> <span class="o">|</span> <span class="s1">&#39;pov&#39;</span> <span class="o">|</span> <span class="s1">&#39;insert&#39;</span> <span class="o">|</span> <span class="s1">&#39;establish&#39;</span><span class="p">;</span>
+  <span class="nx">cameraMove</span><span class="o">?:</span> <span class="s1">&#39;static&#39;</span> <span class="o">|</span> <span class="s1">&#39;pan&#39;</span> <span class="o">|</span> <span class="s1">&#39;tilt&#39;</span> <span class="o">|</span> <span class="s1">&#39;dolly&#39;</span> <span class="o">|</span> <span class="s1">&#39;crane&#39;</span> <span class="o">|</span> <span class="s1">&#39;handheld&#39;</span> <span class="o">|</span> <span class="s1">&#39;drone&#39;</span><span class="p">;</span>
+  <span class="nx">durationSec</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">description</span>: <span class="kt">string</span><span class="p">;</span>      <span class="c1">// 1줄 액션 (&quot;그녀가 천천히 눈을 뜬다&quot;)</span>
+  <span class="nx">dialogue?</span>: <span class="kt">string</span><span class="p">;</span>        <span class="c1">// 대사 (있으면)</span>
+  <span class="nx">characterIds</span>: <span class="kt">ID</span><span class="p">[];</span>
+  <span class="nx">styleId?</span>: <span class="kt">ID</span><span class="p">;</span>             <span class="c1">// 씬 스타일을 오버라이드</span>
+  <span class="nx">promptId?</span>: <span class="kt">ID</span><span class="p">;</span>            <span class="c1">// 가장 최근 채택 프롬프트</span>
+  <span class="nx">approvedAssetId?</span>: <span class="kt">ID</span><span class="p">;</span>     <span class="c1">// 최종 채택 결과물</span>
+  <span class="nx">candidateAssetIds</span>: <span class="kt">ID</span><span class="p">[];</span>  <span class="c1">// 후보 결과물 (Compare Mode 결과)</span>
+  <span class="nx">notes</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="23-module-2-character-style-bible">2.3 Module 2 — Character &amp; Style Bible</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">Character</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">role</span><span class="o">:</span> <span class="s1">&#39;protagonist&#39;</span> <span class="o">|</span> <span class="s1">&#39;antagonist&#39;</span> <span class="o">|</span> <span class="s1">&#39;supporting&#39;</span> <span class="o">|</span> <span class="s1">&#39;extra&#39;</span><span class="p">;</span>
+  <span class="nx">age?</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">gender?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">appearance</span>: <span class="kt">string</span><span class="p">;</span>            <span class="c1">// 외형 묘사 (프롬프트 자동 주입용)</span>
+  <span class="nx">personality</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">faceRefAssetIds</span>: <span class="kt">ID</span><span class="p">[];</span>         <span class="c1">// 참조 이미지 1~N</span>
+  <span class="nx">voiceId?</span>: <span class="kt">string</span><span class="p">;</span>              <span class="c1">// ElevenLabs voice id</span>
+  <span class="nx">voiceSampleAssetId?</span>: <span class="kt">ID</span><span class="p">;</span>
+  <span class="nx">ttsSettings</span><span class="o">?:</span> <span class="p">{</span>
+    <span class="nx">stability</span>: <span class="kt">number</span><span class="p">;</span> <span class="nx">similarity</span>: <span class="kt">number</span><span class="p">;</span> <span class="nx">style</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="p">};</span>
+  <span class="nx">promptFragment</span>: <span class="kt">string</span><span class="p">;</span>        <span class="c1">// 생성 시 자동 prepend되는 텍스트</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">StylePreset</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">name</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">scope</span><span class="o">:</span> <span class="s1">&#39;project&#39;</span> <span class="o">|</span> <span class="s1">&#39;scene&#39;</span> <span class="o">|</span> <span class="s1">&#39;shot&#39;</span><span class="p">;</span>
+  <span class="c1">// Visual</span>
+  <span class="nx">palette</span>: <span class="kt">string</span><span class="p">[];</span>             <span class="c1">// hex 배열</span>
+  <span class="nx">lightingMood</span><span class="o">:</span> <span class="s1">&#39;natural&#39;</span> <span class="o">|</span> <span class="s1">&#39;dramatic&#39;</span> <span class="o">|</span> <span class="s1">&#39;soft&#39;</span> <span class="o">|</span> <span class="s1">&#39;noir&#39;</span> <span class="o">|</span> <span class="s1">&#39;high-key&#39;</span> <span class="o">|</span> <span class="s1">&#39;low-key&#39;</span><span class="p">;</span>
+  <span class="nx">cameraStyle</span>: <span class="kt">string</span><span class="p">;</span>           <span class="c1">// &quot;anamorphic 2.39:1, 35mm film grain&quot;</span>
+  <span class="nx">colorGradeRef?</span>: <span class="kt">ID</span><span class="p">;</span>            <span class="c1">// Asset</span>
+  <span class="c1">// Audio</span>
+  <span class="nx">scoreMood?</span>: <span class="kt">string</span><span class="p">;</span>            <span class="c1">// &quot;ambient drone with cello&quot;</span>
+  <span class="nx">sfxDensity</span><span class="o">?:</span> <span class="s1">&#39;sparse&#39;</span> <span class="o">|</span> <span class="s1">&#39;normal&#39;</span> <span class="o">|</span> <span class="s1">&#39;dense&#39;</span><span class="p">;</span>
+  <span class="c1">// 자동 주입</span>
+  <span class="nx">promptFragment</span>: <span class="kt">string</span><span class="p">;</span>        <span class="c1">// &quot;shot on Arri Alexa, golden hour, ...&quot;</span>
+  <span class="nx">negativePromptFragment?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="c1">// Reference</span>
+  <span class="nx">referenceAssetIds</span>: <span class="kt">ID</span><span class="p">[];</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="24-module-3-compare-mode">2.4 Module 3 — Compare Mode</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">CompareSession</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">shotId?</span>: <span class="kt">ID</span><span class="p">;</span>                   <span class="c1">// Shot에 묶이면 결과 채택 가능</span>
+  <span class="nx">promptId</span>: <span class="kt">ID</span><span class="p">;</span>                  <span class="c1">// 같은 prompt</span>
+  <span class="nx">models</span>: <span class="kt">string</span><span class="p">[];</span>              <span class="c1">// [&quot;veo-4&quot;, &quot;kling-3.0-master&quot;, &quot;seedance-2-pro&quot;]</span>
+  <span class="nx">candidates</span>: <span class="kt">CompareCandidate</span><span class="p">[];</span>
+  <span class="nx">winnerAssetId?</span>: <span class="kt">ID</span><span class="p">;</span>            <span class="c1">// 채택</span>
+  <span class="nx">status</span><span class="o">:</span> <span class="s1">&#39;queued&#39;</span> <span class="o">|</span> <span class="s1">&#39;running&#39;</span> <span class="o">|</span> <span class="s1">&#39;done&#39;</span> <span class="o">|</span> <span class="s1">&#39;partial&#39;</span> <span class="o">|</span> <span class="s1">&#39;failed&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">CompareCandidate</span> <span class="p">{</span>
+  <span class="nx">model</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">assetId?</span>: <span class="kt">ID</span><span class="p">;</span>                  <span class="c1">// 생성 완료 시 부여</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+  <span class="nx">metrics</span><span class="o">:</span> <span class="p">{</span>
+    <span class="nx">genTimeMs?</span>: <span class="kt">number</span><span class="p">;</span>
+    <span class="nx">cost?</span>: <span class="kt">number</span><span class="p">;</span>               <span class="c1">// 추정 USD</span>
+    <span class="nx">userScore?</span>: <span class="kt">number</span><span class="p">;</span>          <span class="c1">// 1~5</span>
+  <span class="p">};</span>
+  <span class="nx">errorMessage?</span>: <span class="kt">string</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="25-module-4-cinema-library">2.5 Module 4 — Cinema Library</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">Reference</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">title</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">source</span><span class="o">:</span> <span class="s1">&#39;youtube&#39;</span> <span class="o">|</span> <span class="s1">&#39;vimeo&#39;</span> <span class="o">|</span> <span class="s1">&#39;upload&#39;</span> <span class="o">|</span> <span class="s1">&#39;url&#39;</span><span class="p">;</span>
+  <span class="nx">url</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">thumbnailUrl?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">director?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">year?</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">genre?</span>: <span class="kt">string</span><span class="p">[];</span>
+  <span class="nx">notes</span>: <span class="kt">string</span><span class="p">;</span>                 <span class="c1">// 왜 인상 깊었는지</span>
+  <span class="nx">promptDerived?</span>: <span class="kt">string</span><span class="p">;</span>        <span class="c1">// GPT가 추출한 프롬프트</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">RefClip</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">parentId</span>: <span class="kt">ID</span><span class="p">;</span>                  <span class="c1">// Reference</span>
+  <span class="nx">startSec</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">endSec</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">label</span>: <span class="kt">string</span><span class="p">;</span>                 <span class="c1">// &quot;오프닝 카메라 워크&quot;</span>
+  <span class="nx">category</span><span class="o">:</span> <span class="s1">&#39;composition&#39;</span> <span class="o">|</span> <span class="s1">&#39;lighting&#39;</span> <span class="o">|</span> <span class="s1">&#39;color&#39;</span> <span class="o">|</span> <span class="s1">&#39;camera&#39;</span> <span class="o">|</span> <span class="s1">&#39;pace&#39;</span> <span class="o">|</span> <span class="s1">&#39;sound&#39;</span> <span class="o">|</span> <span class="s1">&#39;transition&#39;</span><span class="p">;</span>
+  <span class="nx">derivedStyleId?</span>: <span class="kt">ID</span><span class="p">;</span>           <span class="c1">// 이 클립을 StylePreset으로 변환했다면</span>
+  <span class="nx">attachedShotIds</span>: <span class="kt">ID</span><span class="p">[];</span>         <span class="c1">// 어떤 샷에 영감을 줬는가</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3 id="26-asset-prompt">2.6 확장: Asset / Prompt (기존 보강)</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">Asset</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="kr">type</span><span class="o">:</span> <span class="s1">&#39;voice&#39;</span> <span class="o">|</span> <span class="s1">&#39;music&#39;</span> <span class="o">|</span> <span class="s1">&#39;tts&#39;</span> <span class="o">|</span> <span class="s1">&#39;sfx&#39;</span> <span class="o">|</span> <span class="s1">&#39;video&#39;</span> <span class="o">|</span> <span class="s1">&#39;image&#39;</span> <span class="o">|</span> <span class="s1">&#39;frame&#39;</span><span class="p">;</span>
+  <span class="nx">title</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">url?</span>: <span class="kt">Uri</span><span class="p">;</span>
+  <span class="nx">blobKey?</span>: <span class="kt">string</span><span class="p">;</span>              <span class="c1">// IndexedDB blob ref</span>
+  <span class="nx">duration?</span>: <span class="kt">number</span><span class="p">;</span>
+  <span class="nx">resolution</span><span class="o">?:</span> <span class="p">{</span> <span class="nx">w</span>: <span class="kt">number</span><span class="p">;</span> <span class="nx">h</span>: <span class="kt">number</span> <span class="p">};</span>
+  <span class="nx">model?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">promptId?</span>: <span class="kt">ID</span><span class="p">;</span>
+  <span class="nx">shotId?</span>: <span class="kt">ID</span><span class="p">;</span>                   <span class="c1">// ★ 새 필드: 어떤 샷에 속하는가</span>
+  <span class="nx">parentAssetId?</span>: <span class="kt">ID</span><span class="p">;</span>            <span class="c1">// variant_of</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">interface</span> <span class="nx">Prompt</span> <span class="k">extends</span> <span class="nx">Base</span> <span class="p">{</span>
+  <span class="nx">promptType</span><span class="o">:</span> <span class="s1">&#39;tts&#39;</span> <span class="o">|</span> <span class="s1">&#39;music&#39;</span> <span class="o">|</span> <span class="s1">&#39;sfx&#39;</span> <span class="o">|</span> <span class="s1">&#39;video&#39;</span> <span class="o">|</span> <span class="s1">&#39;image&#39;</span> <span class="o">|</span> <span class="s1">&#39;world&#39;</span> <span class="o">|</span> <span class="s1">&#39;story&#39;</span><span class="p">;</span>
+  <span class="nx">text</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">negativeText?</span>: <span class="kt">string</span><span class="p">;</span>
+  <span class="nx">shotId?</span>: <span class="kt">ID</span><span class="p">;</span>                   <span class="c1">// ★ 새 필드</span>
+  <span class="nx">characterIds?</span>: <span class="kt">ID</span><span class="p">[];</span>           <span class="c1">// ★ 자동 prepend된 캐릭터</span>
+  <span class="nx">styleId?</span>: <span class="kt">ID</span><span class="p">;</span>                  <span class="c1">// ★ 자동 prepend된 스타일</span>
+  <span class="nx">resolvedText</span>: <span class="kt">string</span><span class="p">;</span>          <span class="c1">// ★ 캐릭터·스타일 fragment 합쳐진 최종 텍스트</span>
+  <span class="nx">status</span>: <span class="kt">Status</span><span class="p">;</span>
+  <span class="nx">parentPromptId?</span>: <span class="kt">ID</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<hr />
+<h2 id="3-module-ux">3. Module 별 UX 플로우</h2>
+<h3 id="31-pipeline">3.1 Pipeline (스토리보드)</h3>
+<p><strong>진입</strong>: 사이드바 Pipeline → 좌측 트리, 우측 디테일</p>
+<p><strong>핵심 인터랙션</strong>
+1. 트리에서 Episode 선택 → 우측에 Scene 카드 그리드
+2. Scene 클릭 → Shot 카드 그리드 (썸네일 + 캐릭터 chip + 상태)
+3. Shot 카드 클릭 → 디테일 패널 (프롬프트 / Compare 결과 / 채택 / 노트)
+4. Shot에서 [Generate] → Compare Session 자동 생성 (기본 3개 모델)</p>
+<p><strong>자동화</strong>
+- Personas의 "스토리텔링" 결과물을 자동 파싱해 Episode/Scene 초안 생성
+- 각 Scene heading에서 카메라 키워드 추출 → Shot type 추천</p>
+<h3 id="32-character-bible">3.2 Character Bible</h3>
+<p><strong>진입</strong>: REFERENCE → Character Bible</p>
+<p><strong>핵심 인터랙션</strong>
+1. + Character → 모달 (이름 / 역할 / 외형 / 보이스 ID)
+2. 얼굴 ref 이미지 드래그 업로드
+3. 보이스 샘플 녹음 또는 ElevenLabs voice 검색 → 선택
+4. [Test] → 입력 텍스트로 즉시 보이스 미리듣기
+5. 카드의 ⋮ → "이 캐릭터가 등장하는 샷 보기" → Pipeline 필터링</p>
+<p><strong>자동 주입</strong>
+- Shot의 characterIds에 Character가 있으면, 생성 시 <code>character.promptFragment</code>를 prompt 앞에 자동 prepend → <code>resolvedText</code> 생성</p>
+<h3 id="33-style-bible">3.3 Style Bible</h3>
+<p><strong>진입</strong>: REFERENCE → Style Bible</p>
+<p><strong>핵심 인터랙션</strong>
+1. + Style → 팔레트 픽커 (eyedropper / hex 입력 / 이미지에서 추출)
+2. 카메라/라이팅 드롭다운 → promptFragment 자동 생성
+3. [Apply to Project / Episode / Scene] 버튼 → 일괄 적용</p>
+<p><strong>자동화</strong>
+- 참조 이미지 1장 업로드 → GPT-4 Vision으로 팔레트·무드·카메라 자동 추출</p>
+<h3 id="34-compare-mode">3.4 Compare Mode</h3>
+<p><strong>진입</strong>: CREATE → Compare Mode (또는 Shot 디테일에서 [Generate] 클릭)</p>
+<p><strong>UI</strong>: 가로 3분할 패널, 각 패널 = 1 모델</p>
+<p><strong>플로우</strong>
+1. 프롬프트 입력 → 모델 N개 체크 (기본 3)
+2. [Run] → 병렬 polling → 각 패널에 결과 표시
+3. 비교 후 [Pick winner] → Shot의 approvedAssetId 업데이트
+4. [Save losers as candidates] → 후보로 보관 (Variants 트리)</p>
+<p><strong>메트릭 표시</strong>
+- 생성 시간 / 추정 비용 / 사용자 점수 슬라이더 (1~5)</p>
+<h3 id="35-cinema-library">3.5 Cinema Library</h3>
+<p><strong>진입</strong>: REFERENCE → Cinema Library</p>
+<p><strong>핵심 인터랙션</strong>
+1. + Reference → URL 붙여넣기 (YouTube/Vimeo) 또는 업로드
+2. 임베드된 플레이어에서 타임코드 마킹 → RefClip 생성
+3. 각 RefClip에 카테고리 태그 (composition / lighting / ...)
+4. [Convert to Style] → GPT가 클립 분석 → StylePreset 초안 생성
+5. RefClip을 Shot에 드래그 → "이 샷의 영감" 연결</p>
+<hr />
+<h2 id="4-cross-cutting">4. Cross-cutting 결정사항</h2>
+<h3 id="41-indexeddb">4.1 저장 전략 — IndexedDB 마이그레이션</h3>
+<table>
+<thead>
+<tr>
+<th>단계</th>
+<th>데이터</th>
+<th>위치</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2 (현재)</td>
+<td>모든 데이터</td>
+<td>localStorage (5MB 한계 임박)</td>
+</tr>
+<tr>
+<td>v3.0</td>
+<td>메타데이터</td>
+<td>localStorage (조회 빠름)</td>
+</tr>
+<tr>
+<td>v3.0</td>
+<td>Blob (음원·영상)</td>
+<td>IndexedDB (<code>soaviz-blobs</code> 스토어)</td>
+</tr>
+<tr>
+<td>v3.5</td>
+<td>모든 데이터</td>
+<td>IndexedDB (Dexie.js) — schema versioning</td>
+</tr>
+</tbody>
+</table>
+<p><strong>마이그레이션</strong>: 1회용 스크립트 <code>migrateToIDB()</code> 첫 진입 시 자동 실행, 진행률 표시.</p>
+<h3 id="42-prompt-resolution">4.2 자동 주입 (prompt resolution)</h3>
+<div class="codehilite"><pre><span></span><code><span class="kd">function</span> <span class="nx">resolvePrompt</span><span class="p">(</span><span class="nx">p</span>: <span class="kt">Prompt</span><span class="p">,</span> <span class="nx">shot</span>: <span class="kt">Shot</span><span class="p">)</span><span class="o">:</span> <span class="kt">string</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">chars</span> <span class="o">=</span> <span class="nx">shot</span><span class="p">.</span><span class="nx">characterIds</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">getChar</span><span class="p">);</span>
+  <span class="kd">const</span> <span class="nx">style</span> <span class="o">=</span> <span class="nx">getStyle</span><span class="p">(</span><span class="nx">shot</span><span class="p">.</span><span class="nx">styleId</span> <span class="o">??</span> <span class="nx">shot</span><span class="p">.</span><span class="nx">scene</span><span class="p">.</span><span class="nx">styleId</span> <span class="o">??</span> <span class="nx">shot</span><span class="p">.</span><span class="nx">scene</span><span class="p">.</span><span class="nx">episode</span><span class="p">.</span><span class="nx">project</span><span class="p">.</span><span class="nx">defaultStyleId</span><span class="p">);</span>
+  <span class="kd">const</span> <span class="nx">fragments</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="nx">style</span><span class="o">?</span><span class="p">.</span><span class="nx">promptFragment</span><span class="p">,</span>
+    <span class="p">...</span><span class="nx">chars</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">c</span> <span class="p">=&gt;</span> <span class="nx">c</span><span class="p">.</span><span class="nx">promptFragment</span><span class="p">),</span>
+    <span class="nx">p</span><span class="p">.</span><span class="nx">text</span><span class="p">,</span>
+  <span class="p">].</span><span class="nx">filter</span><span class="p">(</span><span class="nb">Boolean</span><span class="p">);</span>
+  <span class="k">return</span> <span class="nx">fragments</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;. &#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>매 생성 직전 호출 → <code>prompt.resolvedText</code> 저장 → 재현성 보장.</p>
+<h3 id="43">4.3 버전 트리</h3>
+<p>모든 변경은 <strong>불변(immutable)</strong>. 수정 = 새 버전 생성 + <code>parentId</code> 링크.
+<code>Versions</code> 페이지에서 트리 시각화 (D3 또는 단순 indented list).</p>
+<h3 id="44">4.4 단축키 (시니어 크리에이터 기대)</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>동작</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>⌘P</code></td>
+<td>빠른 점프 (Episode/Scene/Shot/Character)</td>
+</tr>
+<tr>
+<td><code>⌘G</code></td>
+<td>현재 Shot에 Generate (Compare 시작)</td>
+</tr>
+<tr>
+<td><code>⌘D</code></td>
+<td>선택 Shot 복제</td>
+</tr>
+<tr>
+<td><code>⌘\</code></td>
+<td>사이드바 토글</td>
+</tr>
+<tr>
+<td><code>J / K</code></td>
+<td>트리 위/아래</td>
+</tr>
+<tr>
+<td><code>Space</code></td>
+<td>미니플레이어 재생/정지</td>
+</tr>
+</tbody>
+</table>
+<h3 id="45">4.5 메모리·시그니처 통합</h3>
+<p>기존 Today 페이지의 5개 시그니처(Continue / Next 3 / Health / Stuck / Quick Resume)는 <strong>Pipeline 데이터를 인지</strong>하도록 확장:
+- Stuck Points → "Scene S04에 Shot이 없음" 검출
+- Next 3 Tasks → "오늘 할 Shot 3개" 추천
+- Production Health → 채택률 / 페이스 / 캐릭터 일관성 점수 추가</p>
+<hr />
+<h2 id="5-8">5. 구현 로드맵 (8주)</h2>
+<h3 id="m0-foundation-week-1">M0 — Foundation (Week 1)</h3>
+<ul>
+<li>[ ] IndexedDB 도입 (Dexie) + blob 마이그레이션 스크립트</li>
+<li>[ ] 공통 Base 타입 + ID 생성기 (ULID)</li>
+<li>[ ] resolvePrompt() 골격</li>
+<li><strong>Acceptance</strong>: 기존 자산 그대로 보임, 새 파이프라인은 IDB</li>
+</ul>
+<h3 id="m1-pipeline-mvp-week-23">M1 — Pipeline MVP (Week 2~3)</h3>
+<ul>
+<li>[ ] Project / Episode / Scene / Shot 스키마 + CRUD</li>
+<li>[ ] 좌 트리 + 우 디테일 레이아웃</li>
+<li>[ ] Personas 결과 → Episode 자동 분해 파서</li>
+<li>[ ] Shot 카드 그리드 + 드래그로 순서 변경</li>
+<li><strong>Acceptance</strong>: 시리즈 1개를 트리에서 끝까지 만들 수 있음</li>
+</ul>
+<h3 id="m2-character-style-bible-week-4">M2 — Character &amp; Style Bible (Week 4)</h3>
+<ul>
+<li>[ ] Character / StylePreset CRUD</li>
+<li>[ ] 팔레트 픽커 + 이미지 → 팔레트 추출</li>
+<li>[ ] resolvePrompt() 자동 주입 활성화</li>
+<li>[ ] Shot 디테일에 캐릭터·스타일 chip 표시</li>
+<li><strong>Acceptance</strong>: Shot에 Character 추가 → 다음 generate 프롬프트에 fragment 반영</li>
+</ul>
+<h3 id="m3-compare-mode-week-56">M3 — Compare Mode (Week 5~6)</h3>
+<ul>
+<li>[ ] CompareSession 스키마 + 병렬 polling</li>
+<li>[ ] 3분할 UI + 메트릭 표시</li>
+<li>[ ] Pick winner / Save losers</li>
+<li>[ ] Shot 디테일과 양방향 연동</li>
+<li><strong>Acceptance</strong>: 한 프롬프트로 3개 모델 동시 결과 → 채택까지</li>
+</ul>
+<h3 id="m4-cinema-library-week-7">M4 — Cinema Library (Week 7)</h3>
+<ul>
+<li>[ ] Reference / RefClip CRUD</li>
+<li>[ ] YouTube/Vimeo 임베드 + 타임코드 마킹 UI</li>
+<li>[ ] GPT-4o Vision: 클립 → StylePreset 변환</li>
+<li>[ ] Shot에 RefClip 드래그 연결</li>
+<li><strong>Acceptance</strong>: 영화 1편을 5개 클립으로 마킹 + 1개 클립 → Style 변환</li>
+</ul>
+<h3 id="m5-performance-pass-week-8">M5 — Performance Pass (Week 8)</h3>
+<ul>
+<li>[ ] HTML 단일파일 → 모듈 분할 (Vite)</li>
+<li>[ ] 라우터 분리 + 레이지 로딩</li>
+<li>[ ] Lighthouse 90+ (LCP / CLS / TBT)</li>
+<li>[ ] 1000개 Shot 트리 60fps 보장 (가상 스크롤)</li>
+<li><strong>Acceptance</strong>: 빌드 결과 &lt; 500KB initial chunk</li>
+</ul>
+<hr />
+<h2 id="6">6. 리스크 레지스터</h2>
+<table>
+<thead>
+<tr>
+<th>리스크</th>
+<th>가능성</th>
+<th>영향</th>
+<th>대응</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compare Mode가 비용 폭증 (3모델 × N샷)</td>
+<td>高</td>
+<td>高</td>
+<td>세션당 추정 USD 사전 표시 + 일일 한도 설정</td>
+</tr>
+<tr>
+<td>IndexedDB 브라우저 호환성 (Safari quota)</td>
+<td>中</td>
+<td>中</td>
+<td>50MB 임계 도달 시 사용자에 알림 + export 권장</td>
+</tr>
+<tr>
+<td>단일 HTML → 모듈 분할 시 라우팅 깨짐</td>
+<td>高</td>
+<td>中</td>
+<td>M5 시작 전 e2e 회귀 테스트 100건 작성</td>
+</tr>
+<tr>
+<td>캐릭터 일관성 (얼굴) — 모델별 격차 큼</td>
+<td>高</td>
+<td>高</td>
+<td>v3에서는 "참조"만, "강제"는 v4 (LoRA 도입)</td>
+</tr>
+<tr>
+<td>협업 부재로 팀 플레이어가 못 씀</td>
+<td>中</td>
+<td>中</td>
+<td>v3에서는 export/import (.soavizproj) 우선 지원</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-open-questions-resolved">7. Open Questions — Resolved</h2>
+<p>각 항목에 시니어 추천안과 근거. 결정의 자세한 트레이드오프는 §9 Decision Log 참고.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>질문</th>
+<th><strong>결정</strong></th>
+<th>근거 1줄</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>편집 타임라인 v3 범위</td>
+<td><strong>Pipeline + 경량 Preview Timeline</strong></td>
+<td>NLE는 못 이김, 리듬 확인은 필수</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>API 키 BYOK vs 프록시</td>
+<td><strong>BYOK 유지</strong> + Encrypted Local Vault</td>
+<td>시니어는 본인 키, 백엔드 부담 X</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>Export 포맷</td>
+<td><strong><code>.soavizproj</code> + DaVinci XML + EDL</strong></td>
+<td>Premiere XML 호환성 약함, DaVinci가 시니어 표준</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>AI Vision 제공자</td>
+<td><strong>Claude(스타일·시각) + GPT-4o(구조화) 듀얼</strong></td>
+<td>강점이 다름, vendor lock 회피</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>버전 트리 깊이</td>
+<td><strong>소프트 100 + Cold Tier 압축</strong></td>
+<td>"유지되는 것처럼 보임" UX, IDB 폭발 방지</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8">8. 다음 액션</h2>
+<p>✅ 본 설계서 검토
+✅ Open Questions 5개 결정 (§9)
+⬜ M0 (Foundation) 착수 — IndexedDB + Dexie + ULID</p>
+<hr />
+<h2 id="9-decision-log">9. Decision Log</h2>
+<blockquote>
+<p>각 결정은 <strong>추천안 / 이유 / 트레이드오프 / 재검토 트리거</strong>로 기록.
+추후 빌드하다 다른 선택을 하게 되면 이 로그를 업데이트하고 변경 사유를 남긴다.</p>
+</blockquote>
+<h3 id="d1-v3">D1 — 편집 타임라인 v3 범위</h3>
+<p><strong>결정</strong>: Pipeline + <strong>경량 Preview Timeline</strong>. NLE 풀 편집은 v4로 위임.</p>
+<p><strong>Preview Timeline의 정의</strong>
+- Shot.approvedAssetId를 시간순으로 정렬한 단일 트랙
+- 재생/일시정지, 클립 트림(시작/끝 컷만), 클립 순서 드래그
+- 배경음 1트랙 (글로벌 BGM) + 나레이션 1트랙
+- 출력: 시퀀스 미리듣기 (브라우저에서 재생만, 렌더 X)</p>
+<p><strong>근거</strong>
+- 스토리보드만 보면 "리듬"이 안 보임. 시니어 크리에이터는 5초 안에 페이스를 판단함.
+- 렌더링/효과는 Premiere/DaVinci가 압도적. 우리가 그걸 따라잡을 수 없음.
+- 60% 가치 / 20% 비용 — 가장 좋은 ROI.</p>
+<p><strong>트레이드오프</strong>
+- ❌ 트랜지션·이펙트·자막 없음 (NLE에서 함)
+- ❌ 4K 실시간 미리보기 못 함 (proxy 1080p로 한정)
+- ✅ 채택본을 그대로 시간순으로 재생 → 페이스 검증 가능</p>
+<p><strong>재검토 트리거</strong>
+- 사용자 50%+가 "Premiere로 export 안 하고 여기서 끝내고 싶다" 피드백
+- WebCodecs API 안정화로 브라우저 렌더가 가능해질 때 (예상: 2026 Q4)</p>
+<hr />
+<h3 id="d2-api-byok-vs">D2 — API 키 전략 (BYOK vs 프록시)</h3>
+<p><strong>결정</strong>: <strong>BYOK 유지 + Encrypted Local Vault</strong>. 프록시는 v4에서 Pro Tier로.</p>
+<p><strong>Encrypted Local Vault 정의</strong>
+- 키는 IndexedDB의 별도 스토어 <code>secrets</code>에 저장
+- AES-GCM 암호화, 마스터 패스프레이즈 1회 입력 (세션 동안 메모리 보관)
+- export 시 키는 절대 포함되지 않음 (<code>.soavizproj</code>에서 제외)
+- 키 분실 시 복구 불가 → 명시적 경고 + 백업 권장 UI</p>
+<p><strong>근거</strong>
+- 상위 1% 크리에이터는 이미 ElevenLabs/OpenAI 본인 키 보유 (Pro/Studio plan)
+- 프록시 운영 = 백엔드 인프라 + 빌링 + 사기 방지 + 한도 관리 → 1인 개발 범위 초과
+- 프라이버시: 본인 키는 본인 데이터로 학습되지 않는다는 명확한 보장
+- 실패 모드가 명확함: 키 잘못 입력 → 본인 책임</p>
+<p><strong>트레이드오프</strong>
+- ❌ 신규 사용자 진입 장벽 (3개 서비스에 가입해야 함)
+- ❌ 무료 체험 제공 어려움
+- ✅ 마진 0% 운영 가능 (수익 모델 부담 X)
+- ✅ 엔터프라이즈 컴플라이언스 자연 충족</p>
+<p><strong>재검토 트리거</strong>
+- MAU 1000 돌파 시 — 프록시 도입으로 신규 진입 낮추기 검토
+- 어느 한 서비스가 BYOK 정책 변경 시 (예: Replicate B2B 전환)</p>
+<hr />
+<h3 id="d3-export">D3 — Export 포맷</h3>
+<p><strong>결정</strong>: 3종 동시 지원
+1. <strong><code>.soavizproj</code></strong> (zip) — 백업/이주 (모든 메타 + blob refs)
+2. <strong>DaVinci Resolve XML</strong> — 편집 인계 표준
+3. <strong>EDL</strong> (CMX 3600) — 최저 공통분모, 보험</p>
+<p><strong>왜 Premiere XML을 뺐는가</strong>
+- Premiere의 Final Cut XML import는 마커·트랜지션 호환성 주기적 깨짐
+- 2024년 이후 시니어 영화/광고 제작 표준은 DaVinci로 빠르게 이동
+- DaVinci Resolve가 무료 + 컬러그레이딩 1티어 → 우리 사용자층과 정합</p>
+<p><strong><code>.soavizproj</code> 구조</strong></p>
+<div class="codehilite"><pre><span></span><code>project.soavizproj (zip)
+├── manifest.json          ← 버전, 생성일, 체크섬
+├── data/
+│   ├── project.json       ← Project + Episodes + Scenes + Shots
+│   ├── characters.json
+│   ├── styles.json
+│   ├── prompts.json
+│   ├── compares.json
+│   └── refs.json
+└── blobs/
+    ├── {ulid}.mp4         ← 채택본만 기본, 옵션으로 전체
+    ├── {ulid}.mp3
+    └── ...
+</code></pre></div>
+
+<p><strong>근거</strong>
+- <code>.soavizproj</code>: 기기 간 이주, 협업자에게 통째로 전달
+- DaVinci XML: 타임라인 + 마커 + 클립 ref 보존
+- EDL: 어떤 NLE도 EDL은 읽음 (보험)</p>
+<p><strong>트레이드오프</strong>
+- ❌ Frame.io 직접 연동 없음 (v4)
+- ❌ 자막(SRT) export는 별도 (Phase 1엔 X)
+- ✅ DaVinci 직거래로 시니어 워크플로우 그대로 인계</p>
+<p><strong>재검토 트리거</strong>
+- DaVinci import 깨짐 사례 보고 5건+ → Premiere XML 추가 검토
+- Frame.io 사용자 비율 높음 시 → REST API 연동</p>
+<hr />
+<h3 id="d4-ai-vision">D4 — AI Vision 제공자 전략</h3>
+<p><strong>결정</strong>: <strong>듀얼 제공자</strong>. 기본값은 작업별로 분리, 사용자가 Settings에서 오버라이드 가능.</p>
+<p><strong>작업별 기본값 매트릭스</strong></p>
+<table>
+<thead>
+<tr>
+<th>작업</th>
+<th>기본</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>클립/이미지 → 스타일 추출 (룩북)</td>
+<td><strong>Claude</strong></td>
+<td>시각적 디테일 묘사·뉘앙스 우월</td>
+</tr>
+<tr>
+<td>클립 → 캐릭터 외형 추출</td>
+<td><strong>Claude</strong></td>
+<td>동일</td>
+</tr>
+<tr>
+<td>스토리 텍스트 → Episode/Scene 분해</td>
+<td><strong>GPT-4o</strong></td>
+<td>구조화·JSON 출력 안정성</td>
+</tr>
+<tr>
+<td>이미지 OCR (대본 사진 등)</td>
+<td><strong>GPT-4o</strong></td>
+<td>OCR 정확도 약간 우위</td>
+</tr>
+<tr>
+<td>콘티 스케치 → Shot 메타</td>
+<td><strong>Claude</strong></td>
+<td>의미 추론 우월</td>
+</tr>
+<tr>
+<td>자동 태깅 (장르·무드)</td>
+<td><strong>GPT-4o-mini</strong></td>
+<td>비용 효율</td>
+</tr>
+</tbody>
+</table>
+<p><strong>구현</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kd">interface</span> <span class="nx">VisionRequest</span> <span class="p">{</span>
+  <span class="nx">task</span><span class="o">:</span> <span class="s1">&#39;style&#39;</span> <span class="o">|</span> <span class="s1">&#39;character&#39;</span> <span class="o">|</span> <span class="s1">&#39;structure&#39;</span> <span class="o">|</span> <span class="s1">&#39;ocr&#39;</span> <span class="o">|</span> <span class="s1">&#39;shot&#39;</span> <span class="o">|</span> <span class="s1">&#39;tag&#39;</span><span class="p">;</span>
+  <span class="nx">preferred</span><span class="o">?:</span> <span class="s1">&#39;claude&#39;</span> <span class="o">|</span> <span class="s1">&#39;gpt&#39;</span><span class="p">;</span>   <span class="c1">// user override</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">pickProvider</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span><span class="o">:</span> <span class="s1">&#39;claude&#39;</span> <span class="o">|</span> <span class="s1">&#39;gpt&#39;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">preferred</span><span class="p">)</span> <span class="k">return</span> <span class="nx">req</span><span class="p">.</span><span class="nx">preferred</span><span class="p">;</span>
+  <span class="k">return</span> <span class="nx">TASK_DEFAULTS</span><span class="p">[</span><span class="nx">req</span><span class="p">.</span><span class="nx">task</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong>근거</strong>
+- 단일 제공자 의존 = vendor lock + 강점 미활용
+- 사용자가 "이건 Claude가 잘하더라" 발견할 수 있게 명시적 선택권 제공
+- 비용 관리: 작업별로 다른 모델·가격 매핑 가능</p>
+<p><strong>트레이드오프</strong>
+- ❌ 두 SDK 유지 부담 (작은 비용)
+- ❌ 사용자가 두 키 세팅 필요 (Settings UX 명확화로 완화)
+- ✅ 강점 결합 → 결과 품질 상한선 ↑
+- ✅ 한쪽 장애 시 폴백 가능</p>
+<p><strong>재검토 트리거</strong>
+- 한쪽 모델이 모든 작업에서 다른 쪽을 압도 (벤치마크 객관적 우위 6개월 지속)
+- 신규 메이저 Vision 모델 등장 (예: Gemini 3 Vision)</p>
+<hr />
+<h3 id="d5">D5 — 버전 트리 깊이 제한</h3>
+<p><strong>결정</strong>: <strong>소프트 한도 100 + Cold Tier 자동 압축</strong>.</p>
+<p><strong>작동 방식</strong>
+1. <strong>Hot tier (1~100)</strong>: 모든 데이터 + blob 유지, 즉시 재생
+2. <strong>Cold tier (101+)</strong>: 메타 + 썸네일만 유지, blob 삭제. UI에 "압축됨 · 복원" 표시
+3. <strong>복원</strong>: 사용자가 "복원" 클릭 → 원본 prompt + model + seed로 재생성 (ID 고정으로 가능한 경우만)</p>
+<p><strong>왜 무제한이 아닌가</strong>
+- 1샷 평균 10초 1080p mp4 ≈ 5MB. 100 variants × 5MB = 500MB. 한 프로젝트 50샷이면 25GB.
+- IndexedDB Safari quota: 디바이스 저장공간의 ~1%. 256GB 맥북 = 2.5GB. 즉 1프로젝트로 IDB 터짐.
+- "유지되는 것처럼 보이게 하되, 실제는 cold storage" — Figma·Notion이 동일 패턴.</p>
+<p><strong>왜 50이 아닌 100인가</strong>
+- 시니어 크리에이터는 한 샷에 20~30 variants 만들기도 함 (각도·카메라·라이팅 별)
+- 50은 너무 빡빡함 (체감), 100은 안정 한도
+- 200+은 사용자가 "내가 다 안 본다" 자각</p>
+<p><strong>Cold Tier에서 살리는 것</strong>
+- ULID, prompt text, model, seed (있으면), 썸네일 (1프레임), userScore
+- "복원 가능" 플래그 (모델·seed 정보 기반 재현 가능 여부)</p>
+<p><strong>트레이드오프</strong>
+- ❌ 100 넘으면 즉시 재생 못 함 (재생성 시간 대기)
+- ❌ Replicate 가격 변동 시 복원 불가능 사례 발생
+- ✅ IDB 안정 + UX는 무제한처럼 보임
+- ✅ Export 시 Cold Tier 메타도 포함 → 다른 기기에서 복원 가능</p>
+<p><strong>재검토 트리거</strong>
+- WebCodecs/OPFS로 50GB+ 저장 안정화될 때 → 한도 상향
+- 사용자 80%가 100 미만에서 머무름 → 한도 유지</p>
+<hr />
+<h2 id="10-decision-impact-matrix">10. Decision Impact Matrix</h2>
+<p>각 결정이 5개 모듈 + 마이그레이션에 미치는 영향.</p>
+<table>
+<thead>
+<tr>
+<th>결정</th>
+<th style="text-align: center;">M0</th>
+<th style="text-align: center;">M1 Pipeline</th>
+<th style="text-align: center;">M2 Bible</th>
+<th style="text-align: center;">M3 Compare</th>
+<th style="text-align: center;">M4 Cinema</th>
+<th style="text-align: center;">M5 Perf</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1 Preview Timeline</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">★ 영향 大</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">○</td>
+</tr>
+<tr>
+<td>D2 BYOK Vault</td>
+<td style="text-align: center;">★ 신규 모듈</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>D3 Export 3종</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">★ 메인 출력</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">○</td>
+</tr>
+<tr>
+<td>D4 듀얼 Vision</td>
+<td style="text-align: center;">★ Provider 추상화</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">★ 자동 추출</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">★ 클립→Style</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>D5 Cold Tier</td>
+<td style="text-align: center;">★ IDB 스키마</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">★ 변형 폭발 처리</td>
+<td style="text-align: center;">○</td>
+<td style="text-align: center;">○</td>
+</tr>
+</tbody>
+</table>
+<p><strong>범례</strong>: ★ 핵심 영향 / ○ 부차 영향 / — 무영향</p>
+<p><strong>의미</strong>: M0 (Foundation)에 D2, D4, D5가 모두 영향 → M0 범위가 처음 생각보다 큼. <strong>M0를 1.5주로 재추정</strong>.</p>
+<hr />
+<h2 id="11-m0-foundation">11. M0 — Foundation 상세 (재정의)</h2>
+<p>D2/D4/D5 영향을 반영한 M0 구체 작업.</p>
+<h3 id="m01-indexeddb-dexie-3">M0.1 — IndexedDB + Dexie (3일)</h3>
+<ul>
+<li>[ ] Dexie 설치, 스키마 v1 정의 (Project, Asset, Prompt, Activity, Goal)</li>
+<li>[ ] localStorage → IDB 1회 마이그레이션 (<code>migrateV2toV3()</code>)</li>
+<li>[ ] Cold Tier 표식 필드 (<code>storageTier: 'hot' | 'cold'</code>)</li>
+</ul>
+<h3 id="m02-secrets-vault-2">M0.2 — Secrets Vault (2일)</h3>
+<ul>
+<li>[ ] AES-GCM 암호화 유틸 (Web Crypto API)</li>
+<li>[ ] 마스터 패스프레이즈 prompt UI (1회 + 세션 메모리)</li>
+<li>[ ] 키 저장 → ElevenLabs / OpenAI / Anthropic / Replicate</li>
+<li>[ ] Settings 페이지에 통합 + "백업 권장" 알림</li>
+</ul>
+<h3 id="m03-vision-provider-2">M0.3 — Vision Provider 추상화 (2일)</h3>
+<ul>
+<li>[ ] <code>pickProvider(task)</code> + <code>TASK_DEFAULTS</code> 맵</li>
+<li>[ ] Claude / GPT 클라이언트 wrapper (동일 인터페이스)</li>
+<li>[ ] 폴백 로직 (한쪽 fail → 다른 쪽 시도)</li>
+</ul>
+<h3 id="m04-ulid-base-1">M0.4 — ULID + Base 타입 (1일)</h3>
+<ul>
+<li>[ ] ULID 생성기</li>
+<li>[ ] Base 인터페이스 적용 + 기존 데이터 ID 보강 마이그레이션</li>
+</ul>
+<h3 id="m05-cold-tier-2">M0.5 — Cold Tier 정책 (2일)</h3>
+<ul>
+<li>[ ] 100 초과 감지 + 압축 큐</li>
+<li>[ ] 썸네일 추출 (1 프레임, 비디오는 ffmpeg.wasm)</li>
+<li>[ ] "복원" UX + 재생성 트리거</li>
+</ul>
+<p><strong>M0 총 1.5주 (10 영업일)</strong> — 다음 모듈 시작 가능.</p>
+<hr />
+<h2 id="12">12. 재검토 약속</h2>
+<p>위 5개 결정 중 어느 하나라도 다음 신호가 보이면 <strong>즉시 재검토</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>신호</th>
+<th>어느 결정</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>사용자 5명 이상이 같은 불편 보고</td>
+<td>해당 결정 모두</td>
+</tr>
+<tr>
+<td>Anthropic·OpenAI Vision 가격 50%+ 변동</td>
+<td>D4</td>
+</tr>
+<tr>
+<td>Safari IDB quota 정책 변경</td>
+<td>D5</td>
+</tr>
+<tr>
+<td>WebCodecs 안정화</td>
+<td>D1</td>
+</tr>
+<tr>
+<td>Frame.io API 무료화</td>
+<td>D3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>이 문서는 살아있는 사양이다. 빌드하면서 발견되는 모든 결정은 이 파일에 우선 반영한 뒤 코드를 친다.</em></p>
+</body></html>

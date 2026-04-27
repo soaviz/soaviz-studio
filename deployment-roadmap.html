@@ -1,0 +1,1238 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>soaviz studio · SaaS 배포 로드맵</title>
+<meta name="description" content="단계별 체크리스트 — 로컬 프로토타입 → 실서비스 SaaS 배포까지" />
+<style>
+  :root {
+    --bg:        #08080C;
+    --bg-soft:   #0E0E15;
+    --bg-elev:   #15151E;
+    --bg-card:   rgba(255,255,255,0.022);
+    --bg-card-hover: rgba(255,255,255,0.040);
+    --border:    rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.12);
+    --text:      #F4F4F8;
+    --text-dim:  #B5B5C2;
+    --text-faint:#797986;
+    --text-whisper: #52525E;
+    --accent:    #A78BFA;
+    --accent-2:  #818CF8;
+    --accent-soft: rgba(167,139,250,0.10);
+    --accent-strong: rgba(167,139,250,0.30);
+    --green:     #34D399;
+    --yellow:    #FBBF24;
+    --red:       #F87171;
+    --info:      #22D3EE;
+    --pink:      #F472B6;
+    --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px;
+    --t-fast: 120ms;
+    --shadow:  0 20px 50px -25px rgba(0,0,0,0.6);
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-display: 'Fraunces', 'Pretendard Variable', Georgia, serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(167,139,250,0.08), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(34,211,238,0.04), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  a { color: var(--accent); text-decoration: none; transition: opacity 120ms; }
+  a:hover { opacity: 0.7; }
+
+  /* ── HEADER ────────────────────────────────────────── */
+  header {
+    position: sticky; top: 0;
+    background: rgba(8,8,12,0.85);
+    backdrop-filter: saturate(160%) blur(18px);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    border-bottom: 1px solid var(--border);
+    z-index: 50;
+    padding: 16px 32px;
+  }
+  .h-row {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .h-brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 13px; font-weight: 700;
+  }
+  .h-brand .dot {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 12px -2px var(--accent);
+  }
+  .h-title {
+    flex: 1; min-width: 200px;
+    font-size: 13px; color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+  .h-progress {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .h-progress-bar {
+    width: 200px; height: 8px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .h-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px;
+    width: 0%;
+    transition: width 380ms cubic-bezier(0.34, 1.4, 0.64, 1);
+    box-shadow: 0 0 12px var(--accent-strong);
+  }
+  .h-progress-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    min-width: 56px;
+    text-align: right;
+  }
+  .h-actions { display: flex; gap: 6px; }
+  .h-btn {
+    padding: 6px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .h-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent-strong);
+  }
+  .h-btn.danger:hover {
+    color: var(--red);
+    border-color: rgba(248,113,113,0.40);
+  }
+
+  /* ── HERO ────────────────────────────────────────── */
+  .hero {
+    max-width: 900px; margin: 56px auto 32px;
+    padding: 0 32px;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+    margin-bottom: 12px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero p {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .hero .meta {
+    margin-top: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+  .hero .meta strong { color: var(--text); font-weight: 700; }
+  .hero .meta-divider { width: 1px; height: 12px; background: var(--border); }
+
+  /* ── MAIN ────────────────────────────────────────── */
+  main {
+    max-width: 1000px; margin: 0 auto;
+    padding: 24px 32px 120px;
+    position: relative; z-index: 1;
+  }
+
+  /* ── PHASE ────────────────────────────────────────── */
+  .phase {
+    margin-bottom: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    transition: border-color 200ms;
+  }
+  .phase:hover { border-color: var(--border-strong); }
+  .phase[data-state="complete"] { border-color: rgba(52,211,153,0.30); }
+  .phase[data-state="active"] { border-color: var(--accent-strong); }
+
+  .phase-head {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 18px;
+    padding: 22px 26px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase-num {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text);
+    transition: all 200ms;
+  }
+  .phase[data-state="complete"] .phase-num {
+    background: rgba(52,211,153,0.14);
+    border-color: rgba(52,211,153,0.40);
+    color: var(--green);
+  }
+  .phase[data-state="active"] .phase-num {
+    background: var(--accent-soft);
+    border-color: var(--accent-strong);
+    color: var(--accent);
+  }
+
+  .phase-info { min-width: 0; }
+  .phase-info h2 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .phase-info .phase-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+  .phase-meta {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--text-faint);
+  }
+  .phase-meta span {
+    display: inline-flex; gap: 4px; align-items: center;
+  }
+  .phase-meta b {
+    color: var(--text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .phase-actions {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .phase-progress {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .phase-progress strong { color: var(--accent); }
+  .phase-toggle {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    color: var(--text-faint);
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .phase-toggle:hover { color: var(--accent); border-color: var(--accent-strong); }
+
+  .phase-body {
+    padding: 0 26px 22px;
+    display: none;
+    border-top: 1px dashed var(--border);
+    margin-top: -2px;
+    padding-top: 18px;
+  }
+  .phase[data-open="1"] .phase-body { display: block; }
+  .phase[data-open="1"] .phase-toggle::after { content: '접기'; }
+  .phase:not([data-open="1"]) .phase-toggle::after { content: '펼치기'; }
+  .phase-toggle::after { content: ''; }
+  .phase-toggle span { display: none; }
+
+  /* ── SECTION (Phase 안의 분류) ──────────────────────── */
+  .section {
+    margin-top: 18px;
+  }
+  .section-label {
+    font-size: 10.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* ── ITEM ─────────────────────────────────────────── */
+  .item {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 160ms;
+    position: relative;
+  }
+  .item:hover { border-color: var(--border-strong); background: var(--bg-elev); }
+  .item.done {
+    border-color: rgba(52,211,153,0.20);
+    background: rgba(52,211,153,0.04);
+  }
+  .item.done .item-title { color: var(--text-faint); text-decoration: line-through; }
+
+  .item-check {
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 6px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 160ms;
+  }
+  .item:hover .item-check { border-color: var(--accent); }
+  .item.done .item-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .item.done .item-check::before {
+    content: '';
+    width: 5px; height: 9px;
+    border: 2px solid #052e16;
+    border-top: 0; border-left: 0;
+    transform: rotate(45deg);
+    margin-top: -2px;
+  }
+
+  .item-body { min-width: 0; }
+  .item-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.45;
+    transition: color 160ms;
+  }
+  .item-desc {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 3px;
+    line-height: 1.55;
+  }
+  .item-desc code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    padding: 1px 5px;
+    background: rgba(167,139,250,0.10);
+    color: var(--accent);
+    border-radius: 4px;
+  }
+  .item-meta {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 6px;
+    font-size: 10.5px;
+  }
+  .item-meta span {
+    padding: 1px 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-faint);
+  }
+  .item-meta .priority-p0 {
+    background: rgba(248,113,113,0.10);
+    color: var(--red);
+    border-color: rgba(248,113,113,0.24);
+    font-weight: 700;
+  }
+  .item-meta .priority-p1 {
+    background: rgba(251,191,36,0.10);
+    color: var(--yellow);
+    border-color: rgba(251,191,36,0.24);
+    font-weight: 700;
+  }
+  .item-meta .priority-p2 {
+    background: rgba(34,211,238,0.10);
+    color: var(--info);
+    border-color: rgba(34,211,238,0.24);
+    font-weight: 700;
+  }
+  .item-link {
+    color: var(--text-faint);
+    flex-shrink: 0;
+    align-self: center;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-size: 11px;
+    text-decoration: none;
+    transition: all 120ms;
+  }
+  .item-link:hover {
+    color: var(--accent);
+    border-color: var(--accent-strong);
+    background: var(--accent-soft);
+  }
+
+  /* ── 비용 박스 ───────────────────────────────────── */
+  .cost-box {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .cost-box-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .cost-box-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2px;
+  }
+  .cost-box-value small { font-size: 12px; color: var(--text-faint); font-weight: 500; }
+  .cost-box-bep {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .cost-box-bep strong { color: var(--accent); font-family: var(--font-mono); }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 40px 20px 60px;
+    color: var(--text-faint);
+    font-size: 12px;
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  footer strong { color: var(--accent); }
+
+  /* ── 인쇄 친화 ────────────────────────────────────── */
+  @media print {
+    header { position: static; }
+    .phase-toggle, .h-actions { display: none; }
+    .phase-body { display: block !important; }
+    .phase, .item { break-inside: avoid; }
+    body { background: #fff; color: #000; }
+  }
+
+  /* ── 모바일 ──────────────────────────────────────── */
+  @media (max-width: 768px) {
+    header { padding: 12px 18px; }
+    .h-row { gap: 10px; }
+    .h-progress-bar { width: 120px; }
+    .hero { padding: 0 18px; margin: 32px auto 24px; }
+    main { padding: 16px 18px 80px; }
+    .phase-head { grid-template-columns: 36px 1fr; padding: 18px 18px; gap: 14px; }
+    .phase-actions { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; margin-top: 8px; }
+    .phase-body { padding: 0 18px 18px; }
+    .item { grid-template-columns: 20px 1fr; padding: 10px 12px; }
+    .item-link { grid-column: 1 / -1; align-self: flex-start; margin-left: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-row">
+    <div class="h-brand">
+      <span class="dot"></span>
+      soaviz studio
+    </div>
+    <div class="h-title">SaaS 배포 로드맵 · 단계별 체크리스트</div>
+    <div class="h-progress">
+      <div class="h-progress-bar"><div class="h-progress-fill" id="overall-fill"></div></div>
+      <div class="h-progress-num" id="overall-num">0%</div>
+    </div>
+    <div class="h-actions">
+      <button class="h-btn" onclick="window.print()">인쇄</button>
+      <button class="h-btn danger" id="reset-btn">초기화</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>로컬 프로토타입에서<br><em>실서비스 SaaS</em>까지 — 한 번에.</h1>
+  <p>오늘 어디까지 와 있고, 무엇을 더 해야 하는지. 단계별로 체크하면서 진행 상황은 자동 저장됩니다.</p>
+  <div class="meta">
+    <span>총 <strong id="total-count">0</strong>단계</span>
+    <span class="meta-divider"></span>
+    <span>예상 기간 <strong>10~16주</strong></span>
+    <span class="meta-divider"></span>
+    <span>초기 비용 <strong>~₩100,000/월</strong></span>
+  </div>
+</section>
+
+<main>
+
+  <!-- ═════════ PHASE 0 ═════════ -->
+  <article class="phase" data-phase="0" data-open="1">
+    <div class="phase-head">
+      <div class="phase-num">0</div>
+      <div class="phase-info">
+        <h2>출시 전 준비 — 법적·조직</h2>
+        <p class="phase-subtitle">기술 시작 전에 반드시. 사업자·약관·도메인. 1~2주.</p>
+        <div class="phase-meta">
+          <span>⏱ <b>1~2주</b></span>
+          <span>💰 <b>₩100,000~300,000</b> (사업자 등록·통판 신고)</span>
+          <span>👤 <b>대표자 직접</b></span>
+        </div>
+      </div>
+      <div class="phase-actions">
+        <div class="phase-progress"><strong data-phase-done="0">0</strong> / <span data-phase-total="0">0</span></div>
+        <button class="phase-toggle"></button>
+      </div>
+    </div>
+    <div class="phase-body">
+
+      <div class="section">
+        <div class="section-label">법적 기반</div>
+        <div class="item" data-id="p0-business">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">개인사업자 또는 법인 등록</div>
+            <div class="item-desc">홈택스 또는 정부24에서 업종 코드 — <code>62100 컴퓨터 프로그래밍 서비스업</code> 또는 <code>63112 인터넷 정보매개 서비스업</code>. 매출 기대치에 따라 간이 vs 일반 결정.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1일</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://www.hometax.go.kr" target="_blank" class="item-link">↗ 홈택스</a>
+        </div>
+        <div class="item" data-id="p0-tongpan">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">통신판매업 신고</div>
+            <div class="item-desc">결제 받기 전 필수. 정부24에서 신고. 등록면허세 발생 (인구 50만 이상 도시 ₩45,000).</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1일</span><span>💰 ~₩45,000</span></div>
+          </div>
+          <a href="https://www.gov.kr" target="_blank" class="item-link">↗ 정부24</a>
+        </div>
+        <div class="item" data-id="p0-terms">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">이용약관·개인정보 처리방침 변호사 검토</div>
+            <div class="item-desc">docs/index.html에 작성된 초안 → IT 전문 변호사 검토. 분쟁 위험 대비 필수 투자.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1주</span><span>💰 ₩300,000~₩1,000,000</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p0-privacy">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">개인정보 보호책임자 지정 + 신고</div>
+            <div class="item-desc">대표자 본인이 가능. 사이트 footer + 개인정보 처리방침에 이름·이메일·연락처 명시.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">도메인·인프라 계정</div>
+        <div class="item" data-id="p0-domain">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">도메인 구매</div>
+            <div class="item-desc">Cloudflare Registrar 추천 (마진 0). <code>soaviz.studio</code> 또는 대안. 5~10년 일괄 구매로 SEO 신뢰도 ↑.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 30분</span><span>💰 ₩15,000~30,000/년</span></div>
+          </div>
+          <a href="https://www.cloudflare.com/products/registrar/" target="_blank" class="item-link">↗ CF</a>
+        </div>
+        <div class="item" data-id="p0-cloudflare">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Cloudflare 계정 — DNS·CDN·DDoS 통합</div>
+            <div class="item-desc">무료 티어로 DNS + CDN + DDoS 보호. R2 (S3 대체) + Pages (정적 호스팅)도 같은 계정에서.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 30분</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://dash.cloudflare.com" target="_blank" class="item-link">↗ Cloudflare</a>
+        </div>
+        <div class="item" data-id="p0-github">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">GitHub 조직(Organization) + Private 레포</div>
+            <div class="item-desc">개인 레포 → 조직으로 이전. CI/CD·Actions·Container Registry 모두 무료 티어로 충분.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 30분</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://github.com/organizations/new" target="_blank" class="item-link">↗ GH</a>
+        </div>
+      </div>
+
+    </div>
+  </article>
+
+  <!-- ═════════ PHASE 1 ═════════ -->
+  <article class="phase" data-phase="1">
+    <div class="phase-head">
+      <div class="phase-num">1</div>
+      <div class="phase-info">
+        <h2>MVP 인프라 — 베타 출시</h2>
+        <p class="phase-subtitle">호스팅·인증·DB·보안. 4~6주. 무료 플랜만으로 베타 시작.</p>
+        <div class="phase-meta">
+          <span>⏱ <b>4~6주</b></span>
+          <span>💰 <b>~$72/월</b> (₩100K)</span>
+          <span>👤 <b>풀스택 1인</b></span>
+        </div>
+      </div>
+      <div class="phase-actions">
+        <div class="phase-progress"><strong data-phase-done="1">0</strong> / <span data-phase-total="1">0</span></div>
+        <button class="phase-toggle"></button>
+      </div>
+    </div>
+    <div class="phase-body">
+
+      <div class="section">
+        <div class="section-label">호스팅·CDN</div>
+        <div class="item" data-id="p1-vercel">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Vercel 계정 + 프로젝트 연결</div>
+            <div class="item-desc">GitHub 레포 연결 → 자동 배포. Custom domain → CF DNS에 CNAME 등록.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1시간</span><span>💰 ₩0~$20</span></div>
+          </div>
+          <a href="https://vercel.com" target="_blank" class="item-link">↗ Vercel</a>
+        </div>
+        <div class="item" data-id="p1-flyio">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Fly.io 백엔드 배포 — main.py</div>
+            <div class="item-desc"><code>Dockerfile</code> 작성 → <code>fly launch</code>. ENV 변수로 OPENAI/REPLICATE 키 주입. Tokyo 또는 Singapore 리전.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 3시간</span><span>💰 $5~25/월</span></div>
+          </div>
+          <a href="https://fly.io" target="_blank" class="item-link">↗ Fly.io</a>
+        </div>
+        <div class="item" data-id="p1-ssl">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">HTTPS 강제 + HSTS preload</div>
+            <div class="item-desc">Let's Encrypt 자동. CF에서 "Always Use HTTPS" 켜고 HSTS preload 등록.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 30분</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://hstspreload.org" target="_blank" class="item-link">↗ HSTS</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">데이터베이스 & 저장소</div>
+        <div class="item" data-id="p1-supabase">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Supabase 프로젝트 — Postgres + Auth + Storage</div>
+            <div class="item-desc">Seoul 리전. <code>pgvector</code> extension 활성화 (Memory Graph용). RLS(Row Level Security) 정책 설계.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1일</span><span>💰 ₩0~$25</span></div>
+          </div>
+          <a href="https://supabase.com" target="_blank" class="item-link">↗ Supabase</a>
+        </div>
+        <div class="item" data-id="p1-schema">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">DB 스키마 정의 + 마이그레이션</div>
+            <div class="item-desc">현재 IndexedDB 스토어들을 Postgres 테이블로 — projects · shots · scenes · episodes · characters · styles · assets · activities · subscriptions · users.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2~3일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-r2">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Cloudflare R2 버킷 — 미디어 저장소</div>
+            <div class="item-desc">S3 호환 + 무료 egress. 영상·이미지·아바타 사진. 50GB 무료, GB당 $0.015.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2시간</span><span>💰 $0.75/월~</span></div>
+          </div>
+          <a href="https://developers.cloudflare.com/r2/" target="_blank" class="item-link">↗ R2</a>
+        </div>
+        <div class="item" data-id="p1-sync">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">localStorage → Postgres 동기화 레이어</div>
+            <div class="item-desc">현재 클라이언트만 저장 → API 엔드포인트로 푸시. 마지막 쓰기 우선(LWW) 충돌 해결. offline-first 유지.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 3~5일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">인증 & 보안</div>
+        <div class="item" data-id="p1-auth">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Supabase Auth 통합 — Google + Email</div>
+            <div class="item-desc">현재 GSI 클라이언트만 → Supabase Auth로 통일. JWT(RS256) + httpOnly·Secure·SameSite=Lax 쿠키.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-secrets">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">시크릿 관리 — 환경 변수 분리</div>
+            <div class="item-desc">Vercel/Fly env 분리. <code>BACKEND_URL</code>·Google Client ID·OpenAI 등 모든 키. 코드에서 하드코딩 제거.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 4시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-cors">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">CORS·CSP·CSRF 헤더 설정</div>
+            <div class="item-desc">FastAPI에서 origin allowlist (소아비즈 도메인만). CSP 헤더로 inline script 제한 → DOMPurify로 사용자 입력 sanitize.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-ratelimit">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Rate Limiting — IP·사용자별</div>
+            <div class="item-desc">Upstash Redis 무료 티어 + slowapi. 분당 N회. 무차별 가입·생성 방지.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 4시간</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://upstash.com" target="_blank" class="item-link">↗ Upstash</a>
+        </div>
+        <div class="item" data-id="p1-vault">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Vault 서버측 envelope encryption</div>
+            <div class="item-desc">현재 클라이언트 AES-GCM only → 다중 기기 미지원. KMS 키 (Cloudflare/AWS) + DEK envelope으로 서버 보관.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 3일</span><span>💰 $1/월</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">모니터링·관찰성</div>
+        <div class="item" data-id="p1-sentry">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Sentry 에러 추적</div>
+            <div class="item-desc">프론트 + 백엔드 SDK. 5K 이벤트/월 무료. 첫날부터 필수.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2시간</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://sentry.io" target="_blank" class="item-link">↗ Sentry</a>
+        </div>
+        <div class="item" data-id="p1-uptime">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">UptimeRobot — 다운타임 알림</div>
+            <div class="item-desc">5분마다 헬스체크. Slack/Discord/이메일 알림.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 30분</span><span>💰 ₩0</span></div>
+          </div>
+          <a href="https://uptimerobot.com" target="_blank" class="item-link">↗ UR</a>
+        </div>
+        <div class="item" data-id="p1-analytics">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Plausible 분석</div>
+            <div class="item-desc">개인정보 친화 (쿠키 없음). 가입·체류·이탈 추적. 월 $9.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 30분</span><span>💰 $9/월</span></div>
+          </div>
+          <a href="https://plausible.io" target="_blank" class="item-link">↗ Plausible</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">CI/CD</div>
+        <div class="item" data-id="p1-ci">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">GitHub Actions — 테스트·빌드·배포</div>
+            <div class="item-desc"><code>main</code> 푸시 → 테스트 → Vercel/Fly 자동 배포. 풀리퀘스트 → preview deployment.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-env">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">환경 분리 — dev / staging / production</div>
+            <div class="item-desc">Vercel: <code>main → prod</code>, <code>develop → staging</code>, PR → preview. 각각 별도 Supabase 프로젝트.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 4시간</span><span>💰 추가비용 X</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-backup">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">DB 자동 백업 — 매일 + 30일 보존</div>
+            <div class="item-desc">Supabase Pro는 자동 백업 포함. R2에 별도 저장 (이중 안전망).</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2시간</span><span>💰 Pro 포함</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">성능 최적화</div>
+        <div class="item" data-id="p1-bundle">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">단일 1.4MB HTML → 코드 분할</div>
+            <div class="item-desc">vite/esbuild로 route-based chunk. 첫 진입 시 로드되는 JS는 200KB 이하 목표.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 1주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-images">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Cloudflare Images — WebP/AVIF 자동 변환</div>
+            <div class="item-desc">아바타·썸네일·갤러리. 원본 업로드 → 변환·CDN 자동.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 1일</span><span>💰 $5/월</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p1-lighthouse">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Lighthouse 점수 95+ 달성</div>
+            <div class="item-desc">FCP &lt; 1.5s, LCP &lt; 2.5s, CLS &lt; 0.1. 정기 측정.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 진행형</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-box">
+        <div>
+          <div class="cost-box-label">Phase 1 월 운영 비용</div>
+          <div class="cost-box-value">~$72 <small>/ 월</small></div>
+        </div>
+        <div class="cost-box-bep">손익분기: Pro 사용자 <strong>6명</strong> (₩114K)</div>
+      </div>
+
+    </div>
+  </article>
+
+  <!-- ═════════ PHASE 2 ═════════ -->
+  <article class="phase" data-phase="2">
+    <div class="phase-head">
+      <div class="phase-num">2</div>
+      <div class="phase-info">
+        <h2>결제 도입 — Pro 출시</h2>
+        <p class="phase-subtitle">Stripe + PortOne 통합. 구독·환불·청구서 자동. 2~3주.</p>
+        <div class="phase-meta">
+          <span>⏱ <b>2~3주</b></span>
+          <span>💰 <b>매출 2.9% + ₩30/건</b></span>
+          <span>👤 <b>풀스택 1인</b></span>
+        </div>
+      </div>
+      <div class="phase-actions">
+        <div class="phase-progress"><strong data-phase-done="2">0</strong> / <span data-phase-total="2">0</span></div>
+        <button class="phase-toggle"></button>
+      </div>
+    </div>
+    <div class="phase-body">
+
+      <div class="section">
+        <div class="section-label">결제 게이트웨이</div>
+        <div class="item" data-id="p2-stripe">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Stripe 계정 + 사업자 검증</div>
+            <div class="item-desc">해외 카드·구독 표준. 사업자등록증·통장사본·신분증 업로드. 1~3일 소요.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 1주</span><span>💰 2.9% + $0.30</span></div>
+          </div>
+          <a href="https://stripe.com" target="_blank" class="item-link">↗ Stripe</a>
+        </div>
+        <div class="item" data-id="p2-portone">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">PortOne 계정 — 국내 결제</div>
+            <div class="item-desc">카카오페이·네이버페이·토스페이·국내 카드. PG 계약은 KG이니시스 등 별도. 정산 타이밍 확인.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2주</span><span>💰 1.5~3.4%</span></div>
+          </div>
+          <a href="https://portone.io" target="_blank" class="item-link">↗ PortOne</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">구독 시스템</div>
+        <div class="item" data-id="p2-products">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Stripe Products·Prices 정의</div>
+            <div class="item-desc">Pro Monthly (₩19K), Pro Yearly (₩182.4K, 20% off), Team (₩39K/멤버). Price ID 환경 변수.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-webhook">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Webhook 핸들러 — 결제 이벤트 처리</div>
+            <div class="item-desc"><code>checkout.session.completed</code> · <code>customer.subscription.updated/deleted</code> · <code>invoice.payment_failed</code>. 사용자 plan 자동 갱신.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-checkout">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">결제 페이지 + 업그레이드 플로우</div>
+            <div class="item-desc">현재 Pro 버튼 → docs 모달의 가격 표시 중. Stripe Checkout 또는 Payment Element 통합. 결제 완료 → 즉시 plan 업데이트.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-billing-portal">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">고객 청구 포털 — 결제 수단 변경·취소</div>
+            <div class="item-desc">Stripe Billing Portal 즉시 사용. Settings → 결제 → "결제 관리" 링크.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 4시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">청구·세금</div>
+        <div class="item" data-id="p2-tax">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Stripe Tax — 자동 세금 처리</div>
+            <div class="item-desc">EU VAT·미국 sales tax 자동. 한국 부가세는 직접 신고 (월·반기·연 단위).</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 1일</span><span>💰 매출 0.5%</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-invoice">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">청구서·영수증 자동 발행 (한·영)</div>
+            <div class="item-desc">Stripe 자동 PDF + 사업자번호 자동 표기. 메일 자동 전송.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 4시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-tax-invoice">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">전자세금계산서 발급 (B2B / Team)</div>
+            <div class="item-desc">국세청 홈택스 연동 또는 SaaS (이지샵·바로빌). Team 고객은 사업자번호 입력 시 자동.</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 2일</span><span>💰 ₩0~30K/월</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">환불 시스템</div>
+        <div class="item" data-id="p2-refund">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">환불 정책 자동화 — 7/14일 무조건 환불</div>
+            <div class="item-desc">docs 정책대로. 환경설정 → "환불 요청" 버튼 → 자동 환불 (7/14일 안) 또는 운영자 승인 큐.</div>
+            <div class="item-meta"><span class="priority-p0">P0</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p2-refund-email">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">환불 알림 이메일 + 운영자 알림</div>
+            <div class="item-desc">사용자에게 환불 진행 안내. <code>billing@soaviz.studio</code>로 운영자 알림.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2시간</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-box">
+        <div>
+          <div class="cost-box-label">Phase 2 추가 비용</div>
+          <div class="cost-box-value">매출 <small>의</small> ~3% <small>(수수료)</small></div>
+        </div>
+        <div class="cost-box-bep">손익분기: Phase 1 + 결제 수수료. <strong>변동비</strong>라 매출 비례 자연스럽게.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <!-- ═════════ PHASE 3 ═════════ -->
+  <article class="phase" data-phase="3">
+    <div class="phase-head">
+      <div class="phase-num">3</div>
+      <div class="phase-info">
+        <h2>확장 — Team·Memory Graph·국제화</h2>
+        <p class="phase-subtitle">Pro 안정 후 본격 차별화. 6~12주.</p>
+        <div class="phase-meta">
+          <span>⏱ <b>6~12주</b></span>
+          <span>💰 <b>+$50~200/월</b></span>
+          <span>👤 <b>2~3인 권장</b></span>
+        </div>
+      </div>
+      <div class="phase-actions">
+        <div class="phase-progress"><strong data-phase-done="3">0</strong> / <span data-phase-total="3">0</span></div>
+        <button class="phase-toggle"></button>
+      </div>
+    </div>
+    <div class="phase-body">
+
+      <div class="section">
+        <div class="section-label">Team 협업</div>
+        <div class="item" data-id="p3-realtime">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">실시간 동시 편집 — Yjs / Liveblocks</div>
+            <div class="item-desc">Pipeline·Story 동시 편집. CRDT 기반 충돌 자동 해결. 커서·셀렉션 표시.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 3주</span><span>💰 $0~100/월</span></div>
+          </div>
+          <a href="https://liveblocks.io" target="_blank" class="item-link">↗ Liveblocks</a>
+        </div>
+        <div class="item" data-id="p3-permissions">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">역할별 권한 — Owner·Admin·Editor·Viewer</div>
+            <div class="item-desc">Supabase RLS로 행 단위 권한 제어. 멤버 초대·제거·권한 변경 UI.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-mention">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">멘션·댓글 시스템</div>
+            <div class="item-desc">Shot·캐릭터·룩북에 댓글. <code>@이름</code> 멘션 → 알림.</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 1주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Memory Graph 서버화</div>
+        <div class="item" data-id="p3-pgvector">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">pgvector — 임베딩 인덱스 서버 이전</div>
+            <div class="item-desc">현재 localStorage → Postgres pgvector. HNSW 인덱스. 사용자 작업물이 클라우드에 누적되어 다중 기기 동기화.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-clip">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">CLIP/SigLIP 시각 임베딩</div>
+            <div class="item-desc">Replicate에서 SigLIP 호스팅 — 영상·이미지 결과물에 시각 임베딩 자동 생성. "이 분위기와 비슷한" 검색 강력해짐.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2주</span><span>💰 $50~/월</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-graph-viz">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Reference Graph — 클러스터·시그니처 분석</div>
+            <div class="item-desc">현재 d3 force layout → 사용자별 분기. "내 시그니처 분위기" 클러스터 자동 분류 + 다음 작업에 추천.</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 3주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">국제화 & SEO</div>
+        <div class="item" data-id="p3-i18n">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">다국어 지원 — i18next</div>
+            <div class="item-desc">한국어 → 영어 → 일본어 순. 자동 감지 + 사용자 선택. 결제도 통화별 (USD·JPY).</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 4주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-landing">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">랜딩 페이지 — 가입 전 마케팅</div>
+            <div class="item-desc">기능 소개·요금제·후기·FAQ. Framer 또는 Webflow로 디자이너 작업 가능.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2주</span><span>💰 ₩0~50K/월</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-seo">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">SEO — Open Graph·sitemap·robots</div>
+            <div class="item-desc">메타 태그·OG 이미지·sitemap.xml·structured data. Google Search Console 등록.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">사용자 지원</div>
+        <div class="item" data-id="p3-help">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">헬프 센터 — docs 사이트 정식 운영</div>
+            <div class="item-desc">현재 docs/index.html 그대로 활용. 검색 인덱싱 + 커뮤니티 기여 게시판.</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 1주</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-chat">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">인앱 챗 — Crisp 또는 Intercom (Pro+)</div>
+            <div class="item-desc">유료 사용자만 1:1 챗. Free는 이메일·헬프센터.</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 4시간</span><span>💰 $25~99/월</span></div>
+          </div>
+          <a href="https://crisp.chat" target="_blank" class="item-link">↗ Crisp</a>
+        </div>
+        <div class="item" data-id="p3-discord">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">Discord 커뮤니티 + 변경사항 채널</div>
+            <div class="item-desc">사용자 피드백 + 사용 사례 공유. 새 기능 출시 → Discord 자동 알림 (GitHub Actions).</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 2일</span><span>💰 ₩0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">법적 고도화</div>
+        <div class="item" data-id="p3-gdpr">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">GDPR 준수 — EU 사용자 대응</div>
+            <div class="item-desc">데이터 이동·삭제 권리 자동화. 쿠키 동의 배너 (Klaro / Termly).</div>
+            <div class="item-meta"><span class="priority-p1">P1</span><span>⏱ 1주</span><span>💰 ₩0~50K/월</span></div>
+          </div>
+        </div>
+        <div class="item" data-id="p3-soc2">
+          <div class="item-check"></div>
+          <div class="item-body">
+            <div class="item-title">SOC 2 / ISMS 인증 (B2B 영업 시)</div>
+            <div class="item-desc">대기업 고객이 요구. Drata·Vanta 등 자동화 도구로 6~9개월 준비.</div>
+            <div class="item-meta"><span class="priority-p2">P2</span><span>⏱ 6~9개월</span><span>💰 ₩10M~30M</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cost-box">
+        <div>
+          <div class="cost-box-label">Phase 3 추가 비용</div>
+          <div class="cost-box-value">+$50~200 <small>/ 월</small></div>
+        </div>
+        <div class="cost-box-bep">손익분기: Pro <strong>20명</strong> 또는 Team <strong>5팀</strong></div>
+      </div>
+
+    </div>
+  </article>
+
+</main>
+
+<footer>
+  <strong>soaviz studio · SaaS 배포 로드맵 v1</strong><br>
+  진행 상황은 이 브라우저에 자동 저장됩니다 · 인쇄해서 벽에 붙여놓고 하나씩 체크하세요.<br>
+  마지막 업데이트: 2026-04-27
+</footer>
+
+<script>
+  // ─── 진행 상황 저장·복원 ───────────────────────
+  const STORAGE_KEY = 'soaviz.deployment.checklist.v1';
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch {}
+  }
+  let state = loadState();
+
+  // 모든 item 초기화 + 클릭 핸들러
+  document.querySelectorAll('.item[data-id]').forEach(item => {
+    const id = item.dataset.id;
+    if (state[id]) item.classList.add('done');
+    item.addEventListener('click', (e) => {
+      // 링크 클릭은 무시
+      if (e.target.closest('.item-link')) return;
+      const isDone = item.classList.toggle('done');
+      state[id] = isDone;
+      saveState(state);
+      updateProgress();
+    });
+  });
+
+  // ─── 진행률 계산 ───────────────────────────────
+  function updateProgress() {
+    let totalAll = 0, doneAll = 0;
+    document.querySelectorAll('.phase').forEach(phase => {
+      const items = phase.querySelectorAll('.item[data-id]');
+      const done = phase.querySelectorAll('.item.done').length;
+      const total = items.length;
+      totalAll += total;
+      doneAll += done;
+      phase.querySelector('[data-phase-done]').textContent = done;
+      phase.querySelector('[data-phase-total]').textContent = total;
+      // 상태 표시
+      if (done === total && total > 0) phase.dataset.state = 'complete';
+      else if (done > 0) phase.dataset.state = 'active';
+      else delete phase.dataset.state;
+    });
+    document.getElementById('total-count').textContent = totalAll;
+    const pct = totalAll > 0 ? Math.round((doneAll / totalAll) * 100) : 0;
+    document.getElementById('overall-fill').style.width = pct + '%';
+    document.getElementById('overall-num').textContent = pct + '%';
+  }
+  updateProgress();
+
+  // ─── Phase 펼침/접힘 ───────────────────────────
+  document.querySelectorAll('.phase-head').forEach(head => {
+    head.addEventListener('click', (e) => {
+      if (e.target.closest('.phase-toggle')) return;
+      const phase = head.closest('.phase');
+      phase.dataset.open = phase.dataset.open === '1' ? '0' : '1';
+    });
+  });
+  document.querySelectorAll('.phase-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const phase = btn.closest('.phase');
+      phase.dataset.open = phase.dataset.open === '1' ? '0' : '1';
+    });
+  });
+
+  // ─── 초기화 버튼 ───────────────────────────────
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (!confirm('모든 체크 상태를 초기화할까요?')) return;
+    state = {};
+    saveState(state);
+    document.querySelectorAll('.item.done').forEach(it => it.classList.remove('done'));
+    updateProgress();
+  });
+</script>
+
+</body>
+</html>

@@ -1,23 +1,72 @@
-.DS_Store
-*.log
+# ─── 환경·시크릿 ───
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+.secrets/
 
+# ─── Python ───
 .venv/
 venv/
+env/
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
 
+# ─── Node ───
+node_modules/
+.next/
+.nuxt/
+.cache/
+out/
+.turbo/
+
+# ─── 빌드·배포 ───
+.vercel/
+.fly/
+.docker/
+
+# ─── 로그·결과물 ───
+*.log
+logs/
+output/
 outputs/
 uploads/
+sample/
 audit.jsonl
+*.wav
+*.mp4
+*.webm
+*.tmp
 
+# ─── OS ───
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# ─── shim·legacy ───
 shim-lib/
 shim-perm/
-
 voice-extract/output/
 voice-extract-backend/output/
 
-.env
-.venv/
-__pycache__/
-*.pyc
-output/
+# ─── DB ───
+*.sqlite
+*.sqlite3
+*.db
+
+# ─── 백업 ───
+*.bak
+.env.save

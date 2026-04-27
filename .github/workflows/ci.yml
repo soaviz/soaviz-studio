@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Python parse check
+        run: python -c "import ast; ast.parse(open('main.py').read()); print('main.py OK')"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: JS parse check (extracted from HTML)
+        run: |
+          python3 -c "
+          import re
+          html = open('soaviz-studio.html').read()
+          m = re.search(r'<script>([\s\S]*?)</script>', html)
+          open('/tmp/sv.js','w').write(m.group(1))
+          "
+          node --check /tmp/sv.js
+
+      - name: Validate config files
+        run: |
+          python3 -c "import json; json.load(open('vercel.json'))"
+          test -f Dockerfile
+          test -f fly.toml
+
+  deploy-api:
+    name: Deploy API (Fly.io)
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-web:
+    name: Deploy Web (Vercel)
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+      - name: Pull Vercel env
+        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=$VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

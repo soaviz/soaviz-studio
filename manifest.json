@@ -1,0 +1,45 @@
+{
+  "name": "soaviz studio",
+  "short_name": "soaviz",
+  "description": "AI 영화 제작 OS — 한 줄 아이디어를 시리즈까지",
+  "start_url": "soaviz-studio.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#08080C",
+  "theme_color": "#A78BFA",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": ["productivity", "multimedia", "creative"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23A78BFA'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='system-ui,sans-serif' font-size='84' font-weight='800' fill='white'%3Es%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23A78BFA'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='system-ui,sans-serif' font-size='220' font-weight='800' fill='white'%3Es%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today",
+      "url": "soaviz-studio.html#today",
+      "description": "오늘 작업 대시보드"
+    },
+    {
+      "name": "Pipeline",
+      "url": "soaviz-studio.html#pipeline",
+      "description": "스토리보드 트리"
+    },
+    {
+      "name": "Compare Mode",
+      "url": "soaviz-studio.html#compare",
+      "description": "N개 모델 동시 비교"
+    }
+  ]
+}

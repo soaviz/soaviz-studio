@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /docs/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+
+Sitemap: https://soaviz.studio/sitemap.xml
