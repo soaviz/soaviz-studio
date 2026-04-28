@@ -5793,7 +5793,7 @@
       background: rgba(52,211,153,0.08);
     }
 
-    /* ───── v2 Persona onboarding mockup → demoted (less prominent) ───── */
+    /* ───── v2 Persona onboarding legacy styles ───── */
     .onboarding-flow {
       margin-top: var(--s-9);
       padding-top: var(--s-7);
@@ -6351,6 +6351,115 @@
       color: var(--text);
       border-color: var(--border-strong);
     }
+    .vid-pill.active {
+      background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(99,102,241,0.10));
+      border-color: var(--accent, #A78BFA);
+      color: var(--accent, #A78BFA);
+      box-shadow: 0 0 0 2px rgba(167,139,250,0.14);
+    }
+    .vid-pill.active::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent, #A78BFA);
+      box-shadow: 0 0 6px var(--accent, #A78BFA);
+      margin-left: 2px;
+    }
+    .vid-pill[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Elements 팝오버 */
+    .vid-elements-pop {
+      position: absolute;
+      z-index: 100;
+      width: 320px; max-width: 92vw;
+      max-height: 420px;
+      overflow: auto;
+      background: var(--bg-card, #14141A);
+      border: 1px solid var(--border, #2A2A33);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px -20px rgba(0,0,0,0.65);
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 10px;
+      animation: vepFade 200ms cubic-bezier(0.22,0.61,0.36,1);
+    }
+    @keyframes vepFade {
+      from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .vid-elements-pop .vep-section-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--text-faint, #797986);
+      padding: 0 4px;
+    }
+    .vid-elements-pop .vep-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .vid-elements-pop .vep-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      background: var(--bg-1, #0F0F14);
+      border: 1px solid var(--border, #2A2A33);
+      border-radius: 8px;
+      color: var(--text, #E9E9F0);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 180ms, background 180ms, transform 180ms;
+    }
+    .vid-elements-pop .vep-item:hover {
+      border-color: var(--accent, #A78BFA);
+      background: rgba(167,139,250,0.06);
+      transform: translateY(-1px);
+    }
+    .vid-elements-pop .vep-avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--accent-soft, rgba(167,139,250,0.18));
+      flex-shrink: 0;
+      display: grid; place-items: center;
+      font-size: 10px; font-weight: 700;
+      color: var(--accent, #A78BFA);
+    }
+    .vid-elements-pop .vep-name {
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .vid-elements-pop .vep-empty {
+      padding: 12px;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--text-faint, #797986);
+    }
+
+    /* 선택된 elements 칩 — prompt-foot에 주입됨 */
+    .vid-element-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px 3px 6px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.28);
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--accent, #A78BFA);
+    }
+    .vid-element-chip .vec-rm {
+      background: none; border: none;
+      color: var(--accent, #A78BFA);
+      cursor: pointer;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0.65;
+    }
+    .vid-element-chip .vec-rm:hover { opacity: 1; }
 
     .vid-model-row {
       display: flex;
@@ -6955,6 +7064,220 @@
     }
     @media (max-width: 980px) {
       .td-hero-grid { grid-template-columns: 1fr; }
+    }
+    .td-command-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+    .td-command-main,
+    .td-command-panel,
+    .td-quick-lanes {
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg-card) 92%, transparent);
+      border-radius: 8px;
+      box-shadow: 0 18px 48px -34px rgba(0,0,0,0.55);
+    }
+    .td-command-main {
+      min-height: 250px;
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .td-command-main::before {
+      content: '';
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, #a78bfa, #67e8f9, #6ee7b7);
+    }
+    .td-kicker {
+      width: max-content;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(167,139,250,0.10);
+      border: 1px solid rgba(167,139,250,0.22);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .td-command-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: 0.98;
+      letter-spacing: 0;
+      color: var(--text);
+      max-width: 760px;
+    }
+    .td-command-copy {
+      margin: 14px 0 0;
+      max-width: 690px;
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .td-command-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+    .td-command-btn,
+    .td-lane-btn {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-elev);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+      text-decoration: none;
+    }
+    .td-command-btn {
+      min-height: 42px;
+      padding: 0 15px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .td-command-btn svg,
+    .td-lane-btn svg { width: 15px; height: 15px; stroke-width: 2; }
+    .td-command-btn.primary {
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      border-color: rgba(255,255,255,0.14);
+      color: white;
+      box-shadow: 0 14px 34px -22px rgba(167,139,250,0.9);
+    }
+    .td-command-btn:hover,
+    .td-lane-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(167,139,250,0.42);
+      background: rgba(167,139,250,0.08);
+      color: var(--accent);
+    }
+    .td-command-btn.primary:hover { color: white; background: linear-gradient(135deg, #b794f6, #6d6ff7); }
+    .td-command-panel {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .td-panel-date {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .td-panel-date strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 0;
+      color: var(--text);
+    }
+    .td-panel-date span {
+      font-size: 11px;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+    }
+    .td-focus-chip {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(103,232,249,0.10);
+      border: 1px solid rgba(103,232,249,0.26);
+      color: #67e8f9;
+      font-size: 11px;
+      font-weight: 700;
+      max-width: 150px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .td-hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .td-hero-metric {
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+    .td-hero-metric .num {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 25px;
+      line-height: 1;
+      color: var(--metric-c, var(--text));
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+    .td-hero-metric .label {
+      display: block;
+      margin-top: 7px;
+      color: var(--text-faint);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .td-start-note {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(110,231,183,0.22);
+      background: rgba(110,231,183,0.07);
+      color: var(--text-dim);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .td-start-note strong { color: #6ee7b7; }
+    .td-quick-lanes {
+      margin-bottom: 20px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .td-lane-btn {
+      min-height: 58px;
+      padding: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: left;
+    }
+    .td-lane-btn small {
+      color: var(--text-faint);
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+    @media (max-width: 1080px) {
+      .td-command-hero { grid-template-columns: 1fr; }
+      .td-quick-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .td-command-main { min-height: auto; padding: 20px; }
+      .td-command-title { font-size: 30px; }
+      .td-hero-metrics { grid-template-columns: 1fr; }
+      .td-quick-lanes { grid-template-columns: 1fr; }
     }
     .td-last-card {
       padding: 28px 32px;
@@ -9655,8 +9978,162 @@
       place-items: center;
       color: white;
       font-weight: 900;
+      font-size: 22px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
       background: linear-gradient(135deg, var(--project-color, #a78bfa), rgba(99,102,241,0.9));
+      cursor: pointer;
+      transition: transform 200ms, box-shadow 200ms;
+      position: relative;
+    }
+    .project-mark:hover {
+      transform: scale(1.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 6px 16px -6px rgba(167,139,250,0.55);
+    }
+    .project-mark::after {
+      content: '✏';
+      position: absolute;
+      top: -4px; right: -4px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent, #A78BFA);
+      color: #fff;
+      font-size: 9px;
+      display: grid; place-items: center;
+      opacity: 0;
+      transition: opacity 200ms;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .project-mark:hover::after { opacity: 1; }
+
+    /* 이모지 선택 팝오버 — 아이폰 스타일 (블랙 배경 / 5x5 그리드 / 스크롤) */
+    .project-icon-pop {
+      position: absolute;
+      z-index: 200;
+      width: 320px; max-width: 92vw;
+      background: #000;
+      border: 1px solid #1F1F24;
+      border-radius: 16px;
+      box-shadow: 0 24px 60px -18px rgba(0,0,0,0.80);
+      padding: 12px;
+      animation: pipFade 180ms cubic-bezier(0.22,0.61,0.36,1);
+      display: flex;
+      flex-direction: column;
+      max-height: 420px;
+    }
+    @keyframes pipFade {
+      from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .project-icon-pop .pip-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 0 4px 8px;
+      border-bottom: 1px solid #1F1F24;
+      flex: 0 0 auto;
+    }
+    .project-icon-pop .pip-title {
+      font-family: var(--font-mono, Consolas, monospace);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      color: var(--accent, #A78BFA);
+      text-transform: uppercase;
+    }
+    .project-icon-pop .pip-clear {
+      font-size: 11px;
+      color: #797986;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .project-icon-pop .pip-clear:hover {
+      color: #E9E9F0;
+      background: rgba(255,255,255,0.06);
+    }
+    .project-icon-pop .pip-search {
+      width: 100%;
+      box-sizing: border-box;
+      height: 30px;
+      margin-bottom: 8px;
+      padding: 0 10px;
+      background: #0E0E12;
+      border: 1px solid #1F1F24;
+      border-radius: 8px;
+      color: #E9E9F0;
+      font-size: 12px;
+      outline: none;
+      flex: 0 0 auto;
+    }
+    .project-icon-pop .pip-search:focus {
+      border-color: rgba(167,139,250,0.55);
+    }
+    .project-icon-pop .pip-search::placeholder { color: #555; }
+    .project-icon-pop .pip-cats {
+      display: flex; gap: 4px; overflow-x: auto;
+      margin-bottom: 8px;
+      flex: 0 0 auto;
+      scrollbar-width: none;
+    }
+    .project-icon-pop .pip-cats::-webkit-scrollbar { display: none; }
+    .project-icon-pop .pip-cat {
+      background: transparent;
+      border: 1px solid #1F1F24;
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: #797986;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 120ms;
+    }
+    .project-icon-pop .pip-cat:hover { color: #E9E9F0; border-color: #2A2A33; }
+    .project-icon-pop .pip-cat.active {
+      color: #A78BFA;
+      border-color: rgba(167,139,250,0.45);
+      background: rgba(167,139,250,0.08);
+    }
+    .project-icon-pop .pip-scroll {
+      overflow-y: auto;
+      flex: 1 1 auto;
+      padding-right: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: #2A2A33 transparent;
+    }
+    .project-icon-pop .pip-scroll::-webkit-scrollbar { width: 6px; }
+    .project-icon-pop .pip-scroll::-webkit-scrollbar-thumb { background: #2A2A33; border-radius: 4px; }
+    .project-icon-pop .pip-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .project-icon-pop .pip-emoji {
+      width: 100%;
+      aspect-ratio: 1;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 24px;
+      display: grid; place-items: center;
+      transition: background 120ms, border-color 120ms, transform 120ms;
+    }
+    .project-icon-pop .pip-emoji:hover {
+      background: rgba(167,139,250,0.14);
+      border-color: rgba(167,139,250,0.30);
+      transform: scale(1.16);
+    }
+    .project-icon-pop .pip-emoji.active {
+      background: rgba(167,139,250,0.22);
+      border-color: var(--accent, #A78BFA);
+    }
+    .project-icon-pop .pip-empty {
+      grid-column: 1 / -1;
+      color: #555;
+      font-size: 12px;
+      text-align: center;
+      padding: 20px 0;
     }
     .project-title {
       margin: 0;
@@ -10623,6 +11100,35 @@
       display: flex; flex-direction: column; gap: 12px;
       cursor: pointer;
       transition: all var(--t-fast);
+      position: relative;
+    }
+    .ch-card-delete {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 26px; height: 26px;
+      background: rgba(8,8,12,0.55);
+      border: 1px solid var(--border, #2A2A33);
+      border-radius: 50%;
+      color: var(--text-faint, #797986);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 180ms, transform 180ms, color 180ms, border-color 180ms, background 180ms;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 3;
+    }
+    .bible-card:hover .ch-card-delete,
+    .ch-card-delete:focus-visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .ch-card-delete:hover {
+      background: #EF4444;
+      border-color: #EF4444;
+      color: #fff;
+      transform: scale(1.08);
     }
     .bible-card:hover {
       border-color: rgba(167,139,250,0.40);
@@ -11033,6 +11539,192 @@
     }
     .bible-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 600px) { .bible-row { grid-template-columns: 1fr; } }
+
+    /* ── 🎲 세계관·스토리 랜덤 — 큰 주사위 박스 회전 (절제된 톤) ─ */
+    #random-big-dice.rolling {
+      animation: bigDiceRoll 2.4s cubic-bezier(0.36, 0, 0.66, 1) infinite !important;
+      /* 색상은 원래 보라 톤 그대로 유지 — 핫핑크 글로우 제거 */
+    }
+    #random-big-dice.rolling > svg {
+      animation: bigDiceSvgFlip 2.4s linear infinite;
+    }
+    @keyframes bigDiceRoll {
+      0%   { transform: rotate(0deg)   scale(1)    rotateY(0deg); }
+      50%  { transform: rotate(180deg) scale(1.04) rotateY(180deg); }
+      100% { transform: rotate(360deg) scale(1)    rotateY(360deg); }
+    }
+    @keyframes bigDiceSvgFlip {
+      0%   { transform: rotateX(0deg) rotateZ(0deg); }
+      50%  { transform: rotateX(180deg) rotateZ(180deg); opacity: 0.75; }
+      100% { transform: rotateX(360deg) rotateZ(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #random-big-dice.rolling,
+      #random-big-dice.rolling > svg { animation: none !important; }
+    }
+
+    /* ── 🎲 랜덤 주사위 — rolling 상태 + 카운트다운 ───────── */
+    #cf-dice.rolling {
+      cursor: wait !important;
+      transform: scale(1.02);
+      transition: all 220ms cubic-bezier(0.22,0.61,0.36,1);
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      flex-wrap: wrap;
+      min-width: 280px;
+      padding: 8px 14px !important;
+    }
+    #cf-dice .dice-spin {
+      display: inline-block;
+      animation: diceSpin 0.6s linear infinite;
+      font-size: 16px;
+    }
+    #cf-dice .dice-rolling-label {
+      letter-spacing: 0.02em;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    #cf-dice .dice-countdown {
+      font-family: var(--font-mono, Consolas, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      color: #FFE4F0;
+      letter-spacing: 0.02em;
+      padding: 2px 8px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    #cf-dice .dice-bar {
+      flex: 1 1 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    #cf-dice .dice-bar-fill {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #FFFFFF, #FFE4F0);
+      border-radius: 999px;
+      transition: width 100ms linear;
+    }
+    @keyframes diceSpin {
+      0%   { transform: rotate(0deg)   scale(1); }
+      25%  { transform: rotate(180deg) scale(1.15); }
+      50%  { transform: rotate(360deg) scale(1); }
+      75%  { transform: rotate(540deg) scale(1.15); }
+      100% { transform: rotate(720deg) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #cf-dice .dice-spin { animation: none; }
+    }
+
+    /* ── 캐릭터 사진 등록 — 정면/측면/후면/전신 4분할 슬롯 ── */
+    .cf-photo-slots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    @media (max-width: 720px) {
+      .cf-photo-slots { grid-template-columns: repeat(2, 1fr); }
+    }
+    .cf-photo-slot {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      background: var(--bg-1, #0F0F14);
+      border: 1.5px dashed var(--border-strong, #36363F);
+      border-radius: 12px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 200ms, transform 200ms, box-shadow 200ms;
+    }
+    .cf-photo-slot:hover {
+      border-color: var(--accent, #A78BFA);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -8px rgba(167,139,250,0.45);
+    }
+    .cf-photo-slot.dragover {
+      border-style: solid;
+      border-color: var(--accent, #A78BFA);
+      background: rgba(167,139,250,0.06);
+    }
+    .cf-photo-slot.filled {
+      border-style: solid;
+      border-color: var(--border, #2A2A33);
+    }
+    .cf-photo-slot.is-main {
+      border: 2px solid var(--accent, #A78BFA);
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.18), 0 12px 28px -10px rgba(167,139,250,0.40);
+    }
+    .cf-photo-slot img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      animation: cfPhotoFadeIn 280ms cubic-bezier(0.22,0.61,0.36,1);
+    }
+    .cf-photo-slot .cf-slot-label {
+      position: absolute;
+      top: 8px; left: 8px;
+      font-family: var(--font-mono, Consolas, monospace);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      padding: 3px 8px;
+      background: rgba(8,8,12,0.75);
+      color: var(--text, #E9E9F0);
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      pointer-events: none;
+      text-transform: uppercase;
+    }
+    .cf-photo-slot.is-main .cf-slot-label {
+      background: var(--accent, #A78BFA);
+      color: #0B0B14;
+    }
+    .cf-photo-slot .cf-slot-empty {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      color: var(--text-faint, #797986);
+      pointer-events: none;
+    }
+    .cf-photo-slot .cf-slot-empty svg { width: 22px; height: 22px; }
+    .cf-photo-slot .cf-slot-empty .cf-slot-name {
+      font-family: var(--font-display, 'Cambria', serif);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dim, #B5B5C2);
+      letter-spacing: -0.01em;
+    }
+    .cf-photo-slot .cf-slot-empty .cf-slot-hint {
+      font-size: 9.5px;
+      color: var(--text-faint, #797986);
+      letter-spacing: 0.04em;
+    }
+    .cf-photo-slot .cf-slot-rm {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 22px; height: 22px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      border: none; border-radius: 50%;
+      font-size: 12px; line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity 180ms, background 180ms;
+      backdrop-filter: blur(4px);
+      z-index: 2;
+    }
+    .cf-photo-slot.filled:hover .cf-slot-rm { opacity: 1; }
+    .cf-photo-slot .cf-slot-rm:hover { background: #EF4444; }
+    .cf-photo-slot input[type="file"] { display: none; }
 
     /* ── 캐릭터 사진 등록 — 메인 프리뷰 + 드롭존 + 썸네일 그리드 ─ */
     .cf-photo-area { display: grid; gap: 12px; }
@@ -12350,12 +13042,21 @@
       background: var(--bg-1);
     }
     .pl-wf-builtin {
-      font-size: 10px;
-      padding: 1px 6px;
-      background: rgba(167,139,250,0.20);
-      color: var(--accent);
-      border-radius: 4px;
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 9.5px;
+      padding: 2px 7px;
+      background: linear-gradient(135deg, rgba(251,191,36,0.22), rgba(251,113,133,0.18));
+      color: #FBBF24;
+      border: 1px solid rgba(251,191,36,0.35);
+      border-radius: 999px;
       font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .pl-wf-builtin::before {
+      content: '★';
+      font-size: 9px;
+      color: #FBBF24;
     }
 
     /* Shot 카드에 워크플로우 진행 표시 */
@@ -14281,166 +14982,31 @@
         </div>
         <div class="retention-note">파일은 24시간 뒤 자동 삭제됩니다</div>
 
-        <section class="onboarding-flow" id="persona-onboarding-mockup">
-          <div class="flow-intro">
-            <div class="flow-kicker">Persona Onboarding</div>
-            <h3>④→⑥ 온보딩 목업</h3>
-            <p>추출 결과 다음 단계에서 이어지는 보이스 검수, 페르소나 등록, TTS 스튜디오 화면 흐름을 한 번에 볼 수 있는 목업입니다.</p>
+        <section class="stage" id="extract-actions">
+          <div class="stage-header">
+            <div class="stage-num done">✓</div>
+            <div class="stage-title">결과 활용</div>
+            <div class="stage-sub">실제 작업으로 바로 연결</div>
           </div>
-
-          <article class="onboarding-card">
-            <div class="onboarding-topbar">
-              <span class="mock-link">← 뒤로</span>
-              <span class="mock-chip">건너뛰기</span>
-            </div>
-            <div class="onboarding-body">
-              <h3>내 목소리, 맞는지 확인할게요</h3>
-              <p class="onboarding-sub">클론 생성 전에 2단계 검수를 거칩니다.</p>
-
-              <div class="score-block">
-                <h4>음성 품질 점수</h4>
-                <div class="score-row">
-                  <span class="label">음질</span>
-                  <div class="score-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
-                  <span class="value">Good</span>
-                </div>
-                <div class="score-row">
-                  <span class="label">선명도</span>
-                  <div class="score-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
-                  <span class="value">Excellent</span>
-                </div>
-                <div class="score-row">
-                  <span class="label">길이</span>
-                  <div class="value" style="grid-column: 2 / 4;">1분 24초 (권장 30초↑)</div>
-                </div>
-                <div class="inline-alert">
-                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;flex-shrink:0;"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-                  <span>노이즈가 많아요. 더 조용한 구간을 골라주세요.</span>
-                </div>
+          <div class="stage-body">
+            <div class="notice-grid">
+              <div class="notice-card">
+                <div class="notice-label info">Voice Asset</div>
+                <div class="notice-copy">추출한 음성·음악·원본 스템은 Library에서 확인하고 바로 다운로드할 수 있습니다.</div>
+                <button class="ghost-btn" id="extract-open-library" type="button" style="margin-top:12px">Library에서 보기</button>
               </div>
-
-              <div class="score-block">
-                <div class="mock-section-title">본인 인증</div>
-                <p class="onboarding-sub" style="margin-bottom:12px;">아래 문장을 15초 안에 녹음해 주세요</p>
-                <div class="sentence-card">"사월의 바람은 창문을 지나<br/>낯선 이름을 부른다."</div>
-                <button class="record-btn"><span class="record-dot"></span>녹음 시작</button>
-                <div class="helper-copy">이 문장은 매번 무작위로 바뀌어요. 녹음은 서버에 저장되지 않아요.</div>
-                <div class="verify-result">동일 화자로 확인됐어요 (일치도 94%)</div>
+              <div class="notice-card">
+                <div class="notice-label info">Persona / TTS</div>
+                <div class="notice-copy">현재 음성 스템을 임시 페르소나로 등록하고 TTS 스튜디오에서 테스트 문장을 만들 수 있습니다.</div>
+                <button class="ghost-btn" id="extract-create-persona" type="button" style="margin-top:12px">TTS 스튜디오로 보내기</button>
+              </div>
+              <div class="notice-card">
+                <div class="notice-label info">Transcript Pack</div>
+                <div class="notice-copy">자막과 요약을 프롬프트 라이브러리에 저장해 이후 Shot, Scene, 프로젝트 자료로 재사용합니다.</div>
+                <button class="ghost-btn" id="extract-save-prompt" type="button" style="margin-top:12px">프롬프트로 저장</button>
               </div>
             </div>
-            <div class="footer-cta">
-              <button class="full-btn">다음: 페르소나 만들기</button>
-            </div>
-          </article>
-
-          <article class="onboarding-card">
-            <div class="onboarding-topbar">
-              <span class="mock-link">← 뒤로</span>
-              <span class="mock-chip">Step 5</span>
-            </div>
-            <div class="onboarding-body">
-              <h3>이 목소리를 어떻게 소개할까요?</h3>
-              <p class="onboarding-sub">이름과 설명을 붙이면 나만의 페르소나로 저장할 수 있어요.</p>
-
-              <div class="identity-grid">
-                <div class="field-block">
-                  <label>페르소나 이름</label>
-                  <input class="mock-input" value="은교 내레이션" readonly />
-                </div>
-                <div class="field-block">
-                  <label>한 줄 설명</label>
-                  <textarea class="mock-textarea" readonly>차분하고 또렷한 브랜드 내레이션 톤</textarea>
-                </div>
-                <div class="field-block">
-                  <label>샘플로 먼저 들어보세요</label>
-                  <div class="preview-grid">
-                    <div class="preview-card">
-                      <span class="tag">Preview 01</span>
-                      <h5>뉴스</h5>
-                      <p>오늘 주요 소식을 차분하고 또렷하게 전해드리겠습니다.</p>
-                      <button class="mini-play">재생</button>
-                    </div>
-                    <div class="preview-card">
-                      <span class="tag">Preview 02</span>
-                      <h5>내레이션</h5>
-                      <p>사월의 바람은 창문을 지나 낯선 이름을 부른다.</p>
-                      <button class="mini-play">재생</button>
-                    </div>
-                    <div class="preview-card">
-                      <span class="tag">Preview 03</span>
-                      <h5>대화</h5>
-                      <p>안녕하세요, 오늘은 새로 만든 페르소나 목소리를 함께 들어볼게요.</p>
-                      <button class="mini-play">재생</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="footer-cta">
-              <button class="full-btn">페르소나 등록하기</button>
-            </div>
-          </article>
-
-          <article class="onboarding-card">
-            <div class="onboarding-topbar">
-              <span class="mock-link">은교 내레이션</span>
-              <span class="mock-chip">Step 6</span>
-            </div>
-            <div class="onboarding-body">
-              <h3>내 페르소나로 바로 만들어볼게요</h3>
-              <p class="onboarding-sub">텍스트를 입력하면 내 목소리 톤으로 자연스럽게 읽어줘요.</p>
-
-              <div class="studio-shell">
-                <div class="studio-shell-head">
-                  <div>
-                    <h4>은교 내레이션</h4>
-                    <p>차분하고 또렷한 브랜드 내레이션 톤</p>
-                  </div>
-                  <span class="studio-status">본인 인증됨</span>
-                </div>
-
-                <div class="field-block">
-                  <label>읽을 문장을 입력해 주세요</label>
-                  <textarea class="mock-textarea" readonly>안녕하세요. 오늘은 새로 만든 페르소나 목소리로 첫 문장을 읽어볼게요.</textarea>
-                </div>
-
-                <div class="slider-grid">
-                  <div class="slider-card">
-                    <div class="slider-head"><span>감정</span><strong>차분</strong></div>
-                    <div class="mock-slider" style="--fill: 42%;"></div>
-                  </div>
-                  <div class="slider-card">
-                    <div class="slider-head"><span>속도</span><strong>1.0x</strong></div>
-                    <div class="mock-slider" style="--fill: 50%;"></div>
-                  </div>
-                  <div class="slider-card">
-                    <div class="slider-head"><span>피치</span><strong>기본</strong></div>
-                    <div class="mock-slider" style="--fill: 56%;"></div>
-                  </div>
-                </div>
-
-                <button class="full-btn">음성 생성하기</button>
-
-                <div class="history-mock">
-                  <div class="mock-section-title" style="margin-bottom:0;">최근 생성한 음성</div>
-                  <div class="history-mock-item">
-                    <div class="meta">
-                      <div class="title">브랜드 소개 오프닝</div>
-                      <div class="sub">방금 생성됨 · 00:14 · WAV</div>
-                    </div>
-                    <button class="ghost-btn">재생</button>
-                  </div>
-                  <div class="history-mock-item">
-                    <div class="meta">
-                      <div class="title">유튜브 쇼츠 인트로</div>
-                      <div class="sub">5분 전 · 00:08 · MP3</div>
-                    </div>
-                    <button class="ghost-btn">다운로드</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </article>
+          </div>
         </section>
       </div>
     </section>
@@ -14672,6 +15238,9 @@
 
       <!-- ─── 대본 만들기 (영상·오디오 드라마용 시나리오) ─── -->
       <div id="story-script-mode" style="display:none">
+        <button id="script-back-to-story" type="button" style="display:none;align-items:center;gap:8px;padding:8px 14px;margin-bottom:14px;background:transparent;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-soft);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s ease" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)';this.style.background='var(--bg-card)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-soft)';this.style.background='transparent'">
+          <span style="font-size:14px">←</span><span>스토리로 돌아가기</span>
+        </button>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px">
           <label style="display:flex;flex-direction:column;gap:6px">
             <span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:600">작품 종류 <span style="color:var(--accent);font-weight:700">· 30개</span></span>
@@ -14809,8 +15378,8 @@
       <!-- ─── 랜덤으로 만들기 ─── -->
       <div id="story-random-mode" style="display:none">
         <div style="padding:32px 28px;border:1px dashed var(--border-strong);background:radial-gradient(ellipse at 20% 0%, rgba(167,139,250,0.08), transparent 60%) var(--bg-card);border-radius:var(--r-xl);text-align:center;margin-bottom:24px">
-          <div style="width:72px;height:72px;margin:0 auto 16px;border-radius:18px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;animation:pulse 2.4s var(--ease-smooth) infinite">
-            <svg viewBox="0 0 24 24" style="width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round">
+          <div id="random-big-dice" style="width:72px;height:72px;margin:0 auto 16px;border-radius:18px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;animation:pulse 2.4s var(--ease-smooth) infinite;perspective:600px;transform-style:preserve-3d;transition:background 320ms,box-shadow 320ms,color 320ms">
+            <svg id="random-big-dice-svg" viewBox="0 0 24 24" style="width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transform-origin:center">
               <rect x="3" y="3" width="18" height="18" rx="3"/>
               <circle cx="8.2" cy="8.2" r="1.4" fill="currentColor" stroke="none"/>
               <circle cx="15.8" cy="8.2" r="1.4" fill="currentColor" stroke="none"/>
@@ -14841,6 +15410,18 @@
             <span id="random-roll-label">주사위 굴리기</span>
           </button>
           <span id="random-status" style="display:block;margin-top:14px;font-size:13px;color:var(--text-faint);min-height:18px"></span>
+
+          <!-- 잔여 토큰(크레딧) 표시 -->
+          <div id="random-credit-bar" style="display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:7px 14px;background:var(--bg-1);border:1px solid var(--border);border-radius:999px;font-size:11.5px;color:var(--text-dim)">
+            <span style="color:var(--accent);font-size:13px" aria-hidden="true">⚡</span>
+            <span>이번 굴리기 <strong id="random-credit-cost" style="color:var(--text);font-variant-numeric:tabular-nums;font-weight:700">350</strong> 토큰</span>
+            <span style="color:var(--text-faint);opacity:0.5">·</span>
+            <span>잔여 <strong id="random-credit-remain" style="color:var(--accent);font-variant-numeric:tabular-nums;font-weight:700">—</strong> / <span id="random-credit-total" style="font-variant-numeric:tabular-nums;color:var(--text-faint)">—</span></span>
+            <span id="random-credit-track" style="display:inline-block;width:60px;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-left:4px">
+              <span id="random-credit-fill" style="display:block;height:100%;background:linear-gradient(90deg, var(--accent), #6366F1);border-radius:999px;transition:width 320ms cubic-bezier(0.22,0.61,0.36,1);width:0%"></span>
+            </span>
+            <a href="javascript:openDocsModal?.('pricing-page')" style="margin-left:6px;color:var(--accent);font-weight:600;text-decoration:none">충전 →</a>
+          </div>
         </div>
 
         <article id="random-result" class="hidden" style="display:none;padding:24px;border:1px solid var(--border);background:var(--bg-card);border-radius:var(--r-xl)">
@@ -15582,6 +16163,10 @@
               </div>
             </div>
             <div class="sv-card-body">
+              <button id="sv-to-script" class="sv-action sv-action-tonal" style="background:linear-gradient(135deg,rgba(167,139,250,0.20),rgba(167,139,250,0.08));border-color:rgba(167,139,250,0.40);color:var(--accent);font-weight:700">
+                <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                ✎ 이 스토리로 대본 만들기 →
+              </button>
               <button id="sv-to-music" class="sv-action sv-action-tonal">
                 <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                 분위기 음악 생성 →
@@ -15649,9 +16234,89 @@
 
     <!-- ================ PAGE: TODAY (resume dashboard) ================ -->
     <section id="page-today" class="page active">
-      <div class="page-head">
-        <h1>오늘</h1>
-        <p>어제의 작업을 이어서 시작하고, 오늘 해야 할 제작 흐름을 확인하세요.</p>
+      <div class="td-command-hero">
+        <div class="td-command-main">
+          <div>
+            <div class="td-kicker">SOAVIZ TODAY</div>
+            <h1 class="td-command-title">오늘의 제작 흐름</h1>
+            <p class="td-command-copy">
+              마지막 작업을 바로 이어가고, 새 작품을 시작하고, 결과물을 정리하는 핵심 동선을 한 화면에서 제어하세요.
+            </p>
+          </div>
+          <div class="td-command-actions">
+            <button id="today-continue-btn" class="td-command-btn primary">
+              <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              이어서 작업
+            </button>
+            <button class="td-command-btn" data-today-page="personas">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              새 작품 시작
+            </button>
+            <button class="td-command-btn" data-today-page="pipeline">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h7v6H4z"/><path d="M13 13h7v6h-7z"/><path d="M11 8h3a2 2 0 0 1 2 2v3"/></svg>
+              스토리보드 열기
+            </button>
+          </div>
+        </div>
+
+        <aside class="td-command-panel">
+          <div class="td-panel-date">
+            <div>
+              <strong id="td-hero-date">오늘</strong>
+              <span id="td-hero-state">제작 대기 중</span>
+            </div>
+            <div class="td-focus-chip" id="td-hero-focus">No project</div>
+          </div>
+          <div class="td-hero-metrics">
+            <div class="td-hero-metric" style="--metric-c:#a78bfa">
+              <span class="num" id="td-hero-activity-count">0</span>
+              <span class="label">Activities</span>
+            </div>
+            <div class="td-hero-metric" style="--metric-c:#67e8f9">
+              <span class="num" id="td-hero-prompt-count">0</span>
+              <span class="label">Prompts</span>
+            </div>
+            <div class="td-hero-metric" style="--metric-c:#6ee7b7">
+              <span class="num" id="td-hero-asset-count">0</span>
+              <span class="label">Assets</span>
+            </div>
+            <div class="td-hero-metric" style="--metric-c:#fbbf24">
+              <span class="num" id="td-hero-decision-count">0</span>
+              <span class="label">Approved</span>
+            </div>
+          </div>
+          <div class="td-start-note">
+            <strong>Next:</strong> <span id="td-start-recommendation">새 작품을 만들거나 최근 작업을 이어가세요.</span>
+          </div>
+        </aside>
+      </div>
+
+      <div class="td-quick-lanes" aria-label="빠른 제작 메뉴">
+        <button class="td-lane-btn" data-today-page="personas">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5H6a2 2 0 0 1-2-1.5z"/><path d="M8 8h6"/><path d="M8 12h8"/></svg>
+          Personas
+          <small>세계관과 대본</small>
+        </button>
+        <button class="td-lane-btn" data-today-page="pipeline">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M10 7h4"/><path d="M7 10v4"/></svg>
+          Pipeline
+          <small>Episode · Scene · Shot</small>
+        </button>
+        <button class="td-lane-btn" data-today-page="voice-studio">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/><path d="M12 17v5"/></svg>
+          Voice
+          <small>나레이션 생성</small>
+        </button>
+        <button class="td-lane-btn" data-today-page="music-studio">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Music
+          <small>장면 분위기</small>
+        </button>
+        <button class="td-lane-btn" data-today-page="library">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+          Library
+          <small>채택본 정리</small>
+        </button>
       </div>
 
       <!-- Hero: Last Work (좌, 프로젝트 투두) + Calendar (우) — 2-컬럼 -->
@@ -16323,21 +16988,21 @@
           </div>
           <div id="vault-test-result" style="display:none;font-size:12px;color:var(--text-dim);background:var(--bg-1);padding:10px 12px;border-radius:6px;border:1px solid var(--border)"></div>
         </article>
-        <article class="settings-card">
+        <article class="settings-card" id="settings-storage-card">
           <div class="settings-icon">
             <svg class="icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>
           </div>
           <h3>Storage</h3>
           <p>로컬 라이브러리, 결과물 보관 정책</p>
-          <button class="settings-cta">관리</button>
+          <button class="settings-cta" id="storage-manage-btn">관리</button>
         </article>
-        <article class="settings-card">
+        <article class="settings-card" id="settings-billing-card">
           <div class="settings-icon">
             <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
           <h3>Billing</h3>
           <p>플랜, 사용량, 결제 내역</p>
-          <button class="settings-cta">관리</button>
+          <button class="settings-cta" id="billing-manage-btn">관리</button>
         </article>
       </div>
     </section>
@@ -17303,32 +17968,7 @@ window.goBack = goBack;
 
 function showPage(name) {
   name = resolvePageName(name);
-  // 플랜 게이트 — 무료/Standard에서 Pro 전용 도구 진입 시 업그레이드 안내
-  try {
-    if (typeof canAccessTool === 'function' && !canAccessTool(name)) {
-      // Settings·Today·Library 등 항상 허용되는 페이지 화이트리스트
-      const alwaysAllow = ['today','settings','admin','library','project-archive','production-log','history','signup','signin'];
-      if (!alwaysAllow.includes(name)) {
-        const labels = {
-          'compare': '비교 모드 (A/B/C)',
-          'memory-graph': 'Memory Graph 추천',
-          'styles': '룩북 (Style Bible)',
-          'cinema': '영감 라이브러리',
-          'music-studio': '배경음악 생성',
-          'sfx-studio': '효과음 생성',
-          'video-studio': '영상 생성',
-          'transcript': '자막·요약',
-          'characters': '캐릭터 페르소나',
-        };
-        const featureLabel = labels[name] || '이 도구';
-        const recommendedPlan = (name === 'compare' || name === 'memory-graph') ? 'pro' : 'standard';
-        if (typeof showUpgradeGate === 'function') {
-          showUpgradeGate(featureLabel, recommendedPlan);
-        }
-        return;  // 페이지 전환 차단
-      }
-    }
-  } catch (_) {}
+  // 페이지는 전 플랜 오픈. 수익화는 생성/저장/API/Export 액션에서 처리한다.
 
   // ── 페이지 전환 시 모든 재생 중인 오디오 정지 ──
   // (Story Reader 나레이션, 히스토리 재생, A/B 비교 등 모든 audio 요소)
@@ -17424,6 +18064,7 @@ function showPage(name) {
       if (sM && sM.children.length === 0 && typeof MOOD_50 !== 'undefined')  fillSelectGrouped(sM, MOOD_50);
       if (sT && sT.children.length === 0 && typeof SCRIPT_TONE_50 !== 'undefined') fillSelectGrouped(sT, SCRIPT_TONE_50);
     } catch (_) {}
+    try { refreshRandomCreditBar?.(); } catch (_) {}
   }
 }
 
@@ -17494,6 +18135,35 @@ function renderTodayPage() {
     tts: todayActivities.filter(a => a.assetType === 'tts').length,
     total: todayActivities.length,
   };
+  const allLibraryAssets = (typeof getLibraryAssets === 'function') ? getLibraryAssets() : [];
+  const producedAssets = allLibraryAssets.filter(a => a.type && a.type !== 'prompt');
+  const approvedAssets = allLibraryAssets.filter(a => a.decisionStatus === 'approved' || a.status === 'approved');
+  const recs = _todayRecommendations();
+  const activeGoal = (typeof getActiveGoal === 'function') ? getActiveGoal() : null;
+  const heroDate = $('#td-hero-date');
+  if (heroDate) {
+    heroDate.textContent = new Date().toLocaleDateString('ko-KR', {
+      month: 'long',
+      day: 'numeric',
+      weekday: 'short',
+    });
+  }
+  if ($('#td-hero-state')) {
+    $('#td-hero-state').textContent = todayCounts.total > 0
+      ? `오늘 ${todayCounts.total}개 활동 진행`
+      : '오늘 첫 제작을 시작하세요';
+  }
+  if ($('#td-hero-focus')) {
+    $('#td-hero-focus').textContent = activeGoal?.projectName || 'No project';
+    $('#td-hero-focus').title = activeGoal?.projectName || '';
+  }
+  if ($('#td-hero-activity-count')) $('#td-hero-activity-count').textContent = todayCounts.total;
+  if ($('#td-hero-prompt-count')) $('#td-hero-prompt-count').textContent = todayCounts.prompts;
+  if ($('#td-hero-asset-count')) $('#td-hero-asset-count').textContent = producedAssets.length;
+  if ($('#td-hero-decision-count')) $('#td-hero-decision-count').textContent = approvedAssets.length;
+  if ($('#td-start-recommendation')) {
+    $('#td-start-recommendation').textContent = recs[0]?.text || '새 작품을 만들거나 최근 작업을 이어가세요.';
+  }
   if ($('#today-count')) $('#today-count').textContent = todayCounts.total;
   if ($('#today-prompt-count')) $('#today-prompt-count').textContent = todayCounts.prompts;
 
@@ -17514,7 +18184,6 @@ function renderTodayPage() {
   // ── C. Recommended Next Actions ──
   const recsContainer = document.querySelector('#page-today article:nth-of-type(2) ul');
   if (recsContainer) {
-    const recs = _todayRecommendations();
     recsContainer.innerHTML = recs.map(r =>
       `<li>${r.icon} <a href="javascript:showPage('${r.page}')" style="color:var(--accent)">${escapeHTML(r.text)}</a></li>`
     ).join('');
@@ -17557,6 +18226,14 @@ function renderTodayPage() {
 }
 
 function bindTodayPage() {
+  document.querySelectorAll('[data-today-page]').forEach(btn => {
+    if (btn.dataset.boundTodayPage === '1') return;
+    btn.dataset.boundTodayPage = '1';
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.todayPage;
+      if (page) showPage(page);
+    });
+  });
   // + 프로젝트 추가
   // 순서 변경 토글
   $('#td-todo-reorder-btn')?.addEventListener('click', () => {
@@ -17667,11 +18344,11 @@ const PROJECT_PLAN_LIMITS = {
   team: 9999,
 };
 
-/* 플랜별 도구·기능 게이트 — Pro 구매 유도 */
+/* 플랜별 도구·기능 게이트 — 페이지는 열고, 생성/저장/고급 모델에서 수익화 */
 const PLAN_FEATURES = {
   free: {
     label: '무료',
-    tools: ['today','personas','characters','voice-studio','story-view'],  // 핵심 4종 + Today
+    tools: 'all',
     chars: 20,                                 // 캐릭터 한도 — 무료 20명
     storyMaxLen: 'medium',
     pipelineShots: 5,
@@ -17684,16 +18361,19 @@ const PLAN_FEATURES = {
     memoryGraph: false,
     styleBible: false,
     cinemaLibrary: false,
-    quality: '720p',
-    storageGB: 1,
-    versionDays: 0,
+    quality: 'preview',
+    storageGB: 0.5,
+    versionDays: 30,
+    modelAccess: ['basic', 'fast', 'safe'],
+    apiRouter: false,
+    export: 'watermark',
     // 비즈니스 모델 — 모든 플랜 통합 크레딧 모델
     billing: 'credits',
     creditsPerMonth: 200,                      // 체험용
   },
   standard: {
     label: 'Standard',
-    tools: ['today','personas','characters','voice-studio','music-studio','sfx-studio','transcript','story-view','styles','cinema'],
+    tools: 'all',
     chars: 100,                                // 캐릭터 한도 — Standard 100명
     storyMaxLen: 'xl',
     pipelineShots: 20,
@@ -17707,8 +18387,11 @@ const PLAN_FEATURES = {
     styleBible: 3,
     cinemaLibrary: 10,
     quality: 'fhd',
-    storageGB: 15,
+    storageGB: 50,
     versionDays: 30,
+    modelAccess: ['basic', 'fast', 'safe', 'premium'],
+    apiRouter: false,
+    export: 'hd',
     billing: 'credits',
     creditsPerMonth: 5000,
   },
@@ -17728,8 +18411,11 @@ const PLAN_FEATURES = {
     styleBible: Infinity,
     cinemaLibrary: Infinity,
     quality: '4k',
-    storageGB: 50,
+    storageGB: 500,
     versionDays: 90,
+    modelAccess: ['basic', 'fast', 'safe', 'premium', 'exclusive', 'pro'],
+    apiRouter: true,
+    export: 'commercial',
     // Pro도 크레딧 모델 — 풍부한 풀 + 우선 처리
     billing: 'credits',
     creditsPerMonth: 50000,                    // 무제한급 풀
@@ -17750,10 +18436,13 @@ const PLAN_FEATURES = {
     styleBible: Infinity,
     cinemaLibrary: Infinity,
     quality: '4k',
-    storageGB: 1024,
+    storageGB: 2048,
     versionDays: Infinity,
     realtimeCollab: true,
     sso: true,
+    modelAccess: ['basic', 'fast', 'safe', 'premium', 'exclusive', 'pro'],
+    apiRouter: true,
+    export: 'commercial-team',
     // 팀 풀 + 멤버당 크레딧
     billing: 'credits',
     creditsPerMonth: 30000,                    // 팀 풀 / 멤버
@@ -17766,11 +18455,9 @@ function getCurrentFeatures() {
   return PLAN_FEATURES[plan] || PLAN_FEATURES.free;
 }
 
-/** 도구 접근 가능 여부 — page id 기준 */
+/** 도구 접근 가능 여부 — 페이지 오픈은 전 플랜 허용. 레거시 코드 호환용 */
 function canAccessTool(toolId) {
-  const f = getCurrentFeatures();
-  if (f.tools === 'all') return true;
-  return Array.isArray(f.tools) && f.tools.includes(toolId);
+  return true;
 }
 
 /** Pro 업그레이드 안내 모달 (잠긴 도구 클릭 시) */
@@ -17790,47 +18477,9 @@ window.getCurrentFeatures = getCurrentFeatures;
 
 /** 사이드바 — 플랜에 따라 잠긴 도구에 PRO/STD 배지 자동 표시 */
 function refreshNavLockBadges() {
-  const f = getCurrentFeatures();
-  const plan = (typeof getCurrentPlan === 'function') ? getCurrentPlan() : 'free';
-  // page id → alias 매핑
-  const pageAlias = {
-    'voice-studio': 'voice-studio',
-    'music-studio': 'music-studio',
-    'sfx-studio': 'sfx-studio',
-    'video-studio': 'video-studio',
-    'compare': 'compare',
-    'memory-graph': 'memory-graph',
-    'characters': 'characters',
-    'styles': 'styles',
-    'cinema': 'cinema',
-    'transcript': 'transcript',
-    'personas': 'personas',
-    'today': 'today',
-    'pipeline': 'pipeline',
-    'library': 'library',
-    'project-archive': 'project-archive',
-    'production-log': 'production-log',
-    'settings': 'settings',
-  };
   document.querySelectorAll('.nav-item[data-page]').forEach(el => {
-    const page = el.dataset.page;
-    const alias = pageAlias[page] || page;
     el.classList.remove('locked', 'locked-standard');
-    if (f.tools === 'all') return;
-    // 메모리 그래프·비교 모드는 Pro 전용
-    if (page === 'compare' || page === 'memory-graph') {
-      if (!f.compareMode || !f.memoryGraph) {
-        el.classList.add('locked');
-      }
-      return;
-    }
-    // styles·cinema는 무료에서 잠금
-    if (page === 'styles' && !f.styleBible) { el.classList.add(plan === 'free' ? 'locked-standard' : 'locked'); return; }
-    if (page === 'cinema' && !f.cinemaLibrary) { el.classList.add(plan === 'free' ? 'locked-standard' : 'locked'); return; }
-    // 도구 list에 없으면 잠금 (무료 기준)
-    if (!f.tools.includes(alias)) {
-      el.classList.add(plan === 'free' ? 'locked-standard' : 'locked');
-    }
+    el.title = (el.title || '').replace(/\s*·\s*(PRO|STD)\s*필요$/i, '');
   });
 }
 window.refreshNavLockBadges = refreshNavLockBadges;
@@ -18098,6 +18747,142 @@ function consumeCredits(amount, label = '') {
   return getCreditBalance();
 }
 window.consumeCredits = consumeCredits;
+
+const PLAN_ORDER = { free: 0, standard: 1, pro: 2, team: 3 };
+const PLAN_PRICE_LABEL = { standard: '₩9,900/월', pro: '₩19,000/월', team: '₩39,000/월' };
+
+function planRank(plan = getCurrentPlan()) {
+  return PLAN_ORDER[plan] ?? 0;
+}
+
+function planMeets(minPlan = 'free') {
+  return planRank() >= planRank(minPlan);
+}
+
+function openMonetizationGate({
+  title = '업그레이드가 필요해요',
+  message = '',
+  recommendedPlan = 'standard',
+  reason = '',
+} = {}) {
+  const planName = PLAN_FEATURES[recommendedPlan]?.label || recommendedPlan || 'Pro';
+  const price = PLAN_PRICE_LABEL[recommendedPlan] || PLAN_PRICE_LABEL.pro;
+  const body = [
+    title,
+    '',
+    message || `${planName} 플랜에서 사용할 수 있습니다.`,
+    reason ? `\n이유: ${reason}` : '',
+    `\n추천: ${planName} · ${price}`,
+    '',
+    '[확인] 요금제 보기 / [취소] 닫기',
+  ].join('\n');
+  if (confirm(body) && typeof window.openDocsModal === 'function') {
+    window.openDocsModal('pricing-page');
+  }
+}
+window.openMonetizationGate = openMonetizationGate;
+
+function canUseApiRouter({ silent = false } = {}) {
+  const ok = !!getCurrentFeatures().apiRouter;
+  if (!ok && !silent) {
+    openMonetizationGate({
+      title: 'API Router는 Pro 기능입니다',
+      message: 'OpenAI, Anthropic, ElevenLabs, Replicate 키를 직접 연결하고 모델별 비용 로그를 보려면 Pro가 필요합니다.',
+      recommendedPlan: 'pro',
+      reason: '외부 API 키, BYOK, 모델 라우팅은 고급 제작/상업 워크플로우에 해당합니다.',
+    });
+  }
+  return ok;
+}
+window.canUseApiRouter = canUseApiRouter;
+
+function canUseModelTier(tier = 'basic', { silent = false, modelLabel = '' } = {}) {
+  const normalized = tier === 'exclusive' ? 'exclusive' : tier === 'premium' ? 'premium' : tier || 'basic';
+  const f = getCurrentFeatures();
+  const allowed = Array.isArray(f.modelAccess) ? f.modelAccess : ['basic'];
+  const ok = allowed.includes(normalized) || allowed.includes('pro');
+  if (!ok && !silent) {
+    const recommendedPlan = normalized === 'premium' ? 'standard' : 'pro';
+    openMonetizationGate({
+      title: `${modelLabel || normalized} 모델은 ${PLAN_FEATURES[recommendedPlan]?.label || 'Pro'} 기능입니다`,
+      message: '페이지는 열려 있지만 고급 모델 실행은 유료 플랜에서 사용할 수 있습니다.',
+      recommendedPlan,
+      reason: '고급 모델은 API 원가가 높아 크레딧과 플랜 권한으로 보호합니다.',
+    });
+  }
+  return ok;
+}
+window.canUseModelTier = canUseModelTier;
+
+function canRunMonetizedAction({
+  action = 'generate',
+  label = '생성',
+  cost = 0,
+  minPlan = 'free',
+  modelTier = 'basic',
+  modelLabel = '',
+  apiMode = false,
+} = {}) {
+  if (!planMeets(minPlan)) {
+    openMonetizationGate({
+      title: `${label}은(는) ${PLAN_FEATURES[minPlan]?.label || minPlan} 이상에서 사용할 수 있습니다`,
+      message: '작업 화면은 체험 가능하지만 실제 실행은 플랜 권한이 필요합니다.',
+      recommendedPlan: minPlan,
+      reason: action,
+    });
+    return false;
+  }
+  if (apiMode && !canUseApiRouter()) return false;
+  if (!canUseModelTier(modelTier, { modelLabel })) return false;
+  const b = getCreditBalance();
+  if (cost > 0 && b.remaining < cost) {
+    openMonetizationGate({
+      title: '크레딧이 부족합니다',
+      message: `${label}에는 ${Number(cost).toLocaleString()} 크레딧이 필요하고, 현재 잔여 크레딧은 ${b.remaining.toLocaleString()}입니다.`,
+      recommendedPlan: b.plan === 'free' ? 'standard' : 'pro',
+      reason: '생성형 작업은 실행 성공 시 크레딧을 차감합니다.',
+    });
+    return false;
+  }
+  return true;
+}
+window.canRunMonetizedAction = canRunMonetizedAction;
+
+function estimateLibraryAssetBytes(asset = {}) {
+  const explicit = Number(asset.storageBytes || asset.size || asset.bytes || 0);
+  if (explicit > 0) return explicit;
+  if (asset.type === 'video') return 25 * 1024 * 1024;
+  if (asset.type === 'music') return 8 * 1024 * 1024;
+  if (asset.type === 'sfx' || asset.type === 'tts' || asset.type === 'voice') return 2 * 1024 * 1024;
+  const str = (() => { try { return JSON.stringify(asset); } catch (_) { return ''; } })();
+  return Math.max(str.length * 2, 16 * 1024);
+}
+
+function getLibraryStorageUsage() {
+  const assets = (typeof getLibraryAssets === 'function') ? getLibraryAssets() : [];
+  const used = assets.reduce((sum, a) => sum + estimateLibraryAssetBytes(a), 0);
+  const limit = (getCurrentFeatures().storageGB || 0.5) * 1024 * 1024 * 1024;
+  return { used, limit, remaining: Math.max(0, limit - used), pct: limit ? used / limit : 0 };
+}
+window.getLibraryStorageUsage = getLibraryStorageUsage;
+
+function canStoreLibraryAsset(asset = {}, { silent = false } = {}) {
+  const usage = getLibraryStorageUsage();
+  const incoming = estimateLibraryAssetBytes(asset);
+  const ok = usage.used + incoming <= usage.limit;
+  if (!ok && !silent) {
+    const usedMB = Math.round(usage.used / 1024 / 1024);
+    const limitMB = Math.round(usage.limit / 1024 / 1024);
+    openMonetizationGate({
+      title: 'Library 저장공간이 부족합니다',
+      message: `현재 ${usedMB.toLocaleString()}MB / ${limitMB.toLocaleString()}MB를 사용 중입니다. 생성 결과를 계속 보관하려면 저장공간을 늘려야 합니다.`,
+      recommendedPlan: getCurrentPlan() === 'free' ? 'standard' : 'pro',
+      reason: 'Library는 결과물, Decision History, 재사용 자산을 장기 보관하는 유료 가치입니다.',
+    });
+  }
+  return ok;
+}
+window.canStoreLibraryAsset = canStoreLibraryAsset;
 
 /** 크레딧 pill DOM 갱신 — 단일 element에 상태 반영 */
 function _renderCreditPill(el) {
@@ -20418,10 +21203,11 @@ async function renderProjectsPage() {
         updated ? `업데이트 ${updated}` : '',
       ].filter(Boolean).join(' · ');
       const logline = p.logline || goal?.memo || '세계관, 씬, 프롬프트, 결과물을 이 프로젝트 아래에 묶어 제작 흐름을 시작하세요.';
+      const _projMark = p.icon ? p.icon : escapeHTML(initials);
       return `
         <article class="project-card ${p.archived ? 'archived' : ''}" data-project-id="${escapeHTML(p.id)}" style="--project-color:${_projectPageColor(p.color)}">
           <div class="project-card-head">
-            <div class="project-mark">${escapeHTML(initials)}</div>
+            <div class="project-mark" data-project-action="pick-icon" data-project-id="${escapeHTML(p.id)}" title="아이콘 변경 — 클릭">${_projMark}</div>
             <div>
               <h3 class="project-title">${escapeHTML(p.title || '프로젝트')}</h3>
               <div class="project-meta">${escapeHTML(meta || '작품 프로젝트')}</div>
@@ -20708,8 +21494,206 @@ function bindProjectsPage() {
     else if (action === 'archive') await _projectPageArchive(projectId);
     else if (action === 'restore') await _projectPageRestore(projectId);
     else if (action === 'delete') await _projectPageDeleteDeep(projectId);
+    else if (action === 'pick-icon') {
+      e.stopPropagation();
+      _openProjectIconPopover(btn, projectId, project.icon || '');
+    }
   });
   renderProjectsPage();
+}
+
+/* ─── 프로젝트 아이콘 선택 팝오버 — iOS 스타일 풀 카테고리 ─────────── */
+const PROJECT_ICON_CATEGORIES = [
+  {
+    id: 'recent',
+    label: '최근',
+    items: [], // 동적 채움
+  },
+  {
+    id: 'smileys',
+    label: '스마일리·감정',
+    items: '😀 😃 😄 😁 😆 😅 🤣 😂 🙂 🙃 🫠 😉 😊 😇 🥰 😍 🤩 😘 😗 ☺️ 😚 😙 🥲 😋 😛 😜 🤪 😝 🤑 🤗 🤭 🫢 🫣 🤫 🤔 🫡 🤐 🤨 😐 😑 😶 🫥 😶‍🌫️ 😏 😒 🙄 😬 😮‍💨 🤥 😌 😔 😪 🤤 😴 😷 🤒 🤕 🤢 🤮 🤧 🥵 🥶 🥴 😵 😵‍💫 🤯 🤠 🥳 🥸 😎 🤓 🧐 😕 🫤 😟 🙁 ☹️ 😮 😯 😲 😳 🥺 🥹 😦 😧 😨 😰 😥 😢 😭 😱 😖 😣 😞 😓 😩 😫 🥱 😤 😡 😠 🤬 😈 👿 💀 ☠️ 💩 🤡 👹 👺 👻 👽 👾 🤖 😺 😸 😹 😻 😼 😽 🙀 😿 😾 💋 💌 💘 💝 💖 💗 💓 💞 💕 💟 ❣️ 💔 ❤️‍🔥 ❤️‍🩹 ❤️ 🧡 💛 💚 💙 💜 🤎 🖤 🤍'.split(' '),
+  },
+  {
+    id: 'people',
+    label: '사람·신체',
+    items: '👋 🤚 🖐 ✋ 🖖 🫱 🫲 🫳 🫴 👌 🤌 🤏 ✌️ 🤞 🫰 🤟 🤘 🤙 👈 👉 👆 🖕 👇 ☝️ 🫵 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 🫶 👐 🤲 🤝 🙏 ✍️ 💅 🤳 💪 🦾 🦿 🦵 🦶 👂 🦻 👃 🧠 🫀 🫁 🦷 🦴 👀 👁 👅 👄 🫦 👶 🧒 👦 👧 🧑 👱 👨 🧔 👩 🧓 👴 👵 🙍 🙎 🙅 🙆 💁 🙋 🧏 🙇 🤦 🤷 👮 🕵️ 💂 🥷 👷 🫅 🤴 👸 👳 👲 🧕 🤵 👰 🤰 🫃 🫄 🤱 👼 🎅 🤶 🦸 🦹 🧙 🧚 🧛 🧜 🧝 🧞 🧟 💆 💇 🚶 🧍 🧎 🏃 💃 🕺 🕴 👯 🧖 🧗 🤺 🏇 ⛷ 🏂 🏌 🏄 🚣 🏊 ⛹ 🏋 🚴 🚵 🤸 🤼 🤽 🤾 🤹 🧘 🛀 🛌 👭 👫 👬 💏 💑 👪 🗣 👤 👥 🫂 👣'.split(' '),
+  },
+  {
+    id: 'animals',
+    label: '동물·자연',
+    items: '🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐻‍❄️ 🐨 🐯 🦁 🐮 🐷 🐽 🐸 🐵 🙈 🙉 🙊 🐒 🐔 🐧 🐦 🐤 🐣 🐥 🦆 🦅 🦉 🦇 🐺 🐗 🐴 🦄 🐝 🪱 🐛 🦋 🐌 🐞 🐜 🪰 🪲 🪳 🦟 🦗 🕷 🕸 🦂 🐢 🐍 🦎 🦖 🦕 🐙 🦑 🦐 🦞 🦀 🐡 🐠 🐟 🐬 🐳 🐋 🦈 🐊 🐅 🐆 🦓 🦍 🦧 🦣 🐘 🦛 🦏 🐪 🐫 🦒 🦘 🦬 🐃 🐂 🐄 🐎 🐖 🐏 🐑 🦙 🐐 🦌 🐕 🐩 🦮 🐕‍🦺 🐈 🐈‍⬛ 🪶 🐓 🦃 🦤 🦚 🦜 🦢 🦩 🕊 🐇 🦝 🦨 🦡 🦫 🦦 🦥 🐁 🐀 🐿 🦔 🐾 🐉 🐲 🌵 🎄 🌲 🌳 🌴 🪵 🌱 🌿 ☘️ 🍀 🎍 🪴 🎋 🍃 🍂 🍁 🍄 🐚 🪨 🌾 💐 🌷 🌹 🥀 🌺 🌸 🌼 🌻'.split(' '),
+  },
+  {
+    id: 'food',
+    label: '음식·음료',
+    items: '🍏 🍎 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🍆 🥑 🥦 🥬 🥒 🌶 🫑 🌽 🥕 🫒 🧄 🧅 🥔 🍠 🥐 🥯 🍞 🥖 🥨 🧀 🥚 🍳 🧈 🥞 🧇 🥓 🥩 🍗 🍖 🦴 🌭 🍔 🍟 🍕 🥪 🥙 🧆 🌮 🌯 🫔 🥗 🥘 🫕 🥫 🍝 🍜 🍲 🍛 🍣 🍱 🥟 🦪 🍤 🍙 🍚 🍘 🍥 🥠 🥮 🍢 🍡 🍧 🍨 🍦 🥧 🧁 🍰 🎂 🍮 🍭 🍬 🍫 🍿 🍩 🍪 🌰 🥜 🍯 🥛 🍼 🫖 ☕️ 🍵 🧃 🥤 🧋 🍶 🍺 🍻 🥂 🍷 🥃 🍸 🍹 🧉 🍾 🧊 🥄 🍴 🍽 🥣 🥡 🥢 🧂'.split(' '),
+  },
+  {
+    id: 'activity',
+    label: '활동·스포츠',
+    items: '⚽️ 🏀 🏈 ⚾️ 🥎 🎾 🏐 🏉 🥏 🎱 🪀 🏓 🏸 🏒 🏑 🥍 🏏 🪃 🥅 ⛳️ 🪁 🏹 🎣 🤿 🥊 🥋 🎽 🛹 🛼 🛷 ⛸ 🥌 🎿 ⛷ 🏂 🪂 🏋️ 🤼 🤸 🤺 ⛹️ 🤾 🏌️ 🏇 🧘 🏄 🏊 🤽 🚣 🧗 🚵 🚴 🏆 🥇 🥈 🥉 🏅 🎖 🏵 🎗 🎫 🎟 🎪 🤹 🎭 🩰 🎨 🎬 🎤 🎧 🎼 🎹 🪘 🥁 🪗 🎷 🎺 🎸 🪕 🎻 🎲 ♟ 🎯 🎳 🎮 🎰 🧩'.split(' '),
+  },
+  {
+    id: 'travel',
+    label: '여행·장소',
+    items: '🚗 🚕 🚙 🚌 🚎 🏎 🚓 🚑 🚒 🚐 🛻 🚚 🚛 🚜 🦯 🦽 🦼 🛴 🚲 🛵 🏍 🛺 🚨 🚔 🚍 🚘 🚖 🚡 🚠 🚟 🚃 🚋 🚞 🚝 🚄 🚅 🚈 🚂 🚆 🚇 🚊 🚉 ✈️ 🛫 🛬 🛩 💺 🛰 🚀 🛸 🚁 🛶 ⛵️ 🚤 🛥 🛳 ⛴ 🚢 ⚓️ 🪝 ⛽️ 🚧 🚦 🚥 🚏 🗺 🗿 🗽 🗼 🏰 🏯 🏟 🎡 🎢 🎠 ⛲️ ⛱ 🏖 🏝 🏜 🌋 ⛰ 🏔 🗻 🏕 ⛺️ 🛖 🏠 🏡 🏘 🏚 🏗 🏭 🏢 🏬 🏣 🏤 🏥 🏦 🏨 🏪 🏫 🏩 💒 🏛 ⛪️ 🕌 🕍 🛕 🕋 ⛩ 🛤 🛣 🗾 🎑 🏞 🌅 🌄 🌠 🎇 🎆 🌇 🌆 🏙 🌃 🌌 🌉 🌁'.split(' '),
+  },
+  {
+    id: 'objects',
+    label: '사물',
+    items: '⌚️ 📱 📲 💻 ⌨️ 🖥 🖨 🖱 🖲 🕹 🗜 💽 💾 💿 📀 📼 📷 📸 📹 🎥 📽 🎞 📞 ☎️ 📟 📠 📺 📻 🎙 🎚 🎛 🧭 ⏱ ⏲ ⏰ 🕰 ⌛️ ⏳ 📡 🔋 🪫 🔌 💡 🔦 🕯 🪔 🧯 🛢 💸 💵 💴 💶 💷 🪙 💰 💳 💎 ⚖️ 🪜 🧰 🪛 🔧 🔨 ⚒ 🛠 ⛏ 🪚 🔩 ⚙️ 🪤 🧱 ⛓ 🧲 🔫 💣 🧨 🪓 🔪 🗡 ⚔️ 🛡 🚬 ⚰️ 🪦 ⚱️ 🏺 🔮 📿 🧿 🪬 💈 ⚗️ 🔭 🔬 🕳 🩻 🩹 🩺 💊 💉 🩸 🧬 🦠 🧫 🧪 🌡 🧹 🪠 🧺 🧻 🚽 🚰 🚿 🛁 🛀 🧼 🪥 🪒 🧽 🪣 🧴 🛎 🔑 🗝 🚪 🪑 🛋 🛏 🛌 🧸 🪆 🖼 🪞 🪟 🛍 🛒 🎁 🎈 🎏 🎀 🪄 🪅 🎊 🎉 🎎 🏮 🎐 🧧 ✉️ 📩 📨 📧 💌 📥 📤 📦 🏷 🪧 📪 📫 📬 📭 📮 📯 📜 📃 📄 📑 🧾 📊 📈 📉 🗒 🗓 📆 📅 🗑 📇 🗃 🗳 🗄 📋 📁 📂 🗂 🗞 📰 📓 📔 📒 📕 📗 📘 📙 📚 📖 🔖 🧷 🔗 📎 🖇 📐 📏 🧮 📌 📍 ✂️ 🖊 🖋 ✒️ 🖌 🖍 📝 ✏️ 🔍 🔎 🔏 🔐 🔒 🔓'.split(' '),
+  },
+  {
+    id: 'symbols',
+    label: '기호·플래그',
+    items: '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❣️ 💕 💞 💓 💗 💖 💘 💝 💟 ☮️ ✝️ ☪️ 🕉 ☸️ ✡️ 🔯 🕎 ☯️ ☦️ 🛐 ⛎ ♈️ ♉️ ♊️ ♋️ ♌️ ♍️ ♎️ ♏️ ♐️ ♑️ ♒️ ♓️ 🆔 ⚛️ 🉑 ☢️ ☣️ 📴 📳 🈶 🈚️ 🈸 🈺 🈷️ ✴️ 🆚 💮 🉐 ㊙️ ㊗️ 🈴 🈵 🈹 🈲 🅰️ 🅱️ 🆎 🆑 🅾️ 🆘 ❌ ⭕️ 🛑 ⛔️ 📛 🚫 💯 💢 ♨️ 🚷 🚯 🚳 🚱 🔞 📵 🚭 ❗️ ❕ ❓ ❔ ‼️ ⁉️ 🔅 🔆 〽️ ⚠️ 🚸 🔱 ⚜️ 🔰 ♻️ ✅ 🈯️ 💹 ❇️ ✳️ ❎ 🌐 💠 Ⓜ️ 🌀 💤 🏧 🚾 ♿️ 🅿️ 🛗 🈳 🈂️ 🛂 🛃 🛄 🛅 🛜 🚹 🚺 🚼 ⚧ 🚻 🚮 🎦 📶 🈁 🔣 ℹ️ 🔤 🔡 🔠 🆖 🆗 🆙 🆒 🆕 🆓 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟 🔢 #️⃣ *️⃣ ⏏️ ▶️ ⏸ ⏯ ⏹ ⏺ ⏭ ⏮ ⏩ ⏪ ⏫ ⏬ ◀️ 🔼 🔽 ➡️ ⬅️ ⬆️ ⬇️ ↗️ ↘️ ↙️ ↖️ ↕️ ↔️ ↪️ ↩️ ⤴️ ⤵️ 🔀 🔁 🔂 🔄 🔃 🎵 🎶 ➕ ➖ ➗ ✖️ 🟰 ♾ 💲 💱 ™️ ©️ ®️ 〰️ ➰ ➿ 🔚 🔙 🔛 🔝 🔜 ✔️ ☑️ 🔘 🔴 🟠 🟡 🟢 🔵 🟣 ⚫️ ⚪️ 🟤 🔺 🔻 🔸 🔹 🔶 🔷 🔳 🔲 ▪️ ▫️ ◾️ ◽️ ◼️ ◻️ 🟥 🟧 🟨 🟩 🟦 🟪 ⬛️ ⬜️ 🟫 🔈 🔇 🔉 🔊 🔔 🔕 📣 📢 👁‍🗨 💬 💭 🗯 ♠️ ♣️ ♥️ ♦️ 🃏 🎴 🀄️ 🕐 🕑 🕒 🕓 🕔 🕕 🕖 🕗 🕘 🕙 🕚 🕛 🕜 🕝 🕞 🕟 🕠 🕡 🕢 🕣 🕤 🕥 🕦 🕧'.split(' '),
+  },
+  {
+    id: 'creative',
+    label: '크리에이티브',
+    items: '🎬 🎞 📽 🎥 📹 🎙 🎤 🎧 🎵 🎶 🎼 🎚 🎛 📺 📷 📸 🎨 🖼 🎭 🎪 ✨ 💫 ⭐ 🌟 🌙 ☀️ 🌈 🔥 💎 ⚡️ 📝 📓 📔 📕 📗 📘 📙 ✏️ 🖋 ✒️ 📋 🗂 📁 📂 📌 🎯 🎲 🎮 🕹 🃏 🎰 🎟 🎫 🌌 🏙 🌆 🌃 🏞 🌅 🗺 🚀 🛸 🌊 🦄 🐉 🦋 👑 🎀 💌 🪞 🔮 💄 🪄 💥 ⏳ 🕯 🪔 🌹 🌸 🪻 🪷 🍷 🥂 🪐 🛰 📡 🧠 🫧'.split(' '),
+  },
+];
+
+// 중복 제거 + 빈 항목 정리
+PROJECT_ICON_CATEGORIES.forEach(c => {
+  c.items = (c.items || []).filter(Boolean);
+});
+const PROJECT_ICON_POOL = Array.from(new Set(
+  PROJECT_ICON_CATEGORIES.flatMap(c => c.items)
+));
+const PROJECT_ICON_RECENT_KEY = 'soaviz.icon.recent';
+function _projectIconLoadRecent() {
+  try { return JSON.parse(localStorage.getItem(PROJECT_ICON_RECENT_KEY) || '[]'); }
+  catch { return []; }
+}
+function _projectIconPushRecent(em) {
+  if (!em) return;
+  let r = _projectIconLoadRecent().filter(x => x !== em);
+  r.unshift(em);
+  r = r.slice(0, 30);
+  try { localStorage.setItem(PROJECT_ICON_RECENT_KEY, JSON.stringify(r)); } catch {}
+}
+
+function _openProjectIconPopover(anchor, projectId, currentIcon) {
+  // 기존 팝오버 닫기
+  document.querySelectorAll('.project-icon-pop').forEach(p => p.remove());
+
+  const pop = document.createElement('div');
+  pop.className = 'project-icon-pop';
+  // 위치 — anchor 아래
+  const rect = anchor.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - 332, rect.left)) + 'px';
+  pop.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+
+  // 최근 이모지 채우기
+  const recentItems = _projectIconLoadRecent();
+  PROJECT_ICON_CATEGORIES[0].items = recentItems;
+
+  let activeCat = recentItems.length ? 'recent' : 'smileys';
+  let searchQuery = '';
+
+  const renderEmojis = () => {
+    const grid = pop.querySelector('.pip-grid');
+    if (!grid) return;
+    let items = [];
+    if (searchQuery) {
+      // 검색 — 모든 카테고리 합쳐서
+      items = PROJECT_ICON_POOL.filter(em =>
+        em.includes(searchQuery)
+      );
+    } else {
+      const cat = PROJECT_ICON_CATEGORIES.find(c => c.id === activeCat);
+      items = cat ? cat.items : [];
+    }
+    if (!items.length) {
+      grid.innerHTML = `<div class="pip-empty">${searchQuery ? '결과 없음' : '비어 있음'}</div>`;
+      return;
+    }
+    grid.innerHTML = items.map(em =>
+      `<button class="pip-emoji ${em === currentIcon ? 'active' : ''}" type="button" data-em="${em}" title="${em}">${em}</button>`
+    ).join('');
+  };
+
+  const cats = PROJECT_ICON_CATEGORIES
+    .filter(c => c.id !== 'recent' || recentItems.length)
+    .map(c =>
+      `<button class="pip-cat ${c.id === activeCat ? 'active' : ''}" type="button" data-cat="${c.id}">${c.label}</button>`
+    ).join('');
+
+  pop.innerHTML = `
+    <div class="pip-head">
+      <span class="pip-title">아이콘 선택 · ${PROJECT_ICON_POOL.length}개</span>
+      <button class="pip-clear" type="button" data-clear="1">기본 (이니셜)</button>
+    </div>
+    <input class="pip-search" type="text" placeholder="아이콘 검색…" />
+    <div class="pip-cats">${cats}</div>
+    <div class="pip-scroll"><div class="pip-grid"></div></div>
+  `;
+  document.body.appendChild(pop);
+  renderEmojis();
+
+  // 카테고리 클릭
+  pop.querySelector('.pip-cats')?.addEventListener('click', (ev) => {
+    const c = ev.target.closest('.pip-cat');
+    if (!c) return;
+    activeCat = c.dataset.cat;
+    pop.querySelectorAll('.pip-cat').forEach(b => b.classList.toggle('active', b.dataset.cat === activeCat));
+    pop.querySelector('.pip-search').value = '';
+    searchQuery = '';
+    renderEmojis();
+    pop.querySelector('.pip-scroll').scrollTop = 0;
+  });
+
+  // 검색
+  pop.querySelector('.pip-search')?.addEventListener('input', (ev) => {
+    searchQuery = (ev.target.value || '').trim();
+    renderEmojis();
+    pop.querySelector('.pip-scroll').scrollTop = 0;
+  });
+
+  // 이모지 / 클리어 클릭
+  pop.addEventListener('click', async (ev) => {
+    const cb = ev.target.closest('.pip-emoji,[data-clear]');
+    if (!cb) return;
+    if (cb.classList.contains('pip-cat')) return;
+    ev.stopPropagation();
+    const newIcon = cb.dataset.clear ? '' : (cb.dataset.em || '');
+    try {
+      await SoavizDB?.ready;
+      const cur = await SoavizDB.db.projects.get(projectId);
+      if (cur) {
+        cur.icon = newIcon;
+        // ⚠️ updatedAt 갱신 안 함 — 아이콘 변경만으로 정렬 순서가 바뀌면 안 됨
+        await SoavizDB.db.projects.put(cur);
+      }
+    } catch (err) {
+      console.warn('icon update failed:', err);
+    }
+    if (newIcon) _projectIconPushRecent(newIcon);
+    pop.remove();
+    document.removeEventListener('click', closer);
+    renderProjectsPage?.();
+    showToast?.(newIcon ? `✓ 아이콘 ${newIcon} 적용` : '✓ 기본 이니셜로 변경');
+  });
+
+  // 외부 클릭 시 닫기
+  function closer(ev) {
+    if (!pop.contains(ev.target) && ev.target !== anchor && !anchor.contains(ev.target)) {
+      pop.remove();
+      document.removeEventListener('click', closer);
+    }
+  }
+  setTimeout(() => document.addEventListener('click', closer), 0);
+  // ESC 닫기
+  document.addEventListener('keydown', function escClose(ev) {
+    if (ev.key === 'Escape') {
+      pop.remove();
+      document.removeEventListener('keydown', escClose);
+      document.removeEventListener('click', closer);
+    }
+  });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -21027,6 +22011,66 @@ function refreshWorkspaceSummary() {
   el.innerHTML = `<strong>${escapeHTML(w.name)}</strong> · 자동잠금 ${w.autoLockMinutes}분 · Cold ${w.coldTierThreshold}+`;
 }
 
+async function getStorageOverview() {
+  const stats = {
+    counts: {},
+    total: 0,
+    usedMB: null,
+    quotaMB: null,
+    hotAssets: 0,
+    coldAssets: 0,
+  };
+  try {
+    await SoavizDB?.ready;
+    const tables = ['projects','episodes','scenes','shots','characters','styles','refs','refClips','compares','prompts','assets','activities','goals','blobs'];
+    for (const t of tables) {
+      try {
+        stats.counts[t] = await SoavizDB.db.table(t).count();
+      } catch (_) {
+        stats.counts[t] = 0;
+      }
+    }
+    stats.total = Object.values(stats.counts).reduce((sum, n) => sum + (Number(n) || 0), 0);
+    try {
+      stats.hotAssets = await SoavizDB.db.assets.where('storageTier').equals('hot').count();
+      stats.coldAssets = await SoavizDB.db.assets.where('storageTier').equals('cold').count();
+    } catch (_) {}
+  } catch (_) {}
+  try {
+    if (navigator.storage?.estimate) {
+      const est = await navigator.storage.estimate();
+      stats.usedMB = est.usage ? (est.usage / 1024 / 1024).toFixed(1) : '0.0';
+      stats.quotaMB = est.quota ? (est.quota / 1024 / 1024).toFixed(0) : null;
+    }
+  } catch (_) {}
+  return stats;
+}
+
+function refreshStorageSummary() {
+  const el = $('#settings-storage-card p');
+  if (!el) return;
+  getStorageOverview().then(stats => {
+    const used = stats.usedMB != null ? `${stats.usedMB}MB` : `${stats.total.toLocaleString()} records`;
+    el.innerHTML = `로컬 라이브러리 · <strong>${used}</strong> · Hot ${stats.hotAssets} / Cold ${stats.coldAssets}`;
+  }).catch(() => {
+    el.textContent = '로컬 라이브러리, 결과물 보관 정책';
+  });
+}
+
+function refreshBillingSummary() {
+  const el = $('#settings-billing-card p');
+  if (!el) return;
+  try {
+    const b = getCreditBalance?.();
+    const f = getCurrentFeatures?.() || {};
+    const plan = b?.planLabel || f.label || '무료';
+    const modelLabel = f.apiRouter ? 'API Router ON' : (f.modelAccess || ['basic']).join('/');
+    el.innerHTML = `<strong>${escapeHTML(plan)}</strong> · 잔여 ${Number(b?.remaining || 0).toLocaleString()} / ${Number(b?.total || 0).toLocaleString()} 크레딧 · ${escapeHTML(modelLabel)}`;
+  } catch (_) {
+    el.textContent = '플랜, 사용량, 결제 내역';
+  }
+}
+
 async function openWorkspaceModal() {
   const w = SoavizWorkspace.get();
   // IDB 통계
@@ -21181,6 +22225,206 @@ async function openWorkspaceModal() {
   });
 }
 
+async function buildStorageExportPackage({ includeArchived = true } = {}) {
+  await SoavizDB?.ready;
+  const tables = ['projects','episodes','scenes','shots','characters','styles','refs','refClips','compares','prompts','assets','activities','goals'];
+  const data = {};
+  for (const t of tables) {
+    let rows = [];
+    try { rows = await SoavizDB.db.table(t).toArray(); } catch (_) {}
+    data[t] = includeArchived ? rows : rows.filter(r => !r.archived);
+  }
+  return {
+    app: 'soaviz-studio',
+    version: '3.0',
+    kind: 'workspace-backup',
+    exportedAt: new Date().toISOString(),
+    account: SoavizAccount.get(),
+    workspace: SoavizWorkspace.get(),
+    plan: typeof getCurrentPlan === 'function' ? getCurrentPlan() : 'free',
+    data,
+  };
+}
+
+async function importStoragePackage(file) {
+  if (!file) return;
+  let pkg;
+  try {
+    pkg = JSON.parse(await file.text());
+  } catch (err) {
+    showToast?.('백업 JSON을 읽을 수 없습니다', 'error');
+    return;
+  }
+  if (pkg?.app !== 'soaviz-studio' || pkg?.kind !== 'workspace-backup' || !pkg.data) {
+    showToast?.('soaviz 워크스페이스 백업 파일이 아닙니다', 'error');
+    return;
+  }
+  if (!confirm(`"${file.name}" 백업을 가져옵니다.\n동일 ID 데이터는 덮어씁니다. 진행할까요?`)) return;
+  await SoavizDB?.ready;
+  const tables = Object.keys(pkg.data).filter(t => SoavizDB.db[t]);
+  let imported = 0;
+  for (const t of tables) {
+    const rows = Array.isArray(pkg.data[t]) ? pkg.data[t] : [];
+    if (!rows.length) continue;
+    await SoavizDB.db.table(t).bulkPut(rows);
+    imported += rows.length;
+  }
+  if (pkg.account) SoavizAccount.set(pkg.account);
+  if (pkg.workspace) SoavizWorkspace.set(pkg.workspace);
+  showToast?.(`✓ ${imported.toLocaleString()}개 레코드 가져옴`);
+  refreshStorageSummary();
+  refreshWorkspaceSummary();
+  try { renderProjectsPage?.(); renderCharactersPage?.(); renderPipelinePage?.(); } catch (_) {}
+}
+
+async function openStorageModal() {
+  const stats = await getStorageOverview();
+  const root = document.createElement('div');
+  root.className = 'bible-modal';
+  const rows = Object.entries(stats.counts).map(([t, n]) => `
+    <div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <span style="color:var(--text-faint)">${escapeHTML(t)}</span>
+      <strong style="font-variant-numeric:tabular-nums">${Number(n || 0).toLocaleString()}</strong>
+    </div>
+  `).join('');
+  root.innerHTML = `
+    <div class="bible-modal-card">
+      <div class="bible-modal-head">
+        <span style="font-size:18px">💾</span>
+        <h3>Storage · 로컬 저장소</h3>
+        <button class="vault-btn" id="st-close">닫기</button>
+      </div>
+      <div class="bible-modal-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+          ${[
+            ['총 레코드', stats.total.toLocaleString()],
+            ['사용량', stats.usedMB != null ? `${stats.usedMB}MB` : '측정 불가'],
+            ['할당량', stats.quotaMB ? `${stats.quotaMB}MB` : '브라우저 기본'],
+          ].map(([label, value]) => `
+            <div style="padding:13px;background:var(--bg-1);border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em">${label}</div>
+              <div style="margin-top:6px;font-size:18px;font-weight:800">${value}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="padding:14px;background:var(--bg-1);border:1px solid var(--border);border-radius:8px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px">테이블별 현황</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));column-gap:18px;font-size:12px">${rows}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="vault-btn primary" id="st-export-all">전체 백업 내보내기</button>
+          <button class="vault-btn" id="st-export-active">활성 데이터만 내보내기</button>
+          <button class="vault-btn" id="st-import">백업 가져오기</button>
+          <button class="vault-btn" id="st-cold">Cold Tier 정리</button>
+          <input type="file" id="st-import-input" accept="application/json" style="display:none" />
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:8px;line-height:1.6">
+          API 키와 대용량 blob 원본은 백업 파일에 포함하지 않습니다. 프로젝트 구조, 캐릭터, 스타일, 프롬프트, 결과물 메타데이터만 안전하게 내보냅니다.
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+  const close = () => { try { document.body.removeChild(root); } catch {} };
+  root.addEventListener('click', e => { if (e.target === root) close(); });
+  root.querySelector('#st-close')?.addEventListener('click', close);
+  async function exportPkg(includeArchived) {
+    const pkg = await buildStorageExportPackage({ includeArchived });
+    const suffix = includeArchived ? 'full' : 'active';
+    downloadBlob(new Blob([JSON.stringify(pkg, null, 2)], { type: 'application/json' }), `soaviz-workspace-${suffix}_${new Date().toISOString().slice(0,10)}.json`);
+    showToast?.('✓ 백업 파일 생성됨');
+  }
+  root.querySelector('#st-export-all')?.addEventListener('click', () => exportPkg(true));
+  root.querySelector('#st-export-active')?.addEventListener('click', () => exportPkg(false));
+  root.querySelector('#st-import')?.addEventListener('click', () => root.querySelector('#st-import-input')?.click());
+  root.querySelector('#st-import-input')?.addEventListener('change', e => importStoragePackage(e.target.files?.[0]));
+  root.querySelector('#st-cold')?.addEventListener('click', async () => {
+    await SoavizDB?.ready;
+    const projects = await SoavizDB.db.projects.toArray();
+    let cooled = 0;
+    for (const p of projects) {
+      try { cooled += (await SoavizDB.evaluateColdTier(p.id)).cooled || 0; } catch (_) {}
+    }
+    showToast?.(cooled ? `✓ ${cooled}개 자산을 Cold Tier로 정리` : '정리할 오래된 자산이 없습니다');
+    refreshStorageSummary();
+  });
+}
+
+function openBillingModal() {
+  const b = getCreditBalance?.() || { used: 0, total: 0, remaining: 0, plan: 'free', planLabel: '무료' };
+  const cur = typeof getCurrentPlan === 'function' ? getCurrentPlan() : 'free';
+  const root = document.createElement('div');
+  root.className = 'bible-modal';
+  const plans = ['free','standard','pro','team'].map(id => {
+    const f = PLAN_FEATURES[id];
+    const active = id === cur;
+    return `
+      <button class="admin-plan-btn ${id === 'pro' ? 'pro' : id === 'team' ? 'team' : ''} ${active ? 'active' : ''}" data-billing-plan="${id}" style="text-align:left">
+        <span class="apb-tier">${escapeHTML(f.label)}</span>
+        <span class="apb-name">${Number(f.creditsPerMonth || 0).toLocaleString()} credits / month</span>
+        <span class="apb-detail">Storage ${f.storageGB}GB · ${f.apiRouter ? 'API Router' : (f.modelAccess || ['basic']).join('/')} · Characters ${Number(f.chars || 0).toLocaleString()}</span>
+        <span class="apb-cta">${active ? '현재 플랜' : '이 플랜으로 전환'}</span>
+      </button>
+    `;
+  }).join('');
+  root.innerHTML = `
+    <div class="bible-modal-card">
+      <div class="bible-modal-head">
+        <span style="font-size:18px">💳</span>
+        <h3>Billing · 플랜과 크레딧</h3>
+        <button class="vault-btn" id="bill-close">닫기</button>
+      </div>
+      <div class="bible-modal-body">
+        <div style="padding:14px;background:var(--bg-1);border:1px solid var(--border);border-radius:8px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div>
+              <div style="font-size:11px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase">현재 플랜</div>
+              <div style="font-size:22px;font-weight:800;margin-top:3px">${escapeHTML(b.planLabel || cur)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-faint)">이번 달 잔여</div>
+              <div style="font-size:22px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${Number(b.remaining || 0).toLocaleString()} / ${Number(b.total || 0).toLocaleString()}</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;height:6px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden">
+            <span style="display:block;height:100%;width:${b.total ? Math.max(0, Math.min(100, (b.remaining / b.total) * 100)) : 0}%;background:linear-gradient(90deg,var(--accent),#6366F1)"></span>
+          </div>
+        </div>
+        <div class="admin-plan-grid">${plans}</div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="vault-btn" id="bill-reset-credits">이번 달 사용량 리셋</button>
+          <button class="vault-btn" id="bill-open-admin">Admin 대시보드 열기</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:8px;line-height:1.6">
+          현재 빌링은 로컬 개발용 플랜/크레딧 시뮬레이터입니다. 실제 결제 연동 전에도 제작 화면의 크레딧 UX를 끝까지 테스트할 수 있습니다.
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(root);
+  const close = () => { try { document.body.removeChild(root); } catch {} };
+  root.addEventListener('click', e => { if (e.target === root) close(); });
+  root.querySelector('#bill-close')?.addEventListener('click', close);
+  root.querySelectorAll('[data-billing-plan]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const plan = btn.dataset.billingPlan;
+      try { localStorage.setItem('soaviz.user.plan', plan); } catch (_) {}
+      try { _refreshAllPlanUI?.(); } catch (_) {}
+      refreshBillingSummary();
+      close();
+      showToast?.(`✓ ${PLAN_FEATURES[plan]?.label || plan} 플랜으로 전환됨`);
+    });
+  });
+  root.querySelector('#bill-reset-credits')?.addEventListener('click', () => {
+    try { localStorage.setItem('soaviz.credits.usedThisMonth', '0'); } catch (_) {}
+    try { refreshCreditPill?.(); } catch (_) {}
+    refreshBillingSummary();
+    close();
+    showToast?.('✓ 크레딧 사용량을 리셋했습니다');
+  });
+  root.querySelector('#bill-open-admin')?.addEventListener('click', () => { close(); showPage('admin'); });
+}
+
 function bindSettingsPage() {
   // 우상단 ⚙ 설정 버튼 → 관리자 페이지 (인증 후 플랜 토글 + 대시보드)
   $('#top-settings-btn')?.addEventListener('click', () => showPage('admin'));
@@ -21191,14 +22435,20 @@ function bindSettingsPage() {
   });
   $('#acc-manage-btn')?.addEventListener('click', () => openAccountModal());
   $('#ws-manage-btn')?.addEventListener('click', () => openWorkspaceModal());
-  // 미구현 카드 (Storage / Billing) — 친화 안내
+  $('#storage-manage-btn')?.addEventListener('click', () => openStorageModal());
+  $('#billing-manage-btn')?.addEventListener('click', () => openBillingModal());
+  $('#settings-storage-card')?.addEventListener('dblclick', () => openStorageModal());
+  $('#settings-billing-card')?.addEventListener('dblclick', () => openBillingModal());
+  // 혹시 새 카드가 추가되었는데 핸들러가 없으면 안내만 표시
   $$('.settings-cta').forEach(b => {
-    if (b.id === 'acc-manage-btn' || b.id === 'ws-manage-btn') return;
-    b.addEventListener('click', () => showToast(`${b.closest('.settings-card')?.querySelector('h3')?.textContent || ''} 설정은 다음 단계에서 추가됩니다`));
+    if (['acc-manage-btn','ws-manage-btn','storage-manage-btn','billing-manage-btn'].includes(b.id)) return;
+    b.addEventListener('click', () => showToast(`${b.closest('.settings-card')?.querySelector('h3')?.textContent || ''} 설정 패널이 아직 연결되지 않았습니다`, 'warn'));
   });
   // 카드 요약 텍스트 갱신
   refreshAccountSummary();
   refreshWorkspaceSummary();
+  refreshStorageSummary();
+  refreshBillingSummary();
 }
 // 메뉴 → 페이지 매핑
 //   voices → AI 보이스 라이브러리
@@ -21253,7 +22503,14 @@ $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
     }
   });
 });
-$('#nav-upgrade-btn')?.addEventListener('click', () => showToast('Pro 플랜 — 준비 중이에요', 'warn'));
+$('#nav-upgrade-btn')?.addEventListener('click', () => {
+  if (typeof window.openDocsModal === 'function') {
+    window.openDocsModal('pricing-page');
+  } else {
+    showToast('요금제 안내 페이지로 이동합니다', 'info');
+    setTimeout(() => location.href = 'docs/index.html#pricing-page', 200);
+  }
+});
 
 function showExtractState(which) {
   ['drop', 'processing', 'result'].forEach(s => {
@@ -22198,44 +23455,9 @@ function pauseIcon() {
 }
 
 /* ============================================================
-   STAGE 2: TRANSCRIPTION (mock with realistic Korean segments)
+   STAGE 2: TRANSCRIPTION
    ============================================================ */
-const MOCK_SCRIPT_POOL = [
-  "안녕하세요, 오늘은 soaviz studio 작업 세션에 오신 걸 환영합니다.",
-  "이 영상에서는 음성 추출부터 자막 생성, 요약까지의 파이프라인을 함께 살펴볼게요.",
-  "먼저 영상 파일을 올리면 백엔드가 yt-dlp로 오디오만 분리해 가져옵니다.",
-  "FFmpeg가 그 오디오를 48kHz WAV로 정규화하고, Demucs 모델이 목소리만 따로 뽑아내요.",
-  "분리된 목소리를 Whisper 모델에 넣으면 타임코드가 붙은 자막이 만들어집니다.",
-  "마지막으로 GPT가 자막을 읽고 핵심 내용과 액션 아이템을 정리해주죠.",
-  "노션의 녹음 요약 기능과 비슷한 흐름이라고 보시면 돼요.",
-  "이렇게 만들어진 목소리는 TTS 스튜디오에서 페르소나 보이스로도 활용할 수 있어요.",
-  "크리에이터라면 자기 목소리를 일관되게 콘텐츠에 녹이는 게 중요하잖아요.",
-  "영상 몇 분만 있으면 나만의 AI 보이스가 만들어지는 거죠.",
-  "다음 세션에서는 TTS 스튜디오의 감정·속도 컨트롤을 깊게 다뤄볼 예정입니다.",
-  "시청해주셔서 감사합니다. 좋은 하루 보내세요.",
-];
-
 let transcriptSegments = [];
-
-function mockTranscribe(durationSec) {
-  const segs = [];
-  let t = 0, i = 0;
-  while (t < durationSec - 1) {
-    const text = MOCK_SCRIPT_POOL[i % MOCK_SCRIPT_POOL.length];
-    const segDur = Math.min(
-      durationSec - t,
-      Math.max(2.2, text.length / 5.5)
-    );
-    segs.push({ start: t, end: t + segDur, text });
-    t += segDur + 0.4;
-    i++;
-    if (i > 120) break; // safety
-  }
-  if (segs.length === 0) {
-    segs.push({ start: 0, end: durationSec, text: MOCK_SCRIPT_POOL[0] });
-  }
-  return segs;
-}
 
 function segmentsToSrt(segments) {
   return segments.map((s, i) =>
@@ -22320,7 +23542,6 @@ $('#cta-transcribe').addEventListener('click', async () => {
   titleEl.innerHTML = `자막 생성 중 <span class="loader dark" style="margin-left:8px"><span></span><span></span><span></span></span>`;
   btn.querySelector('.next-arrow').style.display = 'none';
 
-  let usedFallback = false;
   try {
     let payload;
     if (currentJobId) {
@@ -22334,15 +23555,15 @@ $('#cta-transcribe').addEventListener('click', async () => {
     }
     transcriptSegments = normalizeWhisperSegments(payload?.segments);
     if (!transcriptSegments.length) {
-      // 백엔드가 빈 결과 반환 (키 없거나 무음) → mock fallback
-      transcriptSegments = mockTranscribe(audioPlayer?.duration || currentAudioBuffer?.duration || 60);
-      usedFallback = true;
+      throw new Error('자막 결과가 비어 있습니다. 음성이 너무 작거나 OpenAI 키가 설정되지 않았을 수 있어요.');
     }
   } catch (err) {
-    console.warn('[soaviz] transcribe failed, fallback to mock:', err);
-    showToast(`자막 API 실패 — 임시 자막을 표시합니다`, 'error');
-    transcriptSegments = mockTranscribe(audioPlayer?.duration || currentAudioBuffer?.duration || 60);
-    usedFallback = true;
+    console.warn('[soaviz] transcribe failed:', err);
+    showToast(err.message || '자막 API 실패 — Settings에서 OpenAI 키/백엔드를 확인하세요', 'error');
+    titleEl.textContent = originalTitle;
+    btn.querySelector('.next-arrow').style.display = '';
+    btn.disabled = false;
+    return;
   }
 
   // Render
@@ -22371,7 +23592,7 @@ $('#cta-transcribe').addEventListener('click', async () => {
   $('#cta-summary').classList.remove('hidden');
 
   $('#stage-transcript').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  showToast(usedFallback ? '임시 자막을 표시 중이에요' : '자막이 생성됐어요');
+  showToast('자막이 생성됐어요');
 
   titleEl.textContent = originalTitle;
   btn.querySelector('.next-arrow').style.display = '';
@@ -22399,9 +23620,9 @@ $('#cta-transcribe').addEventListener('click', async () => {
 });
 
 /* ============================================================
-   STAGE 3: SUMMARY (mock)
+   STAGE 3: SUMMARY
    ============================================================ */
-function mockSummarize(segments) {
+function localSummarize(segments) {
   const fullText = segments.map(s => s.text).join(' ');
   // 간이 키워드 추출: 3글자 이상 명사/동사 후보
   const stopwords = new Set(['여러분', '이렇게', '해주세요', '있어요', '입니다', '보시면', '있잖아요']);
@@ -22417,19 +23638,13 @@ function mockSummarize(segments) {
     .map(([w]) => w);
 
   return {
-    tldr: '영상은 soaviz studio의 음성 → 자막 → 요약 파이프라인을 소개하며, yt-dlp · FFmpeg · Demucs · Whisper · GPT를 차례로 연결해 크리에이터용 AI 보이스 워크플로우를 완성합니다.',
-    points: [
-      '영상에서 오디오를 분리해 48kHz WAV로 정규화',
-      'Demucs 모델이 보컬만 추출해 깨끗한 목소리 파일을 생성',
-      'Whisper가 타임코드 포함 자막을 자동 생성',
-      'GPT가 자막을 읽고 핵심 포인트·액션 아이템·키워드로 정리',
-      '결과 보이스는 TTS 스튜디오의 페르소나로도 연결 가능',
-    ],
+    tldr: fullText.slice(0, 160) + (fullText.length > 160 ? '…' : ''),
+    points: segments.slice(0, 5).map(s => `${formatTime(s.start)} · ${s.text.slice(0, 90)}${s.text.length > 90 ? '…' : ''}`),
     actions: [
-      '본인 소유 영상으로 파이프라인 전체 흐름 테스트',
-      'TTS 스튜디오에서 추출한 보이스로 페르소나 생성',
-      '생성된 SRT 자막을 Premiere/DaVinci에 바로 적용',
-      '요약을 블로그·뉴스레터 초안으로 재활용',
+      '중요 구간을 선택해 WAV로 저장',
+      'SRT/TXT 자막을 다운로드해 편집 타임라인에 적용',
+      '요약과 키워드를 프로젝트 노트 또는 프롬프트 라이브러리에 저장',
+      '필요하면 TTS 스튜디오에서 추출 보이스를 임시 페르소나로 테스트',
     ],
     keywords: keywords.length ? keywords : ['음성추출', '자막', '요약', 'AI보이스'],
   };
@@ -22470,9 +23685,9 @@ $('#cta-summary').addEventListener('click', async () => {
       keywords: apiResp.keywords || [],
     };
   } catch (err) {
-    console.warn('[soaviz] summarize failed, fallback to mock:', err);
-    showToast('요약 API 실패 — 임시 요약을 표시합니다', 'error');
-    summary = mockSummarize(transcriptSegments);
+    console.warn('[soaviz] summarize failed, local fallback:', err);
+    showToast('요약 API 실패 — 실제 자막 기반 로컬 요약으로 정리합니다', 'warn');
+    summary = localSummarize(transcriptSegments);
     usedFallback = true;
   }
   $('#sum-tldr').textContent = summary.tldr;
@@ -22483,7 +23698,7 @@ $('#cta-summary').addEventListener('click', async () => {
   btn.classList.add('hidden');
   $('#stage-summary').classList.remove('hidden');
   $('#stage-summary').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  showToast(usedFallback ? '임시 요약을 표시 중이에요' : '요약이 완성됐어요');
+  showToast(usedFallback ? '로컬 요약이 완성됐어요' : '요약이 완성됐어요');
 
   titleEl.textContent = originalTitle;
   btn.querySelector('.next-arrow').style.display = '';
@@ -22510,6 +23725,52 @@ $('#cta-summary').addEventListener('click', async () => {
     showPage('studio');
     showToast('TTS 스튜디오로 이동했어요');
   };
+});
+
+document.addEventListener('click', (e) => {
+  const action = e.target.closest('#extract-open-library, #extract-create-persona, #extract-save-prompt');
+  if (!action) return;
+  if (action.id === 'extract-open-library') {
+    showPage('library');
+    showToast('Library에서 추출 결과를 확인하세요');
+    return;
+  }
+  if (action.id === 'extract-create-persona') {
+    if (!extractedBlobs?.voice) {
+      showToast('먼저 음성 추출을 완료하세요', 'warn');
+      return;
+    }
+    const persona = {
+      id: 'ext-' + Date.now(),
+      name: `${(currentBaseName || '추출 음성').slice(0, 18)} 보이스`,
+      desc: `Extract에서 만든 임시 페르소나 · ${formatTime(extractedBuffers.voice?.duration || 0)}`,
+      grad: 'linear-gradient(135deg, #C8B8FF, #6D4BE6)',
+      source: 'extract',
+      createdAt: Date.now(),
+    };
+    addPersona(persona);
+    switchPersona(persona);
+    showPage('studio');
+    showToast('TTS 스튜디오로 보냈어요');
+    return;
+  }
+  if (action.id === 'extract-save-prompt') {
+    const transcript = transcriptSegments.map(s => `[${formatTime(s.start)}] ${s.text}`).join('\n').trim();
+    if (!transcript) {
+      showToast('저장할 자막이 없습니다. 먼저 자막 추출을 실행하세요', 'warn');
+      return;
+    }
+    const prompt = savePromptToLibrary({
+      title: `${currentBaseName || 'extract'} transcript pack`,
+      projectName: 'Extract',
+      model: 'transcript',
+      promptType: 'extract',
+      promptText: transcript,
+      tags: ['extract', 'transcript', 'source'],
+      notes: 'Extract 페이지에서 생성한 실제 자막 패키지',
+    });
+    showToast(`✓ 프롬프트 저장됨: ${prompt.title}`);
+  }
 });
 
 /* ============================================================
@@ -22730,13 +23991,43 @@ async function rollRandom() {
   if (!includeWorld && !includeStory) {
     showToast('세계관 또는 스토리 중 하나는 선택해 주세요', 'error'); return;
   }
+  const randomCost = _randomCostFor();
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'random-generate',
+    label: '랜덤 세계관/스토리 생성',
+    cost: randomCost,
+    modelTier: 'basic',
+  })) return;
 
   const btn = $('#random-roll');
   const dice = $('#random-dice-icon');
+  const bigDice = $('#random-big-dice');
   const status = $('#random-status');
   btn.disabled = true;
 
-  // 주사위 굴리기 애니메이션
+  // ── 이전 결과 정리 (재굴리기 시 잔재 방지) ──
+  lastRandomSeed = null;
+  lastRandomWorld = '';
+  lastRandomStory = '';
+  if ($('#random-result')) {
+    $('#random-result').classList.remove('hidden');  // 표시 차단 클래스 제거
+    $('#random-result').style.display = 'none';       // 일단 숨김 (생성 후 다시 보임)
+  }
+  if ($('#random-world-output')) $('#random-world-output').textContent = '';
+  if ($('#random-story-output')) $('#random-story-output').textContent = '';
+  if (status) { status.textContent = ''; status.style.color = ''; }
+
+  // ── 버튼 → 핫핑크 + "생성중입니다" 라벨 ──
+  btn.style.background = 'linear-gradient(135deg, #FF1493, #EC4899)';
+  btn.style.boxShadow = '0 8px 24px -6px rgba(255,20,147,0.55), 0 0 0 2px rgba(255,20,147,0.18)';
+  btn.style.color = '#fff';
+  const _labelStart = $('#random-roll-label');
+  if (_labelStart) _labelStart.textContent = '생성중입니다';
+
+  // ── 큰 주사위 박스도 함께 회전 시작 ──
+  if (bigDice) bigDice.classList.add('rolling');
+
+  // 주사위 굴리기 애니메이션 (버튼 안 작은 주사위)
   let frame = 0;
   const faces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
   const rollAnim = setInterval(() => {
@@ -22897,7 +24188,8 @@ async function rollRandom() {
 
 각 섹션은 ## 제목으로 구분. 600~900자.`;
       const d = await callTextGenerate(sys, usr, { temperature: 0.95, max_tokens: 1800 });
-      worldText = d.text;
+      worldText = (d?.text || '').trim();
+      if (!worldText) throw new Error('세계관 응답이 비어 있습니다');
       lastRandomWorld = worldText;
       lastWorldOutput = worldText;
     }
@@ -22925,7 +24217,8 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
 - 첫 문장 강한 인상, 마지막 문장 여운
 - 본문만 (해설·메타 설명 X)`;
       const d2 = await callTextGenerate(sys2, usr2, { temperature: 0.95, max_tokens: lenInfo2.max_tokens });
-      storyText = d2.text;
+      storyText = (d2?.text || '').trim();
+      if (!storyText) throw new Error('스토리 응답이 비어 있습니다');
       lastRandomStory = storyText;
       lastStoryOutput = storyText;
     }
@@ -22963,7 +24256,8 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
       }
       const lenSel = $('#story-length');
       if (lenSel) lenSel.value = seed.length;
-      if ($('#story-world')) $('#story-world').value = worldText.slice(0, 800);
+      // 빈 worldText로 사용자 입력 덮어쓰지 않기
+      if (worldText && $('#story-world')) $('#story-world').value = worldText.slice(0, 800);
       $('#story-output').textContent = storyText;
       $('#story-result').style.display = '';
     }
@@ -22975,39 +24269,111 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
     if (labelEl) labelEl.textContent = '완성됐어요!';
     btn.style.background = 'linear-gradient(135deg, var(--success), #22c55e)';
     btn.style.boxShadow = '0 8px 24px -6px rgba(52,211,153,0.45)';
+    try { if (typeof consumeCredits === 'function') consumeCredits(randomCost, 'Random'); } catch (_) {}
 
-    showToast(`✓ #${seed.seedId} 완성 — ${includeStory ? '스토리텔링' : '세계관'} 탭으로 이동`);
+    showToast(`✓ #${seed.seedId} 완성 — 아래 결과를 확인하세요`);
 
-    // ── 1.4초 후 다음 탭으로 자동 전환 ──
+    // ── 1.4초 후 결과 영역으로 렌딩 (탭 전환 X — 같은 랜덤 모드 안에서 결과 표시) ──
     setTimeout(() => {
-      const nextMode = includeStory ? 'story' : 'world';
-      storyShowMode(nextMode);
-      // 결과 영역으로 부드럽게 스크롤
-      const target = includeStory ? $('#story-result') : $('#world-result');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // 결과 영역(#random-result)으로 부드럽게 스크롤
+      const result = $('#random-result');
+      if (result) {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 살짝 강조 — 1.4초 보라 글로우
+        result.style.transition = 'box-shadow 600ms ease';
+        result.style.boxShadow = '0 0 0 2px rgba(167,139,250,0.30), 0 12px 30px -8px rgba(167,139,250,0.40)';
+        setTimeout(() => { result.style.boxShadow = ''; }, 1600);
+      }
       // 버튼은 원상복구 (다시 굴리기 가능)
       if (diceEl) diceEl.textContent = '🎲';
       if (labelEl) labelEl.textContent = '주사위 굴리기';
       btn.style.background = '';
       btn.style.boxShadow = '';
+      btn.style.color = '';
+      // 큰 주사위 회전 종료
+      if (bigDice) bigDice.classList.remove('rolling');
       // status 색 원복
       if (status) status.style.color = '';
     }, 1400);
   } catch (e) {
-    status.textContent = `에러: ${e.message}`;
-    status.style.color = 'var(--danger)';
-    showToast(`실패 — ${e.message.slice(0, 80)}`, 'error');
+    if (status) {
+      status.textContent = `에러: ${e.message}`;
+      status.style.color = 'var(--danger)';
+    }
+    showToast(`실패 — ${(e.message || '').slice(0, 80)}`, 'error');
   } finally {
     clearInterval(rollAnim);
     clearInterval(msgRotate);
     if (dice && dice.textContent !== '✓') dice.textContent = '🎲';
+    // 큰 주사위 회전 항상 정지 (성공 시 1.4초 setTimeout보다 먼저 실행되어도 OK)
+    if (bigDice) bigDice.classList.remove('rolling');
     btn.disabled = false;
+    // 에러 시(완성 라벨이 아직 안 떴을 때) 즉시 핫핑크 → 원래 색으로 원복
+    const lblNow = $('#random-roll-label')?.textContent;
+    if (lblNow === '생성중입니다') {
+      const lbl = $('#random-roll-label'); if (lbl) lbl.textContent = '주사위 굴리기';
+      btn.style.background = '';
+      btn.style.boxShadow = '';
+      btn.style.color = '';
+    }
+    // 토큰 잔량 갱신
+    try { refreshRandomCreditBar?.(); } catch (_) {}
   }
 }
+
+/* ─── 주사위 굴리기 — 잔여 토큰 표시 ─────────────────── */
+function _randomCostFor() {
+  const w = $('#random-include-world')?.checked ?? true;
+  const s = $('#random-include-story')?.checked ?? true;
+  const lenSel = $('#story-length');
+  const len = lenSel?.value || 'medium';
+  const storyCost = { short: 80, medium: 180, xl: 450, xxl: 700, xxxl: 950 }[len] || 180;
+  const worldCost = 250;
+  let total = 0;
+  if (w) total += worldCost;
+  if (s) total += storyCost;
+  return total;
+}
+function refreshRandomCreditBar() {
+  const bar = document.getElementById('random-credit-bar');
+  if (!bar) return;
+  const cost = _randomCostFor();
+  const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
+  const total = balance?.total || 0;
+  const remaining = balance?.remaining ?? 0;
+  const pct = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 0;
+
+  // 상태 컬러
+  const isEmpty = remaining <= 0;
+  const isWarn  = !isEmpty && (cost > remaining || (total > 0 && remaining / total < 0.20));
+
+  const costEl = document.getElementById('random-credit-cost');
+  const remEl  = document.getElementById('random-credit-remain');
+  const totEl  = document.getElementById('random-credit-total');
+  const fill   = document.getElementById('random-credit-fill');
+  if (costEl) costEl.textContent = cost.toLocaleString();
+  if (remEl)  remEl.textContent  = remaining.toLocaleString();
+  if (totEl)  totEl.textContent  = total ? total.toLocaleString() : '∞';
+  if (fill) {
+    fill.style.width = `${pct}%`;
+    fill.style.background = isEmpty ? '#EF4444'
+      : isWarn ? 'linear-gradient(90deg, #F59E0B, #EF4444)'
+      : 'linear-gradient(90deg, var(--accent), #6366F1)';
+  }
+  if (remEl) remEl.style.color = isEmpty ? '#EF4444' : isWarn ? '#F59E0B' : 'var(--accent)';
+  if (costEl) costEl.style.color = isEmpty ? '#EF4444' : isWarn ? '#F59E0B' : 'var(--text)';
+}
+window.refreshRandomCreditBar = refreshRandomCreditBar;
 
 function bindRandomMode() {
   $('#random-roll')?.addEventListener('click', rollRandom);
   $('#random-reroll')?.addEventListener('click', rollRandom);
+  // 옵션 변경 시 비용 재계산
+  $('#random-include-world')?.addEventListener('change', refreshRandomCreditBar);
+  $('#random-include-story')?.addEventListener('change', refreshRandomCreditBar);
+  $('#story-length')?.addEventListener('change', refreshRandomCreditBar);
+  // 페이지 진입 시 한 번 갱신
+  setTimeout(refreshRandomCreditBar, 200);
   $('#random-copy')?.addEventListener('click', async () => {
     const all = [
       lastRandomSeed ? `[SEED #${lastRandomSeed.seedId}] ${lastRandomSeed.name}\n장르: ${lastRandomSeed.genre} / 분위기: ${lastRandomSeed.mood}\n` : '',
@@ -23090,6 +24456,13 @@ async function generateWorld() {
   const keywords = ($('#world-keywords')?.value || '').trim();
 
   if (!name) { showToast('세계관 이름을 입력해 주세요', 'error'); return; }
+  const worldCost = 30;
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'world-generate',
+    label: '세계관 생성',
+    cost: worldCost,
+    modelTier: 'basic',
+  })) return;
 
   const btn = $('#world-generate'); const status = $('#world-status');
   btn.disabled = true;
@@ -23126,6 +24499,7 @@ async function generateWorld() {
     btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2.5"><polyline points="20 6 9 17 4 12"/></svg> 완성됐어요!`;
     btn.style.background = 'linear-gradient(135deg, var(--success), #22c55e)';
     btn.style.boxShadow = '0 8px 24px -6px rgba(52,211,153,0.45)';
+    try { if (typeof consumeCredits === 'function') consumeCredits(worldCost, 'World'); } catch (_) {}
     showToast('✓ 세계관 완성 — 결과를 보여드릴게요');
 
     setTimeout(() => {
@@ -23175,6 +24549,18 @@ async function generateStory() {
   };
   const lenInfo = lengthMap[length] || lengthMap.medium;
   const lenSpec = lenInfo.spec;
+  const storyCost = Math.max(35, Math.ceil(lenInfo.max_tokens / 100));
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'story-generate',
+    label: '스토리 생성',
+    cost: storyCost,
+    modelTier: length === 'short' || length === 'medium' ? 'basic' : 'premium',
+  })) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    status.textContent = '';
+    return;
+  }
 
   const system = "너는 한국어 단편 스토리텔러야. 감각적이고 일관된 톤, 자연스러운 호흡, 명확한 갈등과 여운. 클리셰·과장 회피.";
   const user = `주제: ${topic}
@@ -23203,6 +24589,7 @@ ${must ? `필수 요소: ${must}\n` : ''}
     btn.style.background = 'linear-gradient(135deg, var(--success), #22c55e)';
     btn.style.boxShadow = '0 8px 24px -6px rgba(52,211,153,0.45)';
     btn.disabled = false;
+    try { if (typeof consumeCredits === 'function') consumeCredits(storyCost, 'Story'); } catch (_) {}
     // 클릭 핸들러를 일시 교체 — 한 번 누르면 Story Reader로 이동
     const goReader = () => {
       btn.removeEventListener('click', goReader);
@@ -23308,6 +24695,18 @@ async function generateScript() {
     xxxxxl:   { spec: '30분 (9500~12000자, 본격 시리즈 회차)',               max_tokens: 15500 },
   };
   const lenInfo = lenMap[length] || lenMap.medium;
+  const scriptCost = Math.max(40, Math.ceil(lenInfo.max_tokens / 90));
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'script-generate',
+    label: '대본 생성',
+    cost: scriptCost,
+    modelTier: ['micro', 'short', 'medium'].includes(length) ? 'basic' : 'premium',
+  })) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    status.textContent = '';
+    return;
+  }
 
   const system = "너는 한국 영상·오디오 콘텐츠 전문 시나리오 작가야. 자연스럽고 살아있는 대사, 명확한 갈등 비트, 시청자 시선을 잡는 첫 5초. 클리셰 회피, 진부한 설명 대사 금지.";
   const user = `작품 종류: ${formatLabel}
@@ -23339,24 +24738,40 @@ ${ending ? `엔딩/핵심 비트: ${ending}\n` : ''}
   try {
     const d = await callTextGenerate(system, user, { temperature: 0.85, max_tokens: lenInfo.max_tokens });
     lastScriptOutput = d.text;
-    $('#script-output').textContent = d.text;
-    $('#script-result').style.display = '';
-    status.textContent = `✓ 완성됐어요! · ${d.tokens?.completion || 0} tokens`;
+    const outEl = $('#script-output');
+    if (outEl) outEl.textContent = d.text;
+    // ⚠️ #script-result 는 hidden 클래스 + display:none 두 가지 숨김이 걸려있음. 둘 다 해제.
+    const resultEl = $('#script-result');
+    if (resultEl) {
+      resultEl.classList.remove('hidden');
+      resultEl.style.display = 'block';
+      resultEl.removeAttribute('hidden');
+    }
+    status.textContent = `✓ 생성완료! · ${d.tokens?.completion || 0} tokens`;
     status.style.color = 'var(--success)';
 
-    btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2"><polyline points="20 6 9 17 4 12"/></svg> 완성됐어요!`;
-    btn.style.background = 'linear-gradient(135deg, var(--success), #22c55e)';
-    btn.style.boxShadow = '0 8px 24px -6px rgba(52,211,153,0.45)';
-    showToast('✓ 대본 완성');
+    // 버튼 — 초록색 "생성완료!" 표시 (다음 생성 전까지 유지)
+    btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2;stroke:white;fill:none"><polyline points="20 6 9 17 4 12"/></svg> 생성완료!`;
+    btn.style.background = 'linear-gradient(135deg, #22c55e, #10b981)';
+    btn.style.boxShadow = '0 10px 28px -6px rgba(34,197,94,0.55)';
+    btn.style.color = '#fff';
+    btn.disabled = false;
+    try { if (typeof consumeCredits === 'function') consumeCredits(scriptCost, 'Script'); } catch (_) {}
+    showToast('✓ 대본 생성완료');
 
-    setTimeout(() => $('#script-result').scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
     setTimeout(() => {
-      btn.disabled = false;
+      const r = $('#script-result');
+      r?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
+
+    // 일정 시간 후 원상 복귀 (다음 생성 가능)
+    setTimeout(() => {
       btn.innerHTML = orig;
       btn.style.background = '';
       btn.style.boxShadow = '';
+      btn.style.color = '';
       if (status) status.style.color = '';
-    }, 2500);
+    }, 5000);
   } catch (e) {
     status.textContent = `에러: ${e.message}`;
     status.style.color = 'var(--danger)';
@@ -23606,6 +25021,9 @@ function getLibraryAssets() {
   return lsRead(LIB_LS_ASSETS, []);
 }
 function saveLibraryAsset(asset) {
+  if (typeof canStoreLibraryAsset === 'function' && !canStoreLibraryAsset(asset)) {
+    return null;
+  }
   const all = getLibraryAssets();
   const now = new Date().toISOString();
   let isNew = true;
@@ -25128,6 +26546,22 @@ async function renderMemoryGraph() {
       reindexBtn.addEventListener('click', async () => {
         if (_MG_REINDEX_RUNNING) return;
         if (!confirm('모든 샷의 임베딩을 새로 만듭니다.\n샷 1개당 약 0.1초 소요됩니다. 진행할까요?')) return;
+        let reindexCost = 50;
+        let processedCount = 0;
+        try {
+          const all = await SoavizDB.db.shots.toArray();
+          processedCount = all.filter(s => !s.archived).length;
+          reindexCost = Math.max(50, processedCount * 5);
+        } catch (_) {
+          processedCount = 0;
+        }
+        if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+          action: 'memory-reindex',
+          label: `Memory Graph 재인덱싱${processedCount ? ` (${processedCount} shots)` : ''}`,
+          cost: reindexCost,
+          minPlan: 'pro',
+          modelTier: 'exclusive',
+        })) return;
         _MG_REINDEX_RUNNING = true;
         _MG_REINDEX_CANCEL = false;
         const progress = document.getElementById('mg-reindex-progress');
@@ -25158,6 +26592,10 @@ async function renderMemoryGraph() {
               status.textContent = `${i + 1} / ${active.length} (${pct}%) · ${shot.description?.slice(0, 30) || '(no desc)'}`;
             }
             if (!_MG_REINDEX_CANCEL) {
+              try {
+                consumeCredits?.(reindexCost, 'Memory Graph 재인덱싱');
+                refreshCreditPill?.();
+              } catch (_) {}
               showToast?.(`✓ 재인덱싱 완료 — ${active.length}개 샷 처리`);
               status.textContent = `✓ 완료 — ${active.length}개 샷`;
             }
@@ -26495,6 +27933,138 @@ function bindStoryView() {
     showPage('music');
     showToast('Music 페이지에 프롬프트 채워뒀어요');
   });
+  // ✎ 이 스토리로 대본 만들기 — personas/script 모드로 라우팅 + 풀 prefill
+  $('#sv-to-script')?.addEventListener('click', () => {
+    const body = (STORY_DOC.body || '').trim();
+    const meta = STORY_DOC.meta || {};
+    const title = (STORY_DOC.title || '').trim();
+    if (!body) { showToast?.('먼저 읽을 스토리가 필요해요', 'warn'); return; }
+
+    // 진입 경로 플래그 (뒤로가기 버튼이 활용)
+    window._scriptFromStoryView = true;
+
+    // personas 페이지로 이동
+    showPage('personas');
+
+    // DOM 준비 시간 확보 후 script 모드 + 풀 prefill
+    setTimeout(() => {
+      // script 모드 토글
+      try { storyShowMode?.('script'); } catch (_) {}
+      const scriptBtn = document.querySelector('.story-mode-btn[data-smode="script"]');
+      if (scriptBtn && !scriptBtn.classList.contains('active')) scriptBtn.click();
+
+      // 본문 분석
+      const sentences = body.split(/(?<=[.!?。])\s+|\n+/).filter(s => s.trim().length > 6);
+      const firstSentence = sentences[0]?.trim() || '';
+      const lastSentences = sentences.slice(-2).join(' ').trim();
+
+      // ── 1) 로그라인 — topic > title > 첫 문장 ──
+      const logline = (meta.topic || title || firstSentence).slice(0, 100);
+      if (logline && $('#script-logline')) $('#script-logline').value = logline;
+
+      // ── 2) 세계관·배경 — title + body 전체 (1500자까지) ──
+      const worldText = title ? `${title}\n\n${body}` : body;
+      if ($('#script-world')) $('#script-world').value = worldText.slice(0, 1500);
+
+      // ── 3) 등장인물 — meta.characters 또는 본문에서 추출 ──
+      if ($('#script-characters')) {
+        if (meta.characters) {
+          $('#script-characters').value = Array.isArray(meta.characters)
+            ? meta.characters.join('\n')
+            : String(meta.characters);
+        } else {
+          // 본문에서 한국어 인명 추출 (간단한 규칙: 2-3자 한글 이름)
+          const nameMatches = [...body.matchAll(/(?:^|\s)([가-힣]{2,3})(?:은|는|이|가|을|를|의|와|과|에게|한테)/g)];
+          const names = [...new Set(nameMatches.map(m => m[1]))].slice(0, 4);
+          if (names.length) {
+            $('#script-characters').value = names.map(n => `${n} (역할·특징을 추가하세요)`).join('\n');
+          }
+        }
+      }
+
+      // ── 4) 엔딩 비트 — 본문 마지막 1-2 문장 ──
+      if (lastSentences && $('#script-ending')) {
+        $('#script-ending').value = lastSentences.slice(0, 80);
+      }
+
+      // ── 5) 톤 select 동기화 ──
+      const _matchSelect = (selId, target) => {
+        if (!target) return;
+        const sel = document.getElementById(selId);
+        if (!sel) return;
+        const opt = [...sel.options].find(o =>
+          o.value === target || o.textContent.includes(String(target))
+        );
+        if (opt) sel.value = opt.value;
+      };
+      if (meta.tone) _matchSelect('script-tone', meta.tone);
+
+      // ── 6) 길이 select — meta.length 그대로 매칭 ──
+      if (meta.length) {
+        const lenSel = document.getElementById('script-length');
+        if (lenSel && [...lenSel.options].some(o => o.value === meta.length)) {
+          lenSel.value = meta.length;
+        }
+      }
+
+      // ── 7) 작품 종류·장면 수 — 분량 따라 자동 추정 ──
+      const lenToFormat = {
+        short: 'shortform',     // 1분
+        medium: 'webdrama',     // 3분
+        xl: 'film-short',       // 10분
+        xxl: 'film-short',      // 15분
+        xxxl: 'series-ep',      // 20분
+        xxxxl: 'film-feature',  // 25분
+        xxxxxl: 'film-feature', // 30분
+      };
+      const lenToScenes = {
+        short: '1', medium: '2-3', xl: '4-6', xxl: '7-10',
+        xxxl: '11-15', xxxxl: '11-15', xxxxxl: '16-20',
+      };
+      if (meta.length) {
+        const fmtSel = document.getElementById('script-format');
+        const fmtVal = lenToFormat[meta.length];
+        if (fmtSel && fmtVal && [...fmtSel.options].some(o => o.value === fmtVal)) {
+          fmtSel.value = fmtVal;
+        }
+        const scnSel = document.getElementById('script-scenes');
+        const scnVal = lenToScenes[meta.length];
+        if (scnSel && scnVal && [...scnSel.options].some(o => o.value === scnVal)) {
+          scnSel.value = scnVal;
+        }
+      }
+
+      // ── 8) 입력 영역으로 스크롤 + 강조 ──
+      const scrollTarget = document.getElementById('script-logline') || document.getElementById('story-script-mode');
+      scrollTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const hostEl = document.getElementById('story-script-mode');
+      if (hostEl) {
+        hostEl.style.transition = 'box-shadow 600ms ease';
+        hostEl.style.boxShadow = '0 0 0 2px rgba(167,139,250,0.30)';
+        setTimeout(() => { hostEl.style.boxShadow = ''; }, 1400);
+      }
+      // 뒤로가기 버튼 표시 (진입 경로 = 스토리 뷰)
+      const backBtn = document.getElementById('script-back-to-story');
+      if (backBtn) backBtn.style.display = '';
+
+      showToast?.('✓ 대본 만들기로 이동 — 스토리·인물·엔딩까지 자동 채워졌어요');
+    }, 240);
+  });
+
+  // ── 대본 페이지 뒤로가기 (스토리 뷰로 복귀) ──
+  document.getElementById('script-back-to-story')?.addEventListener('click', () => {
+    if (window._scriptFromStoryView) {
+      window._scriptFromStoryView = false;
+      try { storyShowMode?.('story'); } catch (_) {}
+      const t = document.getElementById('story-view-mode') || document.getElementById('story-result-block');
+      t?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      try { storyShowMode?.('story'); } catch (_) {}
+    }
+    const backBtn = document.getElementById('script-back-to-story');
+    if (backBtn) backBtn.style.display = 'none';
+  });
+
   $('#sv-to-video')?.addEventListener('click', () => {
     const m = STORY_DOC.meta;
     const vp = $('#vid-prompt');
@@ -27189,11 +28759,27 @@ function bindMusicChips() {
       const v = parseInt(lenInput.value, 10);
       if (lenDisplay) lenDisplay.textContent = `${v}s`;
       if (lenLabel) lenLabel.textContent = `${v}초`;
+      refreshMusicCreditBar();
     };
     lenInput.addEventListener('input', upd);
     upd();
   }
 }
+
+function refreshMusicCreditBar() {
+  const costEl = $('#music-credit-cost');
+  const remEl = $('#music-credit-remain');
+  if (!costEl && !remEl) return;
+  const length_s = parseInt($('#music-length')?.value || '20', 10);
+  const cost = Math.max(50, Math.ceil(length_s / 10) * 25);
+  const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
+  if (costEl) costEl.textContent = cost.toLocaleString();
+  if (remEl && balance) {
+    remEl.textContent = balance.remaining.toLocaleString();
+    remEl.style.color = cost > balance.remaining ? '#F59E0B' : 'var(--accent)';
+  }
+}
+window.refreshMusicCreditBar = refreshMusicCreditBar;
 
 function renderGeneratedMusic() {
   const wrap = $('#music-generated');
@@ -27224,6 +28810,13 @@ async function generateMusic() {
     return;
   }
   const length_s = parseInt($('#music-length')?.value || '20', 10);
+  const musicCost = Math.max(50, Math.ceil(length_s / 10) * 25);
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'music-generate',
+    label: `${length_s}초 음악 생성`,
+    cost: musicCost,
+    modelTier: 'basic',
+  })) return;
   btn.disabled = true;
   const originalHTML = btn.innerHTML;
   btn.innerHTML = `
@@ -27254,11 +28847,15 @@ async function generateMusic() {
     });
     renderGeneratedMusic();
     if (status) status.textContent = '';
+    try {
+      if (typeof consumeCredits === 'function') consumeCredits(musicCost, `Music ${length_s}s`);
+      if (typeof refreshMusicCreditBar === 'function') refreshMusicCreditBar();
+      if (typeof refreshCreditPill === 'function') refreshCreditPill();
+    } catch (_) {}
     const rem = $('#music-credit-remain');
     if (rem) {
-      const cur = parseInt(rem.textContent.replace(/,/g, ''), 10) || 0;
-      const cost = parseInt($('#music-credit-cost')?.textContent.replace(/,/g, '') || '50', 10);
-      rem.textContent = Math.max(0, cur - cost).toLocaleString();
+      const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
+      rem.textContent = (balance?.remaining ?? 0).toLocaleString();
     }
     showToast('음악 생성 완료');
     // 자동 재생
@@ -27275,6 +28872,7 @@ async function generateMusic() {
 function bindMusicCreate() {
   const btn = $('#music-create-btn');
   if (btn) btn.onclick = generateMusic;
+  refreshMusicCreditBar();
 }
 
 function renderMusicList() {
@@ -27701,6 +29299,13 @@ $('#generate').addEventListener('click', async () => {
   const text = editor.value.trim();
   if (!text) { showToast('먼저 읽을 내용을 입력해 주세요', 'error'); editor.focus(); return; }
   if (text.length > 2000) { showToast('2,000자를 초과했어요', 'error'); return; }
+  const ttsCost = _ttsCostFor(text);
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'tts-generate',
+    label: 'Voice 생성',
+    cost: ttsCost,
+    modelTier: 'basic',
+  })) return;
   const btn = $('#generate');
   btn.disabled = true;
   $('#gen-label').innerHTML = `<span class="loader"><span></span><span></span><span></span></span>`;
@@ -27762,8 +29367,7 @@ $('#generate').addEventListener('click', async () => {
     try { new Audio(audioUrl).play(); } catch (_) {}
     // 크레딧 차감
     try {
-      const cost = _ttsCostFor(text);
-      if (typeof consumeCredits === 'function') consumeCredits(cost, `TTS ${text.length}자`);
+      if (typeof consumeCredits === 'function') consumeCredits(ttsCost, `TTS ${text.length}자`);
       refreshTtsCreditBar();
     } catch (_) {}
     showToast(`${currentPersona.name}의 목소리로 생성됐어요`);
@@ -27816,6 +29420,128 @@ let SFX_DATA = [
 
 const SFX_GEN_HISTORY = []; // 생성한 사운드 저장
 
+function sfxSafeFilename(title = 'soaviz-sfx', ext = 'mp3') {
+  const base = String(title || 'soaviz-sfx')
+    .replace(/[^\w가-힣.-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 64) || 'soaviz-sfx';
+  return `${base}.${ext}`;
+}
+
+function sfxFormatCreatedAt(value) {
+  const d = value ? new Date(value) : new Date();
+  if (Number.isNaN(d.getTime())) return new Date().toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  return d.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function sfxStableSeed(value = '') {
+  const str = String(value || 'sfx');
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 1000) / 1000;
+}
+
+async function saveSfxBlobToIndexedDB(blob, meta = {}) {
+  if (!blob || !window.SoavizDB?.db?.blobs || window.SoavizDB?.enabled === false) return null;
+  try {
+    const ready = await SoavizDB.ready;
+    if (!ready) return null;
+    const id = `sfx_blob_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    await SoavizDB.db.blobs.put({
+      id,
+      kind: 'sfx',
+      type: blob.type || 'audio/mpeg',
+      size: blob.size || 0,
+      title: meta.title || '',
+      createdAt: meta.createdAt || new Date().toISOString(),
+      blob,
+    });
+    return id;
+  } catch (e) {
+    console.warn('[soaviz] SFX blob persist failed:', e);
+    return null;
+  }
+}
+
+async function loadSfxBlob(blobKey) {
+  if (!blobKey || !window.SoavizDB?.db?.blobs || window.SoavizDB?.enabled === false) return null;
+  try {
+    const ready = await SoavizDB.ready;
+    if (!ready) return null;
+    const rec = await SoavizDB.db.blobs.get(blobKey);
+    return rec?.blob || null;
+  } catch (e) {
+    console.warn('[soaviz] SFX blob load failed:', e);
+    return null;
+  }
+}
+
+async function playSfxItem(item) {
+  let url = item.audioUrl || item.blobUrl || null;
+  let revoke = false;
+  if (!url && item.blob) {
+    url = URL.createObjectURL(item.blob);
+    revoke = true;
+  }
+  if (!url && item.blobKey) {
+    const blob = await loadSfxBlob(item.blobKey);
+    if (blob) {
+      url = URL.createObjectURL(blob);
+      revoke = true;
+    }
+  }
+  if (!url) {
+    showToast?.('재생 가능한 파일이 없어요', 'warn');
+    return false;
+  }
+  try {
+    const audio = new Audio(url);
+    audio.onended = () => { if (revoke) URL.revokeObjectURL(url); };
+    await audio.play();
+    return true;
+  } catch (_) {
+    if (revoke) URL.revokeObjectURL(url);
+    showToast?.('재생을 시작하지 못했어요', 'warn');
+    return false;
+  }
+}
+
+async function downloadSfxItem(item) {
+  const filename = item.filename || sfxSafeFilename(item.title, item.ext || 'mp3');
+  if (item.blob) {
+    downloadBlob(item.blob, filename);
+    showToast?.('다운로드 시작');
+    return true;
+  }
+  if (item.blobKey) {
+    const blob = await loadSfxBlob(item.blobKey);
+    if (blob) {
+      downloadBlob(blob, filename);
+      showToast?.('다운로드 시작');
+      return true;
+    }
+  }
+  const url = item.audioUrl || item.blobUrl || null;
+  if (url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast?.('다운로드 시작');
+    return true;
+  }
+  showToast?.('다운로드 가능한 파일이 없어요', 'warn');
+  return false;
+}
+
 function sfxWaveBarsHTML(count = 48, seed = Math.random()) {
   let bars = ''; let v = 0.3 + seed * 0.3;
   for (let i = 0; i < count; i++) {
@@ -27845,7 +29571,22 @@ function renderCategories() {
   `).join('');
   $$('.cat-card').forEach(card => {
     card.addEventListener('click', () => {
-      showToast(`${card.querySelector('.cat-label').textContent.trim()} 카테고리 필터는 준비 중`, 'warn');
+      const catId = card.dataset.cat;
+      const catLabel = card.querySelector('.cat-label')?.textContent.trim() || catId;
+      // 토글 — 같은 카테고리 다시 클릭하면 필터 해제
+      const isActive = card.classList.contains('active');
+      $$('.cat-card').forEach(c => c.classList.remove('active'));
+      if (isActive) {
+        renderSFXList('');  // 전체
+        showToast(`전체 효과음 보기`);
+      } else {
+        card.classList.add('active');
+        renderSFXList(catId);
+        // 검색 input도 카테고리로 채움 (시각 피드백)
+        const search = $('#sfx-search-input');
+        if (search) { search.value = catLabel; search.dispatchEvent(new Event('input', { bubbles: true })); }
+        showToast(`✓ ${catLabel} 카테고리로 필터링`);
+      }
     });
   });
 }
@@ -27891,14 +29632,13 @@ function renderSFXList(filter = '') {
 
   $$('.sfx-item').forEach(el => {
     const idx = +el.dataset.idx;
-    el.querySelector('[data-action="play"]').addEventListener('click', () => toggleSfxPlay(el, idx));
+    const item = list[idx];
+    el.querySelector('[data-action="play"]').addEventListener('click', () => toggleSfxPlay(el, item));
     el.querySelector('[data-action="link"]').addEventListener('click', () => {
       copyText(window.location.href);
       showToast('링크를 복사했어요');
     });
-    el.querySelector('[data-action="download"]').addEventListener('click', () => {
-      showToast(`"${list[idx].title}" 다운로드 (데모)`);
-    });
+    el.querySelector('[data-action="download"]').addEventListener('click', () => downloadSfxItem(item));
     el.querySelector('[data-action="favorite"]').addEventListener('click', (e) => {
       const btn = e.currentTarget;
       btn.classList.toggle('favorited');
@@ -27910,7 +29650,7 @@ function renderSFXList(filter = '') {
 }
 
 let sfxPlayingEl = null; let sfxPlayTimer = null;
-function toggleSfxPlay(el) {
+function toggleSfxPlay(el, item) {
   if (sfxPlayingEl && sfxPlayingEl !== el) {
     sfxPlayingEl.classList.remove('playing');
     sfxPlayingEl.querySelector('.sfx-play').classList.remove('playing');
@@ -27920,6 +29660,13 @@ function toggleSfxPlay(el) {
   el.querySelector('.sfx-play').classList.toggle('playing', on);
   if (on) {
     sfxPlayingEl = el;
+    if (item?.audioUrl || item?.blobUrl || item?.blob || item?.blobKey) {
+      playSfxItem(item).then(ok => {
+        if (!ok) toggleSfxPlay(el);
+      });
+    } else {
+      showToast('샘플 프리뷰는 데모 파형만 재생돼요', 'warn');
+    }
     sfxPlayTimer = setTimeout(() => toggleSfxPlay(el), 3500);
   } else {
     sfxPlayingEl = null;
@@ -27965,7 +29712,25 @@ $('#sfx-search-input')?.addEventListener('input', (e) => {
 $$('.filter-pill').forEach(p => p.addEventListener('click', () => p.classList.toggle('active')));
 
 // Sort dropdown
-$('#sort-dropdown')?.addEventListener('click', () => showToast('정렬 옵션 준비 중', 'warn'));
+// SFX 정렬 — 4가지 모드 cycle (Most Popular / Newest / Shortest / Longest)
+const _SFX_SORT_MODES = [
+  { id: 'popular', label: 'Most Popular' },
+  { id: 'newest',  label: 'Newest' },
+  { id: 'short',   label: 'Shortest' },
+  { id: 'long',    label: 'Longest' },
+];
+window._sfxSortIdx = 0;
+$('#sort-dropdown')?.addEventListener('click', () => {
+  window._sfxSortIdx = (window._sfxSortIdx + 1) % _SFX_SORT_MODES.length;
+  const mode = _SFX_SORT_MODES[window._sfxSortIdx];
+  const labelEl = $('#sort-dropdown span');
+  if (labelEl) labelEl.textContent = mode.label;
+  // 실제 정렬 — renderSFXList가 호출되면 정렬됨
+  if (typeof renderSFXList === 'function') {
+    try { renderSFXList(undefined, mode.id); } catch (_) { renderSFXList(); }
+  }
+  showToast(`✓ 정렬: ${mode.label}`);
+});
 
 // Floating prompt
 $$('.prompt-suggestion').forEach(btn => {
@@ -27983,17 +29748,82 @@ $('#prompt-input')?.addEventListener('input', updatePromptSend);
 $('#prompt-input')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); $('#prompt-send')?.click(); }
 });
-async function generateSFX(text) {
+/** 한국어 SFX 묘사 → 영어 sound effect descriptor 정밀 번역
+ *  - 사용자 입력의 모든 디테일 보존 (재질·강도·환경·시간감)
+ *  - 일반화 금지, 메타 prefix 추가 X
+ *  - ElevenLabs sound-generation은 영어 디스크립션을 그대로 받음 */
+async function _toSfxEnglishPrompt(rawText) {
+  const text = (rawText || '').trim();
+  if (!text) return text;
+  const hasKorean = /[\uAC00-\uD7AF\u3131-\uD79D]/.test(text);
+  // 영어만 들어왔으면 그대로 사용 (prefix 추가 X — ElevenLabs sound-generation이 알아서 처리)
+  if (!hasKorean) return text;
+
+  // 한국어 → 영어 정밀 번역 (literal, 모든 디테일 보존)
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/text/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: [
+          'You translate Korean SOUND descriptions to ENGLISH for an audio-effect generator.',
+          'Rules:',
+          '1. LITERAL translation — preserve EVERY detail (material, intensity, environment, time, motion, weight, surface).',
+          '2. NO generalization. "유리 깨지는 소리, 슬로우 모션" must keep "slow motion" and the breaking detail.',
+          '3. NO meta words like "Sound effect:", "Audio of:", "A sound of:". Output the description directly.',
+          '4. NO voice/speech/dialogue/words. Only physical sound descriptors.',
+          '5. NO quotes around the output.',
+          '6. Comma-separated descriptors. Concise but complete.',
+          '7. Examples:',
+          '   "자갈길 위를 걷는 발소리" → "footsteps on gravel path, crunchy texture, steady walking pace"',
+          '   "유리 깨지는 소리, 슬로우 모션" → "shattering glass, slow motion debris, low frequency rumble"',
+          '   "비 오는 카페 창가, ASMR" → "rain on cafe window, gentle pattering, indoor ambient room tone, ASMR close-mic"',
+          '   "시네마틱 임팩트, 깊은 베이스 boom" → "cinematic impact, deep sub bass boom, rising tension hit"',
+        ].join('\n'),
+        user: text,
+        max_tokens: 120,
+        temperature: 0,  // 결정적 번역
+      }),
+    });
+    if (!r.ok) throw new Error('translate fail');
+    const d = await r.json();
+    let en = (d?.text || '').trim().replace(/^["'`]|["'`]$/g, '');
+    // 모델이 prefix를 붙였으면 제거
+    en = en.replace(/^\s*(sound\s*effect[s]?\s*(of|:)\s*)/i, '').trim();
+    if (!en) return text;
+    return en;
+  } catch (e) {
+    // 번역 실패 시 원문 그대로 (ElevenLabs가 일부 한국어도 인식 가능 — 결과 흔들리더라도 prefix는 안 붙임)
+    return text;
+  }
+}
+
+async function generateSFX(text, opts = {}) {
   text = (text || '').trim();
-  if (!text) { showToast('먼저 사운드를 묘사해 주세요', 'error'); return; }
+  if (!text) { showToast('먼저 사운드를 묘사해 주세요', 'error'); return false; }
+  const sfxCost = opts.duration_seconds ? Math.max(20, Math.ceil(opts.duration_seconds * 15)) : 50;
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'sfx-generate',
+    label: '효과음 생성',
+    cost: sfxCost,
+    modelTier: 'basic',
+  })) return false;
   const sendBtn = $('#prompt-send');
   if (sendBtn) sendBtn.disabled = true;
   showToast(`"${text.slice(0, 30)}" 생성 중...`);
+  // 한국어 → 영어 정밀 번역 (디테일 보존, prefix X)
+  const sfxPrompt = await _toSfxEnglishPrompt(text);
+  // ElevenLabs sound-generation 페이로드
+  // prompt_influence: 0~1 — 높을수록 텍스트 충실. 정확도 우선 0.85
+  const payload = { text: sfxPrompt, prompt_influence: 0.85 };
+  if (opts.duration_seconds && opts.duration_seconds >= 0.5 && opts.duration_seconds <= 22) {
+    payload.duration_seconds = opts.duration_seconds;
+  }
   try {
     const r = await fetch(`${BACKEND_URL}/api/sfx`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, prompt_influence: 0.4 }),
+      body: JSON.stringify(payload),
     });
     if (!r.ok) {
       const t = await r.text().catch(() => '');
@@ -28001,24 +29831,70 @@ async function generateSFX(text) {
     }
     const blob = await r.blob();
     const blobUrl = URL.createObjectURL(blob);
+    const createdAt = new Date().toISOString();
+    const title = text.charAt(0).toUpperCase() + text.slice(1);
+    const durationLabel = opts.duration_seconds ? `${opts.duration_seconds}s` : '~';
+    const filename = sfxSafeFilename(title, 'mp3');
+    const blobKey = await saveSfxBlobToIndexedDB(blob, { title, createdAt });
+    let libraryAsset = null;
+    if (typeof saveLibraryAsset === 'function') {
+      libraryAsset = saveLibraryAsset({
+        type: 'sfx',
+        title,
+        projectName: 'SFX Studio',
+        model: 'elevenlabs-sfx',
+        modelId: 'elevenlabs-sfx',
+        status: 'generated',
+        decisionStatus: 'candidate',
+        cat: ['Generated', 'AI'],
+        duration: durationLabel,
+        promptText: text,
+        prompt: text,
+        translatedPrompt: sfxPrompt,
+        createdAt,
+        audioUrl: blobUrl,
+        blobKey,
+        filename,
+        ext: 'mp3',
+        tags: ['sfx', 'generated', 'ai'],
+      });
+    }
     // 사운드 재생
     try { new Audio(blobUrl).play(); } catch (_) {}
     // SFX 카탈로그에 추가
     const newSfx = {
-      title: text.charAt(0).toUpperCase() + text.slice(1),
+      title,
       cat: ['Generated', 'AI'],
-      duration: '~',
+      duration: durationLabel,
       downloads: 0,
+      createdAt,
+      date: createdAt,
       audioUrl: blobUrl,
+      blob,
+      blobKey,
+      assetId: libraryAsset?.id || null,
+      filename,
+      ext: 'mp3',
     };
     SFX_DATA.unshift(newSfx);
     SFX_GEN_HISTORY.unshift(newSfx);
     renderSFXList();
+    try {
+      if (typeof consumeCredits === 'function') consumeCredits(sfxCost, 'SFX');
+      const rem = document.getElementById('sfx-credit-remain');
+      const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
+      if (rem && balance) rem.textContent = balance.remaining.toLocaleString();
+      if (typeof refreshCreditPill === 'function') refreshCreditPill();
+    } catch (_) {}
+    if ($('#page-library')?.classList.contains('active')) renderLibrary();
+    if ($('#page-history')?.classList.contains('active')) renderHistoryPage();
     if ($('#prompt-input')) $('#prompt-input').value = '';
     updatePromptSend();
     showToast('사운드 생성 완료 — 자동 재생 중');
+    return true;
   } catch (e) {
     showToast(`SFX 실패 — ${e.message.slice(0, 80)}`, 'error');
+    return false;
   } finally {
     if (sendBtn) sendBtn.disabled = false;
   }
@@ -28083,7 +29959,13 @@ function bindEffectsGenerate() { /* placeholder for init order — handlers atta
     const cost = ctrlState.length === 'auto' ? 50 :
                   Math.max(20, parseInt(ctrlState.length, 10) * 15);
     const costEl = document.getElementById('sfx-credit-cost');
+    const remEl = document.getElementById('sfx-credit-remain');
+    const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
     if (costEl) costEl.textContent = cost.toLocaleString();
+    if (remEl && balance) {
+      remEl.textContent = balance.remaining.toLocaleString();
+      remEl.style.color = cost > balance.remaining ? '#F59E0B' : 'var(--accent)';
+    }
   }
   _updateCredit();
   ['sfx-ctrl-length','sfx-ctrl-loop','sfx-ctrl-ai','sfx-ctrl-variation'].forEach(id => {
@@ -28101,23 +29983,24 @@ function bindEffectsGenerate() { /* placeholder for init order — handlers atta
     btn.disabled = true;
     btn.querySelector('span').textContent = '생성 중…';
     try {
-      // 컨트롤 → 입력 augment
-      const parts = [text];
-      if (ctrlState.length !== 'auto') parts.push(`(${ctrlState.length}s)`);
-      if (ctrlState.loop) parts.push('seamless loop');
-      if (ctrlState.variation === 0) parts.push('deterministic');
-      else if (ctrlState.variation === 60) parts.push('with variation');
-      else if (ctrlState.variation === 100) parts.push('highly varied');
-      const augmented = parts.join(' ');
-      await generateSFX(augmented);
+      // 사용자가 입력한 한 줄 묘사 그대로 사용 (디테일 보존)
+      // length만 파라미터로 분리 — variation/loop는 텍스트에 섞지 않음 (정확도 ↓ 방지)
+      let prompt = text;
+      // loop가 ON일 때만 텍스트 끝에 부드럽게 추가 (translator가 보존)
+      if (ctrlState.loop) prompt = `${text}, seamless loop`;
+      const opts = {};
+      if (ctrlState.length !== 'auto') {
+        opts.duration_seconds = parseFloat(ctrlState.length);
+      }
+      const ok = await generateSFX(prompt, opts);
+      if (!ok) return;
       input.value = '';
       showToast?.('✓ 효과음 생성 완료 — 아래 목록에서 재생');
-      // 잔여 크레딧 차감 (UI만)
+      // 잔여 크레딧 UI 동기화
       const rem = document.getElementById('sfx-credit-remain');
       if (rem) {
-        const cur = parseInt(rem.textContent.replace(/,/g, ''), 10) || 0;
-        const cost = parseInt(document.getElementById('sfx-credit-cost')?.textContent.replace(/,/g, '') || '50', 10);
-        rem.textContent = Math.max(0, cur - cost).toLocaleString();
+        const balance = (typeof getCreditBalance === 'function') ? getCreditBalance() : null;
+        if (balance) rem.textContent = balance.remaining.toLocaleString();
       }
     } catch (e) {
       showToast?.(`SFX 실패: ${e.message?.slice(0, 80)}`, 'error');
@@ -28140,7 +30023,50 @@ function bindEffectsGenerate() { /* placeholder for init order — handlers atta
   });
 })();
 // (legacy) #prompt-close — 하단 패널 제거됨, 남은 핸들러 무해
-$$('.prompt-ctrl').forEach(c => c.addEventListener('click', () => showToast('옵션 상세 설정 준비 중', 'warn')));
+// (legacy) .prompt-ctrl — 더 이상 사용되지 않는 클래스. 안전하게 무시.
+
+/* ── 음악 라이브러리 — 검색 + 정렬 ────────────────────────── */
+(function _initMusicLib() {
+  const search = document.getElementById('ml-search');
+  const sort = document.getElementById('ml-sort');
+  const SORT_MODES = ['Newest ▾', 'Oldest ▾', 'A-Z ▾', 'Z-A ▾'];
+  let sortIdx = 0;
+  function applyMusicLibFilter() {
+    const q = (search?.value || '').trim().toLowerCase();
+    const mode = SORT_MODES[sortIdx];
+    const cards = document.querySelectorAll('#page-music .music-card, #page-music .lib-card');
+    let visible = 0;
+    cards.forEach(card => {
+      const text = (card.textContent || '').toLowerCase();
+      const match = !q || text.includes(q);
+      card.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    // 정렬 — 카드들을 부모 안에서 재배열
+    const parent = cards[0]?.parentElement;
+    if (parent && cards.length > 1) {
+      const sorted = [...cards].filter(c => c.style.display !== 'none');
+      sorted.sort((a, b) => {
+        const ta = a.querySelector('h3, .lib-title, .music-title')?.textContent || a.textContent || '';
+        const tb = b.querySelector('h3, .lib-title, .music-title')?.textContent || b.textContent || '';
+        if (mode === 'A-Z ▾') return ta.localeCompare(tb);
+        if (mode === 'Z-A ▾') return tb.localeCompare(ta);
+        // Newest/Oldest는 DOM 순서 기준 (생성 순서)
+        if (mode === 'Oldest ▾') return [...parent.children].indexOf(a) - [...parent.children].indexOf(b);
+        return [...parent.children].indexOf(b) - [...parent.children].indexOf(a);  // Newest
+      });
+      sorted.forEach(c => parent.appendChild(c));
+    }
+    if (q && visible === 0) showToast?.(`"${q}" 검색 결과 없음`, 'warn');
+  }
+  search?.addEventListener('input', applyMusicLibFilter);
+  sort?.addEventListener('click', () => {
+    sortIdx = (sortIdx + 1) % SORT_MODES.length;
+    sort.textContent = SORT_MODES[sortIdx];
+    applyMusicLibFilter();
+    showToast?.(`✓ 정렬: ${SORT_MODES[sortIdx].replace(' ▾','')}`);
+  });
+})();
 
 /* ============================================================
    LIBRARY PAGE
@@ -28176,13 +30102,50 @@ function buildLibraryItems() {
       bars: 32, seed: Math.random(),
     });
   });
-  // SFX 생성
-  SFX_GEN_HISTORY.forEach(s => {
+  // SFX 생성 — 실제 생성 파일은 Decision Library > SFX에 제작 날짜와 함께 보존
+  const savedSfxAssets = (typeof getLibraryAssets === 'function')
+    ? getLibraryAssets().filter(a => a.type === 'sfx')
+    : [];
+  const seenSfxKeys = new Set();
+  savedSfxAssets.forEach(a => {
+    if (a.id) seenSfxKeys.add(a.id);
+    if (a.blobKey) seenSfxKeys.add(a.blobKey);
+    const cats = Array.isArray(a.cat) && a.cat.length
+      ? a.cat
+      : (Array.isArray(a.tags) && a.tags.length ? a.tags : ['Generated', 'AI']);
     items.push({
-      type: 'sfx', title: s.title,
-      sub: `${s.cat.join(' · ')} · ${s.duration}`,
-      date: '방금 전',
-      bars: 32, seed: Math.random(),
+      type: 'sfx',
+      title: a.title || 'Generated SFX',
+      sub: `${cats.join(' · ')} · ${a.duration || '~'} · 제작 ${sfxFormatCreatedAt(a.createdAt)}`,
+      date: sfxFormatCreatedAt(a.createdAt),
+      createdAt: a.createdAt || a.updatedAt,
+      assetId: a.id,
+      blobKey: a.blobKey,
+      audioUrl: a.audioUrl,
+      blobUrl: a.blobUrl,
+      filename: a.filename || sfxSafeFilename(a.title || 'generated-sfx', a.ext || 'mp3'),
+      ext: a.ext || 'mp3',
+      bars: 32,
+      seed: sfxStableSeed(a.id || a.blobKey || a.title),
+    });
+  });
+  SFX_GEN_HISTORY.forEach(s => {
+    if ((s.assetId && seenSfxKeys.has(s.assetId)) || (s.blobKey && seenSfxKeys.has(s.blobKey))) return;
+    items.push({
+      type: 'sfx',
+      title: s.title,
+      sub: `${(s.cat || ['Generated', 'AI']).join(' · ')} · ${s.duration || '~'} · 제작 ${sfxFormatCreatedAt(s.createdAt)}`,
+      date: sfxFormatCreatedAt(s.createdAt),
+      createdAt: s.createdAt || s.date,
+      assetId: s.assetId,
+      blob: s.blob,
+      blobKey: s.blobKey,
+      audioUrl: s.audioUrl,
+      blobUrl: s.blobUrl,
+      filename: s.filename || sfxSafeFilename(s.title, s.ext || 'mp3'),
+      ext: s.ext || 'mp3',
+      bars: 32,
+      seed: sfxStableSeed(s.assetId || s.blobKey || s.title),
     });
   });
   return items;
@@ -28349,7 +30312,7 @@ function renderHistoryPage() {
                 <div class="lib-card-sub">${escapeHTML(item.sub || '')}</div>
               </div>
               <div class="lib-card-actions">
-                ${item.blobUrl || item.blob ? `<button data-hist-idx="${idx}" data-act="play">재생</button>
+                ${item.blobUrl || item.audioUrl || item.blobKey || item.blob ? `<button data-hist-idx="${idx}" data-act="play">재생</button>
                 <button data-hist-idx="${idx}" data-act="dl">다운로드</button>` : `<span style="font-size:11px;color:var(--text-faint)">재생 불가</span>`}
               </div>
             </div>
@@ -28369,19 +30332,27 @@ function renderHistoryPage() {
   });
   // 레거시 재생/다운
   wrap.querySelectorAll('[data-act="play"]').forEach(b => {
-    b.onclick = (e) => {
+    b.onclick = async (e) => {
       e.stopPropagation();
       const i = +b.dataset.histIdx;
       const it = legacyItems[i];
+      if (it.type === 'sfx' || it.blobKey || it.audioUrl) {
+        await playSfxItem(it);
+        return;
+      }
       const url = it.blobUrl || (it.blob ? URL.createObjectURL(it.blob) : null);
       if (url) try { new Audio(url).play(); } catch (_) {}
     };
   });
   wrap.querySelectorAll('[data-act="dl"]').forEach(b => {
-    b.onclick = (e) => {
+    b.onclick = async (e) => {
       e.stopPropagation();
       const i = +b.dataset.histIdx;
       const it = legacyItems[i];
+      if (it.type === 'sfx' || it.blobKey || it.audioUrl) {
+        await downloadSfxItem(it);
+        return;
+      }
       const url = it.blobUrl || (it.blob ? URL.createObjectURL(it.blob) : null);
       if (!url) return;
       const a = document.createElement('a');
@@ -28549,9 +30520,12 @@ function renderLibrary() {
   // 아이템 액션
   $$('.lib-card').forEach((card, idx) => {
     const item = filtered[idx];
-    card.querySelector('[data-act="play"]').addEventListener('click', (e) => {
+    card.querySelector('[data-act="play"]').addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (item.blob) {
+      if (item.type === 'sfx' || item.blobKey || item.audioUrl || item.blobUrl) {
+        const ok = await playSfxItem(item);
+        if (ok) showToast(`${item.title} 재생 중`);
+      } else if (item.blob) {
         const audio = new Audio(URL.createObjectURL(item.blob));
         audio.play();
         showToast(`${item.title} 재생 중`);
@@ -28559,9 +30533,11 @@ function renderLibrary() {
         showToast('재생 (데모)');
       }
     });
-    card.querySelector('[data-act="download"]').addEventListener('click', (e) => {
+    card.querySelector('[data-act="download"]').addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (item.blob) {
+      if (item.type === 'sfx' || item.blobKey || item.audioUrl || item.blobUrl) {
+        await downloadSfxItem(item);
+      } else if (item.blob) {
         downloadBlob(item.blob, item.title);
         showToast('다운로드 시작');
       } else {
@@ -28809,6 +30785,9 @@ const VIDEO_STATE = {
   videoUrl: null,                // Upscale용 영상
   history: [],
   pollTimer: null,
+  // ── 신규 옵션 ──
+  audioOn: false,                // Audio On 토글 (모델이 audio 지원 시만 동작)
+  elements: [],                  // 프롬프트에 주입한 캐릭터·스타일 [{type,id,name}]
 };
 
 const VIDEO_FALLBACK_FEATURES = [
@@ -29058,6 +31037,8 @@ function getSelectedVideoModel() {
 }
 
 function syncVideoModelDisplay() {
+  // 모델 변경 시 Audio On 버튼 상태도 함께 갱신
+  try { syncVideoAudioBtn?.(); } catch (_) {}
   const m = getSelectedVideoModel();
   if (!m) return;
   const nameEl = $('#vid-model-name');
@@ -29278,6 +31259,23 @@ async function uploadVideoImage(file) {
   }
 }
 
+function videoModelMonetizationTier(model) {
+  if (!model) return 'basic';
+  if (model.tier === 'exclusive') return 'exclusive';
+  if (model.tier === 'premium') return 'premium';
+  return 'basic';
+}
+
+function videoCreditCost(model, feature = 'create') {
+  const duration = Number(VIDEO_STATE.duration || 5);
+  let base = feature === 'upscale' ? 120 : feature === 'lipsync' ? 160 : 180;
+  if (feature === 'i2v') base += 40;
+  if (model?.tier === 'premium') base *= 1.6;
+  if (model?.tier === 'exclusive') base *= 3.2;
+  if (model?.audio && VIDEO_STATE.audioOn) base += 120;
+  return Math.ceil((base * Math.max(1, duration / 5)) / 10) * 10;
+}
+
 async function generateVideo() {
   const btn = $('#vid-generate');
   const status = $('#vid-gen-status');
@@ -29300,6 +31298,15 @@ async function generateVideo() {
   const m = getSelectedVideoModel();
   if (feat === 'create' || feat === 'i2v') {
     if (!m) { showToast('모델을 선택해 주세요', 'error'); return; }
+    const modelTier = videoModelMonetizationTier(m);
+    const cost = videoCreditCost(m, feat);
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'video-generate',
+      label: `${m.label} 영상 생성`,
+      cost,
+      modelTier,
+      modelLabel: m.label,
+    })) return;
     if (m.route && m.route !== 'replicate') {
       showToast(`${m.label}는 외부 provider 커넥터 연결 후 실행됩니다. 지금은 local route 모델을 선택해 주세요.`, 'warn');
       status.className = 'vid-gen-status error';
@@ -29310,7 +31317,16 @@ async function generateVideo() {
     if (m.needs_image && !VIDEO_STATE.imageUrl) {
       showToast(`${m.label}는 이미지 업로드가 필요해요`, 'error'); return;
     }
+  } else {
+    const cost = videoCreditCost(m, feat);
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: `video-${feat}`,
+      label: feat === 'lipsync' ? '립싱크 생성' : feat === 'upscale' ? '영상 업스케일' : '영상 작업',
+      cost,
+      modelTier: 'basic',
+    })) return;
   }
+  const finalVideoCost = videoCreditCost(m, feat);
 
   btn.disabled = true;
   btn.querySelector('.vid-gen-label').textContent = 'Starting…';
@@ -29345,6 +31361,8 @@ async function generateVideo() {
         image_url: VIDEO_STATE.imageUrl,
         duration: VIDEO_STATE.duration,
         aspect_ratio: VIDEO_STATE.aspect,
+        // Audio On — 모델이 audio 지원할 때만 전달
+        audio: !!(m?.audio && VIDEO_STATE.audioOn),
       };
     }
     const r = await fetch(`${BACKEND_URL}${endpoint}`, {
@@ -29357,8 +31375,12 @@ async function generateVideo() {
       throw new Error(`시작 실패 (${r.status}) ${t.slice(0, 140)}`);
     }
     const d = await r.json();
+    try {
+      if (typeof consumeCredits === 'function') consumeCredits(finalVideoCost, `Video ${m?.label || feat}`);
+      if (typeof refreshCreditPill === 'function') refreshCreditPill();
+    } catch (_) {}
     const histItem = {
-      id: d.id, prompt, model: m.label, status: d.status,
+      id: d.id, prompt, model: m?.label || featLabel, status: d.status,
       video_url: null, created: new Date(),
     };
     VIDEO_STATE.history.unshift(histItem);
@@ -29470,12 +31492,28 @@ function renderVideoHistory() {
 }
 
 function bindVideoPage() {
-  // 탭 (Create / Edit / Motion)
+  // 탭 (Create / Edit / Motion) — Edit·Motion은 4개 Feature 중 하나로 자동 매핑
   $$('#page-sync .vid-tab').forEach(t => {
     t.addEventListener('click', () => {
       $$('#page-sync .vid-tab').forEach(x => x.classList.remove('active'));
       t.classList.add('active');
-      if (t.dataset.vtab !== 'create') showToast(`${t.textContent} — 준비 중`, 'warn');
+      const tab = t.dataset.vtab;
+      // 탭 → Feature 매핑
+      const tabFeatureMap = {
+        create: 'create',     // T2V
+        edit:   'upscale',    // 영상 편집·업스케일·확장
+        motion: 'i2v',        // 키프레임·모션 컨트롤
+      };
+      const newFeature = tabFeatureMap[tab];
+      if (newFeature && newFeature !== VIDEO_STATE.feature) {
+        VIDEO_STATE.feature = newFeature;
+        try { renderVideoFeatureList?.(); } catch (_) {}
+        try { renderVideoModelList?.(); } catch (_) {}
+        try { syncVideoFeatureUI?.(); } catch (_) {}
+        try { syncVideoModelDisplay?.(); } catch (_) {}
+        const featLabel = { create: 'Text to Video', i2v: 'Image / Keyframes', upscale: 'Upscale / Extend' }[newFeature] || tab;
+        showToast?.(`✓ ${t.textContent.trim()} 모드 — ${featLabel} 활성화`);
+      }
     });
   });
   // 우측 탭
@@ -29511,12 +31549,167 @@ function bindVideoPage() {
   // Generate
   $('#vid-generate')?.addEventListener('click', generateVideo);
   // Audio toggle (시각용)
-  $('#vid-audio-btn')?.addEventListener('click', () => showToast('오디오 옵션 — 모델별 자동 처리', 'warn'));
-  $('#vid-elements-btn')?.addEventListener('click', () => showToast('Elements — 곧 지원돼요', 'warn'));
+  // ── Audio On 토글 — 모델이 audio 지원할 때만 활성 ──
+  $('#vid-audio-btn')?.addEventListener('click', () => {
+    const m = getSelectedVideoModel?.();
+    if (!m?.audio) {
+      showToast(`${m?.label || '현재 모델'}은(는) 오디오 동시 생성을 지원하지 않아요. (Sora 2, Veo 3 등 audio 지원 모델 선택)`, 'warn');
+      return;
+    }
+    VIDEO_STATE.audioOn = !VIDEO_STATE.audioOn;
+    syncVideoAudioBtn();
+    showToast(VIDEO_STATE.audioOn ? '🔊 Audio On — 영상에 사운드 동시 생성' : '🔈 Audio Off');
+  });
 
-  syncVideoOptionLabels();
-  loadVideoModels();
+  // ── Elements — 캐릭터/스타일 팝오버에서 선택해 prompt에 주입 ──
+  $('#vid-elements-btn')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    // 이미 열려 있으면 닫기
+    const existing = document.querySelector('.vid-elements-pop');
+    if (existing) { existing.remove(); return; }
+    const btn = e.currentTarget;
+    const rect = btn.getBoundingClientRect();
+    // 캐릭터 + 스타일 로드
+    let chars = [], styles = [];
+    try { chars = await SoavizCharacters?.list?.(null) || []; } catch (_) {}
+    try { styles = await SoavizStyles?.list?.(null) || []; } catch (_) {}
+    const pop = document.createElement('div');
+    pop.className = 'vid-elements-pop';
+    pop.style.left = rect.left + 'px';
+    pop.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    const charsHtml = chars.length
+      ? `<div class=\"vep-grid\">${chars.slice(0, 12).map(c => {
+          const photo = c.photos?.[0]?.dataUrl;
+          const av = photo
+            ? `<span class=\"vep-avatar\" style=\"background-image:url('${photo}')\"></span>`
+            : `<span class=\"vep-avatar\">${escapeHTML((c.name || '?').slice(0,1))}</span>`;
+          return `<button class=\"vep-item\" data-elt=\"char\" data-elid=\"${escapeHTML(c.id)}\">${av}<span class=\"vep-name\">${escapeHTML(c.name)}</span></button>`;
+        }).join('')}</div>`
+      : `<div class=\"vep-empty\">캐릭터 페르소나에서 캐릭터를 먼저 만들어 주세요</div>`;
+    const stylesHtml = styles.length
+      ? `<div class=\"vep-grid\">${styles.slice(0, 12).map(s => {
+          const c1 = s.palette?.[0] || '#A78BFA';
+          return `<button class=\"vep-item\" data-elt=\"style\" data-elid=\"${escapeHTML(s.id)}\"><span class=\"vep-avatar\" style=\"background:${c1};color:#fff\">●</span><span class=\"vep-name\">${escapeHTML(s.name || '(이름없음)')}</span></button>`;
+        }).join('')}</div>`
+      : `<div class=\"vep-empty\">룩북(Style Bible)에서 스타일을 먼저 만들어 주세요</div>`;
+    pop.innerHTML = `
+      <div class=\"vep-section-label\">🎭 캐릭터</div>
+      ${charsHtml}
+      <div class=\"vep-section-label\">🎨 스타일</div>
+      ${stylesHtml}
+    `;
+    document.body.appendChild(pop);
+
+    // 외부 클릭 시 닫기
+    function closePop(ev) {
+      if (!pop.contains(ev.target) && ev.target !== btn) {
+        pop.remove();
+        document.removeEventListener('click', closePop);
+      }
+    }
+    setTimeout(() => document.addEventListener('click', closePop), 0);
+
+    // 항목 클릭 → prompt에 삽입
+    pop.querySelectorAll('.vep-item').forEach(it => {
+      it.addEventListener('click', () => {
+        const type = it.dataset.elt;
+        const id = it.dataset.elid;
+        if (type === 'char') {
+          const c = chars.find(x => x.id === id);
+          if (c) injectElementToPrompt('char', c);
+        } else {
+          const s = styles.find(x => x.id === id);
+          if (s) injectElementToPrompt('style', s);
+        }
+        pop.remove();
+        document.removeEventListener('click', closePop);
+      });
+    });
+  });
+
+  // 초기 상태 동기화
+  syncVideoAudioBtn();
+  syncVideoElementsBtn();
 }
+
+/** Audio On 버튼 시각 동기화 — 현재 선택 모델이 audio 미지원이면 disabled */
+function syncVideoAudioBtn() {
+  const btn = document.getElementById('vid-audio-btn');
+  if (!btn) return;
+  const m = getSelectedVideoModel?.();
+  const supports = !!m?.audio;
+  btn.disabled = !supports;
+  btn.classList.toggle('active', supports && VIDEO_STATE.audioOn);
+  btn.title = supports
+    ? (VIDEO_STATE.audioOn ? '오디오 동시 생성: ON' : '오디오 동시 생성 활성화')
+    : `${m?.label || '현재 모델'}은(는) 오디오 미지원`;
+}
+
+/** Elements 칩 동기화 — VIDEO_STATE.elements 기반 */
+function syncVideoElementsBtn() {
+  const btn = document.getElementById('vid-elements-btn');
+  if (!btn) return;
+  const count = (VIDEO_STATE.elements || []).length;
+  btn.classList.toggle('active', count > 0);
+  // 라벨 갱신
+  const labelHTML = count > 0 ? `<span style="font-family:var(--font-mono)">@</span> Elements · ${count}` : `<span style="font-family:var(--font-mono)">@</span> Elements`;
+  // 첫 자식 텍스트만 갱신 (svg 등 보존)
+  const monoSpan = btn.querySelector('span');
+  // 단순 재구성
+  btn.innerHTML = labelHTML;
+}
+
+/** 캐릭터·스타일 정보를 prompt textarea에 자동 주입 */
+function injectElementToPrompt(type, item) {
+  const ta = document.getElementById('vid-prompt');
+  if (!ta) return;
+  const cur = ta.value.trim();
+  let snippet = '';
+  if (type === 'char') {
+    const parts = [];
+    parts.push(`Character "${item.name}"`);
+    if (item.appearance) parts.push(item.appearance.split('\n')[0].slice(0, 100));
+    if (item.personality) parts.push(item.personality.split('\n')[0].slice(0, 60));
+    snippet = parts.filter(Boolean).join(', ');
+  } else if (type === 'style') {
+    const parts = [];
+    parts.push(`Style "${item.name}"`);
+    if (item.lightingMood) {
+      const lbl = (typeof SoavizStyles !== 'undefined' && SoavizStyles.LIGHTING_LABEL?.[item.lightingMood]) || item.lightingMood;
+      parts.push(`lighting: ${lbl}`);
+    }
+    if (item.cameraStyle) parts.push(`camera: ${item.cameraStyle}`);
+    if (item.scoreMood) parts.push(`mood: ${item.scoreMood}`);
+    if (item.palette?.length) parts.push(`palette: ${item.palette.slice(0, 3).join(', ')}`);
+    snippet = parts.filter(Boolean).join(', ');
+  }
+  if (!snippet) return;
+  // 중복 방지 — id 기준
+  if ((VIDEO_STATE.elements || []).some(e => e.id === item.id)) {
+    showToast?.(`이미 추가됨: ${item.name}`, 'warn');
+    return;
+  }
+  VIDEO_STATE.elements = [...(VIDEO_STATE.elements || []), { type, id: item.id, name: item.name, snippet }];
+  ta.value = cur ? `${cur}\n— ${snippet}` : snippet;
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+  syncVideoElementsBtn();
+  showToast?.(`✓ ${item.name} 추가됨 — 프롬프트에 자동 주입`);
+}
+
+/* 원래 bindVideoStudio() 함수 마지막에 있던 초기화 호출 */
+(function _videoBindFinalize() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      try { syncVideoOptionLabels?.(); } catch (_) {}
+      try { loadVideoModels?.(); } catch (_) {}
+    });
+  } else {
+    setTimeout(() => {
+      try { syncVideoOptionLabels?.(); } catch (_) {}
+      try { loadVideoModels?.(); } catch (_) {}
+    }, 100);
+  }
+})();
 
 /* ════════════════════════════════════════════════════════════
    v3 M0.1 — SoavizDB (Dexie / IndexedDB)
@@ -30885,8 +33078,59 @@ function bindVaultUI() {
     return (s || '').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '').slice(0, 32) || 'step';
   }
 
+  /** 라벨 키워드 + step type → 추천 모델 ID 1~2개 */
+  function _suggestModelIdsForStep(label = '', type = 'generate') {
+    const L = String(label).toLowerCase();
+    // 라벨 키워드 우선 (구체적인 작업)
+    // 시나리오 / 트리트먼트 / 로그라인 / 회고 → 텍스트 LLM
+    if (/시나리오|트리트먼트|로그라인|회고|문서|자막|캡션|레퍼런스|리서치/.test(label)) {
+      return ['claude-4-sonnet', 'gpt-5'];
+    }
+    // 캐릭터 시트 / 무드보드 / 룩북 / 컬러 / 스토리보드 / 이미지 시안 → 이미지
+    if (/무드보드|룩북|컬러|이미지\s*시안|스토리보드|캐릭터\s*시트/.test(label)) {
+      return ['flux-1.1-pro', 'midjourney-v7'];
+    }
+    // 영상 시안 / 컷 분해 / VFX / 카메라 무브 → 비디오
+    if (/영상\s*시안|컷\s*분해|vfx|이펙트|카메라\s*무브/i.test(label)) {
+      return ['sora-2-pro', 'veo-3.1'];
+    }
+    // 립싱크
+    if (/립싱크|lipsync/i.test(label)) {
+      return ['sync-labs-1.9', 'hedra-character-3'];
+    }
+    // 사운드 / 음악 / 보이스
+    if (/사운드|음악|믹싱|보이스|tts/i.test(label)) {
+      return ['suno-v4', 'elevenlabs-v3'];
+    }
+    // 편집 / 합성 / 업스케일 / 그레이딩
+    if (/편집|합성|업스케일|그레이딩/i.test(label)) {
+      return ['topaz-video-astra', 'real-esrgan-video'];
+    }
+    // 비교 생성 / 베스트 선정 → 비디오
+    if (/비교|a\/b|베스트/i.test(label)) {
+      return ['runway-gen-4.5', 'kling-2.5-turbo'];
+    }
+    // 클라이언트 검토 / 딜리버리 → 텍스트 (검토 위주)
+    if (/검토|딜리버리|approve/i.test(label)) {
+      return ['gpt-5'];
+    }
+    // 기본: type 기반 fallback
+    const fallback = {
+      generate: ['sora-2-pro', 'flux-1.1-pro'],
+      review:   ['gpt-5', 'claude-4-sonnet'],
+      approve:  ['gpt-4o-mini'],
+      manual:   [],
+      handoff:  [],
+    };
+    return fallback[type] || [];
+  }
+
   function _normalizeStep(s, fallbackIdx = 0) {
     const type = STEP_TYPES[s.type] ? s.type : 'generate';
+    // 추천 모델 자동 채움 (사용자가 직접 지정한 경우는 보존)
+    const userIds = Array.isArray(s.modelIds) ? s.modelIds.slice(0, 8) : [];
+    const suggested = userIds.length === 0 ? _suggestModelIdsForStep(s.label, type) : userIds;
+    const primary = s.primaryModelId || suggested[0] || null;
     return {
       key: s.key || _slug(s.label) || ('step' + (fallbackIdx + 1)),
       label: s.label || ('단계 ' + (fallbackIdx + 1)),
@@ -30896,8 +33140,8 @@ function bindVaultUI() {
       assignee: s.assignee || null,
       autoStart: !!s.autoStart,
       notes: s.notes || '',
-      modelIds: Array.isArray(s.modelIds) ? s.modelIds.slice(0, 8) : [],
-      primaryModelId: s.primaryModelId || null,
+      modelIds: suggested.slice(0, 8),
+      primaryModelId: primary,
     };
   }
 
@@ -31252,7 +33496,7 @@ function openWorkflowBuilder() {
               <div class="pl-wf-item ${w.id === editingId ? 'active' : ''} ${w.id === _newlyCreatedId ? 'is-new' : ''}" data-wfid="${w.id}">
                 <span class="pl-wf-color" style="background:${w.color}"></span>
                 <span style="flex:1;overflow:hidden;text-overflow:ellipsis">${escapeHTML(w.name)}</span>
-                ${w.builtin ? '<span class="pl-wf-builtin">기본</span>' : '<span class="pl-wf-mine">내 것</span>'}
+                ${w.builtin ? '<span class="pl-wf-builtin" title="추천 워크플로우 — AI 모델까지 자동 추천됩니다">추천</span>' : '<span class="pl-wf-mine">내 것</span>'}
                 ${w.id === defId ? '<span class="pl-wf-meta">★</span>' : `<span class="pl-wf-meta">${w.steps.length}단계</span>`}
               </div>
             `).join('')}
@@ -34116,6 +36360,9 @@ async function renderCharactersPage() {
       : `<div class="bible-avatar">${escapeHTML(initials)}</div>`;
     return `
       <article class="bible-card ${CHARACTER_PAGE_STATE.selected.has(c.id) ? 'selected' : ''}" data-ch-id="${escapeHTML(c.id)}" style="--bib-c1:${c1};--bib-c2:${c2}">
+        <button class="ch-card-delete" data-ch-action="delete" data-ch-id="${escapeHTML(c.id)}" title="${escapeHTML(c.name)} 삭제" aria-label="삭제">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <div class="bible-card-head">
           <input class="ch-select-box" type="checkbox" data-ch-action="toggle-select" data-ch-id="${escapeHTML(c.id)}" ${CHARACTER_PAGE_STATE.selected.has(c.id) ? 'checked' : ''} aria-label="캐릭터 선택" />
           ${avatarHTML}
@@ -34196,24 +36443,47 @@ async function openCharacterEditor(id, preset = null) {
       </div>
       <div class="bible-modal-body">
         <div class="bible-field">
-          <label>사진 등록 <span style="color:var(--text-faint);font-weight:400;font-size:11px">— 외형 일관성 참조 이미지. 최대 5장 · 첫 장이 메인 아바타로 자동 적용</span></label>
-          <div class="cf-photo-area">
-            <!-- 메인 프리뷰 — 업로드 즉시 큰 사이즈로 표시 -->
-            <div id="cf-photo-main" class="cf-photo-main-preview empty">
-              <svg class="cf-mp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
-              <div class="cf-mp-text">메인 사진이 여기에 표시됩니다</div>
-            </div>
-            <!-- 추가 사진 썸네일 (2장째부터) -->
-            <div id="cf-photo-grid" class="cf-photo-grid"></div>
-            <!-- 업로드 영역 -->
-            <div id="cf-photo-drop" class="cf-photo-drop">
-              <div class="cf-photo-ico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <label>사진 등록 <span style="color:var(--text-faint);font-weight:400;font-size:11px">— 정면 / 측면 / 후면 / 전신 — 외형 일관성용. 첫 등록 사진이 메인 아바타</span></label>
+          <div class="cf-photo-slots" id="cf-photo-slots">
+            <div class="cf-photo-slot" data-slot="front" data-name="정면" data-hint="얼굴 정면">
+              <div class="cf-slot-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
+                <span class="cf-slot-name">정면</span>
+                <span class="cf-slot-hint">FRONT</span>
               </div>
-              <div class="cf-photo-title">이미지를 끌어다 놓거나 클릭해 업로드</div>
-              <div class="cf-photo-sub">JPG · PNG · WebP · 자동으로 1024px 이하 최적화 · 최대 5장</div>
-              <input type="file" id="cf-photo-input" accept="image/*" multiple hidden />
+              <span class="cf-slot-label">정면</span>
+              <input type="file" accept="image/*" />
             </div>
+            <div class="cf-photo-slot" data-slot="side" data-name="측면" data-hint="옆모습">
+              <div class="cf-slot-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9c0-2 1.5-3.5 3.5-3.5S16 7 16 9c0 1.5-1 2.5-1 4v1"/><path d="M15 14h-1.5c-1 0-2 .5-2 1.5V20"/></svg>
+                <span class="cf-slot-name">측면</span>
+                <span class="cf-slot-hint">SIDE</span>
+              </div>
+              <span class="cf-slot-label">측면</span>
+              <input type="file" accept="image/*" />
+            </div>
+            <div class="cf-photo-slot" data-slot="back" data-name="후면" data-hint="뒷모습">
+              <div class="cf-slot-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/><path d="M10 8.5l1.5 1.5L13.5 8"/></svg>
+                <span class="cf-slot-name">후면</span>
+                <span class="cf-slot-hint">BACK</span>
+              </div>
+              <span class="cf-slot-label">후면</span>
+              <input type="file" accept="image/*" />
+            </div>
+            <div class="cf-photo-slot" data-slot="full" data-name="전신" data-hint="머리부터 발끝">
+              <div class="cf-slot-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v7"/><path d="M9 11h6"/><path d="M12 14l-2 6M12 14l2 6"/></svg>
+                <span class="cf-slot-name">전신</span>
+                <span class="cf-slot-hint">FULL BODY</span>
+              </div>
+              <span class="cf-slot-label">전신</span>
+              <input type="file" accept="image/*" />
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-faint);text-align:center;letter-spacing:0.02em">
+            슬롯 클릭 또는 이미지를 끌어다 놓으세요 · 자동 1024px 최적화 · 첫 등록 사진이 메인 아바타
           </div>
         </div>
         <div class="bible-row">
@@ -34311,83 +36581,60 @@ async function openCharacterEditor(id, preset = null) {
   root.querySelector('#ch-close')?.addEventListener('click', close);
   root.querySelector('#cf-cancel')?.addEventListener('click', close);
 
-  /* ─── 사진 업로드 — 최대 5장, 자동 1024px 리사이즈, JPEG 85% 압축 ─── */
-  const MAX_PHOTOS = 5;
+  /* ─── 사진 업로드 — 4슬롯 (정면/측면/후면/전신), 자동 1024px 리사이즈 ─── */
   const MAX_PX = 1024;
+  const SLOT_TYPES = ['front', 'side', 'back', 'full'];
+  // 기존 photos 배열 → 슬롯 매핑 (호환)
   let _photos = (Array.isArray(c.photos) ? c.photos : []).slice();
+  // 기존 데이터에 type이 없으면 순서대로 슬롯에 매핑
+  if (_photos.length && !_photos[0].slot) {
+    _photos.forEach((p, i) => { p.slot = SLOT_TYPES[i] || 'front'; });
+  }
+  function _getSlot(type) { return _photos.find(p => p.slot === type) || null; }
+  function _setSlot(type, photo) {
+    _photos = _photos.filter(p => p.slot !== type);
+    if (photo) _photos.push(photo);
+  }
 
   function _renderPhotos() {
-    const main = root.querySelector('#cf-photo-main');
-    const grid = root.querySelector('#cf-photo-grid');
-    const drop = root.querySelector('#cf-photo-drop');
-
-    // ── 1. 메인 프리뷰 (큰 정사각 프레임) ──
-    if (main) {
-      if (_photos.length === 0) {
-        main.classList.add('empty');
-        main.innerHTML = `
-          <svg class="cf-mp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
-          <div class="cf-mp-text">메인 사진이 여기에 표시됩니다</div>
-        `;
-      } else {
-        main.classList.remove('empty');
-        main.innerHTML = `
-          <span class="cf-mp-badge">메인 아바타</span>
-          <img src="${_photos[0].dataUrl}" alt="메인 아바타">
-          <button type="button" class="cf-mp-rm" title="메인 사진 삭제" aria-label="메인 사진 삭제">✕</button>
-        `;
-        main.querySelector('.cf-mp-rm')?.addEventListener('click', e => {
-          e.stopPropagation();
-          _photos.splice(0, 1);
+    const slots = root.querySelectorAll('.cf-photo-slot');
+    if (!slots.length) return;
+    // 메인 슬롯 결정: _photos[0]의 slot이 메인 (가장 먼저 등록된 슬롯)
+    const mainSlot = _photos.length ? _photos[0].slot : 'front';
+    slots.forEach(slotEl => {
+      const type = slotEl.dataset.slot;
+      const photo = _getSlot(type);
+      const isMain = (mainSlot === type) && !!photo;
+      slotEl.classList.toggle('filled', !!photo);
+      slotEl.classList.toggle('is-main', isMain);
+      // 기존 동적 콘텐츠 제거 (img + rm 버튼)
+      slotEl.querySelectorAll('img, .cf-slot-rm').forEach(n => n.remove());
+      const emptyEl = slotEl.querySelector('.cf-slot-empty');
+      const labelEl = slotEl.querySelector('.cf-slot-label');
+      if (photo) {
+        if (emptyEl) emptyEl.style.display = 'none';
+        const img = document.createElement('img');
+        img.src = photo.dataUrl;
+        img.alt = type;
+        img.loading = 'lazy';
+        slotEl.appendChild(img);
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'cf-slot-rm';
+        rm.title = `${slotEl.dataset.name} 삭제`;
+        rm.textContent = '✕';
+        rm.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          _setSlot(type, null);
           _renderPhotos();
         });
-      }
-    }
-
-    // ── 2. 추가 썸네일 그리드 (2장째부터) ──
-    if (grid) {
-      const extras = _photos.slice(1);
-      grid.innerHTML = extras.map((p, idx) => {
-        const realIdx = idx + 1;  // _photos 안의 실제 인덱스
-        return `
-          <div class="cf-photo-thumb" data-pi="${realIdx}" title="클릭하면 메인으로 변경">
-            <img src="${p.dataUrl}" alt="" loading="lazy">
-            <button type="button" class="cf-photo-rm" data-rm="${realIdx}" title="삭제" aria-label="사진 삭제">✕</button>
-          </div>
-        `;
-      }).join('');
-      grid.querySelectorAll('.cf-photo-rm').forEach(b => b.addEventListener('click', e => {
-        e.stopPropagation();
-        const i = parseInt(b.dataset.rm, 10);
-        _photos.splice(i, 1);
-        _renderPhotos();
-      }));
-      grid.querySelectorAll('.cf-photo-thumb').forEach(t => t.addEventListener('click', e => {
-        if (e.target.closest('.cf-photo-rm')) return;
-        const i = parseInt(t.dataset.pi, 10);
-        if (i === 0) return;
-        const [picked] = _photos.splice(i, 1);
-        _photos.unshift(picked);
-        _renderPhotos();
-      }));
-    }
-
-    // ── 3. 드롭존 안내 ──
-    if (drop) {
-      drop.classList.toggle('full', _photos.length >= MAX_PHOTOS);
-      const titleEl = drop.querySelector('.cf-photo-title');
-      const subEl = drop.querySelector('.cf-photo-sub');
-      if (_photos.length >= MAX_PHOTOS) {
-        if (titleEl) titleEl.textContent = `최대 ${MAX_PHOTOS}장까지 업로드됨`;
-        if (subEl) subEl.textContent = '추가하려면 기존 사진을 삭제하세요';
-      } else if (_photos.length === 0) {
-        if (titleEl) titleEl.textContent = '이미지를 끌어다 놓거나 클릭해 업로드';
-        if (subEl) subEl.textContent = '업로드 즉시 위 메인 프레임에 큰 사이즈로 표시 · 자동 1024px 최적화 · 최대 5장';
+        slotEl.appendChild(rm);
+        if (labelEl) labelEl.textContent = isMain ? '메인 · ' + slotEl.dataset.name : slotEl.dataset.name;
       } else {
-        if (titleEl) titleEl.textContent = `+ 사진 ${MAX_PHOTOS - _photos.length}장 더 추가 가능`;
-        if (subEl) subEl.textContent = '아래 작은 썸네일 클릭하면 메인으로 즉시 교체됩니다';
+        if (emptyEl) emptyEl.style.display = '';
+        if (labelEl) labelEl.textContent = slotEl.dataset.name;
       }
-    }
+    });
   }
 
   function _compressImage(file) {
@@ -34412,47 +36659,52 @@ async function openCharacterEditor(id, preset = null) {
     });
   }
 
-  async function _handleFiles(files) {
-    if (_photos.length >= MAX_PHOTOS) {
-      showToast?.(`최대 ${MAX_PHOTOS}장까지 업로드 가능`, 'error');
-      return;
+  async function _handleSlotFile(slotType, file) {
+    if (!file || !file.type?.startsWith('image/')) return;
+    try {
+      const dataUrl = await _compressImage(file);
+      _setSlot(slotType, {
+        id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        dataUrl,
+        name: file.name || '',
+        slot: slotType,
+      });
+      _renderPhotos();
+      const slotName = { front:'정면', side:'측면', back:'후면', full:'전신' }[slotType] || slotType;
+      showToast?.(`✓ ${slotName} 사진 등록됨`);
+    } catch (e) {
+      console.warn('Image compress failed:', e);
+      showToast?.('이미지 처리 실패', 'error');
     }
-    const room = MAX_PHOTOS - _photos.length;
-    const arr = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, room);
-    if (arr.length === 0) return;
-    for (const f of arr) {
-      try {
-        const dataUrl = await _compressImage(f);
-        _photos.push({
-          id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-          dataUrl,
-          name: f.name || ''
-        });
-      } catch (e) {
-        console.warn('Image compress failed:', e);
-      }
-    }
-    _renderPhotos();
-    showToast?.(`✓ 사진 ${arr.length}장 추가됨`);
   }
 
-  // 드롭존 + 클릭 + 드래그앤드롭
-  const _dropEl = root.querySelector('#cf-photo-drop');
-  const _inputEl = root.querySelector('#cf-photo-input');
-  _dropEl?.addEventListener('click', () => _inputEl?.click());
-  _inputEl?.addEventListener('change', e => {
-    _handleFiles(e.target.files);
-    e.target.value = '';  // 같은 파일 재선택 가능하게
-  });
-  _dropEl?.addEventListener('dragover', e => {
-    e.preventDefault();
-    _dropEl.classList.add('dragover');
-  });
-  _dropEl?.addEventListener('dragleave', () => _dropEl.classList.remove('dragover'));
-  _dropEl?.addEventListener('drop', e => {
-    e.preventDefault();
-    _dropEl.classList.remove('dragover');
-    _handleFiles(e.dataTransfer.files);
+  // 4슬롯에 클릭/드롭/파일 핸들러 바인딩
+  root.querySelectorAll('.cf-photo-slot').forEach(slotEl => {
+    const type = slotEl.dataset.slot;
+    const input = slotEl.querySelector('input[type="file"]');
+    // 클릭 → 파일 선택 (단, 삭제 버튼 클릭은 제외)
+    slotEl.addEventListener('click', e => {
+      if (e.target.closest('.cf-slot-rm')) return;
+      input?.click();
+    });
+    // 파일 input 변경
+    input?.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      if (f) _handleSlotFile(type, f);
+      e.target.value = '';
+    });
+    // 드래그앤드롭
+    slotEl.addEventListener('dragover', e => {
+      e.preventDefault();
+      slotEl.classList.add('dragover');
+    });
+    slotEl.addEventListener('dragleave', () => slotEl.classList.remove('dragover'));
+    slotEl.addEventListener('drop', e => {
+      e.preventDefault();
+      slotEl.classList.remove('dragover');
+      const f = e.dataTransfer.files?.[0];
+      if (f) _handleSlotFile(type, f);
+    });
   });
   _renderPhotos();
 
@@ -34626,18 +36878,65 @@ async function openCharacterEditor(id, preset = null) {
 
   // 🎲 랜덤 주사위 — 모든 필드를 랜덤 풀에서 채움 (신규 캐릭터에서만 노출)
   root.querySelector('#cf-dice')?.addEventListener('click', () => {
-    const r = SoavizCharacters.randomCharacter();
-    root.querySelector('#cf-name').value = r.name;
-    root.querySelector('#cf-role').value = r.role;
-    // 성별·나이 select는 옵션 매칭이 필요 — HTML 재빌드로 안전하게 반영
-    const genderSel = root.querySelector('#cf-gender');
-    const ageSel = root.querySelector('#cf-age');
-    if (genderSel) genderSel.innerHTML = SoavizCharacters.buildGenderHTML(r.gender);
-    if (ageSel) ageSel.innerHTML = SoavizCharacters.buildAgeHTML(r.age);
-    root.querySelector('#cf-appearance').value = r.appearance;
-    root.querySelector('#cf-personality').value = r.personality;
-    root.querySelector('#cf-fragment').value = SoavizCharacters.autoFragment(r);
-    showToast?.(`🎲 ${r.name} 생성됨 — 마음에 들 때까지 다시 굴리세요`);
+    const diceBtn = root.querySelector('#cf-dice');
+    if (!diceBtn || diceBtn.classList.contains('rolling')) return;
+
+    // ── 1) 핫핑크 전환 + "굴리는 중" 메시지 + 카운트다운 ──
+    const TOTAL_MS = 1500;          // 총 1.5초
+    const TICK_MS = 100;            // 100ms마다 갱신
+    diceBtn.classList.add('rolling');
+    diceBtn.dataset.origText = diceBtn.innerHTML;
+    diceBtn.disabled = true;
+    diceBtn.style.background = 'linear-gradient(135deg, #FF1493, #EC4899)';
+    diceBtn.style.borderColor = 'transparent';
+    diceBtn.style.color = '#fff';
+    diceBtn.style.boxShadow = '0 8px 22px -6px rgba(255,20,147,0.55)';
+
+    function paint(remainSec) {
+      const txt = remainSec > 0 ? `남은 시간 ${remainSec.toFixed(1)}초` : `생성 중…`;
+      diceBtn.innerHTML = `
+        <span class="dice-spin" aria-hidden="true">🎲</span>
+        <span class="dice-rolling-label">주사위를 굴리는 중입니다…</span>
+        <span class="dice-countdown">${txt}</span>
+        <span class="dice-bar"><span class="dice-bar-fill" style="width:${Math.max(0, Math.min(100, ((TOTAL_MS - remainSec*1000) / TOTAL_MS) * 100))}%"></span></span>
+      `;
+    }
+
+    let elapsed = 0;
+    paint(TOTAL_MS / 1000);
+    const tick = setInterval(() => {
+      elapsed += TICK_MS;
+      const remainSec = Math.max(0, (TOTAL_MS - elapsed) / 1000);
+      paint(remainSec);
+      if (elapsed >= TOTAL_MS) {
+        clearInterval(tick);
+      }
+    }, TICK_MS);
+
+    // ── 2) 카운트 종료 시 캐릭터 데이터 채움 ──
+    setTimeout(() => {
+      const r = SoavizCharacters.randomCharacter();
+      root.querySelector('#cf-name').value = r.name;
+      root.querySelector('#cf-role').value = r.role;
+      const genderSel = root.querySelector('#cf-gender');
+      const ageSel = root.querySelector('#cf-age');
+      if (genderSel) genderSel.innerHTML = SoavizCharacters.buildGenderHTML(r.gender);
+      if (ageSel) ageSel.innerHTML = SoavizCharacters.buildAgeHTML(r.age);
+      root.querySelector('#cf-appearance').value = r.appearance;
+      root.querySelector('#cf-personality').value = r.personality;
+      root.querySelector('#cf-fragment').value = SoavizCharacters.autoFragment(r);
+
+      // ── 3) 버튼 원상복구 ──
+      diceBtn.classList.remove('rolling');
+      diceBtn.disabled = false;
+      diceBtn.innerHTML = diceBtn.dataset.origText || '🎲 랜덤 주사위';
+      diceBtn.style.background = '';
+      diceBtn.style.borderColor = '';
+      diceBtn.style.color = '';
+      diceBtn.style.boxShadow = '';
+
+      showToast?.(`🎲 ${r.name} 생성됨 — 마음에 들 때까지 다시 굴리세요`);
+    }, TOTAL_MS);
   });
 
   root.querySelector('#cf-save')?.addEventListener('click', async () => {
@@ -35202,6 +37501,20 @@ function bindCharactersPage() {
     else if (action === 'usage' && id) await openCharacterUsageModal(id);
     else if (action === 'relations' && id) await openCharacterRelationsModal(id);
     else if (action === 'duplicate' && id) await duplicateCharacter(id);
+    else if (action === 'delete' && id) {
+      try {
+        const c = await SoavizDB.db.characters.get(id);
+        if (!c) return;
+        if (!confirm(`"${c.name}" 캐릭터를 삭제하시겠어요?\n(보관함으로 이동되며 복원 가능)`)) return;
+        await SoavizCharacters.remove(id);
+        // 선택 상태 정리
+        CHARACTER_PAGE_STATE.selected.delete(id);
+        await renderCharactersPage?.();
+        showToast?.(`🗑 "${c.name}" 보관됨`);
+      } catch (err) {
+        showToast?.(`삭제 실패: ${err.message}`, 'error');
+      }
+    }
   });
   $('#ch-bulkbar')?.addEventListener('click', async e => {
     const btn = e.target.closest('[data-ch-bulk]');
@@ -36622,6 +38935,14 @@ function bindComparePage() {
     if (!_CMP_STATE.models.length) { showToast?.('모델을 1개 이상 선택하세요'); return; }
     const duration = parseInt($('#cmp-duration')?.value || '5', 10);
     const shotId = $('#cmp-shot-select')?.value || null;
+    const compareCredits = Math.max(300, Math.ceil((SoavizCompare.estimateCost(_CMP_STATE.models, duration) || 1) * 1000));
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'compare-batch',
+      label: `${_CMP_STATE.models.length}개 모델 Compare`,
+      cost: compareCredits,
+      minPlan: 'pro',
+      modelTier: 'exclusive',
+    })) return;
 
     // Shot에 연결되어 있으면 resolvePromptForShot 적용
     let resolvedPrompt = prompt;
@@ -36638,6 +38959,7 @@ function bindComparePage() {
     });
     _CMP_STATE.sessionId = session.id;
     renderCompareSession();
+    try { if (typeof consumeCredits === 'function') consumeCredits(compareCredits, 'Compare'); } catch (_) {}
     showToast?.(`⚡ ${session.candidates.length}개 모델 동시 생성 시작`);
 
     // 병렬 실행
@@ -37730,7 +40052,11 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
       // BACKEND_URL 또는 같은 origin의 /api/* 만 BYOK 헤더 주입
       const isBackend = (((b => b && url.startsWith(b))(_tdzGet(() => BACKEND_URL)))) ||
                         (url.startsWith('/api/'));
-      if (isBackend && typeof SoavizVault !== 'undefined' && SoavizVault.isUnlocked && SoavizVault.isUnlocked()) {
+      if (isBackend
+          && (typeof canUseApiRouter !== 'function' || canUseApiRouter({ silent: true }))
+          && typeof SoavizVault !== 'undefined'
+          && SoavizVault.isUnlocked
+          && SoavizVault.isUnlocked()) {
         const byok = await SoavizVault.byokHeaders();
         init = init || {};
         init.headers = { ...(init.headers || {}), ...byok };

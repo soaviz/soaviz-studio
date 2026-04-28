@@ -889,6 +889,10 @@
         openProviderConfigModal(provider, 'missing');
         return;
       }
+      if (!/^https?:\/\//.test(getRedirectUri())) {
+        openProviderConfigModal(provider, 'redirect');
+        return;
+      }
       const redirectUri = getRedirectUri();
       const { state, nonce } = makeOAuthState(provider);
       let authUrl = '';
@@ -1224,6 +1228,13 @@
         showToast(`${providerName(pending.provider)} 토큰 디코드 실패`, 'error');
         return true;
       }
+      const email = claims.email || claims.preferred_username || claims.upn || '';
+      const existing = getProfile();
+      if (existing?.email && email && existing.email !== email) {
+        if (!confirm(`기존 계정(${existing.email})과 다른 ${providerName(pending.provider)} 계정(${email})으로 진입하려 합니다.\n\n[확인] 새 계정으로 교체  [취소] 중단`)) {
+          return true;
+        }
+      }
       history.replaceState(null, '', location.pathname + location.search + (pending.mode === 'login' ? '#login' : ''));
       askPassphraseForProvider(pending.provider, claims);
       return true;
@@ -1246,12 +1257,13 @@
       const label = providerName(provider);
       const email = claims.email || claims.preferred_username || claims.upn || '';
       const displayName = claims.name || email || `${label} 사용자`;
+      const existingProfile = getProfile();
       const root = document.createElement('div');
       root.className = 'modal-bd';
       root.innerHTML = `
         <div class="modal-card">
           <h3>👋 ${escapeAttr(displayName)}</h3>
-          <p>${label} 계정으로 확인되었습니다. 보관소(Vault)를 위한 마스터 패스프레이즈를 설정해주세요. API 키 4종을 안전하게 암호화합니다.</p>
+          <p>${label} 계정으로 확인되었습니다. 기존 보관소가 있으면 패스프레이즈로 잠금을 해제하고, 처음이면 새 보관소를 만듭니다. 저장된 API 키는 덮어쓰지 않습니다.</p>
           <div class="field">
             <label>마스터 패스프레이즈 (6자+)</label>
             <input type="password" id="gpass" placeholder="6자 이상" />
@@ -1276,15 +1288,29 @@
         const pass = inp.value;
         if (pass.length < 6) { err.textContent = '6자 이상'; err.classList.add('show'); return; }
         ok.classList.add('loading');
-        const okV = await setupVault(pass);
+        const vaultState = await verifyVault(pass);
+        let okV = false;
+        if (vaultState === true) {
+          okV = true;
+        } else if (vaultState === false) {
+          err.textContent = '기존 Vault 패스프레이즈가 일치하지 않습니다';
+          err.classList.add('show');
+          ok.classList.remove('loading');
+          return;
+        } else {
+          okV = await setupVault(pass);
+        }
         if (!okV) { err.textContent = 'Vault 설정 실패'; err.classList.add('show'); ok.classList.remove('loading'); return; }
         saveProfile({
-          name: claims.name || (email ? email.split('@')[0] : `${label} 사용자`),
-          email,
-          picture: claims.picture || null,
+          ...existingProfile,
+          name: claims.name || existingProfile?.name || (email ? email.split('@')[0] : `${label} 사용자`),
+          email: email || existingProfile?.email || '',
+          picture: claims.picture || existingProfile?.picture || null,
+          photoUrl: claims.picture || existingProfile?.photoUrl || null,
           authProvider: provider,
           providerSub: claims.sub,
-          createdAt: getProfile()?.createdAt || Date.now(),
+          createdAt: existingProfile?.createdAt || Date.now(),
+          lastLogin: Date.now(),
           updatedAt: Date.now(),
           version: 'v3',
         });
