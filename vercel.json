@@ -11,6 +11,7 @@
     { "source": "/app", "destination": "/soaviz-studio.html" },
     { "source": "/login", "destination": "/signup.html" },
     { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/docs", "destination": "/docs/index.html" },
     { "source": "/roadmap", "destination": "/deployment-roadmap.html" }
   ],
   "headers": [
@@ -36,8 +37,5 @@
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
     }
-  ],
-  "redirects": [
-    { "source": "/docs", "destination": "/docs/index.html", "permanent": false }
   ]
 }

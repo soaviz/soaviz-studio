@@ -70,3 +70,4 @@ voice-extract-backend/output/
 # ─── 백업 ───
 *.bak
 .env.save
+.vercel
