@@ -7,6 +7,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://soaviz-studio-api.fly.dev/api/:path*" },
     { "source": "/", "destination": "/soaviz-studio.html" },
     { "source": "/app", "destination": "/soaviz-studio.html" },
     { "source": "/login", "destination": "/signup.html" },

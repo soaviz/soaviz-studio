@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>soaviz studio — Pitch Script Book</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 18mm 16mm;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Cambria', 'Times New Roman', '맑은 고딕', serif;
+    color: #111;
+    background: #fff;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .cover {
+    page-break-after: always;
+    text-align: left;
+    padding-top: 40mm;
+  }
+  .cover .brand {
+    font-family: 'Consolas', monospace;
+    font-size: 11pt;
+    letter-spacing: 0.4em;
+    color: #6366F1;
+    font-weight: 700;
+  }
+  .cover .meta {
+    font-family: 'Consolas', monospace;
+    font-size: 9pt;
+    letter-spacing: 0.2em;
+    color: #888;
+    margin-top: 8px;
+  }
+  .cover h1 {
+    font-size: 48pt;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 60mm 0 0;
+    color: #111;
+  }
+  .cover h1 .accent { color: #A78BFA; }
+  .cover .sub {
+    font-size: 14pt;
+    font-style: italic;
+    color: #555;
+    margin-top: 30mm;
+  }
+  .cover .footer {
+    position: absolute;
+    bottom: 25mm;
+    font-size: 9pt;
+    font-family: 'Consolas', monospace;
+    letter-spacing: 0.2em;
+    color: #999;
+  }
+
+  .toc {
+    page-break-after: always;
+    padding-top: 6mm;
+  }
+  .toc h2 {
+    font-family: 'Consolas', monospace;
+    font-size: 10pt;
+    letter-spacing: 0.3em;
+    color: #A78BFA;
+    margin: 0 0 8mm;
+    font-weight: 700;
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0; margin: 0;
+  }
+  .toc-list li {
+    display: flex; align-items: baseline;
+    padding: 5mm 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 11pt;
+  }
+  .toc-list .num {
+    font-family: 'Consolas', monospace;
+    color: #A78BFA;
+    width: 18mm;
+    font-weight: 700;
+  }
+  .toc-list .title {
+    flex: 1;
+    font-family: 'Cambria', serif;
+    font-weight: 600;
+  }
+  .toc-list .time {
+    font-family: 'Consolas', monospace;
+    color: #888;
+    font-size: 10pt;
+  }
+
+  .slide-page {
+    page-break-after: always;
+    padding-top: 4mm;
+  }
+  .slide-page:last-child { page-break-after: auto; }
+  .slide-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid #111;
+    padding-bottom: 4mm;
+    margin-bottom: 6mm;
+  }
+  .slide-head .num {
+    font-family: 'Consolas', monospace;
+    font-size: 10pt;
+    letter-spacing: 0.3em;
+    color: #A78BFA;
+    font-weight: 700;
+  }
+  .slide-head .time {
+    font-family: 'Consolas', monospace;
+    font-size: 9pt;
+    color: #888;
+    letter-spacing: 0.15em;
+  }
+  .slide-title {
+    font-family: 'Cambria', serif;
+    font-size: 26pt;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 4mm;
+    color: #111;
+  }
+  .slide-subtitle {
+    font-family: 'Cambria', serif;
+    font-size: 12pt;
+    font-style: italic;
+    color: #666;
+    margin: 0 0 10mm;
+  }
+  .visual-cue {
+    background: #F5F4FF;
+    border-left: 3px solid #A78BFA;
+    padding: 4mm 5mm;
+    font-family: '맑은 고딕', sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.55;
+    color: #333;
+    margin-bottom: 8mm;
+  }
+  .visual-cue .label {
+    font-family: 'Consolas', monospace;
+    font-size: 8.5pt;
+    letter-spacing: 0.2em;
+    color: #A78BFA;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2mm;
+  }
+  .script-label {
+    font-family: 'Consolas', monospace;
+    font-size: 8.5pt;
+    letter-spacing: 0.2em;
+    color: #6366F1;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 3mm;
+  }
+  .script-body {
+    font-family: 'Cambria', '맑은 고딕', serif;
+    font-size: 13pt;
+    line-height: 1.85;
+    color: #111;
+    white-space: pre-wrap;
+  }
+  .script-body strong {
+    color: #6366F1;
+    background: #F5F4FF;
+    padding: 0 3px;
+    font-weight: 700;
+  }
+  .footer-mini {
+    position: fixed;
+    bottom: 8mm;
+    left: 16mm; right: 16mm;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Consolas', monospace;
+    font-size: 8pt;
+    color: #aaa;
+    letter-spacing: 0.15em;
+  }
+
+  /* 인쇄 최적화 */
+  @media print {
+    .cover { padding-top: 60mm; }
+    .footer-mini { display: flex; }
+  }
+  @media screen {
+    body { background: #f0f0f0; padding: 30px 0; }
+    .page-wrap {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 24px;
+      background: #fff;
+      padding: 18mm 16mm;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 표지 -->
+<div class="page-wrap">
+  <div class="cover">
+    <div class="brand">SOAVIZ STUDIO</div>
+    <div class="meta">SEED PITCH · SPEAKER NOTES · 2026</div>
+    <h1>피칭 스크립트<br><span class="accent">— 발표 노트.</span></h1>
+    <div class="sub">정리하지 않아도 되는 작업실.<br>약 10분 발표 분량 · 16 슬라이드</div>
+    <div class="footer">CONFIDENTIAL  ·  은교  ·  leeeunkyo@gmail.com</div>
+  </div>
+</div>
+
+<!-- 목차 -->
+<div class="page-wrap">
+  <div class="toc">
+    <h2>CONTENTS</h2>
+    <ul class="toc-list">
+      <li><span class="num">01.</span><span class="title">Cover — 인사</span><span class="time">15초</span></li>
+      <li><span class="num">02.</span><span class="title">Vision — 역설로 시작</span><span class="time">30초</span></li>
+      <li><span class="num">03.</span><span class="title">Problem — 70%의 시간</span><span class="time">45초</span></li>
+      <li><span class="num">04.</span><span class="title">Solution — 한 화면, 자동 정리</span><span class="time">40초</span></li>
+      <li><span class="num">05.</span><span class="title">Why Now — 2026 변곡점</span><span class="time">40초</span></li>
+      <li><span class="num">06.</span><span class="title">Market — TAM·SAM·SOM</span><span class="time">40초</span></li>
+      <li><span class="num">07.</span><span class="title">Product — 한 화면, 한 흐름</span><span class="time">35초</span></li>
+      <li><span class="num">08.</span><span class="title">Features — 도구의 깊이</span><span class="time">45초</span></li>
+      <li><span class="num">09.</span><span class="title">Differentiation — 사용자가 만든</span><span class="time">40초</span></li>
+      <li><span class="num">10.</span><span class="title">Business — 4단 가격</span><span class="time">40초</span></li>
+      <li><span class="num">11.</span><span class="title">Traction — 빌드 완료</span><span class="time">35초</span></li>
+      <li><span class="num">12.</span><span class="title">Founder — 은교</span><span class="time">30초</span></li>
+      <li><span class="num">13.</span><span class="title">Roadmap — 18개월</span><span class="time">35초</span></li>
+      <li><span class="num">14.</span><span class="title">Forecast — 3년 매출</span><span class="time">40초</span></li>
+      <li><span class="num">15.</span><span class="title">The Ask — ₩500M</span><span class="time">30초</span></li>
+      <li><span class="num">16.</span><span class="title">Closing — 시간을 돌려드리는 일</span><span class="time">20초</span></li>
+    </ul>
+    <p style="margin-top: 12mm; font-size: 10pt; color: #666; font-style: italic;">총 발표 시간 약 9분 30초. Q&A 5–10분 별도 권장.</p>
+  </div>
+</div>
+
+<!-- 슬라이드별 스크립트 -->
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  01  /  16</span><span class="time">⏱ 15초</span></div>
+  <h1 class="slide-title">Cover — 인사</h1>
+  <div class="slide-subtitle">정리하지 않아도 되는 작업실 — 한 줄 인사</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>거대 타이포 좌측 정렬, 우측 상단 보라 추상 도형. 첫 인상은 "잡지 표지" 톤.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">안녕하세요. soaviz studio의 <strong>은교</strong>입니다.
+
+오늘 저는 — 정리하지 않아도 되는 작업실, 이라는 작은 도구에 대해 말씀드리려 합니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  02  /  16</span><span class="time">⏱ 30초</span></div>
+  <h1 class="slide-title">Vision — 역설</h1>
+  <div class="slide-subtitle">"정리를 가장 못하는 사람이, 정리해주는 앱을 만들었습니다."</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>큰 인용부호 “ + 두 줄짜리 거대 세리프 인용. 화면이 텍스트 하나로 가득.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">이 도구는 한 줄로 설명할 수 있습니다.
+
+<strong>"정리를 가장 못하는 사람이, 정리해주는 앱을 만들었습니다."</strong>
+
+만드는 일은 사람이, 정리는 도구가 — 그 분리가 작업을 다시 즐겁게 만든다고 믿습니다.
+
+작업자의 시간 100%를 만드는 일에 돌려주는 것. 그것이 우리가 풀고 싶은 문제입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  03  /  16</span><span class="time">⏱ 45초</span></div>
+  <h1 class="slide-title">Problem — 70%의 시간</h1>
+  <div class="slide-subtitle">제작 시간 중 정리·관리가 차지하는 비중</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>화면 절반을 채우는 "70%". 우측에 짧은 컨텍스트, 하단에 폴더 이름 예시 3줄.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">실제 영상 콘텐츠 제작자의 책상은 이렇습니다.
+
+<strong>character_v01_final, character_v01_final_real, character_v02_finalfinal</strong> — 누구나 한 번쯤 본 풍경이죠.
+
+어제 만든 보이스를 다시 찾는 데 30분.
+좋은 결과의 프롬프트는 한 시간 만에 사라집니다.
+한 편의 영상을 위해 5개 이상의 도구 탭을 오가며 흘려보낸 시간이 — 정작 만드는 시간보다 더 깁니다.
+
+<strong>250조 원 규모의 크리에이터 이코노미</strong>가 풀어야 할 가장 가까운 문제는, 이 도구의 분산입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  04  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Solution — 한 화면, 자동 정리</h1>
+  <div class="slide-subtitle">11개 도구 통합 · Memory Graph · Multi-Model</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>좌측 거대 두 줄 헤드 ("만들기는 사람이, 정리는 도구가"). 우측에 3개 인덱스 (One-Screen / Memory Graph / Multi-Model).</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">우리의 답은 단순합니다. 한 화면 안에 <strong>11개 도구</strong>를 통합했습니다.
+
+<strong>캐릭터를 한 번 만들면</strong> 모든 작업에 자동으로 합류합니다.
+결과물은 자동으로 라이브러리에 들어가고, <strong>Memory Graph</strong>가 비슷한 채택 샷을 자동으로 추천합니다.
+
+작업이 누적될수록 도구가 더 정확해지는 — <strong>복리처럼 자라는 어시스턴트</strong>입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  05  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Why Now — 2026 변곡점</h1>
+  <div class="slide-subtitle">38개 비디오 모델 동시 등장 · 도구 분산 → 통합 수요</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>잡지 에세이 톤. 두 단락 + 하단 액센트 한 줄 ("K-콘텐츠는 가장 활발한 무대").</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">왜 지금일까요.
+
+지난 6개월간 <strong>38개의 비디오 모델</strong>이 동시 등장했습니다.
+Sora 2 Pro, Veo 3.1, Runway Gen-4.5, Kling 2.5 Turbo. 단일 모델 의존 시대는 끝났습니다.
+
+동시에 — 크리에이터 한 명이 평균 <strong>5-7개의 SaaS</strong>를 구독하고, 매월 30만 원 이상을 지출합니다.
+도구가 늘어날수록 정리는 더 어려워졌고, 통합 작업실에 대한 시장 PMF는 이미 확정되어 있습니다.
+
+그리고 한국·아시아 K-콘텐츠는 — 이 변화의 가장 활발한 무대입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  06  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Market — TAM·SAM·SOM</h1>
+  <div class="slide-subtitle">$50B / $5B / $30M ARR</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>3단 분리 타이포 — 좌측 라벨, 가운데 거대 숫자, 우측 설명. 가로 구분선만.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">시장 규모는 다음과 같습니다.
+
+<strong>TAM</strong>, 글로벌 영상 SaaS는 약 500억 달러.
+<strong>SAM</strong>, 한국과 아시아 크리에이터 시장은 50억 달러.
+<strong>SOM</strong>, 첫 3년 안에 ARR 3,000만 달러를 목표로 합니다.
+
+이는 100만 가입자, 5만 유료 전환, 평균 ARPU 50달러를 가정한 수치입니다.
+
+한국에서 검증된 도구가 글로벌로 확장하는 — 가장 자연스러운 경로입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  07  /  16</span><span class="time">⏱ 35초</span></div>
+  <h1 class="slide-title">Product — 한 화면, 한 흐름</h1>
+  <div class="slide-subtitle">11개 모듈이 하나의 표면 위에</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>좌측 큰 세 줄 헤드 ("한 화면. 한 흐름. 자동 정리."). 우측 11개 모듈 미니 그리드.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">핵심은 여기에 있습니다.
+
+<strong>한 화면. 한 흐름. 자동 정리.</strong>
+
+세계관에서 시작해서 캐릭터, 보이스, 스토리보드, 영상, 비교, 채택, 보관까지 —
+한 편의 영상이 만들어지는 동안, 새 탭을 열 일이 없습니다.
+
+11개의 모듈이 하나의 표면 위에 통합되어 있습니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  08  /  16</span><span class="time">⏱ 45초</span></div>
+  <h1 class="slide-title">Features — 도구의 깊이</h1>
+  <div class="slide-subtitle">38 비디오 모델 · 1,500+ 프리셋</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>로마 숫자 인덱스 리스트 (잡지 톤). 8개 모듈 — 카드 그리드 X.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">각 모듈의 깊이도 만만치 않습니다.
+
+<strong>Video Studio</strong>는 38개 모델을 4개 카테고리로 분류해서 제공합니다 — Text-to-Video, Image-to-Video, Lipsync, Upscale.
+<strong>TTS Studio</strong>는 ElevenLabs 클론 보이스가 캐릭터별로 자동 매핑됩니다.
+
+<strong>캐릭터 페르소나</strong>에는 50개 역할, 50개 성격, 50개 톤이 미리 준비되어 있고,
+<strong>룩북</strong>에는 60개 컬러 팔레트, 50개 카메라 스타일, 50개 스코어 무드가 들어 있습니다.
+
+도구의 각 곳까지 — 작업자의 손가락이 헤매지 않도록 설계했습니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  09  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Differentiation — 사용자가 만든 도구</h1>
+  <div class="slide-subtitle">남들이 만든 도구 vs 사용자가 만든 도구</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>좌우 칼럼 — 좌측 "OTHERS" 취소선, 우측 "SOAVIZ" 굵게.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">왜 우리인가.
+
+단일 모델 도구들은 이미 많습니다 — Runway, Pika, Kling.
+영상 비특화 도구들도 있습니다 — Notion, Airtable.
+
+하지만 <strong>38개 모델을 통합하고, Memory Graph로 자동 학습하며, 사용자의 시간을 돌려주는 것을 1순위로 두는 도구</strong>는 — 우리 외에 없습니다.
+
+그리고 결정적으로, 이 도구는 <strong>사용자가 직접 만든 도구</strong>입니다.
+같은 불편을 겪은 사람이 만든 도구가, 가장 정확합니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  10  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Business — 4단 가격</h1>
+  <div class="slide-subtitle">통합 크레딧 모델 · LTV/CAC 7.5×</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>4개 가격 분리 타이포 (Pro에 살짝 강조 배경). 하단 LTV/CAC 한 줄.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">수익 모델은 단순합니다 — <strong>4단 가격, 통합 크레딧</strong>.
+
+무료는 0원, 200 크레딧으로 체험.
+Standard 9,900원, <strong>Pro 19,000원</strong>, Team 39,000원.
+
+평균 ARPU 25달러, 24개월 리텐션 기준 LTV 600달러, CAC는 80달러로 가정합니다.
+<strong>LTV 대 CAC 비율 7.5배</strong> — 건강한 SaaS 단위 경제입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  11  /  16</span><span class="time">⏱ 35초</span></div>
+  <h1 class="slide-title">Traction — 빌드 완료</h1>
+  <div class="slide-subtitle">v3.0 Production · 38K+ 라인 · 베타 진행</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>4개 거대 통계 가로 분리 (v3.0 / 38 / 60+ / 1.5K). 하단에 Next 90 days 3줄.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">현재 상태입니다.
+
+<strong>v3.0 프로덕션 빌드 완료. 코드 38,000줄 이상.</strong>
+38개 비디오 모델, 60개 이상의 AI 모델 카탈로그, 1,500개 이상의 프리셋이 통합되어 있습니다.
+
+다음 90일 — 4월 100명 invited 베타, 5월 결제 활성화, <strong>6월 Public Launch</strong>와 Product Hunt 동시 출시가 예정되어 있습니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  12  /  16</span><span class="time">⏱ 30초</span></div>
+  <h1 class="slide-title">Founder — 은교</h1>
+  <div class="slide-subtitle">사용자가 직접 만든 도구</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>좌측 큰 원형 인물 자리 (보라 외곽선) + 우측 "은교" 거대 세리프 + 짧은 약력.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">팀에 대해 잠깐.
+
+저는 <strong>AI 콘텐츠 크리에이터</strong> 출신입니다.
+매일 자기 책상의 어수선함을 해결하기 위해 직접 도구를 설계했고,
+<strong>soaviz studio v3는 단독으로 6개월간 무휴 빌드</strong>했습니다.
+
+같은 불편을 겪는 사람이 만든 도구가, 가장 정확합니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  13  /  16</span><span class="time">⏱ 35초</span></div>
+  <h1 class="slide-title">Roadmap — 18개월</h1>
+  <div class="slide-subtitle">Q2 Public Launch → Q2 27 Marketplace</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>가로 단순 타임라인. 5개 점 + 라벨. 하단 작은 캡션.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">18개월의 길입니다.
+
+<strong>Q2 Public Launch.</strong>
+Q3 iOS 동반 앱 — 영감 캡처와 Apple Pencil 지원.
+Q4 Enterprise 티어 — BYOK 재활성화와 SSO 강화.
+2027년 1분기 영문 UI와 글로벌 결제.
+<strong>2분기 캐릭터·스타일 마켓플레이스</strong>로 크리에이터 경제를 만듭니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  14  /  16</span><span class="time">⏱ 40초</span></div>
+  <h1 class="slide-title">Forecast — 3년 매출</h1>
+  <div class="slide-subtitle">₩50M → ₩600M → ₩3B</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>좌측 막대 차트 (3개 막대) + 우측 KEY ASSUMPTIONS 6줄.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">3년 매출 전망입니다.
+
+<strong>Year 1 — 5,000 MAU에 5천만 원 ARR.</strong>
+Year 2 — 30,000 MAU에 6억 원.
+<strong>Year 3 — 100,000 MAU에 30억 원.</strong>
+
+유료 전환율은 5%에서 12%로 상승하고, ARPU는 15달러에서 25달러로 상승합니다.
+CAC Payback은 14개월에서 5개월로 단축됩니다 — <strong>확장 매출 효과</strong>입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  15  /  16</span><span class="time">⏱ 30초</span></div>
+  <h1 class="slide-title">The Ask — ₩500M</h1>
+  <div class="slide-subtitle">Seed · 18 Months Runway</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>"₩500M" 한 글자 화면 압도. 하단 4분할 사용처.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">이를 위해 <strong>5억 원 시드 라운드</strong>를 모집합니다. 18개월 런웨이를 확보합니다.
+
+자금 사용처는 단순합니다.
+<strong>50%는 엔지니어 2명</strong> — 프론트엔드와 ML — 채용.
+25%는 인프라.
+15%는 그로스 마케팅.
+10%는 운영과 컴플라이언스입니다.</div>
+</div></div>
+
+<div class="page-wrap"><div class="slide-page">
+  <div class="slide-head"><span class="num">SLIDE  16  /  16</span><span class="time">⏱ 20초</span></div>
+  <h1 class="slide-title">Closing — 시간을 돌려드리는 일</h1>
+  <div class="slide-subtitle">"당신의 시간을 돌려드리는 일, 거기까지가 우리의 일입니다."</div>
+  <div class="visual-cue"><span class="label">VISUAL CUE</span>두 줄 거대 헤드 (검정 + 보라). 하단 컨택트.</div>
+  <div class="script-label">SPEAKER SCRIPT</div>
+  <div class="script-body">마지막으로 한 가지만 말씀드리고 마치겠습니다.
+
+<strong>당신의 시간을 돌려드리는 일, 거기까지가 우리의 일입니다.</strong>
+그 다음에 무엇을 만드실지는 — 온전히 당신의 시간입니다.
+
+감사합니다.</div>
+
+  <div style="margin-top: 20mm; padding-top: 10mm; border-top: 1px dotted #ccc;">
+    <div style="font-family: 'Consolas', monospace; font-size: 9pt; color: #888; letter-spacing: 0.2em;">CONTACT</div>
+    <div style="font-family: 'Cambria', serif; font-size: 12pt; color: #111; margin-top: 3mm;">
+      은교 (Eunkyo Lee) · Founder<br>
+      leeeunkyo@gmail.com · soaviz.studio
+    </div>
+  </div>
+</div></div>
+
+<script>
+  // 인쇄 시 자동으로 PDF 다이얼로그 안내
+  document.title = 'soaviz-pitch-script-book';
+</script>
+</body>
+</html>
