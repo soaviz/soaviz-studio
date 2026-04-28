@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>soaviz studio — AI 영화 제작 OS</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://accounts.google.com" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#A78BFA" />
+  <meta name="description" content="상위 1% 크리에이터를 위한 AI 영화 제작 OS — Pipeline · Compare · Bible · Cinema. 한 줄 아이디어를 시리즈까지." />
+  <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: #08080C;
+      --bg-1: #0F0F18;
+      --bg-card: #14141F;
+      --bg-elev: #1B1B2A;
+      --text: #F4F4F8;
+      --text-dim: #B8B8C8;
+      --text-faint: #6B6B82;
+      --border: #1F1F30;
+      --border-strong: #2A2A40;
+      --accent: #A78BFA;
+      --accent-2: #6366F1;
+      --accent-soft: rgba(167,139,250,0.10);
+      --danger: #F87171;
+      --success: #6EE7B7;
+      --warn: #FBBF24;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+    body {
+      background:
+        radial-gradient(ellipse 1200px 800px at 12% 8%, rgba(167,139,250,0.12), transparent 60%),
+        radial-gradient(ellipse 1000px 700px at 85% 90%, rgba(99,102,241,0.10), transparent 60%),
+        radial-gradient(ellipse 700px 500px at 50% 50%, rgba(244,114,182,0.04), transparent 70%),
+        var(--bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    }
+
+    .auth-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%; max-width: 1180px;
+      padding: 32px 20px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    @media (max-width: 920px) {
+      .auth-wrap {
+        grid-template-columns: 1fr;
+        max-width: 540px;
+        gap: 32px;
+        padding: 32px 20px 60px;
+      }
+      .hero-section .hero-stats { display: none; }
+    }
+    @media (max-width: 920px) and (max-height: 820px) {
+      body { place-items: start center; }
+      .auth-wrap {
+        gap: 18px;
+        padding: 20px 20px 36px;
+      }
+      .brand-row { margin-bottom: 18px; }
+      .hero-h1 {
+        font-size: 34px;
+        margin-bottom: 12px;
+      }
+      .hero-sub {
+        font-size: 14px;
+        line-height: 1.55;
+        margin-bottom: 0;
+      }
+      .hero-feats,
+      .hero-stats {
+        display: none;
+      }
+      .auth-card {
+        padding: 26px 22px;
+      }
+    }
+
+    /* ═══ HERO (Left) ═══ */
+    .hero-section { padding-right: 12px; }
+    .brand-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 36px;
+    }
+    .brand-logo {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center;
+      color: white;
+      font-weight: 800;
+      font-size: 22px;
+      box-shadow: 0 8px 24px -6px rgba(167,139,250,0.50);
+      position: relative;
+    }
+    .brand-logo::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      filter: blur(12px);
+      opacity: 0.4;
+      z-index: -1;
+    }
+    .brand-name {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand-tag {
+      font-size: 11px;
+      color: var(--text-faint);
+      padding: 3px 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      margin-left: auto;
+      font-family: ui-monospace, monospace;
+    }
+
+    .hero-h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 20px;
+    }
+    .hero-h1 .grad {
+      background: linear-gradient(135deg, var(--accent) 0%, #f472b6 60%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+    .hero-sub {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text-dim);
+      max-width: 480px;
+      margin: 0 0 36px;
+    }
+
+    .hero-feats {
+      display: flex; flex-direction: column;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+    .hero-feat {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px;
+      background: rgba(20,20,31,0.5);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+    .hero-feat:hover {
+      border-color: rgba(167,139,250,0.30);
+      background: var(--bg-card);
+      transform: translateX(2px);
+    }
+    .hero-feat-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: grid; place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .hero-feat-body { flex: 1; min-width: 0; }
+    .hero-feat-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .hero-feat-desc {
+      font-size: 12.5px;
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    .hero-stats {
+      display: flex; gap: 24px;
+      padding: 16px 0 0;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .hero-stat-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-stat-lbl {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+
+    /* ═══ AUTH (Right) ═══ */
+    .auth-card {
+      background: rgba(20,20,31,0.85);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-strong);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow:
+        0 30px 80px -20px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(167,139,250,0.08) inset;
+    }
+    @media (max-width: 920px) { .auth-card { padding: 28px 24px; } }
+
+    .auth-head {
+      margin-bottom: 24px;
+    }
+    .auth-head h2 {
+      font-size: 24px;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .auth-head p {
+      font-size: 13.5px;
+      color: var(--text-dim);
+      margin: 0;
+    }
+
+    /* Mode tabs */
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 22px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 9px 14px;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      color: var(--text-faint);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .auth-tab.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 12px -2px rgba(167,139,250,0.40);
+    }
+
+    /* Social buttons */
+    .auth-social {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .auth-btn {
+      width: 100%;
+      padding: 13px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 11px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px;
+      transition: all 0.15s;
+      font-family: inherit;
+      position: relative;
+    }
+    .auth-btn:hover:not(:disabled) {
+      background: var(--bg-elev);
+      border-color: var(--text-faint);
+      transform: translateY(-1px);
+    }
+    .auth-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .auth-btn-icon {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .auth-btn .badge {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg-elev);
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .auth-btn .badge.ok { background: rgba(110,231,183,0.18); color: #6ee7b7; }
+
+    /* Google GSI button container */
+    #gsi-btn-wrap {
+      width: 100%;
+      min-height: 44px;
+      display: flex; justify-content: center;
+    }
+    #gsi-btn-wrap > div { width: 100% !important; }
+
+    .auth-divider {
+      display: flex; align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--text-faint);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+
+    .auth-btn.email {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: transparent;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 12px 28px -10px rgba(167,139,250,0.50);
+    }
+    .auth-btn.email:hover { filter: brightness(1.1); }
+
+    /* Email form */
+    .email-form { display: none; }
+    .email-form.show { display: block; animation: slideUp 0.25s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .field input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+    .field-help {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+    .field-error {
+      font-size: 11px;
+      color: var(--danger);
+      margin-top: 4px;
+      display: none;
+    }
+    .field-error.show { display: block; }
+
+    .pass-strength { display: flex; gap: 4px; margin-top: 6px; }
+    .pass-strength-bar {
+      flex: 1; height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .pass-strength-bar.on { background: var(--accent); }
+    .pass-strength-bar.warn { background: var(--warn); }
+    .pass-strength-bar.weak { background: var(--danger); }
+
+    .form-actions {
+      display: flex; gap: 8px;
+      margin-top: 16px;
+    }
+    .form-actions .submit { flex: 1; }
+    .submit {
+      padding: 13px 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 24px -8px rgba(167,139,250,0.50);
+      transition: all 0.1s;
+      font-family: inherit;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .submit:hover { transform: translateY(-1px); }
+    .submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.30);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .submit.loading .spinner { display: inline-block; }
+    .form-cancel {
+      padding: 13px 18px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    .form-cancel:hover { background: var(--bg-card); color: var(--text); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    .auth-foot {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 11.5px;
+      color: var(--text-faint);
+      line-height: 1.7;
+      text-align: center;
+    }
+    .auth-foot a { color: var(--text-dim); text-decoration: underline; text-decoration-color: var(--text-faint); cursor: pointer; }
+    .auth-foot a:hover { color: var(--text); }
+
+    /* Modal */
+    .modal-bd {
+      position: fixed; inset: 0;
+      background: rgba(8,8,12,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: grid; place-items: center;
+      padding: 16px;
+    }
+    .modal-card {
+      width: 100%; max-width: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 30px 80px -10px rgba(0,0,0,0.6);
+    }
+    .modal-card h3 { margin: 0 0 8px; font-size: 17px; }
+    .modal-card p { margin: 0 0 16px; font-size: 13.5px; color: var(--text-dim); line-height: 1.6; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    .modal-actions button { font-family: inherit; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg-elev);
+      border: 1px solid var(--border-strong);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      box-shadow: 0 16px 40px -10px rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transition: 0.25s;
+      z-index: 200;
+      max-width: calc(100vw - 32px);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: rgba(248,113,113,0.40); color: #fecaca; }
+    .toast.ok { border-color: rgba(110,231,183,0.40); color: #a7f3d0; }
+    .toast.warn { border-color: rgba(251,191,36,0.40); color: #fde68a; }
+
+    /* Provider config link */
+    .provider-cog {
+      position: absolute;
+      right: 8px; top: 50%;
+      transform: translateY(-50%);
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: transparent;
+      border: 0;
+      color: var(--text-faint);
+      font-size: 14px;
+      cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .provider-cog:hover { background: var(--bg-elev); color: var(--text); }
+  </style>
+</head>
+<body>
+  <main class="auth-wrap">
+
+    <!-- ═══ HERO (Left) ═══ -->
+    <section class="hero-section">
+      <div class="brand-row">
+        <div class="brand-logo">s</div>
+        <div class="brand-name">soaviz studio</div>
+        <span class="brand-tag">v3</span>
+      </div>
+
+      <h1 class="hero-h1">한 줄 아이디어를<br/><span class="grad">시리즈 영상</span>까지</h1>
+      <p class="hero-sub">
+        Anthropic·OpenAI·ElevenLabs·Replicate를 묶은 통합 워크플로우.<br/>
+        캐릭터 → 스토리보드 → 모델 비교 → 편집까지 끊김 없이.
+      </p>
+
+      <div class="hero-feats">
+        <div class="hero-feat">
+          <div class="hero-feat-icon">🌳</div>
+          <div class="hero-feat-body">
+            <div class="hero-feat-title">Pipeline · 스토리보드 트리</div>
+            <div class="hero-feat-desc">Episode → Scene → Shot. 스토리 자동 분해 + 커스텀 워크플로우</div>
+          </div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon">⚖️</div>
+          <div class="hero-feat-body">
+            <div class="hero-feat-title">Compare Mode · A/B/C</div>
+            <div class="hero-feat-desc">Veo·Kling·Seedance·Hailuo 등 N개 모델 동시 생성 + Pick winner</div>
+          </div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon">👤</div>
+          <div class="hero-feat-body">
+            <div class="hero-feat-title">Character & Style Bible</div>
+            <div class="hero-feat-desc">한 번 만든 캐릭터·룩북이 모든 생성에 자동 주입</div>
+          </div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon">🔐</div>
+          <div class="hero-feat-body">
+            <div class="hero-feat-title">BYOK Vault · 본인 키, 로컬 암호화</div>
+            <div class="hero-feat-desc">AES-GCM 256 + PBKDF2 250k. 외부 서버 X · 본인 기기에만</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num">14+</div>
+          <div class="hero-stat-lbl">통합 페이지</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">16</div>
+          <div class="hero-stat-lbl">영상 모델</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">8 × 50</div>
+          <div class="hero-stat-lbl">음악 프리셋</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-lbl">Local-first</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ AUTH (Right) ═══ -->
+    <section class="auth-card">
+      <div class="auth-head">
+        <h2 id="ah-title">시작하기</h2>
+        <p id="ah-sub">계정을 만들거나 이메일·소셜 로그인으로 진입하세요.</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" data-mode="signup" role="tab" type="button">회원가입</button>
+        <button class="auth-tab" data-mode="login" role="tab" type="button">로그인</button>
+      </div>
+
+      <div class="auth-social" id="auth-social">
+        <!-- Google: 실제 GSI 버튼 (자동 렌더) + 항상 보이는 ⚙ 설정 -->
+        <div id="gsi-block" style="position:relative">
+          <div id="gsi-btn-wrap"></div>
+          <button class="auth-btn" id="gsi-fallback" style="display:none">
+            <span class="auth-btn-icon">
+              <svg viewBox="0 0 48 48" width="20" height="20"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+            </span>
+            <span id="gsi-fb-label">Continue with Google</span>
+            <span class="badge ok" id="gsi-fb-badge">활성</span>
+          </button>
+          <!-- ⚙ 항상 보임 (위로 띄움) -->
+          <button class="provider-cog" id="cfg-google" title="Google Client ID 변경 / 진단" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;background:rgba(20,20,31,0.9);backdrop-filter:blur(4px)">⚙</button>
+        </div>
+        <!-- file:// 등 환경에서 Google 비활성 시 표시되는 작은 helper (대체 UI) -->
+        <button class="auth-btn" id="gsi-helper" style="display:none;border-style:dashed;background:transparent">
+          <span class="auth-btn-icon">🌐</span>
+          <span style="flex:1;text-align:left">Google 로그인 활성화</span>
+          <span class="badge" style="background:rgba(167,139,250,0.18);color:var(--accent)">설정 →</span>
+        </button>
+        <div id="gsi-status" style="font-size:11px;color:var(--text-faint);text-align:center;margin-top:-2px;display:none"></div>
+
+        <button class="auth-btn" data-oauth-provider="apple">
+          <span class="auth-btn-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.93 2.71-3.41 2.71-1.452 0-1.884-.847-3.59-.847-1.665 0-2.255.87-3.587.87-1.48 0-2.52-1.27-3.473-2.61C2.32 18.34 1.05 13.46 3.21 10.18c1.06-1.62 3-2.65 4.85-2.65 1.473 0 2.91.93 3.605.93.673 0 2.418-1.16 4.117-1.16.713 0 2.747.07 4.075 2.05-.106.07-2.434 1.42-2.412 4.23.024 3.36 2.95 4.48 2.985 4.49z"/></svg>
+          </span>
+          <span>Continue with Apple</span>
+          <span class="badge" id="apple-oauth-badge">설정 필요</span>
+        </button>
+
+        <button class="auth-btn" data-oauth-provider="microsoft">
+          <span class="auth-btn-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M11.4 11.4H1V1h10.4v10.4z"/><path fill="#7FBA00" d="M23 11.4H12.6V1H23v10.4z"/><path fill="#00A4EF" d="M11.4 23H1V12.6h10.4V23z"/><path fill="#FFB900" d="M23 23H12.6V12.6H23V23z"/></svg>
+          </span>
+          <span>Continue with Microsoft</span>
+          <span class="badge" id="microsoft-oauth-badge">설정 필요</span>
+        </button>
+      </div>
+
+      <div class="auth-divider">OR</div>
+
+      <button class="auth-btn email" id="auth-email-btn">
+        <span class="auth-btn-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </span>
+        <span id="email-btn-label">이메일로 시작하기</span>
+      </button>
+
+      <!-- Email form (collapsed) -->
+      <form class="email-form" id="email-form" autocomplete="off" style="margin-top:14px">
+        <div class="field" data-signup-only>
+          <label for="su-name">이름 또는 닉네임</label>
+          <input id="su-name" type="text" placeholder="예: 은교" maxlength="40" />
+        </div>
+
+        <div class="field">
+          <label for="su-email">이메일</label>
+          <input id="su-email" type="email" placeholder="leeeunkyo@gmail.com" maxlength="120" />
+        </div>
+
+        <div class="field">
+          <label for="su-pass" id="pass-label">마스터 패스프레이즈 <span style="color:#fb923c">필수</span></label>
+          <input id="su-pass" type="password" placeholder="6자 이상" minlength="6" maxlength="120" />
+          <div class="pass-strength" id="su-strength" data-signup-only>
+            <span class="pass-strength-bar"></span>
+            <span class="pass-strength-bar"></span>
+            <span class="pass-strength-bar"></span>
+            <span class="pass-strength-bar"></span>
+          </div>
+          <div class="field-help" data-signup-only>
+            보관소(Vault) 마스터 패스프레이즈가 됩니다. <strong style="color:#fb923c">분실 시 복구 불가</strong>.
+          </div>
+          <div class="field-error" id="su-pass-err"></div>
+        </div>
+
+        <div class="field" data-signup-only>
+          <label for="su-pass2">패스프레이즈 확인</label>
+          <input id="su-pass2" type="password" placeholder="다시 입력" />
+          <div class="field-error" id="su-pass2-err">두 값이 일치하지 않습니다</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="form-cancel" id="auth-back">← 뒤로</button>
+          <button type="submit" class="submit" id="auth-submit">
+            <span class="spinner"></span>
+            <span id="submit-label">계정 만들기</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="auth-foot">
+        계속하면 <a id="auth-policy">개인정보 처리방침</a> 및 <a id="auth-terms">이용약관</a>에 동의하는 것으로 간주합니다. 만 14세 이상.
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /* ───────────── Helpers ───────────── */
+    const PROFILE_KEY = 'soaviz.profile.v1';
+    const GOOGLE_CID_KEY = 'soaviz.google.client_id';
+    const APPLE_CID_KEY = 'soaviz.apple.client_id';
+    const MICROSOFT_CID_KEY = 'soaviz.microsoft.client_id';
+    const MICROSOFT_TENANT_KEY = 'soaviz.microsoft.tenant';
+    const OAUTH_REDIRECT_KEY = 'soaviz.oauth.redirect_uri';
+    const OAUTH_PENDING_KEY = 'soaviz.oauth.pending';
+    // Google OAuth Client ID 기본값 (공개 식별자, secret 아님 — 임베드 안전)
+    const DEFAULT_GOOGLE_CLIENT_ID = '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com';
+
+    /* 부모 창(opener)에 인증 성공 알림 + 자체 닫기 */
+    function notifyParentAuthSuccess() {
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage('soaviz:auth-success', '*');
+          // 부모 새로고침은 부모가 처리; 우리는 닫기만
+          setTimeout(() => { try { window.close(); } catch {} }, 400);
+          return true;
+        }
+      } catch {}
+      return false;
+    }
+    let _gsiInited = false;
+    let _gsiRetries = 0;
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => [...document.querySelectorAll(sel)];
+
+    function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch { return null; } }
+    function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch {} }
+    function getLocal(key, fallback = '') { try { return localStorage.getItem(key) || fallback; } catch { return fallback; } }
+    function setLocal(key, value) { try { value ? localStorage.setItem(key, value) : localStorage.removeItem(key); } catch {} }
+    function escapeAttr(s) {
+      return String(s || '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+    function getRedirectUri() {
+      const saved = getLocal(OAUTH_REDIRECT_KEY).trim();
+      if (saved) return saved;
+      const u = new URL(location.href);
+      u.hash = '';
+      return u.href;
+    }
+    function makeOAuthState(provider) {
+      const bytes = crypto.getRandomValues(new Uint8Array(16));
+      const state = btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, '');
+      const nonce = `${Date.now()}-${state}`;
+      localStorage.setItem(OAUTH_PENDING_KEY, JSON.stringify({ provider, state, nonce, mode: MODE, createdAt: Date.now() }));
+      return { state, nonce };
+    }
+    function getOAuthClientId(provider) {
+      if (provider === 'apple') return getLocal(APPLE_CID_KEY).trim();
+      if (provider === 'microsoft') return getLocal(MICROSOFT_CID_KEY).trim();
+      return '';
+    }
+    function refreshOAuthBadges() {
+      [
+        ['apple', '#apple-oauth-badge'],
+        ['microsoft', '#microsoft-oauth-badge'],
+      ].forEach(([provider, selector]) => {
+        const badge = $(selector);
+        if (!badge) return;
+        const configured = !!getOAuthClientId(provider);
+        badge.textContent = configured ? '활성' : '설정 필요';
+        badge.className = configured ? 'badge ok' : 'badge';
+      });
+    }
+
+    const toastEl = $('#toast');
+    let toastTimer = null;
+    function showToast(msg, type = '') {
+      toastEl.innerHTML = msg;
+      toastEl.className = 'toast show ' + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+    }
+
+    /* ───────────── Mode (signup / login) ───────────── */
+    let MODE = 'signup';
+    function setMode(m) {
+      MODE = m;
+      const isLogin = m === 'login';
+      const nextHash = isLogin ? '#login' : '';
+      if (location.hash !== nextHash) {
+        history.replaceState(null, '', location.pathname + location.search + nextHash);
+      }
+      $$('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+      $('#ah-title').textContent = isLogin ? '돌아오신 걸 환영합니다' : '시작하기';
+      $('#ah-sub').textContent = isLogin ? '저장된 패스프레이즈로 잠금을 해제합니다' : '계정을 만들거나 이메일·소셜 로그인으로 진입하세요.';
+      $('#email-btn-label').textContent = isLogin ? '이메일로 로그인' : '이메일로 시작하기';
+      $('#submit-label').textContent = isLogin ? '로그인' : '계정 만들기';
+      $('#pass-label').innerHTML = isLogin ? '마스터 패스프레이즈' : '마스터 패스프레이즈 <span style="color:#fb923c">필수</span>';
+      $$('[data-signup-only]').forEach(el => el.style.display = isLogin ? 'none' : '');
+      $('#su-pass').value = '';
+      $('#su-pass2').value = '';
+      $$('.field-error').forEach(e => e.classList.remove('show'));
+      // GSI 버튼 텍스트 동기화 (재렌더)
+      renderGoogleButton();
+    }
+    $$('.auth-tab').forEach(t => t.addEventListener('click', () => setMode(t.dataset.mode)));
+
+    /* 이미 프로필 있으면 로그인 모드 자동 */
+    (function bootMode() {
+      const p = getProfile();
+      if (location.hash === '#login') {
+        setMode('login');
+        if (p?.email) $('#su-email').value = p.email || '';
+      } else if (p && p.name) {
+        setMode('login');
+        $('#su-email').value = p.email || '';
+      }
+    })();
+
+    /* ───────────── Email button → form ───────────── */
+    const emailBtn = $('#auth-email-btn');
+    const emailForm = $('#email-form');
+    const socialEl = $('#auth-social');
+    emailBtn.addEventListener('click', () => {
+      emailForm.classList.add('show');
+      emailBtn.style.display = 'none';
+      socialEl.style.display = 'none';
+      $('.auth-divider').style.display = 'none';
+      const first = MODE === 'login' ? '#su-email' : '#su-name';
+      const f = $(first);
+      if (f && !f.value) f.focus();
+    });
+    $('#auth-back').addEventListener('click', () => {
+      emailForm.classList.remove('show');
+      emailBtn.style.display = '';
+      socialEl.style.display = '';
+      $('.auth-divider').style.display = '';
+    });
+
+    /* ───────────── Apple / Microsoft OAuth ───────────── */
+    refreshOAuthBadges();
+
+    $$('[data-oauth-provider]').forEach(b => {
+      b.addEventListener('click', () => startOAuthLogin(b.dataset.oauthProvider));
+    });
+
+    function providerName(provider) {
+      return provider === 'apple' ? 'Apple' : provider === 'microsoft' ? 'Microsoft' : provider;
+    }
+    function defaultProviderClientLabel(provider) {
+      return provider === 'apple' ? 'Apple Services ID' : 'Microsoft Application (client) ID';
+    }
+    function currentLocalServerUrl() {
+      if (location.protocol === 'file:') return 'http://localhost:5501/signup.html';
+      const u = new URL(location.href);
+      u.protocol = 'http:';
+      u.hostname = 'localhost';
+      if (!u.port) u.port = '5501';
+      u.hash = '';
+      return u.href;
+    }
+    function openOAuthPopup(url, provider) {
+      const w = 520, h = 720;
+      const left = window.screenX + Math.max(0, (window.outerWidth - w) / 2);
+      const top = window.screenY + Math.max(0, (window.outerHeight - h) / 2);
+      const popup = window.open(url, `soaviz_${provider}_oauth`, `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=yes,status=no`);
+      if (!popup) location.href = url;
+    }
+    function startOAuthLogin(provider) {
+      const clientId = getOAuthClientId(provider);
+      if (location.protocol === 'file:') {
+        openProviderConfigModal(provider, 'file');
+        return;
+      }
+      if (!clientId) {
+        openProviderConfigModal(provider, 'missing');
+        return;
+      }
+      if (!/^https?:\/\//.test(getRedirectUri())) {
+        openProviderConfigModal(provider, 'redirect');
+        return;
+      }
+      const redirectUri = getRedirectUri();
+      const { state, nonce } = makeOAuthState(provider);
+      let authUrl = '';
+      if (provider === 'apple') {
+        authUrl =
+          'https://appleid.apple.com/auth/authorize' +
+          `?client_id=${encodeURIComponent(clientId)}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          '&response_type=id_token' +
+          '&response_mode=fragment' +
+          '&scope=name%20email' +
+          `&state=${encodeURIComponent(state)}` +
+          `&nonce=${encodeURIComponent(nonce)}`;
+      } else if (provider === 'microsoft') {
+        const tenant = getLocal(MICROSOFT_TENANT_KEY, 'common').trim() || 'common';
+        authUrl =
+          `https://login.microsoftonline.com/${encodeURIComponent(tenant)}/oauth2/v2.0/authorize` +
+          `?client_id=${encodeURIComponent(clientId)}` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          '&response_type=id_token' +
+          '&response_mode=fragment' +
+          '&scope=openid%20profile%20email' +
+          '&prompt=select_account' +
+          `&state=${encodeURIComponent(state)}` +
+          `&nonce=${encodeURIComponent(nonce)}`;
+      }
+      if (!authUrl) return;
+      openOAuthPopup(authUrl, provider);
+    }
+    function openProviderConfigModal(provider, reason = '') {
+      const name = providerName(provider);
+      const isFile = reason === 'file';
+      const clientKey = provider === 'apple' ? APPLE_CID_KEY : MICROSOFT_CID_KEY;
+      const clientId = getLocal(clientKey).trim();
+      const savedRedirect = getLocal(OAUTH_REDIRECT_KEY).trim();
+      const redirect = savedRedirect || (isFile ? currentLocalServerUrl() : getRedirectUri());
+      const tenant = getLocal(MICROSOFT_TENANT_KEY, 'common').trim() || 'common';
+      const localhostUrl = currentLocalServerUrl();
+      const root = document.createElement('div');
+      root.className = 'modal-bd';
+      root.innerHTML = `
+        <div class="modal-card">
+          <h3>${name} 로그인 설정</h3>
+          <p>
+            ${isFile
+              ? '<strong style="color:var(--warn)">file://에서는 OAuth 로그인이 열리지 않습니다.</strong><br>터미널에서 로컬 서버를 켠 뒤 localhost 주소로 접속하세요.'
+              : `${name} 개발자 콘솔에서 만든 Client ID를 저장하면 바로 로그인할 수 있습니다.`
+            }
+          </p>
+          ${isFile ? `
+            <div class="field">
+              <label>로컬 서버 실행</label>
+              <input type="text" readonly value="cd ~/Desktop/soaviz-studio && python3 -m http.server 5501" style="font-family:ui-monospace,monospace;font-size:11px" />
+              <div class="field-help">브라우저 주소: <code>${escapeAttr(localhostUrl)}</code></div>
+            </div>
+          ` : ''}
+          <div class="field">
+            <label>${defaultProviderClientLabel(provider)}</label>
+            <input type="text" id="oauth-client-id" value="${escapeAttr(clientId)}" placeholder="${provider === 'apple' ? 'com.soaviz.web.signin' : '00000000-0000-0000-0000-000000000000'}" style="font-family:ui-monospace,monospace;font-size:11px" />
+            <div class="field-help">${provider === 'apple' ? 'Apple Developer > Identifiers > Services ID' : 'Azure Portal > App registrations > Application (client) ID'}</div>
+          </div>
+          ${provider === 'microsoft' ? `
+            <div class="field">
+              <label>Tenant</label>
+              <input type="text" id="oauth-tenant" value="${escapeAttr(tenant)}" placeholder="common" style="font-family:ui-monospace,monospace;font-size:11px" />
+              <div class="field-help">개인/회사 계정 모두 허용하려면 <code>common</code>을 사용하세요.</div>
+            </div>
+          ` : ''}
+          <div class="field">
+            <label>Redirect URI</label>
+            <input type="text" id="oauth-redirect" value="${escapeAttr(redirect)}" style="font-family:ui-monospace,monospace;font-size:11px" />
+            <div class="field-help">제공자 콘솔의 허용 Redirect URI와 완전히 같아야 합니다.</div>
+          </div>
+          <div style="padding:12px 14px;background:var(--bg-1);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6">
+            ${provider === 'apple'
+              ? 'Apple 설정: Services ID 생성 → Web Authentication 활성화 → Domain/Return URL 등록.'
+              : 'Microsoft 설정: SPA 플랫폼 추가 → Redirect URI 등록 → ID tokens 활성화.'
+            }
+          </div>
+          <div class="modal-actions">
+            <button class="form-cancel" type="button" id="oauth-cancel">취소</button>
+            <button class="form-cancel" type="button" id="oauth-save">저장</button>
+            <button class="submit" type="button" id="oauth-start">저장 후 로그인</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(root);
+      const close = () => { try { document.body.removeChild(root); } catch {} };
+      const save = () => {
+        const nextClientId = root.querySelector('#oauth-client-id').value.trim();
+        const nextRedirect = root.querySelector('#oauth-redirect').value.trim();
+        if (!nextClientId) { showToast(`${name} Client ID를 입력하세요`, 'error'); return false; }
+        if (!/^https?:\/\//.test(nextRedirect)) { showToast('Redirect URI는 http:// 또는 https:// 주소여야 합니다', 'error'); return false; }
+        setLocal(clientKey, nextClientId);
+        setLocal(OAUTH_REDIRECT_KEY, nextRedirect);
+        if (provider === 'microsoft') {
+          setLocal(MICROSOFT_TENANT_KEY, root.querySelector('#oauth-tenant')?.value.trim() || 'common');
+        }
+        refreshOAuthBadges();
+        showToast(`✓ ${name} 로그인 설정 저장`, 'ok');
+        return true;
+      };
+      root.addEventListener('click', e => { if (e.target === root) close(); });
+      root.querySelector('#oauth-cancel').onclick = close;
+      root.querySelector('#oauth-save').onclick = () => { if (save()) close(); };
+      root.querySelector('#oauth-start').onclick = () => {
+        if (!save()) return;
+        close();
+        startOAuthLogin(provider);
+      };
+    }
+
+    /* ───────────── Google Sign-In (실제 동작) ───────────── */
+    function getGoogleClientId() {
+      try {
+        const saved = localStorage.getItem(GOOGLE_CID_KEY);
+        if (saved && saved.trim()) return saved.trim();
+      } catch {}
+      return DEFAULT_GOOGLE_CLIENT_ID;
+    }
+    function setGoogleClientId(id) {
+      try { localStorage.setItem(GOOGLE_CID_KEY, id || ''); } catch {}
+    }
+
+    // JWT 디코드 (header.payload.signature)
+    function decodeJwt(token) {
+      try {
+        const payload = token.split('.')[1];
+        const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+        return JSON.parse(decodeURIComponent(escape(json)));
+      } catch { return null; }
+    }
+
+    function setGsiStatus(msg, type = '') {
+      const s = $('#gsi-status');
+      if (!s) return;
+      if (!msg) { s.style.display = 'none'; return; }
+      s.style.display = '';
+      s.style.color = type === 'error' ? 'var(--danger)' : type === 'warn' ? 'var(--warn)' : 'var(--text-faint)';
+      s.innerHTML = msg;
+    }
+    function showGsiHelper(reason) {
+      // Google 사용 불가 케이스 → 깔끔한 helper 버튼만 보임
+      $('#gsi-block').style.display = 'none';
+      const helper = $('#gsi-helper');
+      helper.style.display = '';
+      helper._reason = reason;
+      // 화면에 즉시 이유 표시
+      const reasons = {
+        file:    { msg: '⚠ <code>file://</code> 환경 — 로컬 서버 필요. <strong>설정 →</strong> 클릭', type: 'warn' },
+        blocked: { msg: '⚠ Google SDK 차단됨 — 광고차단기 OFF 후 새로고침', type: 'error' },
+        nocid:   { msg: '⚠ Client ID 미설정 — 우측 ⚙ 클릭', type: 'warn' },
+      };
+      const info = reasons[reason] || { msg: '⚠ Google 로그인 비활성 — <strong>설정 →</strong> 클릭', type: 'warn' };
+      setGsiStatus(info.msg, info.type);
+    }
+    function hideGsiHelper() {
+      $('#gsi-helper').style.display = 'none';
+      $('#gsi-block').style.display = '';
+    }
+    function renderGoogleButton() {
+      const wrap = $('#gsi-btn-wrap');
+      const fallback = $('#gsi-fallback');
+      const fbLabel = $('#gsi-fb-label');
+      const fbBadge = $('#gsi-fb-badge');
+      const cid = getGoogleClientId();
+
+      // ── 진단 1: file:// 프로토콜 체크 ──
+      if (location.protocol === 'file:') {
+        showGsiHelper('file');
+        return;
+      }
+
+      // ── 진단 2: GSI 라이브러리 로드 대기 ──
+      if (typeof google === 'undefined' || !google.accounts?.id) {
+        wrap.style.display = 'none';
+        fallback.style.display = '';
+        fbLabel.textContent = 'Google 로딩 중…';
+        fbBadge.textContent = '대기';
+        fbBadge.className = 'badge';
+        _gsiRetries++;
+        if (_gsiRetries >= 12) {
+          showGsiHelper('blocked');
+          return;
+        }
+        setTimeout(renderGoogleButton, 600);
+        return;
+      }
+
+      // ── 진단 3: Client ID 미설정 ──
+      if (!cid) {
+        wrap.innerHTML = '';
+        wrap.style.display = 'none';
+        fallback.style.display = '';
+        fbLabel.textContent = 'Google 로그인 — Client ID 미설정';
+        fbBadge.textContent = '⚙ 설정 필요';
+        fbBadge.className = 'badge';
+        setGsiStatus('우측 ⚙ 클릭하여 OAuth Client ID 등록', 'warn');
+        return;
+      }
+
+      // ── 정상: GSI 초기화 + 버튼 렌더 ──
+      if (!_gsiInited) {
+        try {
+          google.accounts.id.initialize({
+            client_id: cid,
+            callback: handleGoogleCredential,
+            ux_mode: 'popup',
+            auto_select: false,
+          });
+          _gsiInited = true;
+        } catch (e) {
+          console.error('GSI init failed', e);
+          wrap.style.display = 'none';
+          fallback.style.display = '';
+          fbLabel.textContent = 'Google 초기화 실패';
+          fbBadge.textContent = '에러';
+          fbBadge.style.background = 'rgba(248,113,113,0.18)';
+          fbBadge.style.color = '#fca5a5';
+          setGsiStatus('⚠ ' + (e.message || 'Google 초기화 에러'), 'error');
+          return;
+        }
+      }
+      hideGsiHelper();   // 정상 경로 → helper 숨김
+      wrap.style.display = '';
+      fallback.style.display = 'none';
+      setGsiStatus('');
+      wrap.innerHTML = '';
+      try {
+        google.accounts.id.renderButton(wrap, {
+          theme: 'filled_black',
+          text: MODE === 'login' ? 'signin_with' : 'continue_with',
+          size: 'large',
+          width: Math.min(380, wrap.clientWidth || 320),
+          shape: 'rectangular',
+          locale: 'ko',
+        });
+      } catch (e) {
+        console.warn('GSI render', e);
+        showGsiHelper('error:' + (e.message || ''));
+      }
+    }
+
+    /* Google 활성화 helper — 한 클릭 가이드 모달 */
+    document.addEventListener('click', e => {
+      const helper = e.target.closest('#gsi-helper');
+      if (!helper) return;
+      const reason = helper._reason || 'file';
+      const isFile = reason === 'file';
+      const root = document.createElement('div');
+      root.className = 'modal-bd';
+      const cmd = 'cd ~/Desktop/soaviz-studio && python3 -m http.server 5500';
+      const url = 'http://localhost:5500/signup.html';
+      root.innerHTML = `
+        <div class="modal-card">
+          <h3>🌐 Google 로그인 활성화</h3>
+          <p>${isFile
+            ? 'Google 로그인은 보안상 <strong>로컬 서버 환경(http://localhost)</strong>에서만 동작합니다. 1분이면 끝나요.'
+            : 'Google SDK 로드가 차단된 것 같아요. 광고차단기/방화벽 확인 후 새로고침하세요. 그 동안 이메일로 진행 가능.'
+          }</p>
+          ${isFile ? `
+            <div class="field">
+              <label>1. 터미널에서 실행</label>
+              <input type="text" readonly value="${cmd}" id="gh-cmd" style="font-family:ui-monospace,monospace;font-size:11px" />
+              <div class="field-help">아래 [복사] 클릭 후 터미널에 붙여넣기</div>
+            </div>
+            <div class="field">
+              <label>2. 브라우저에서 접속</label>
+              <input type="text" readonly value="${url}" id="gh-url" style="font-family:ui-monospace,monospace;font-size:11px" />
+              <div class="field-help">새 탭에서 위 주소로 열기</div>
+            </div>
+          ` : `
+            <div style="padding:12px 14px;background:var(--bg-1);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6">
+              • 광고차단기 (uBlock, Brave Shields) 비활성화<br>
+              • <code>accounts.google.com</code> 도메인 허용<br>
+              • 방화벽/VPN 점검<br>
+              • 새로고침 (Cmd+Shift+R)
+            </div>
+          `}
+          <div class="modal-actions">
+            ${isFile ? `
+              <button class="form-cancel" type="button" id="gh-copy-cmd">📋 명령 복사</button>
+              <button class="form-cancel" type="button" id="gh-copy-url">📋 URL 복사</button>
+            ` : ''}
+            <button class="submit" type="button" id="gh-email">이메일로 진행 →</button>
+          </div>
+          <div style="margin-top:10px;text-align:center"><a href="javascript:void(0)" id="gh-close" style="font-size:11px;color:var(--text-faint)">닫기</a></div>
+        </div>
+      `;
+      document.body.appendChild(root);
+      const close = () => { try { document.body.removeChild(root); } catch {} };
+      root.addEventListener('click', e => { if (e.target === root) close(); });
+      root.querySelector('#gh-close').onclick = close;
+      root.querySelector('#gh-email')?.addEventListener('click', () => { close(); emailBtn.click(); });
+      // 클립보드 복사
+      function copyTxt(id, label) {
+        const v = root.querySelector(id)?.value;
+        if (!v) return;
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(v).then(() => showToast(`✓ ${label} 복사됨`, 'ok'));
+        } else {
+          const el = root.querySelector(id);
+          el.select();
+          document.execCommand('copy');
+          showToast(`✓ ${label} 복사됨`, 'ok');
+        }
+      }
+      root.querySelector('#gh-copy-cmd')?.addEventListener('click', () => copyTxt('#gh-cmd', '명령'));
+      root.querySelector('#gh-copy-url')?.addEventListener('click', () => copyTxt('#gh-url', 'URL'));
+    });
+
+    function consumeOAuthRedirect() {
+      const params = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+      const idToken = params.get('id_token');
+      const state = params.get('state');
+      const error = params.get('error');
+      if (error) {
+        showToast(`소셜 로그인 오류: ${params.get('error_description') || error}`, 'error');
+        history.replaceState(null, '', location.pathname + location.search + (MODE === 'login' ? '#login' : ''));
+        return true;
+      }
+      if (!idToken || !state) return false;
+      let pending = null;
+      try { pending = JSON.parse(localStorage.getItem(OAUTH_PENDING_KEY) || 'null'); } catch {}
+      if (!pending || pending.state !== state) {
+        showToast('OAuth state가 일치하지 않습니다. 다시 시도해주세요.', 'error');
+        history.replaceState(null, '', location.pathname + location.search);
+        return true;
+      }
+      localStorage.removeItem(OAUTH_PENDING_KEY);
+      const claims = decodeJwt(idToken);
+      if (!claims?.sub) {
+        showToast(`${providerName(pending.provider)} 토큰 디코드 실패`, 'error');
+        return true;
+      }
+      const email = claims.email || claims.preferred_username || claims.upn || '';
+      const existing = getProfile();
+      if (existing?.email && email && existing.email !== email) {
+        if (!confirm(`기존 계정(${existing.email})과 다른 ${providerName(pending.provider)} 계정(${email})으로 진입하려 합니다.\n\n[확인] 새 계정으로 교체  [취소] 중단`)) {
+          return true;
+        }
+      }
+      history.replaceState(null, '', location.pathname + location.search + (pending.mode === 'login' ? '#login' : ''));
+      askPassphraseForProvider(pending.provider, claims);
+      return true;
+    }
+
+    function handleGoogleCredential(resp) {
+      if (!resp?.credential) { showToast('Google 응답이 비어있습니다', 'error'); return; }
+      const claims = decodeJwt(resp.credential);
+      if (!claims?.email) { showToast('Google 토큰 디코드 실패', 'error'); return; }
+      // 가입 / 로그인 분기
+      const existing = getProfile();
+      if (existing?.email && existing.email !== claims.email) {
+        if (!confirm(`기존 계정(${existing.email})과 다른 Google 계정(${claims.email})으로 진입하려 합니다.\n\n[확인] 새 계정으로 교체  [취소] 중단`)) return;
+      }
+      // 패스프레이즈 모달 (Vault setup)
+      askPassphraseForProvider('google', claims);
+    }
+
+    function askPassphraseForProvider(provider, claims) {
+      const label = providerName(provider);
+      const email = claims.email || claims.preferred_username || claims.upn || '';
+      const displayName = claims.name || email || `${label} 사용자`;
+      const existingProfile = getProfile();
+      const root = document.createElement('div');
+      root.className = 'modal-bd';
+      root.innerHTML = `
+        <div class="modal-card">
+          <h3>👋 ${escapeAttr(displayName)}</h3>
+          <p>${label} 계정으로 확인되었습니다. 기존 보관소가 있으면 패스프레이즈로 잠금을 해제하고, 처음이면 새 보관소를 만듭니다. 저장된 API 키는 덮어쓰지 않습니다.</p>
+          <div class="field">
+            <label>마스터 패스프레이즈 (6자+)</label>
+            <input type="password" id="gpass" placeholder="6자 이상" />
+            <div class="field-error" id="gerr"></div>
+          </div>
+          <div class="modal-actions">
+            <button class="form-cancel" type="button" id="gcancel">취소</button>
+            <button class="submit" type="button" id="gok"><span class="spinner"></span><span>계속</span></button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(root);
+      const close = () => { try { document.body.removeChild(root); } catch {} };
+      root.addEventListener('click', e => { if (e.target === root) close(); });
+      root.querySelector('#gcancel').onclick = close;
+      const inp = root.querySelector('#gpass');
+      const err = root.querySelector('#gerr');
+      const ok = root.querySelector('#gok');
+      inp.focus();
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') ok.click(); });
+      ok.addEventListener('click', async () => {
+        const pass = inp.value;
+        if (pass.length < 6) { err.textContent = '6자 이상'; err.classList.add('show'); return; }
+        ok.classList.add('loading');
+        const vaultState = await verifyVault(pass);
+        let okV = false;
+        if (vaultState === true) {
+          okV = true;
+        } else if (vaultState === false) {
+          err.textContent = '기존 Vault 패스프레이즈가 일치하지 않습니다';
+          err.classList.add('show');
+          ok.classList.remove('loading');
+          return;
+        } else {
+          okV = await setupVault(pass);
+        }
+        if (!okV) { err.textContent = 'Vault 설정 실패'; err.classList.add('show'); ok.classList.remove('loading'); return; }
+        saveProfile({
+          ...existingProfile,
+          name: claims.name || existingProfile?.name || (email ? email.split('@')[0] : `${label} 사용자`),
+          email: email || existingProfile?.email || '',
+          picture: claims.picture || existingProfile?.picture || null,
+          photoUrl: claims.picture || existingProfile?.photoUrl || null,
+          authProvider: provider,
+          providerSub: claims.sub,
+          createdAt: existingProfile?.createdAt || Date.now(),
+          lastLogin: Date.now(),
+          updatedAt: Date.now(),
+          version: 'v3',
+        });
+        sessionStorage.removeItem('soaviz.signup.bypass');
+        showToast(`✓ ${label} 로그인 — ${displayName}`, 'ok');
+        if (notifyParentAuthSuccess()) return;
+        setTimeout(() => location.href = 'soaviz-studio.html', 800);
+      });
+    }
+
+    function askPassphraseForGoogle(claims) {
+      askPassphraseForProvider('google', claims);
+    }
+
+    consumeOAuthRedirect();
+
+    /* Google Client ID 설정 모달 */
+    $('#cfg-google')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openGoogleConfigModal();
+    });
+    function openGoogleConfigModal() {
+      const saved = (() => { try { return (localStorage.getItem(GOOGLE_CID_KEY) || '').trim(); } catch { return ''; } })();
+      const cur = saved || DEFAULT_GOOGLE_CLIENT_ID;
+      const isCustom = !!saved && saved !== DEFAULT_GOOGLE_CLIENT_ID;
+      const root = document.createElement('div');
+      root.className = 'modal-bd';
+      root.innerHTML = `
+        <div class="modal-card">
+          <h3>🔐 Google Sign-In 설정</h3>
+          <p>
+            ${isCustom ? '<strong>현재 사용 중: 사용자 정의 Client ID</strong>' : '<strong style="color:var(--success)">현재 사용 중: 기본 Client ID (즉시 동작)</strong>'}<br>
+            본인 OAuth 2.0 Client ID로 교체하려면 아래에 입력하세요.
+            <br><br>
+            <small style="color:var(--text-faint)">참고: 승인된 origin에 <code>${location.origin || 'file://...'}</code> 등록 필요. file:// 직접 열기는 미지원.</small><br>
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent)">Google Cloud Console 열기 →</a>
+          </p>
+          <div class="field">
+            <label>Client ID</label>
+            <input type="text" id="g-cid" value="${cur.replace(/"/g,'&quot;')}" placeholder="123456789-abc...apps.googleusercontent.com" style="font-family:ui-monospace,monospace;font-size:11px" />
+            <div class="field-help">${isCustom ? '비워두고 저장하면 기본값으로 복원됩니다' : '기본값을 그대로 사용 중입니다'}</div>
+          </div>
+          <div class="modal-actions">
+            <button class="form-cancel" type="button" id="g-cancel">취소</button>
+            ${isCustom ? '<button class="form-cancel" type="button" id="g-reset">기본값으로 복원</button>' : ''}
+            <button class="submit" type="button" id="g-save">저장</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(root);
+      const close = () => { try { document.body.removeChild(root); } catch {} };
+      root.addEventListener('click', e => { if (e.target === root) close(); });
+      root.querySelector('#g-cancel').onclick = close;
+      root.querySelector('#g-reset')?.addEventListener('click', () => {
+        setGoogleClientId('');
+        showToast('✓ 기본 Client ID로 복원', 'ok');
+        close();
+        _gsiInited = false;
+        renderGoogleButton();
+      });
+      root.querySelector('#g-save').onclick = () => {
+        const v = root.querySelector('#g-cid').value.trim();
+        // 비우면 기본값 사용
+        if (!v) {
+          setGoogleClientId('');
+          close();
+          _gsiInited = false;
+          renderGoogleButton();
+          showToast('✓ 기본 Client ID로 복원', 'ok');
+          return;
+        }
+        if (!v.endsWith('.apps.googleusercontent.com')) {
+          showToast('Client ID 형식이 올바르지 않습니다', 'error');
+          return;
+        }
+        // 기본값과 같으면 localStorage 비움 (default 사용)
+        if (v === DEFAULT_GOOGLE_CLIENT_ID) {
+          setGoogleClientId('');
+        } else {
+          setGoogleClientId(v);
+        }
+        close();
+        _gsiInited = false;
+        renderGoogleButton();
+        showToast('✓ Google Sign-In 활성화됨', 'ok');
+      };
+    }
+
+    // GSI 라이브러리가 로드되면 자동 시도
+    setTimeout(renderGoogleButton, 800);
+
+    /* ───────────── Vault crypto ───────────── */
+    function b64(bytes) { let s = ''; for (const b of bytes) s += String.fromCharCode(b); return btoa(s); }
+    function fromB64(b64) { const s = atob(b64); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
+
+    function openDB() {
+      const db = new Dexie('soaviz_v3');
+      db.version(1).stores({
+        secrets: 'id, kind', kv: 'k',
+        projects: 'id, *tags, updatedAt, archived',
+        episodes: 'id, parentId, number, updatedAt, status, archived',
+        scenes: 'id, parentId, number, updatedAt, status, archived',
+        shots: 'id, parentId, number, updatedAt, status, archived, storageTier',
+        characters: 'id, projectId, name, updatedAt, archived',
+        styles: 'id, projectId, scope, updatedAt, archived',
+        refs: 'id, projectId, source, updatedAt, archived',
+        refClips: 'id, parentId, projectId, category, updatedAt, archived',
+        compares: 'id, projectId, shotId, status, updatedAt, archived',
+        prompts: 'id, projectId, promptType, shotId, status, updatedAt, archived',
+        assets: 'id, projectId, type, shotId, promptId, parentAssetId, status, storageTier, updatedAt, archived',
+        activities: 'id, projectId, date, activityType, assetId, timestamp',
+        goals: 'id, projectId, deadlineDate, updatedAt, archived',
+        blobs: 'id, kind, size, createdAt',
+      });
+      return db;
+    }
+
+    async function deriveKey(passphrase, salt) {
+      const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
+        baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+      );
+    }
+    async function setupVault(passphrase) {
+      try {
+        const db = openDB();
+        await db.open();
+        // 이미 vault가 있는 경우 보존, 새로 만들면 verifier만 갱신
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const masterKey = await deriveKey(passphrase, salt);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, masterKey, new TextEncoder().encode('soaviz-verifier-v1'));
+        await db.kv.put({ k: 'vault.salt', v: b64(salt) });
+        await db.kv.put({ k: 'vault.verifier', v: JSON.stringify({ iv: b64(iv), ct: b64(new Uint8Array(ct)) }) });
+        return true;
+      } catch (e) { console.error('Vault setup failed', e); return false; }
+    }
+    async function verifyVault(passphrase) {
+      try {
+        const db = openDB();
+        await db.open();
+        const saltRec = await db.kv.get('vault.salt');
+        const verRec = await db.kv.get('vault.verifier');
+        if (!saltRec || !verRec) return null;
+        const salt = fromB64(saltRec.v);
+        const tmpKey = await deriveKey(passphrase, salt);
+        const verifier = JSON.parse(verRec.v);
+        try {
+          const pt = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: fromB64(verifier.iv) },
+            tmpKey,
+            fromB64(verifier.ct)
+          );
+          if (new TextDecoder().decode(pt) === 'soaviz-verifier-v1') return true;
+          return false;
+        } catch { return false; }
+      } catch (e) { console.error('Vault verify failed', e); return null; }
+    }
+
+    /* ───────────── Email Submit ───────────── */
+    const passInput = $('#su-pass');
+    const pass2Input = $('#su-pass2');
+    const pass2Err = $('#su-pass2-err');
+    const submitBtn = $('#auth-submit');
+    const submitLabel = $('#submit-label');
+
+    function passStrength(s) {
+      let n = 0;
+      if (s.length >= 6) n++;
+      if (s.length >= 10) n++;
+      if (/[A-Z]/.test(s) && /[a-z]/.test(s)) n++;
+      if (/[0-9]/.test(s)) n++;
+      if (/[^A-Za-z0-9]/.test(s)) n++;
+      return Math.min(4, n);
+    }
+    const sBars = $$('#su-strength .pass-strength-bar');
+    passInput.addEventListener('input', () => {
+      if (MODE !== 'signup') return;
+      const sc = passStrength(passInput.value);
+      sBars.forEach((b, i) => {
+        b.classList.remove('on', 'warn', 'weak');
+        if (i < sc) {
+          if (sc <= 1) b.classList.add('weak');
+          else if (sc <= 2) b.classList.add('warn');
+          else b.classList.add('on');
+        }
+      });
+    });
+    function checkMatch() {
+      if (MODE !== 'signup') return true;
+      const a = passInput.value, b = pass2Input.value;
+      const bad = b && a && a !== b;
+      pass2Err.classList.toggle('show', bad);
+      return !bad;
+    }
+    pass2Input.addEventListener('input', checkMatch);
+    passInput.addEventListener('input', checkMatch);
+
+    $('#email-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('#su-email').value.trim();
+      const pass = passInput.value;
+
+      if (MODE === 'login') {
+        if (pass.length < 6) { showToast('패스프레이즈를 입력하세요', 'error'); return; }
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        submitLabel.textContent = '확인 중…';
+        try {
+          const ok = await verifyVault(pass);
+          if (ok === null) {
+            showToast('계정이 없습니다 — 회원가입 탭에서 시작하세요', 'error');
+            setMode('signup');
+          } else if (ok === false) {
+            const errEl = $('#su-pass-err');
+            errEl.textContent = '패스프레이즈가 일치하지 않습니다';
+            errEl.classList.add('show');
+            showToast('❌ 패스프레이즈 불일치', 'error');
+          } else {
+            const cur = getProfile() || {};
+            saveProfile({ ...cur, email: email || cur.email, lastLogin: Date.now() });
+            sessionStorage.removeItem('soaviz.signup.bypass');
+            showToast(`✓ 환영합니다 ${cur.name || ''}`, 'ok');
+            submitLabel.textContent = '로딩…';
+            // 부모 창(opener)이 있으면 알림 + 자동 닫기, 없으면 본 창 이동
+            if (notifyParentAuthSuccess()) return;
+            setTimeout(() => location.href = 'soaviz-studio.html', 700);
+            return;
+          }
+        } catch (err) { showToast('로그인 오류: ' + (err.message || ''), 'error'); }
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        submitLabel.textContent = '로그인';
+        return;
+      }
+
+      const name = $('#su-name').value.trim();
+      const pass2 = pass2Input.value;
+      if (!name) { showToast('이름을 입력하세요', 'error'); return; }
+      if (pass.length < 6) { showToast('패스프레이즈는 6자 이상', 'error'); return; }
+      if (pass !== pass2) { pass2Err.classList.add('show'); showToast('패스프레이즈 불일치', 'error'); return; }
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { showToast('이메일 형식이 올바르지 않습니다', 'error'); return; }
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      submitLabel.textContent = '계정 생성 중…';
+      try {
+        const ok = await setupVault(pass);
+        if (!ok) {
+          showToast('Vault 설정 실패', 'error');
+          submitBtn.classList.remove('loading'); submitBtn.disabled = false; submitLabel.textContent = '계정 만들기';
+          return;
+        }
+        saveProfile({
+          name, email,
+          authProvider: 'email',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          version: 'v3',
+        });
+        showToast(`✓ 환영합니다 ${name}님`, 'ok');
+        submitLabel.textContent = '로딩…';
+        if (notifyParentAuthSuccess()) return;
+        setTimeout(() => location.href = 'soaviz-studio.html', 800);
+      } catch (err) {
+        showToast('오류: ' + (err.message || ''), 'error');
+        submitBtn.classList.remove('loading'); submitBtn.disabled = false; submitLabel.textContent = '계정 만들기';
+      }
+    });
+
+    /* Policy / Terms */
+    $('#auth-policy').addEventListener('click', () => {
+      alert('개인정보 처리방침\n\n• 모든 데이터는 본인 브라우저에만 저장 (IndexedDB + localStorage)\n• AES-GCM 256 + PBKDF2 250k 암호화\n• 외부 전송: BYOK API 호출 시 각 제공자(ElevenLabs/OpenAI/Anthropic/Replicate)로 직접만\n• Google 로그인 시 ID 토큰의 email/name/picture만 사용. 토큰 저장 X.\n• Export 시 키는 절대 포함되지 않음');
+    });
+    $('#auth-terms').addEventListener('click', () => {
+      alert('이용약관\n\n• 만 14세 이상 사용 가능 (만 18세 미만은 보호자 동의 권장)\n• 생성된 콘텐츠의 저작권/이용 책임은 사용자에게 있음\n• 마스터 패스프레이즈 분실 시 복구 불가 — 안전한 곳에 백업\n• 본 서비스는 "있는 그대로" 제공되며 무중단을 보장하지 않음\n• BYOK — 본인 API 키 사용, 각 제공자 약관도 준수');
+    });
+  </script>
+</body>
+</html>
