@@ -43,7 +43,9 @@
     window.__SOAVIZ_CONFIG__ = window.__SOAVIZ_CONFIG__ || {
       env: 'development',
       version: '0.1.0',
-      backendUrl: 'http://127.0.0.1:8787',
+      backendUrl: (location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '::1')
+        ? 'http://127.0.0.1:8787'
+        : '',
       sentryDsn: '',
       googleClientId: '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com',
     };
