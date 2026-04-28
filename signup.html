@@ -648,13 +648,6 @@
           <span class="badge" id="apple-oauth-badge">설정 필요</span>
         </button>
 
-        <button class="auth-btn" data-oauth-provider="microsoft">
-          <span class="auth-btn-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#F25022" d="M11.4 11.4H1V1h10.4v10.4z"/><path fill="#7FBA00" d="M23 11.4H12.6V1H23v10.4z"/><path fill="#00A4EF" d="M11.4 23H1V12.6h10.4V23z"/><path fill="#FFB900" d="M23 23H12.6V12.6H23V23z"/></svg>
-          </span>
-          <span>Continue with Microsoft</span>
-          <span class="badge" id="microsoft-oauth-badge">설정 필요</span>
-        </button>
       </div>
 
       <div class="auth-divider">OR</div>
@@ -721,8 +714,6 @@
     const PROFILE_KEY = 'soaviz.profile.v1';
     const GOOGLE_CID_KEY = 'soaviz.google.client_id';
     const APPLE_CID_KEY = 'soaviz.apple.client_id';
-    const MICROSOFT_CID_KEY = 'soaviz.microsoft.client_id';
-    const MICROSOFT_TENANT_KEY = 'soaviz.microsoft.tenant';
     const OAUTH_REDIRECT_KEY = 'soaviz.oauth.redirect_uri';
     const OAUTH_PENDING_KEY = 'soaviz.oauth.pending';
     // Google OAuth Client ID 기본값 (공개 식별자, secret 아님 — 임베드 안전)
@@ -750,6 +741,26 @@
     function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch {} }
     function getLocal(key, fallback = '') { try { return localStorage.getItem(key) || fallback; } catch { return fallback; } }
     function setLocal(key, value) { try { value ? localStorage.setItem(key, value) : localStorage.removeItem(key); } catch {} }
+    function isLocalDevHost() {
+      const h = location.hostname;
+      return location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '::1';
+    }
+    function getStudioUrl() {
+      const u = new URL(location.href);
+      u.hash = '';
+      u.pathname = u.pathname.replace(/signup\.html$/i, 'soaviz-studio.html');
+      if (!/soaviz-studio\.html$/i.test(u.pathname)) {
+        u.pathname = u.pathname.replace(/\/?$/, '/soaviz-studio.html');
+      }
+      return u.href;
+    }
+    function finishAuth(profile, message) {
+      saveProfile(profile);
+      try { sessionStorage.removeItem('soaviz.signup.bypass'); } catch {}
+      showToast(message || '✓ 로그인 완료', 'ok');
+      if (notifyParentAuthSuccess()) return;
+      setTimeout(() => { location.href = getStudioUrl(); }, 700);
+    }
     function escapeAttr(s) {
       return String(s || '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     }
@@ -769,19 +780,25 @@
     }
     function getOAuthClientId(provider) {
       if (provider === 'apple') return getLocal(APPLE_CID_KEY).trim();
-      if (provider === 'microsoft') return getLocal(MICROSOFT_CID_KEY).trim();
       return '';
     }
     function refreshOAuthBadges() {
       [
         ['apple', '#apple-oauth-badge'],
-        ['microsoft', '#microsoft-oauth-badge'],
       ].forEach(([provider, selector]) => {
         const badge = $(selector);
         if (!badge) return;
         const configured = !!getOAuthClientId(provider);
-        badge.textContent = configured ? '활성' : '설정 필요';
+        const localFallback = !configured && isLocalDevHost();
+        badge.textContent = configured ? '활성' : localFallback ? '로컬 테스트' : '설정 필요';
         badge.className = configured ? 'badge ok' : 'badge';
+        if (localFallback) {
+          badge.style.background = 'rgba(251,191,36,0.16)';
+          badge.style.color = 'var(--warn)';
+        } else {
+          badge.style.background = '';
+          badge.style.color = '';
+        }
       });
     }
 
@@ -850,7 +867,7 @@
       $('.auth-divider').style.display = '';
     });
 
-    /* ───────────── Apple / Microsoft OAuth ───────────── */
+    /* ───────────── Apple OAuth ───────────── */
     refreshOAuthBadges();
 
     $$('[data-oauth-provider]').forEach(b => {
@@ -858,10 +875,10 @@
     });
 
     function providerName(provider) {
-      return provider === 'apple' ? 'Apple' : provider === 'microsoft' ? 'Microsoft' : provider;
+      return provider === 'apple' ? 'Apple' : provider;
     }
     function defaultProviderClientLabel(provider) {
-      return provider === 'apple' ? 'Apple Services ID' : 'Microsoft Application (client) ID';
+      return provider === 'apple' ? 'Apple Services ID' : 'Client ID';
     }
     function currentLocalServerUrl() {
       if (location.protocol === 'file:') return 'http://localhost:5501/signup.html';
@@ -882,11 +899,19 @@
     function startOAuthLogin(provider) {
       const clientId = getOAuthClientId(provider);
       if (location.protocol === 'file:') {
-        openProviderConfigModal(provider, 'file');
+        if (!clientId) {
+          startLocalProviderLogin(provider);
+        } else {
+          openProviderConfigModal(provider, 'file');
+        }
         return;
       }
       if (!clientId) {
-        openProviderConfigModal(provider, 'missing');
+        if (isLocalDevHost()) {
+          startLocalProviderLogin(provider);
+        } else {
+          openProviderConfigModal(provider, 'missing');
+        }
         return;
       }
       if (!/^https?:\/\//.test(getRedirectUri())) {
@@ -906,30 +931,30 @@
           '&scope=name%20email' +
           `&state=${encodeURIComponent(state)}` +
           `&nonce=${encodeURIComponent(nonce)}`;
-      } else if (provider === 'microsoft') {
-        const tenant = getLocal(MICROSOFT_TENANT_KEY, 'common').trim() || 'common';
-        authUrl =
-          `https://login.microsoftonline.com/${encodeURIComponent(tenant)}/oauth2/v2.0/authorize` +
-          `?client_id=${encodeURIComponent(clientId)}` +
-          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-          '&response_type=id_token' +
-          '&response_mode=fragment' +
-          '&scope=openid%20profile%20email' +
-          '&prompt=select_account' +
-          `&state=${encodeURIComponent(state)}` +
-          `&nonce=${encodeURIComponent(nonce)}`;
       }
       if (!authUrl) return;
       openOAuthPopup(authUrl, provider);
     }
+    function startLocalProviderLogin(provider) {
+      const name = providerName(provider);
+      const existing = getProfile() || {};
+      const email = existing.email || `${provider}@local.soaviz`;
+      showToast(`${name} 로컬 테스트 로그인으로 진행합니다`, 'warn');
+      askPassphraseForProvider(provider, {
+        sub: `local-${provider}`,
+        email,
+        preferred_username: email,
+        name: existing.name || `${name} Local User`,
+        picture: existing.picture || null,
+      });
+    }
     function openProviderConfigModal(provider, reason = '') {
       const name = providerName(provider);
       const isFile = reason === 'file';
-      const clientKey = provider === 'apple' ? APPLE_CID_KEY : MICROSOFT_CID_KEY;
+      const clientKey = APPLE_CID_KEY;
       const clientId = getLocal(clientKey).trim();
       const savedRedirect = getLocal(OAUTH_REDIRECT_KEY).trim();
       const redirect = savedRedirect || (isFile ? currentLocalServerUrl() : getRedirectUri());
-      const tenant = getLocal(MICROSOFT_TENANT_KEY, 'common').trim() || 'common';
       const localhostUrl = currentLocalServerUrl();
       const root = document.createElement('div');
       root.className = 'modal-bd';
@@ -951,29 +976,20 @@
           ` : ''}
           <div class="field">
             <label>${defaultProviderClientLabel(provider)}</label>
-            <input type="text" id="oauth-client-id" value="${escapeAttr(clientId)}" placeholder="${provider === 'apple' ? 'com.soaviz.web.signin' : '00000000-0000-0000-0000-000000000000'}" style="font-family:ui-monospace,monospace;font-size:11px" />
-            <div class="field-help">${provider === 'apple' ? 'Apple Developer > Identifiers > Services ID' : 'Azure Portal > App registrations > Application (client) ID'}</div>
+            <input type="text" id="oauth-client-id" value="${escapeAttr(clientId)}" placeholder="com.soaviz.web.signin" style="font-family:ui-monospace,monospace;font-size:11px" />
+            <div class="field-help">Apple Developer > Identifiers > Services ID</div>
           </div>
-          ${provider === 'microsoft' ? `
-            <div class="field">
-              <label>Tenant</label>
-              <input type="text" id="oauth-tenant" value="${escapeAttr(tenant)}" placeholder="common" style="font-family:ui-monospace,monospace;font-size:11px" />
-              <div class="field-help">개인/회사 계정 모두 허용하려면 <code>common</code>을 사용하세요.</div>
-            </div>
-          ` : ''}
           <div class="field">
             <label>Redirect URI</label>
             <input type="text" id="oauth-redirect" value="${escapeAttr(redirect)}" style="font-family:ui-monospace,monospace;font-size:11px" />
             <div class="field-help">제공자 콘솔의 허용 Redirect URI와 완전히 같아야 합니다.</div>
           </div>
           <div style="padding:12px 14px;background:var(--bg-1);border-radius:8px;font-size:12px;color:var(--text-dim);line-height:1.6">
-            ${provider === 'apple'
-              ? 'Apple 설정: Services ID 생성 → Web Authentication 활성화 → Domain/Return URL 등록.'
-              : 'Microsoft 설정: SPA 플랫폼 추가 → Redirect URI 등록 → ID tokens 활성화.'
-            }
+            Apple 설정: Services ID 생성 → Web Authentication 활성화 → Domain/Return URL 등록.
           </div>
           <div class="modal-actions">
             <button class="form-cancel" type="button" id="oauth-cancel">취소</button>
+            ${isLocalDevHost() ? `<button class="form-cancel" type="button" id="oauth-local">로컬 테스트 로그인</button>` : ''}
             <button class="form-cancel" type="button" id="oauth-save">저장</button>
             <button class="submit" type="button" id="oauth-start">저장 후 로그인</button>
           </div>
@@ -988,15 +1004,16 @@
         if (!/^https?:\/\//.test(nextRedirect)) { showToast('Redirect URI는 http:// 또는 https:// 주소여야 합니다', 'error'); return false; }
         setLocal(clientKey, nextClientId);
         setLocal(OAUTH_REDIRECT_KEY, nextRedirect);
-        if (provider === 'microsoft') {
-          setLocal(MICROSOFT_TENANT_KEY, root.querySelector('#oauth-tenant')?.value.trim() || 'common');
-        }
         refreshOAuthBadges();
         showToast(`✓ ${name} 로그인 설정 저장`, 'ok');
         return true;
       };
       root.addEventListener('click', e => { if (e.target === root) close(); });
       root.querySelector('#oauth-cancel').onclick = close;
+      root.querySelector('#oauth-local')?.addEventListener('click', () => {
+        close();
+        startLocalProviderLogin(provider);
+      });
       root.querySelector('#oauth-save').onclick = () => { if (save()) close(); };
       root.querySelector('#oauth-start').onclick = () => {
         if (!save()) return;
@@ -1176,6 +1193,7 @@
             ${isFile ? `
               <button class="form-cancel" type="button" id="gh-copy-cmd">📋 명령 복사</button>
               <button class="form-cancel" type="button" id="gh-copy-url">📋 URL 복사</button>
+              <button class="form-cancel" type="button" id="gh-local">로컬 테스트 로그인</button>
             ` : ''}
             <button class="submit" type="button" id="gh-email">이메일로 진행 →</button>
           </div>
@@ -1187,6 +1205,7 @@
       root.addEventListener('click', e => { if (e.target === root) close(); });
       root.querySelector('#gh-close').onclick = close;
       root.querySelector('#gh-email')?.addEventListener('click', () => { close(); emailBtn.click(); });
+      root.querySelector('#gh-local')?.addEventListener('click', () => { close(); startLocalProviderLogin('google'); });
       // 클립보드 복사
       function copyTxt(id, label) {
         const v = root.querySelector(id)?.value;
@@ -1301,7 +1320,7 @@
           okV = await setupVault(pass);
         }
         if (!okV) { err.textContent = 'Vault 설정 실패'; err.classList.add('show'); ok.classList.remove('loading'); return; }
-        saveProfile({
+        finishAuth({
           ...existingProfile,
           name: claims.name || existingProfile?.name || (email ? email.split('@')[0] : `${label} 사용자`),
           email: email || existingProfile?.email || '',
@@ -1313,11 +1332,7 @@
           lastLogin: Date.now(),
           updatedAt: Date.now(),
           version: 'v3',
-        });
-        sessionStorage.removeItem('soaviz.signup.bypass');
-        showToast(`✓ ${label} 로그인 — ${displayName}`, 'ok');
-        if (notifyParentAuthSuccess()) return;
-        setTimeout(() => location.href = 'soaviz-studio.html', 800);
+        }, `✓ ${label} 로그인 — ${displayName}`);
       });
     }
 
@@ -1532,13 +1547,17 @@
             showToast('❌ 패스프레이즈 불일치', 'error');
           } else {
             const cur = getProfile() || {};
-            saveProfile({ ...cur, email: email || cur.email, lastLogin: Date.now() });
-            sessionStorage.removeItem('soaviz.signup.bypass');
-            showToast(`✓ 환영합니다 ${cur.name || ''}`, 'ok');
+            const nextProfile = {
+              ...cur,
+              name: cur.name || (email ? email.split('@')[0] : 'soaviz user'),
+              email: email || cur.email,
+              authProvider: cur.authProvider || 'email',
+              lastLogin: Date.now(),
+              updatedAt: Date.now(),
+              version: 'v3',
+            };
             submitLabel.textContent = '로딩…';
-            // 부모 창(opener)이 있으면 알림 + 자동 닫기, 없으면 본 창 이동
-            if (notifyParentAuthSuccess()) return;
-            setTimeout(() => location.href = 'soaviz-studio.html', 700);
+            finishAuth(nextProfile, `✓ 환영합니다 ${nextProfile.name || ''}`);
             return;
           }
         } catch (err) { showToast('로그인 오류: ' + (err.message || ''), 'error'); }
@@ -1565,17 +1584,14 @@
           submitBtn.classList.remove('loading'); submitBtn.disabled = false; submitLabel.textContent = '계정 만들기';
           return;
         }
-        saveProfile({
+        finishAuth({
           name, email,
           authProvider: 'email',
           createdAt: Date.now(),
           updatedAt: Date.now(),
           version: 'v3',
-        });
-        showToast(`✓ 환영합니다 ${name}님`, 'ok');
+        }, `✓ 환영합니다 ${name}님`);
         submitLabel.textContent = '로딩…';
-        if (notifyParentAuthSuccess()) return;
-        setTimeout(() => location.href = 'soaviz-studio.html', 800);
       } catch (err) {
         showToast('오류: ' + (err.message || ''), 'error');
         submitBtn.classList.remove('loading'); submitBtn.disabled = false; submitLabel.textContent = '계정 만들기';
