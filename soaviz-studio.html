@@ -18660,6 +18660,88 @@
       filter: grayscale(0.5);
       cursor: not-allowed;
     }
+    /* Character selection mini-cards */
+    .mobile-character-mini-card {
+      width: 100%;
+      min-height: 78px;
+      padding: 14px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .mobile-character-mini-card.active {
+      background: rgba(167,139,250,0.18);
+      border-color: rgba(167,139,250,0.42);
+    }
+    .mobile-character-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      flex: 0 0 auto;
+      background: linear-gradient(135deg, rgba(167,139,250,0.35), rgba(129,140,248,0.18));
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .mobile-character-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* Library cards */
+    .mobile-library-card {
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-library-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: rgba(0,0,0,0.28);
+      display: grid;
+      place-items: center;
+      color: var(--text-faint);
+      overflow: hidden;
+    }
+    .mobile-library-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .mobile-library-body {
+      padding: 13px;
+    }
+    .mobile-library-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    /* Danger button */
+    .mobile-danger-btn {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 14px;
+      background: rgba(248,113,113,0.10);
+      border: 1px solid rgba(248,113,113,0.25);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
     /* Upload zone */
     .mobile-upload-zone {
       border: 2px dashed rgba(167,139,250,0.30);
@@ -51254,6 +51336,8 @@ const MobileApp = (() => {
     });
     render(name);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 탭 상태 영속화
+    if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
   }
 
   function renderAll() {
@@ -51282,7 +51366,11 @@ const MobileApp = (() => {
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => init());
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+    // 이전 탭/캐릭터 선택 상태 복원
+    if (typeof restoreMobileRuntimeState === 'function') restoreMobileRuntimeState();
+  });
 
   return { init, isMobile, syncMode, go, render, renderAll, get current() { return current; } };
 })();
@@ -51487,17 +51575,19 @@ async function renderMobileCharacter() {
   if (!root) return;
   const stats = await getMobileCharacterStats();
 
+  const selectedId = MobileState.selectedCharacterId;
   const recentHTML = stats.recent.length
     ? stats.recent.map(c => `
-        <article class="mobile-card" style="padding:12px;display:flex;align-items:center;gap:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);flex-shrink:0;display:grid;place-items:center;font-size:14px;font-weight:800;color:white">
-            ${escapeHTML((c.name || '?').charAt(0).toUpperCase())}
+        <button class="mobile-character-mini-card${selectedId === c.id ? ' active' : ''}" data-character-id="${escapeHTML(c.id)}">
+          <div class="mobile-character-avatar">
+            ${c.avatarUrl ? `<img src="${escapeHTML(c.avatarUrl)}" alt="">` : escapeHTML((c.name || '?').charAt(0).toUpperCase())}
           </div>
-          <div style="min-width:0">
+          <div style="min-width:0;flex:1">
             <strong style="font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(c.name || 'Unnamed')}</strong>
             <p style="margin:2px 0 0;color:var(--text-faint);font-size:11px">${escapeHTML(c.role || c.type || '')}</p>
+            ${selectedId === c.id ? `<span style="font-size:10px;color:var(--accent);font-weight:800;margin-top:2px;display:block">✓ 선택됨</span>` : ''}
           </div>
-        </article>`).join('')
+        </button>`).join('')
     : `<div class="mobile-card" style="text-align:center;padding:18px;pointer-events:none">
         <p style="color:var(--text-faint);font-size:13px;margin:0">아직 캐릭터가 없습니다.</p>
       </div>`;
@@ -51539,14 +51629,20 @@ async function renderMobileCharacter() {
     </section>
     ${stats.recent.length ? `
     <section class="mobile-section">
-      <h3 class="mobile-section-title">최근 캐릭터</h3>
+      <h3 class="mobile-section-title">최근 캐릭터 <span style="font-size:11px;color:var(--text-faint);font-weight:400">— 선택하면 시트 결과가 해당 캐릭터에 저장됩니다</span></h3>
       <div class="mobile-list">${recentHTML}</div>
+      ${selectedId ? `<button class="mobile-secondary-btn" id="mobile-deselect-character" style="margin-top:8px">선택 해제</button>` : ''}
     </section>` : ''}
   `;
 
   root.querySelector('#mobile-character-sheet')?.addEventListener('click', () => {
     openMobileCharacterSheetFlow();
   });
+  // 캐릭터 선택
+  root.querySelectorAll('[data-character-id]').forEach(btn => {
+    btn.addEventListener('click', () => selectMobileCharacter(btn.dataset.characterId));
+  });
+  root.querySelector('#mobile-deselect-character')?.addEventListener('click', () => selectMobileCharacter(null));
   root.querySelector('#mobile-new-character')?.addEventListener('click', () => {
     if (typeof openCharacterModal === 'function') openCharacterModal();
     else { if (typeof showPage === 'function') showPage('characters'); }
@@ -51601,8 +51697,9 @@ function renderMobileCharacterSheetFlow() {
             </p>
             <div class="mobile-grid-2">
               <a class="mobile-secondary-btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none"
-                href="${escapeHTML(img.imageUrl)}" download="character-${escapeHTML(img.angle)}.jpg">다운로드</a>
+                href="${escapeHTML(img.imageUrl)}" download="soaviz-character-${escapeHTML(img.angle)}.png">다운로드</a>
               <button class="mobile-secondary-btn" data-save-img="${escapeHTML(img.id || '')}">저장</button>
+              <button class="mobile-secondary-btn" data-copy-url="${escapeHTML(img.id || '')}" style="grid-column:span 2">URL 복사</button>
             </div>
           </div>
         </article>`).join('')
@@ -51773,18 +51870,30 @@ function bindMobileCharacterSheetEvents() {
   root.querySelector('#mobile-sheet-style')?.addEventListener('change',  e => { state.styleMode      = e.target.value; });
   root.querySelector('#mobile-sheet-bg')?.addEventListener('change',     e => { state.backgroundMode = e.target.value; });
 
-  // 결과 저장 버튼
+  // 결과 저장 버튼 (단일 이미지 → persistMobileCharacterSheetImages)
   root.querySelectorAll('[data-save-img]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const img = state.generatedImages.find(i => String(i.id) === btn.dataset.saveImg);
-      if (img && typeof saveAssetToLibrary === 'function') {
-        saveAssetToLibrary({ type: 'character-sheet', title: img.angle, imageUrl: img.imageUrl, source: 'mobile' });
+      if (img) {
+        await persistMobileCharacterSheetImages([img]);
         if (typeof showToast === 'function') showToast('보관함에 저장됐습니다');
-      } else if (typeof showToast === 'function') {
-        showToast('이미지를 보관함에 저장합니다');
       }
     });
   });
+
+  // URL 복사 버튼
+  root.querySelectorAll('[data-copy-url]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const img = state.generatedImages.find(i => String(i.id) === btn.dataset.copyUrl);
+      const text = img?.imageUrl || '';
+      if (!text) return;
+      if (typeof copyText === 'function') await copyText(text);
+      if (typeof showToast === 'function') showToast('이미지 URL 복사 완료');
+    });
+  });
+
+  // 보관함으로 이동 (결과 하단 버튼 — renderMobileCharacterSheetFlow에서 생성할 경우)
+  root.querySelector('#mobile-sheet-go-library')?.addEventListener('click', () => MobileApp.go('library'));
 
   // 생성 버튼
   root.querySelector('#mobile-sheet-generate')?.addEventListener('click', generateMobileCharacterSheet);
@@ -51793,6 +51902,265 @@ function bindMobileCharacterSheetEvents() {
 /* ────────────────────────────────────────────────────────────
    § 13. 캐릭터 시트 생성 함수
    ──────────────────────────────────────────────────────────── */
+/* ── asset 테이블 자동 감지 ──────────────────────────────────── */
+function detectMobileAssetTableName() {
+  try {
+    const db = window.SoavizDB?.db;
+    if (!db) return null;
+    for (const name of ['assets', 'library', 'media', 'files', 'outputs', 'generations']) {
+      if (db[name]) return name;
+    }
+    return null;
+  } catch { return null; }
+}
+window.detectMobileAssetTableName = detectMobileAssetTableName;
+
+/* ── saveAssetToLibrary (mobile/desktop 공용 fallback 구현) ─── */
+async function saveAssetToLibrary(assetData = {}) {
+  try {
+    if (!window.SoavizDB?.db) return;
+    await SoavizDB.ready;
+    const tableName = detectMobileAssetTableName();
+    if (!tableName || !SoavizDB.db[tableName]) return;
+    const now = Date.now();
+    await SoavizDB.db[tableName].put({
+      id:          assetData.id || `asset_${now}_${Math.random().toString(36).slice(2)}`,
+      projectId:   assetData.projectId || null,
+      type:        assetData.type || 'asset',
+      title:       assetData.title || assetData.name || 'Untitled',
+      name:        assetData.name || assetData.title || 'Untitled',
+      imageUrl:    assetData.imageUrl || assetData.url || null,
+      url:         assetData.url || assetData.imageUrl || null,
+      characterId: assetData.characterId || null,
+      model:       assetData.model || null,
+      angle:       assetData.angle || null,
+      aspectRatio: assetData.aspectRatio || null,
+      prompt:      assetData.prompt || null,
+      source:      assetData.source || 'mobile',
+      mock:        Boolean(assetData.mock),
+      status:      'done',
+      storageTier: 'hot',
+      archived:    false,
+      createdAt:   assetData.createdAt || now,
+      updatedAt:   now
+    });
+  } catch (e) {
+    console.warn('[saveAssetToLibrary] failed', e);
+  }
+}
+window.saveAssetToLibrary = saveAssetToLibrary;
+
+/* ── 캐릭터 시트 결과 영구 저장 ──────────────────────────────── */
+async function persistMobileCharacterSheetImages(images = []) {
+  if (!images.length) return;
+  try {
+    if (!window.SoavizDB?.db) return;
+    await SoavizDB.ready;
+    const now = Date.now();
+    const characterId = MobileState.selectedCharacterId || null;
+    const normalized = images.map(img => ({
+      id:              img.id || `sheet_${now}_${Math.random().toString(36).slice(2)}`,
+      characterId,
+      angle:           img.angle,
+      model:           img.model || MobileState.characterSheet.selectedModelId,
+      imageUrl:        img.imageUrl,
+      aspectRatio:     img.aspectRatio || MobileState.characterSheet.aspectRatio,
+      styleMode:       img.styleMode || MobileState.characterSheet.styleMode,
+      backgroundMode:  img.backgroundMode || MobileState.characterSheet.backgroundMode,
+      prompt:          img.prompt || '',
+      source:          'mobile-character-sheet',
+      mock:            Boolean(img.mock),
+      createdAt:       img.createdAt || now,
+      updatedAt:       now
+    }));
+    // 1. characters.sheetImages에 추가
+    if (characterId && SoavizDB.db.characters) {
+      const character = await SoavizDB.db.characters.get(characterId).catch(() => null);
+      if (character) {
+        const prev = Array.isArray(character.sheetImages) ? character.sheetImages : [];
+        await SoavizDB.db.characters.update(characterId, {
+          sheetImages: [...prev, ...normalized],
+          updatedAt: now
+        });
+      }
+    }
+    // 2. assets 테이블에도 저장 (보관함 연결)
+    const tableName = detectMobileAssetTableName();
+    if (tableName && SoavizDB.db[tableName]) {
+      for (const item of normalized) {
+        await SoavizDB.db[tableName].put({
+          id:          item.id,
+          projectId:   null,
+          type:        'character-sheet',
+          title:       `Character Sheet · ${item.angle}`,
+          name:        `Character Sheet · ${item.angle}`,
+          imageUrl:    item.imageUrl,
+          url:         item.imageUrl,
+          characterId: item.characterId,
+          model:       item.model,
+          angle:       item.angle,
+          aspectRatio: item.aspectRatio,
+          prompt:      item.prompt,
+          source:      item.source,
+          mock:        item.mock,
+          status:      'done',
+          storageTier: 'hot',
+          archived:    false,
+          createdAt:   item.createdAt,
+          updatedAt:   item.updatedAt
+        });
+      }
+    }
+    return normalized;
+  } catch (e) {
+    console.warn('[mobile] persist sheet images failed', e);
+    if (typeof showToast === 'function') showToast('이미지는 생성됐지만 저장에 실패했습니다', 'warn');
+  }
+}
+window.persistMobileCharacterSheetImages = persistMobileCharacterSheetImages;
+
+/* ── 보관함 아이템 통합 로드 ──────────────────────────────────── */
+async function getMobileLibraryItems() {
+  const items = [];
+  try {
+    if (!window.SoavizDB?.db) return items;
+    await SoavizDB.ready;
+    const db = SoavizDB.db;
+    const tableName = detectMobileAssetTableName();
+    if (tableName && db[tableName]) {
+      const raw = await db[tableName].toArray().catch(() => []);
+      raw.filter(x => !x.archived).forEach(x => {
+        items.push({
+          id:          x.id,
+          title:       x.title || x.name || 'Untitled Asset',
+          type:        x.type || 'asset',
+          imageUrl:    x.imageUrl || x.url || '',
+          prompt:      x.prompt || '',
+          angle:       x.angle || '',
+          createdAt:   x.createdAt || 0,
+          source:      tableName
+        });
+      });
+    }
+    // assets 테이블이 비어있으면 characters.sheetImages에서 수집
+    if (!items.length && db.characters) {
+      const chars = await db.characters.toArray().catch(() => []);
+      chars.filter(c => !c.archived).forEach(c => {
+        const sheets = Array.isArray(c.sheetImages) ? c.sheetImages : [];
+        sheets.forEach(img => {
+          items.push({
+            id:          img.id || `${c.id}_${img.angle}_${img.createdAt}`,
+            title:       `${c.name || 'Character'} · ${img.angle || 'sheet'}`,
+            type:        'character-sheet',
+            imageUrl:    img.imageUrl || '',
+            prompt:      img.prompt || '',
+            angle:       img.angle || '',
+            characterId: c.id,
+            createdAt:   img.createdAt || c.updatedAt || 0,
+            source:      'characters.sheetImages'
+          });
+        });
+      });
+    }
+    return items
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 50);
+  } catch (e) {
+    console.warn('[mobile] library items failed', e);
+    return items;
+  }
+}
+window.getMobileLibraryItems = getMobileLibraryItems;
+
+/* ── 캐릭터 선택 ──────────────────────────────────────────────── */
+function selectMobileCharacter(characterId) {
+  MobileState.selectedCharacterId = characterId || null;
+  if (typeof showToast === 'function') showToast(characterId ? '캐릭터가 선택되었습니다' : '캐릭터 선택이 해제되었습니다');
+  saveMobileRuntimeState();
+  renderMobileCharacter();
+}
+window.selectMobileCharacter = selectMobileCharacter;
+
+/* ── 런타임 상태 저장/복원 ─────────────────────────────────────── */
+const MOBILE_STATE_KEY = 'soaviz.mobile.state.v1';
+function saveMobileRuntimeState() {
+  try {
+    localStorage.setItem(MOBILE_STATE_KEY, JSON.stringify({
+      current:             MobileApp?.current || 'home',
+      selectedTone:        MobileState.selectedTone,
+      selectedCharacterId: MobileState.selectedCharacterId,
+      characterMode:       MobileState.characterMode || 'home'
+    }));
+  } catch (_) {}
+}
+function restoreMobileRuntimeState() {
+  try {
+    const raw = localStorage.getItem(MOBILE_STATE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.selectedTone)        MobileState.selectedTone = data.selectedTone;
+    if (data.selectedCharacterId) MobileState.selectedCharacterId = data.selectedCharacterId;
+    if (data.characterMode)       MobileState.characterMode = data.characterMode;
+    if (data.current && window.MobileApp?.go) {
+      setTimeout(() => MobileApp.go(data.current), 0);
+    }
+  } catch (_) {}
+}
+window.saveMobileRuntimeState  = saveMobileRuntimeState;
+window.restoreMobileRuntimeState = restoreMobileRuntimeState;
+
+/* ── mobileGenerateCharacterSheetBridge ───────────────────────── */
+async function mobileGenerateCharacterSheetBridge() {
+  const state = MobileState.characterSheet;
+  // 1순위: 기존 desktop generateCharacterSheet 함수 재사용
+  if (typeof window.generateCharacterSheet === 'function') {
+    try { return await window.generateCharacterSheet({ ...state, source: 'mobile-character-sheet' }); }
+    catch (e) { console.warn('[bridge] generateCharacterSheet failed, falling back', e); }
+  }
+  if (typeof window.createCharacterSheet === 'function') {
+    try { return await window.createCharacterSheet({ ...state, source: 'mobile-character-sheet' }); }
+    catch (e) { console.warn('[bridge] createCharacterSheet failed, falling back', e); }
+  }
+  // 2순위: 백엔드 API 직접 호출
+  const backendUrl = window.__SOAVIZ_CONFIG__?.backendUrl || (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : '');
+  if (backendUrl) {
+    try {
+      const formData = new FormData();
+      formData.append('image',          state.sourceFile);
+      formData.append('model',          state.selectedModelId);
+      formData.append('angles',         JSON.stringify(state.selectedAngles));
+      formData.append('aspectRatio',    state.aspectRatio);
+      formData.append('styleMode',      state.styleMode);
+      formData.append('backgroundMode', state.backgroundMode);
+      formData.append('characterId',    MobileState.selectedCharacterId || '');
+      const res = await fetch(`${backendUrl}/api/character-sheet/generate`, { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.images) && data.images.length) return data.images;
+      }
+    } catch (e) {
+      console.warn('[bridge] character sheet API failed, using mock', e);
+    }
+  }
+  // 3순위: mock fallback (UX 테스트용)
+  if (typeof showToast === 'function') showToast('API 미연결 — 원본 이미지로 미리보기 표시합니다');
+  return state.selectedAngles.map(angle => ({
+    id:          `mock_${Date.now()}_${angle}`,
+    angle,
+    model:       state.selectedModelId,
+    imageUrl:    state.sourcePreview,
+    aspectRatio: state.aspectRatio,
+    styleMode:   state.styleMode,
+    backgroundMode: state.backgroundMode,
+    prompt:      '',
+    createdAt:   Date.now(),
+    source:      'mobile-character-sheet',
+    mock:        true
+  }));
+}
+window.mobileGenerateCharacterSheetBridge = mobileGenerateCharacterSheetBridge;
+
+/* ── generateMobileCharacterSheet (bridge 연결 버전) ─────────── */
 async function generateMobileCharacterSheet() {
   const state = MobileState.characterSheet;
   if (!state.sourceFile) {
@@ -51803,48 +52171,17 @@ async function generateMobileCharacterSheet() {
     if (typeof showToast === 'function') showToast('앵글을 하나 이상 선택해 주세요', 'error');
     return;
   }
-
   state.isGenerating = true;
   renderMobileCharacterSheetFlow();
-
   try {
-    const formData = new FormData();
-    formData.append('image',          state.sourceFile);
-    formData.append('model',          state.selectedModelId);
-    formData.append('angles',         JSON.stringify(state.selectedAngles));
-    formData.append('aspectRatio',    state.aspectRatio);
-    formData.append('styleMode',      state.styleMode);
-    formData.append('backgroundMode', state.backgroundMode);
-
-    let images = [];
-    const backendUrl = window.__SOAVIZ_CONFIG__?.backendUrl || BACKEND_URL || '';
-    if (backendUrl) {
-      try {
-        const res = await fetch(`${backendUrl}/api/character-sheet/generate`, { method: 'POST', body: formData });
-        if (res.ok) {
-          const data = await res.json();
-          images = Array.isArray(data.images) ? data.images : [];
-        }
-      } catch (apiErr) {
-        console.warn('[mobile] character sheet API error', apiErr);
-      }
+    const images = await mobileGenerateCharacterSheetBridge();
+    state.generatedImages = Array.isArray(images) ? images : [];
+    if (state.generatedImages.length) {
+      await persistMobileCharacterSheetImages(state.generatedImages);
+      if (typeof showToast === 'function') showToast('캐릭터 시트 생성 완료');
+    } else {
+      if (typeof showToast === 'function') showToast('생성된 이미지가 없습니다', 'warn');
     }
-
-    // API 미연결 fallback — mock preview
-    if (!images.length) {
-      images = state.selectedAngles.map(angle => ({
-        id:          `mock_${Date.now()}_${angle}`,
-        angle,
-        model:       state.selectedModelId,
-        imageUrl:    state.sourcePreview,
-        aspectRatio: state.aspectRatio,
-        createdAt:   Date.now(),
-        mock:        true,
-      }));
-      if (typeof showToast === 'function') showToast('API 미연결 — 원본 이미지로 미리보기 표시합니다');
-    }
-
-    state.generatedImages = images;
   } catch (e) {
     console.error('[mobile] sheet generate error', e);
     if (typeof showToast === 'function') showToast('캐릭터 시트 생성 중 오류가 발생했습니다', 'error');
@@ -51862,10 +52199,30 @@ async function renderMobileProduction() {
   if (!root) return;
 
   const summary = await getMobileProductionSummary();
+  const hasProject  = Boolean(summary.projectId || (summary.projectTitle && summary.projectTitle !== '선택된 프로젝트 없음'));
   const updatedLabel = summary.updatedAt
     ? new Date(summary.updatedAt).toLocaleDateString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
     : '—';
   const worldBibleIcon = summary.hasWorldBible ? '✓ 완료' : '—';
+
+  if (!hasProject) {
+    root.innerHTML = `
+      <section>
+        <h1 class="mobile-page-title">제작</h1>
+        <p class="mobile-page-sub">캐릭터, 세계관, 샷리스트를 확인하고 다음 제작 단계로 이동합니다.</p>
+      </section>
+      <section class="mobile-section mobile-card" style="text-align:center;padding:36px 18px">
+        <div style="font-size:42px;margin-bottom:14px">🎬</div>
+        <strong style="font-size:17px">아직 프로젝트가 없습니다</strong>
+        <p style="margin:10px 0 22px;color:var(--text-faint);font-size:13px;line-height:1.55">
+          스토리를 작성하고 Pipeline을 생성하면<br>캐릭터, World Bible, 샷리스트가 만들어집니다.
+        </p>
+        <button class="mobile-primary-btn" id="mobile-prod-start-story">스토리부터 시작하기</button>
+      </section>
+    `;
+    root.querySelector('#mobile-prod-start-story')?.addEventListener('click', () => MobileApp.go('story'));
+    return;
+  }
 
   root.innerHTML = `
     <section>
@@ -51902,18 +52259,22 @@ async function renderMobileProduction() {
       <p style="margin:8px 0 16px;color:var(--text-dim);font-size:13px;line-height:1.55">
         Character Pack, World Bible, Shotlist는 Pipeline 전체 화면에서 확인할 수 있습니다.
       </p>
-      <button class="mobile-secondary-btn" id="mobile-open-pipeline">Pipeline 전체 보기</button>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="mobile-secondary-btn" id="mobile-open-pipeline">Pipeline 전체 보기</button>
+        <button class="mobile-secondary-btn" id="mobile-prod-go-library">보관함 보기</button>
+      </div>
     </section>
     <section class="mobile-section mobile-card">
       <strong>다음 작업</strong>
       <p style="margin:8px 0 16px;color:var(--text-dim);font-size:13px;line-height:1.55">
         샷리스트가 준비되면 이미지/영상 프롬프트로 이어갈 수 있습니다.
       </p>
-      <button class="mobile-primary-btn" id="mobile-go-story">스토리에서 다시 생성</button>
+      <button class="mobile-primary-btn" id="mobile-go-story">스토리 다시 생성</button>
     </section>
   `;
   root.querySelector('#mobile-open-pipeline')?.addEventListener('click', async () => await MobileActions.openPipeline());
   root.querySelector('#mobile-go-story')?.addEventListener('click', () => MobileApp.go('story'));
+  root.querySelector('#mobile-prod-go-library')?.addEventListener('click', () => MobileApp.go('library'));
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -51923,16 +52284,28 @@ async function renderMobileLibrary() {
   const root = document.getElementById('mobile-screen-library');
   if (!root) return;
 
-  let assets = [];
-  try {
-    if (window.SoavizDB?.db?.assets) {
-      await SoavizDB.ready;
-      const all = await SoavizDB.db.assets.toArray().catch(() => []);
-      assets = all.filter(x => !x.archived).slice(0, 20);
-    }
-  } catch (_) {}
+  const TYPE_ICON = { image:'🖼', video:'🎬', audio:'🎵', 'character-sheet':'◉', prompt:'✎', asset:'▣' };
 
-  const TYPE_ICON = { image:'🖼', video:'🎬', audio:'🎵', 'character-sheet':'◉', prompt:'✎' };
+  const items = await getMobileLibraryItems();
+
+  const cardsHTML = items.map(a => `
+    <article class="mobile-library-card" data-library-id="${escapeHTML(a.id)}">
+      <div class="mobile-library-thumb">
+        ${a.imageUrl
+          ? `<img src="${escapeHTML(a.imageUrl)}" alt="${escapeHTML(a.title)}" loading="lazy">`
+          : `<span style="font-size:32px">${TYPE_ICON[a.type] || '▣'}</span>`}
+      </div>
+      <div class="mobile-library-body">
+        <strong style="font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${escapeHTML(a.title)}
+        </strong>
+        <p style="margin:3px 0 0;color:var(--text-faint);font-size:11px">${escapeHTML(a.type)} · ${a.angle ? escapeHTML(a.angle) + ' · ' : ''}${new Date(a.createdAt || 0).toLocaleDateString('ko-KR', { month:'short', day:'numeric' })}</p>
+        <div class="mobile-library-actions">
+          ${a.imageUrl ? `<button class="mobile-secondary-btn" data-lib-download="${escapeHTML(a.id)}">다운로드</button>` : ''}
+          <button class="mobile-secondary-btn" data-lib-copy="${escapeHTML(a.id)}">URL 복사</button>
+        </div>
+      </div>
+    </article>`).join('');
 
   root.innerHTML = `
     <section>
@@ -51940,34 +52313,50 @@ async function renderMobileLibrary() {
       <p class="mobile-page-sub">생성된 이미지, 영상, 오디오, 프롬프트 결과를 확인합니다.</p>
     </section>
     <section class="mobile-section">
-      ${assets.length
-        ? `<div class="mobile-list">${assets.map(a => `
-            <article class="mobile-card" style="display:flex;align-items:center;gap:12px;padding:14px">
-              <div style="font-size:22px;flex-shrink:0">${TYPE_ICON[a.type] || '▣'}</div>
-              <div style="min-width:0;flex:1">
-                <strong style="font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                  ${escapeHTML(a.title || a.name || 'Untitled Asset')}
-                </strong>
-                <p style="margin:3px 0 0;color:var(--text-faint);font-size:11px">${escapeHTML(a.type || 'asset')}</p>
-              </div>
-            </article>`).join('')}</div>`
+      ${items.length
+        ? `<div style="display:grid;gap:14px">${cardsHTML}</div>`
         : `<div class="mobile-card" style="text-align:center;padding:36px 18px">
             <div style="font-size:36px;margin-bottom:12px">▣</div>
             <strong style="font-size:15px">아직 저장된 결과가 없습니다</strong>
             <p style="margin:8px 0 20px;color:var(--text-faint);font-size:13px">
-              스토리나 캐릭터 시트를 먼저 생성하세요.
+              캐릭터 시트를 생성하거나 스토리 Pipeline을 만들어보세요.
             </p>
             <button class="mobile-primary-btn" id="mobile-library-start">생성 시작하기</button>
           </div>`
       }
     </section>
-    ${assets.length ? `
+    ${items.length ? `
     <section class="mobile-section">
       <button class="mobile-secondary-btn" id="mobile-open-full-library">전체 보관함 열기</button>
     </section>` : ''}
   `;
-  root.querySelector('#mobile-library-start')?.addEventListener('click',     () => MobileApp.go('story'));
+
+  // 이벤트 바인딩
+  root.querySelector('#mobile-library-start')?.addEventListener('click', () => MobileApp.go('story'));
   root.querySelector('#mobile-open-full-library')?.addEventListener('click', () => MobileActions.openLibrary());
+
+  root.querySelectorAll('[data-lib-download]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = items.find(x => x.id === btn.dataset.libDownload);
+      if (!item?.imageUrl) return;
+      const a = document.createElement('a');
+      a.href = item.imageUrl;
+      a.download = `soaviz-${item.type}-${item.angle || 'image'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+  });
+
+  root.querySelectorAll('[data-lib-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const item = items.find(x => x.id === btn.dataset.libCopy);
+      const text = item?.imageUrl || item?.prompt || '';
+      if (!text) return;
+      if (typeof copyText === 'function') await copyText(text);
+      if (typeof showToast === 'function') showToast('URL 복사 완료');
+    });
+  });
 }
 </script>
 <script src="js/heatmap.js"></script>
