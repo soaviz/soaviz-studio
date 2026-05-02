@@ -18871,6 +18871,82 @@
       cursor: not-allowed;
       filter: grayscale(0.4);
     }
+    /* 6차 — Bottom Sheet */
+    .mobile-bottom-sheet-backdrop {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.55);
+    }
+    .mobile-bottom-sheet-backdrop.open { display: block; }
+    .mobile-bottom-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 201;
+      background: #12101F;
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.09);
+      padding: 14px 20px 32px;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .mobile-bottom-sheet.open { transform: translateY(0); }
+    .mobile-sheet-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 99px;
+      margin: 0 auto 16px;
+    }
+    /* 6차 — Cost card */
+    .mobile-cost-card {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px; padding: 10px 14px;
+    }
+    .mobile-cost-label { font-size: 12px; color: var(--text-faint); }
+    .mobile-cost-value { font-size: 13px; font-weight: 800; color: var(--accent); }
+    .mobile-sheet-note {
+      font-size: 12px; color: var(--text-faint);
+      line-height: 1.5; margin: 0;
+    }
+    /* 6차 — Job card */
+    .mobile-job-card {
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+    .mobile-job-card.running {
+      border-color: rgba(167,139,250,0.30);
+      background: rgba(167,139,250,0.07);
+    }
+    .mobile-job-card.completed {
+      border-color: rgba(52,211,153,0.25);
+      background: rgba(52,211,153,0.05);
+    }
+    .mobile-job-card.failed {
+      border-color: rgba(248,113,113,0.28);
+      background: rgba(248,113,113,0.05);
+    }
+    .mobile-job-card.cancelled {
+      opacity: 0.55;
+    }
+    /* 6차 — Progress bar */
+    .mobile-progress-track {
+      height: 4px; border-radius: 99px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden; margin: 6px 0;
+    }
+    .mobile-progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, #8B5CF6, #6366F1);
+      transition: width 0.4s ease;
+    }
+    /* 6차 — Batch selected shot card */
+    .mobile-shot-card.batch-selected {
+      border-color: rgba(167,139,250,0.45);
+      background: rgba(167,139,250,0.08);
+      box-shadow: 0 0 0 1px rgba(167,139,250,0.20);
+    }
   }
   @media (min-width: 769px) {
     #mobile-app-shell { display: none !important; }
@@ -51334,6 +51410,16 @@ MobileState.shotWorkspace = MobileState.shotWorkspace || {
   generatedAssets: [],
   selectedAssetId: null
 };
+MobileState.generationQueue = MobileState.generationQueue || {
+  activeJobId: null,
+  jobs: [],
+  filter: 'all',
+  confirmSheetOpen: false,
+  pendingJobDraft: null,
+  batchMode: false,
+  selectedShotIds: [],
+  isRestoring: false
+};
 
 /* ────────────────────────────────────────────────────────────
    § 2. 모델 / 앵글 설정
@@ -52588,6 +52674,9 @@ function renderMobileProductionSummary(bundle) {
 
 function renderMobileShotCards(bundle) {
   const shots = bundle.shots || [];
+  const gq    = MobileState.generationQueue || {};
+  const batchMode   = gq.batchMode || false;
+  const selectedIds = gq.selectedShotIds || [];
   if (!shots.length) {
     return `
       <section class="mobile-section mobile-card" style="text-align:center;padding:28px 16px;">
@@ -52597,17 +52686,34 @@ function renderMobileShotCards(bundle) {
         <button class="mobile-primary-btn" id="mobile-shot-start-story">스토리 입력하기</button>
       </section>`;
   }
+  const batchPanel = batchMode ? `
+    <section class="mobile-section mobile-card" style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.18);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <strong style="font-size:13px;">배치 선택 <span style="color:var(--accent);">${selectedIds.length}개</span></strong>
+        <div style="display:flex;gap:6px;">
+          <button class="mobile-secondary-btn" id="mobile-batch-cancel-btn" style="font-size:11px;min-height:30px;padding:0 10px;">취소</button>
+          <button class="mobile-primary-btn" id="mobile-batch-generate-btn" style="font-size:11px;min-height:30px;padding:0 12px;"${!selectedIds.length ? ' disabled' : ''}>일괄 생성</button>
+        </div>
+      </div>
+    </section>` : '';
   return `
+    ${batchPanel}
     <section class="mobile-section">
-      <h3 class="mobile-section-title">샷리스트 ${shots.length}개</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 class="mobile-section-title" style="margin:0;">샷리스트 ${shots.length}개</h3>
+        <button class="mobile-secondary-btn${batchMode ? ' active' : ''}" id="mobile-batch-toggle-btn" style="font-size:11px;min-height:30px;padding:0 12px;">
+          ${batchMode ? '선택 중' : '배치 선택'}
+        </button>
+      </div>
       <div class="mobile-list">
         ${shots.map((shot, index) => {
-          const promptText = buildShotPromptText(shot, bundle);
+          const isSelected = batchMode && selectedIds.includes(shot.id);
           return `
-            <article class="mobile-shot-card" data-shot-id="${escapeHTML(shot.id)}">
+            <article class="mobile-shot-card${isSelected ? ' batch-selected' : ''}" data-shot-id="${escapeHTML(shot.id)}">
               <div class="mobile-shot-head">
                 <span>SHOT ${String(index + 1).padStart(2, '0')}</span>
                 <small>${escapeHTML(shot.sceneTitle || shot.sceneId || '')}</small>
+                ${batchMode ? `<button class="mobile-mini-badge" data-batch-select="${escapeHTML(shot.id)}" style="margin-left:auto;cursor:pointer;background:${isSelected ? 'rgba(167,139,250,0.35)' : 'rgba(255,255,255,0.08)'};color:${isSelected ? '#fff' : 'var(--text-faint)'};">${isSelected ? '✓ 선택됨' : '선택'}</button>` : ''}
               </div>
               <strong>${escapeHTML(shot.title || shot.name || shot.action || 'Untitled Shot')}</strong>
               <p>${escapeHTML((shot.description || shot.action || shot.summary || '').slice(0, 160))}</p>
@@ -52768,6 +52874,28 @@ function bindMobileProductionEvents(root, bundle) {
     if (typeof copyText === 'function') await copyText(text);
     if (typeof showToast === 'function') showToast('공유가 지원되지 않아 텍스트를 복사했습니다');
   });
+  // 6차: 배치 모드 이벤트
+  root.querySelector('#mobile-batch-toggle-btn')?.addEventListener('click', () => {
+    const gq = MobileState.generationQueue;
+    gq.batchMode = !gq.batchMode;
+    if (!gq.batchMode) gq.selectedShotIds = [];
+    renderMobileProduction();
+  });
+  root.querySelector('#mobile-batch-cancel-btn')?.addEventListener('click', () => {
+    const gq = MobileState.generationQueue;
+    gq.batchMode = false;
+    gq.selectedShotIds = [];
+    renderMobileProduction();
+  });
+  root.querySelector('#mobile-batch-generate-btn')?.addEventListener('click', () => {
+    openMobileBatchGenerationConfirm(bundle);
+  });
+  root.querySelectorAll('[data-batch-select]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleMobileBatchShot(btn.dataset.batchSelect);
+    });
+  });
 }
 window.bindMobileProductionEvents = bindMobileProductionEvents;
 
@@ -52922,11 +53050,13 @@ function renderMobileShotWorkspace(bundle) {
       <h3 class="mobile-section-title">생성 결과${ws.generatedAssets && ws.generatedAssets.length ? ` (${ws.generatedAssets.length})` : ''}</h3>
       <div class="mobile-list">${assetsHTML}</div>
     </section>
+    <section class="mobile-section mobile-card">
+      <h3 class="mobile-section-title">생성 큐</h3>
+      <div id="mobile-gen-queue-panel"><p style="color:var(--text-faint);font-size:13px;text-align:center;padding:18px 0;">생성 작업 없음</p></div>
+    </section>
     <div class="mobile-sticky-cta">
-      <button class="mobile-primary-btn" id="mobile-shot-ws-generate"${ws.isGenerating ? ' disabled' : ''}>
-        ${ws.isGenerating
-          ? '생성 중...'
-          : `${ws.mode === 'image' ? '이미지' : '영상'} 생성하기  ${selectedModel ? selectedModel.costLabel : ''}`}
+      <button class="mobile-primary-btn" id="mobile-shot-ws-generate">
+        ${ws.mode === 'image' ? '이미지' : '영상'} 생성하기  ${selectedModel ? selectedModel.costLabel : ''}
       </button>
     </div>`;
 }
@@ -52962,6 +53092,16 @@ function bindMobileShotWorkspaceEvents(root, bundle) {
   if (durationEl) durationEl.addEventListener('change',e => { ws.duration       = Number(e.target.value || 5); if (typeof saveMobileRuntimeState==='function') saveMobileRuntimeState(); });
   if (motionEl)   motionEl.addEventListener('change',  e => { ws.motionStrength = e.target.value; if (typeof saveMobileRuntimeState==='function') saveMobileRuntimeState(); });
   root.querySelector('#mobile-shot-ws-generate')?.addEventListener('click', () => generateMobileShotAsset(bundle));
+  // 6차: queue 패널 초기화
+  const queuePanel = root.querySelector('#mobile-gen-queue-panel');
+  if (queuePanel) {
+    const gq = MobileState.generationQueue;
+    if (!gq.jobs || !gq.jobs.length) {
+      if (typeof restoreMobileGenerationJobs === 'function') restoreMobileGenerationJobs();
+    } else {
+      renderMobileGenerationQueuePanel();
+    }
+  }
   root.querySelectorAll('[data-mobile-asset-approve]').forEach(btn => {
     btn.addEventListener('click', () => approveMobileShotAsset(btn.dataset.mobileAssetApprove, bundle));
   });
@@ -52977,32 +53117,612 @@ function bindMobileShotWorkspaceEvents(root, bundle) {
 }
 window.bindMobileShotWorkspaceEvents = bindMobileShotWorkspaceEvents;
 
-/* ── 5차: 생성 실행 브릿지 ────────────────────────────────────── */
-async function generateMobileShotAsset(bundle) {
+/* ── 6차: Job 저장소 유틸 ─────────────────────────────────────── */
+function getMobileJobStoreType() {
+  try {
+    if (SoavizDB.db && SoavizDB.db.mobileJobs) return 'mobileJobs';
+  } catch (_) {}
+  try {
+    if (SoavizDB.db && SoavizDB.db.assets) return 'assets';
+  } catch (_) {}
+  return 'memory';
+}
+
+function normalizeMobileJob(raw) {
+  return {
+    id:           raw.id           || ('job_' + Date.now()),
+    shotId:       raw.shotId       || null,
+    projectId:    raw.projectId    || MobileState.currentProjectId || null,
+    modelId:      raw.modelId      || null,
+    mode:         raw.mode         || 'image',
+    prompt:       raw.prompt       || '',
+    aspectRatio:  raw.aspectRatio  || '16:9',
+    duration:     raw.duration     || 5,
+    motionStrength: raw.motionStrength || 5,
+    status:       raw.status       || 'pending',
+    progress:     raw.progress     || 0,
+    createdAt:    raw.createdAt    || Date.now(),
+    updatedAt:    raw.updatedAt    || Date.now(),
+    resultAssetId: raw.resultAssetId || null,
+    errorMsg:     raw.errorMsg     || null,
+    costEstimate: raw.costEstimate || null,
+    retryCount:   raw.retryCount   || 0
+  };
+}
+
+async function saveMobileGenerationJob(job) {
+  const type = getMobileJobStoreType();
+  try {
+    if (type === 'mobileJobs') {
+      await SoavizDB.db.mobileJobs.put(job);
+    } else if (type === 'assets') {
+      await SoavizDB.db.assets.put({
+        id: job.id,
+        projectId: job.projectId,
+        shotId: job.shotId,
+        type: 'generation-job',
+        status: job.status,
+        storageTier: 'local',
+        updatedAt: job.updatedAt,
+        _jobData: JSON.stringify(job)
+      });
+    } else {
+      const gq = MobileState.generationQueue;
+      const idx = gq.jobs.findIndex(j => j.id === job.id);
+      if (idx >= 0) gq.jobs[idx] = job;
+      else gq.jobs.push(job);
+    }
+  } catch (_) {
+    const gq = MobileState.generationQueue;
+    const idx = gq.jobs.findIndex(j => j.id === job.id);
+    if (idx >= 0) gq.jobs[idx] = job;
+    else gq.jobs.push(job);
+  }
+}
+
+async function loadMobileGenerationJobs(projectId) {
+  const type = getMobileJobStoreType();
+  try {
+    if (type === 'mobileJobs') {
+      const rows = await SoavizDB.db.mobileJobs.where('projectId').equals(projectId).toArray();
+      return rows.map(normalizeMobileJob);
+    } else if (type === 'assets') {
+      const rows = await SoavizDB.db.assets
+        .where({ projectId, type: 'generation-job' }).toArray();
+      return rows.map(r => {
+        try { return normalizeMobileJob(JSON.parse(r._jobData || '{}')); }
+        catch (_) { return normalizeMobileJob(r); }
+      });
+    }
+  } catch (_) {}
+  return (MobileState.generationQueue.jobs || [])
+    .filter(j => j.projectId === projectId)
+    .map(normalizeMobileJob);
+}
+
+/* ── 6차: 비용 추정 ──────────────────────────────────────────── */
+function getMobileGenerationModel(modelId) {
+  const cfg = window.mobileGenerationModelConfig || {};
+  for (const cat of Object.values(cfg)) {
+    for (const m of (cat.models || [])) {
+      if (m.id === modelId) return m;
+    }
+  }
+  return null;
+}
+
+function estimateMobileGenerationCost(modelId, mode, duration) {
+  const m = getMobileGenerationModel(modelId);
+  if (!m) return null;
+  if (mode === 'video') {
+    const perSec = m.costPerSecond || 0;
+    return { amount: +(perSec * (duration || 5)).toFixed(4), unit: 'USD', label: `~$${(perSec * (duration || 5)).toFixed(3)}/샷` };
+  }
+  const perImg = m.costPerImage || 0;
+  return { amount: +perImg.toFixed(4), unit: 'USD', label: `~$${perImg.toFixed(3)}/샷` };
+}
+
+/* ── 6차: Confirm Bottom Sheet ───────────────────────────────── */
+function openMobileGenerationConfirm(draft) {
+  const gq = MobileState.generationQueue;
+  gq.pendingJobDraft = draft;
+  gq.confirmSheetOpen = true;
+  const existing = document.getElementById('mobile-gen-confirm-sheet');
+  if (existing) {
+    existing.innerHTML = renderMobileGenerationConfirmSheetHTML(draft);
+    existing.classList.add('open');
+    document.getElementById('mobile-gen-confirm-backdrop')?.classList.add('open');
+  } else {
+    renderMobileGenerationConfirmSheet(draft);
+  }
+  bindMobileGenerationConfirmEvents();
+}
+
+function closeMobileGenerationConfirm() {
+  const gq = MobileState.generationQueue;
+  gq.confirmSheetOpen = false;
+  gq.pendingJobDraft = null;
+  document.getElementById('mobile-gen-confirm-sheet')?.classList.remove('open');
+  document.getElementById('mobile-gen-confirm-backdrop')?.classList.remove('open');
+}
+
+function renderMobileGenerationConfirmSheetHTML(draft) {
+  if (!draft) return '';
+  const cost = estimateMobileGenerationCost(draft.modelId, draft.mode, draft.duration);
+  const model = getMobileGenerationModel(draft.modelId);
+  const modeLabel = draft.mode === 'video' ? '영상 생성' : '이미지 생성';
+  const costHtml = cost
+    ? `<div class="mobile-cost-card"><span class="mobile-cost-label">예상 비용</span><span class="mobile-cost-value">${cost.label}</span></div>`
+    : '';
+  return `
+    <div class="mobile-sheet-handle"></div>
+    <h3 style="margin:0 0 14px;font-size:16px;font-weight:800;">${modeLabel} 시작</h3>
+    <div class="mobile-cost-card" style="margin-bottom:10px;">
+      <span class="mobile-cost-label">모델</span>
+      <span class="mobile-cost-value">${model ? model.name : (draft.modelId || '-')}</span>
+    </div>
+    ${costHtml}
+    <p class="mobile-sheet-note" style="margin:10px 0 18px;">${(draft.prompt || '').slice(0, 80)}${(draft.prompt || '').length > 80 ? '…' : ''}</p>
+    <div style="display:flex;gap:10px;">
+      <button class="mobile-secondary-btn" id="mobile-confirm-cancel-btn" style="flex:1;">취소</button>
+      <button class="mobile-primary-btn" id="mobile-confirm-start-btn" style="flex:2;">생성 시작</button>
+    </div>`;
+}
+
+function renderMobileGenerationConfirmSheet(draft) {
+  let backdrop = document.getElementById('mobile-gen-confirm-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'mobile-gen-confirm-backdrop';
+    backdrop.className = 'mobile-bottom-sheet-backdrop';
+    document.body.appendChild(backdrop);
+  }
+  let sheet = document.getElementById('mobile-gen-confirm-sheet');
+  if (!sheet) {
+    sheet = document.createElement('div');
+    sheet.id = 'mobile-gen-confirm-sheet';
+    sheet.className = 'mobile-bottom-sheet';
+    document.body.appendChild(sheet);
+  }
+  sheet.innerHTML = renderMobileGenerationConfirmSheetHTML(draft);
+  requestAnimationFrame(() => {
+    backdrop.classList.add('open');
+    sheet.classList.add('open');
+  });
+  bindMobileGenerationConfirmEvents();
+}
+
+function bindMobileGenerationConfirmEvents() {
+  const cancelBtn = document.getElementById('mobile-confirm-cancel-btn');
+  const startBtn  = document.getElementById('mobile-confirm-start-btn');
+  const backdrop  = document.getElementById('mobile-gen-confirm-backdrop');
+  if (cancelBtn) cancelBtn.onclick = () => closeMobileGenerationConfirm();
+  if (backdrop)  backdrop.onclick  = () => closeMobileGenerationConfirm();
+  if (startBtn) startBtn.onclick = async () => {
+    const gq = MobileState.generationQueue;
+    const draft = gq.pendingJobDraft;
+    closeMobileGenerationConfirm();
+    if (draft) await enqueueMobileGenerationJob(draft);
+  };
+}
+
+/* ── 6차: Queue 핵심 함수 ─────────────────────────────────────── */
+async function enqueueMobileGenerationJob(draft) {
+  const job = normalizeMobileJob({
+    ...draft,
+    id:        'job_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    status:    'pending',
+    progress:  0,
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+  const gq = MobileState.generationQueue;
+  gq.jobs.push(job);
+  await saveMobileGenerationJob(job);
+  renderMobileGenerationQueuePanel();
+  if (!gq.activeJobId) {
+    runMobileGenerationQueue();
+  }
+  return job;
+}
+
+async function updateMobileGenerationJob(jobId, patch) {
+  const gq = MobileState.generationQueue;
+  const idx = gq.jobs.findIndex(j => j.id === jobId);
+  if (idx < 0) return;
+  gq.jobs[idx] = { ...gq.jobs[idx], ...patch, updatedAt: Date.now() };
+  await saveMobileGenerationJob(gq.jobs[idx]);
+  renderMobileGenerationQueuePanel();
+}
+
+async function runMobileGenerationQueue() {
+  const gq = MobileState.generationQueue;
+  if (gq.activeJobId) return;
+  const next = gq.jobs.find(j => j.status === 'pending');
+  if (!next) return;
+  gq.activeJobId = next.id;
+  await updateMobileGenerationJob(next.id, { status: 'running', progress: 0 });
+  await runMobileGenerationJob(next.id);
+  gq.activeJobId = null;
+  runMobileGenerationQueue();
+}
+
+async function runMobileGenerationJob(jobId) {
+  const gq = MobileState.generationQueue;
+  const job = gq.jobs.find(j => j.id === jobId);
+  if (!job) return;
+  try {
+    await simulateMobileJobProgress(jobId, 0, 30, 800);
+    let resultAssetId = null;
+    if (job.mode === 'video') {
+      resultAssetId = await mobileGenerateVideoAssetFromJob(job);
+    } else {
+      resultAssetId = await mobileGenerateImageAssetFromJob(job);
+    }
+    await simulateMobileJobProgress(jobId, 70, 100, 600);
+    await updateMobileGenerationJob(jobId, { status: 'completed', progress: 100, resultAssetId });
+  } catch (err) {
+    await updateMobileGenerationJob(jobId, {
+      status: 'failed',
+      progress: 0,
+      errorMsg: (err && err.message) ? err.message : String(err)
+    });
+  }
+}
+
+async function simulateMobileJobProgress(jobId, from, to, totalMs) {
+  return new Promise(resolve => {
+    const steps = 8;
+    const stepMs = totalMs / steps;
+    const stepSize = (to - from) / steps;
+    let cur = from;
+    let i = 0;
+    const tick = () => {
+      if (i >= steps) { resolve(); return; }
+      cur = Math.min(to, Math.round(from + stepSize * (i + 1)));
+      updateMobileGenerationJob(jobId, { progress: cur, status: 'running' });
+      i++;
+      setTimeout(tick, stepMs);
+    };
+    tick();
+  });
+}
+
+async function mobileGenerateImageAssetFromJob(job) {
+  const BACKEND_URL = window.__SOAVIZ_CONFIG__?.backendUrl || '';
+  let resultUrl = null;
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/generate-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt:      job.prompt,
+        model:       job.modelId,
+        aspectRatio: job.aspectRatio
+      })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      resultUrl = data.imageUrl || data.url || null;
+    }
+  } catch (_) {}
+  if (!resultUrl) {
+    resultUrl = `https://picsum.photos/seed/${job.id}/800/450`;
+  }
+  const assetId = 'asset_img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const asset = {
+    id:          assetId,
+    projectId:   job.projectId,
+    shotId:      job.shotId,
+    type:        'image',
+    status:      'active',
+    storageTier: 'remote',
+    imageUrl:    resultUrl,
+    modelId:     job.modelId,
+    prompt:      job.prompt,
+    aspectRatio: job.aspectRatio,
+    createdAt:   Date.now(),
+    updatedAt:   Date.now(),
+    archived:    0
+  };
+  try { await SoavizDB.db.assets.put(asset); } catch (_) {}
+  if (job.shotId) {
+    try {
+      const shot = await SoavizDB.db.shots.get(job.shotId);
+      if (shot) {
+        shot.generatedAssets = shot.generatedAssets || [];
+        shot.generatedAssets.push(asset);
+        await SoavizDB.db.shots.put(shot);
+      }
+    } catch (_) {}
+  }
+  return assetId;
+}
+
+async function mobileGenerateVideoAssetFromJob(job) {
+  const BACKEND_URL = window.__SOAVIZ_CONFIG__?.backendUrl || '';
+  let resultUrl = null;
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/generate-video`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt:         job.prompt,
+        model:          job.modelId,
+        duration:       job.duration,
+        motionStrength: job.motionStrength,
+        aspectRatio:    job.aspectRatio
+      })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      resultUrl = data.videoUrl || data.url || null;
+    }
+  } catch (_) {}
+  const assetId = 'asset_vid_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const asset = {
+    id:          assetId,
+    projectId:   job.projectId,
+    shotId:      job.shotId,
+    type:        'video',
+    status:      'active',
+    storageTier: resultUrl ? 'remote' : 'mock',
+    videoUrl:    resultUrl,
+    modelId:     job.modelId,
+    prompt:      job.prompt,
+    duration:    job.duration,
+    aspectRatio: job.aspectRatio,
+    createdAt:   Date.now(),
+    updatedAt:   Date.now(),
+    archived:    0
+  };
+  try { await SoavizDB.db.assets.put(asset); } catch (_) {}
+  if (job.shotId) {
+    try {
+      const shot = await SoavizDB.db.shots.get(job.shotId);
+      if (shot) {
+        shot.generatedAssets = shot.generatedAssets || [];
+        shot.generatedAssets.push(asset);
+        await SoavizDB.db.shots.put(shot);
+      }
+    } catch (_) {}
+  }
+  return assetId;
+}
+
+/* ── 6차: Queue 패널 렌더 ─────────────────────────────────────── */
+function renderMobileGenerationQueuePanel() {
+  const panel = document.getElementById('mobile-gen-queue-panel');
+  if (!panel) return;
+  const gq = MobileState.generationQueue;
+  const filter = gq.filter || 'all';
+  const jobs = (gq.jobs || []).filter(j => {
+    if (filter === 'all')       return true;
+    if (filter === 'running')   return j.status === 'running';
+    if (filter === 'completed') return j.status === 'completed';
+    if (filter === 'failed')    return j.status === 'failed';
+    return true;
+  }).slice().reverse();
+
+  const filterTabs = ['all','running','completed','failed'].map(f =>
+    `<button class="mobile-secondary-btn${filter===f?' active':''}" data-qfilter="${f}" style="font-size:11px;min-height:32px;padding:0 12px;">
+      ${f==='all'?'전체':f==='running'?'진행중':f==='completed'?'완료':'실패'}
+    </button>`
+  ).join('');
+
+  if (!jobs.length) {
+    panel.innerHTML = `<div style="display:flex;gap:6px;margin-bottom:12px;">${filterTabs}</div>
+      <p style="color:var(--text-faint);font-size:13px;text-align:center;padding:24px 0;">생성 작업 없음</p>`;
+    bindMobileQueuePanelEvents(panel);
+    return;
+  }
+
+  const jobsHtml = jobs.map(j => {
+    const isRunning   = j.status === 'running';
+    const isCompleted = j.status === 'completed';
+    const isFailed    = j.status === 'failed';
+    const isCancelled = j.status === 'cancelled';
+    const progressBar = isRunning
+      ? `<div class="mobile-progress-track"><div class="mobile-progress-fill" style="width:${j.progress||0}%"></div></div>`
+      : '';
+    const statusLabel = isRunning ? `진행 ${j.progress||0}%`
+      : isCompleted ? '완료' : isFailed ? `실패` : isCancelled ? '취소' : '대기';
+    const actions = isFailed
+      ? `<button class="mobile-secondary-btn" data-retry-job="${j.id}" style="font-size:11px;min-height:28px;padding:0 10px;">재시도</button>`
+      : (!isCompleted && !isCancelled)
+      ? `<button class="mobile-secondary-btn" data-cancel-job="${j.id}" style="font-size:11px;min-height:28px;padding:0 10px;">취소</button>`
+      : '';
+    return `<div class="mobile-job-card ${j.status}">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text-faint);">${j.mode==='video'?'🎬':'🖼'} ${(j.prompt||'').slice(0,40)}${(j.prompt||'').length>40?'…':''}</span>
+        <span style="font-size:11px;color:${isCompleted?'var(--success)':isFailed?'#f87171':'var(--accent)'};">${statusLabel}</span>
+      </div>
+      ${progressBar}
+      ${isFailed && j.errorMsg ? `<p style="font-size:11px;color:#f87171;margin:4px 0 0;">${j.errorMsg.slice(0,60)}</p>` : ''}
+      ${actions ? `<div style="display:flex;justify-content:flex-end;margin-top:8px;">${actions}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  panel.innerHTML = `<div style="display:flex;gap:6px;margin-bottom:12px;">${filterTabs}</div>${jobsHtml}`;
+  bindMobileQueuePanelEvents(panel);
+}
+
+function bindMobileQueuePanelEvents(panel) {
+  panel.querySelectorAll('[data-qfilter]').forEach(btn => {
+    btn.onclick = () => {
+      MobileState.generationQueue.filter = btn.dataset.qfilter;
+      renderMobileGenerationQueuePanel();
+    };
+  });
+  panel.querySelectorAll('[data-retry-job]').forEach(btn => {
+    btn.onclick = () => retryMobileGenerationJob(btn.dataset.retryJob);
+  });
+  panel.querySelectorAll('[data-cancel-job]').forEach(btn => {
+    btn.onclick = () => cancelMobileGenerationJob(btn.dataset.cancelJob);
+  });
+}
+
+async function retryMobileGenerationJob(jobId) {
+  const gq = MobileState.generationQueue;
+  const job = gq.jobs.find(j => j.id === jobId);
+  if (!job) return;
+  job.retryCount = (job.retryCount || 0) + 1;
+  await updateMobileGenerationJob(jobId, { status: 'pending', progress: 0, errorMsg: null });
+  if (!gq.activeJobId) runMobileGenerationQueue();
+}
+
+async function cancelMobileGenerationJob(jobId) {
+  const gq = MobileState.generationQueue;
+  const job = gq.jobs.find(j => j.id === jobId);
+  if (!job || job.status === 'completed') return;
+  await updateMobileGenerationJob(jobId, { status: 'cancelled', progress: 0 });
+  if (gq.activeJobId === jobId) {
+    gq.activeJobId = null;
+    runMobileGenerationQueue();
+  }
+}
+
+async function restoreMobileGenerationJobs() {
+  const projectId = MobileState.currentProjectId;
+  if (!projectId) return;
+  const gq = MobileState.generationQueue;
+  if (gq.isRestoring) return;
+  gq.isRestoring = true;
+  try {
+    const loaded = await loadMobileGenerationJobs(projectId);
+    gq.jobs = loaded;
+    renderMobileGenerationQueuePanel();
+    const hasRunning = loaded.some(j => j.status === 'running' || j.status === 'pending');
+    if (hasRunning && !gq.activeJobId) {
+      loaded.filter(j => j.status === 'running').forEach(j => {
+        updateMobileGenerationJob(j.id, { status: 'pending', progress: 0 });
+      });
+      runMobileGenerationQueue();
+    }
+  } catch (_) {}
+  gq.isRestoring = false;
+}
+
+window.enqueueMobileGenerationJob    = enqueueMobileGenerationJob;
+window.updateMobileGenerationJob     = updateMobileGenerationJob;
+window.retryMobileGenerationJob      = retryMobileGenerationJob;
+window.cancelMobileGenerationJob     = cancelMobileGenerationJob;
+window.restoreMobileGenerationJobs   = restoreMobileGenerationJobs;
+window.openMobileGenerationConfirm   = openMobileGenerationConfirm;
+window.closeMobileGenerationConfirm  = closeMobileGenerationConfirm;
+window.renderMobileGenerationQueuePanel = renderMobileGenerationQueuePanel;
+
+/* ── 6차: 배치 모드 ──────────────────────────────────────────── */
+function toggleMobileBatchShot(shotId) {
+  const gq = MobileState.generationQueue;
+  const arr = gq.selectedShotIds;
+  const idx = arr.indexOf(shotId);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(shotId);
+  renderMobileProduction();
+}
+
+function openMobileBatchGenerationConfirm(bundle) {
+  const gq = MobileState.generationQueue;
+  if (!gq.selectedShotIds.length) {
+    if (typeof showToast === 'function') showToast('Shot을 1개 이상 선택하세요', 'warn');
+    return;
+  }
+  const ws = MobileState.shotWorkspace;
+  const drafts = gq.selectedShotIds.map(shotId => {
+    const shot = bundle.shots.find(s => s.id === shotId);
+    return {
+      shotId,
+      projectId:      bundle.project?.id || MobileState.currentProjectId,
+      modelId:        ws.selectedModelId || 'image-flash',
+      mode:           ws.mode || 'image',
+      prompt:         (shot && (shot.description || shot.action || shot.summary)) || '',
+      aspectRatio:    ws.aspectRatio || '16:9',
+      duration:       ws.duration    || 5,
+      motionStrength: ws.motionStrength || 5
+    };
+  });
+  const gq2 = MobileState.generationQueue;
+  gq2.pendingJobDraft = { _batch: true, drafts };
+  gq2.confirmSheetOpen = true;
+  const cost = estimateMobileGenerationCost(drafts[0]?.modelId, drafts[0]?.mode, drafts[0]?.duration);
+  const totalCost = cost ? `~$${(cost.amount * drafts.length).toFixed(3)}` : '';
+  let backdrop = document.getElementById('mobile-gen-confirm-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'mobile-gen-confirm-backdrop';
+    backdrop.className = 'mobile-bottom-sheet-backdrop';
+    document.body.appendChild(backdrop);
+  }
+  let sheet = document.getElementById('mobile-gen-confirm-sheet');
+  if (!sheet) {
+    sheet = document.createElement('div');
+    sheet.id = 'mobile-gen-confirm-sheet';
+    sheet.className = 'mobile-bottom-sheet';
+    document.body.appendChild(sheet);
+  }
+  sheet.innerHTML = `
+    <div class="mobile-sheet-handle"></div>
+    <h3 style="margin:0 0 14px;font-size:16px;font-weight:800;">배치 생성 시작</h3>
+    <div class="mobile-cost-card" style="margin-bottom:10px;">
+      <span class="mobile-cost-label">선택된 Shot</span>
+      <span class="mobile-cost-value">${drafts.length}개</span>
+    </div>
+    ${totalCost ? `<div class="mobile-cost-card" style="margin-bottom:14px;"><span class="mobile-cost-label">예상 총 비용</span><span class="mobile-cost-value">${totalCost}</span></div>` : ''}
+    <p class="mobile-sheet-note">각 Shot의 description을 프롬프트로 사용합니다.</p>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="mobile-secondary-btn" id="mobile-confirm-cancel-btn" style="flex:1;">취소</button>
+      <button class="mobile-primary-btn" id="mobile-confirm-start-btn" style="flex:2;">일괄 생성</button>
+    </div>`;
+  requestAnimationFrame(() => {
+    backdrop.classList.add('open');
+    sheet.classList.add('open');
+  });
+  const cancelBtn = sheet.querySelector('#mobile-confirm-cancel-btn');
+  const startBtn  = sheet.querySelector('#mobile-confirm-start-btn');
+  if (cancelBtn) cancelBtn.onclick = () => closeMobileGenerationConfirm();
+  if (backdrop)  backdrop.onclick  = () => closeMobileGenerationConfirm();
+  if (startBtn)  startBtn.onclick  = async () => {
+    closeMobileGenerationConfirm();
+    await enqueueMobileBatchGenerationJobs(drafts);
+  };
+}
+
+async function enqueueMobileBatchGenerationJobs(drafts) {
+  for (const draft of drafts) {
+    await enqueueMobileGenerationJob(draft);
+  }
+  const gq = MobileState.generationQueue;
+  gq.batchMode = false;
+  gq.selectedShotIds = [];
+  renderMobileProduction();
+  if (typeof showToast === 'function') showToast(`${drafts.length}개 작업 큐에 추가`);
+}
+
+window.toggleMobileBatchShot              = toggleMobileBatchShot;
+window.openMobileBatchGenerationConfirm   = openMobileBatchGenerationConfirm;
+window.enqueueMobileBatchGenerationJobs   = enqueueMobileBatchGenerationJobs;
+
+/* ── 6차: 생성 실행 — Confirm Sheet로 라우팅 ─────────────────── */
+function generateMobileShotAsset(bundle) {
   const ws   = MobileState.shotWorkspace;
   const shot = bundle.shots.find(s => s.id === ws.shotId);
   if (!shot) { if (typeof showToast === 'function') showToast('Shot을 찾을 수 없습니다', 'error'); return; }
   if (!ws.promptText || ws.promptText.trim().length < 5) { if (typeof showToast === 'function') showToast('프롬프트를 입력해 주세요', 'error'); return; }
-  ws.isGenerating = true;
-  renderMobileProduction();
-  try {
-    const asset = ws.mode === 'image'
-      ? await mobileGenerateImageAsset(shot, bundle)
-      : await mobileGenerateVideoAsset(shot, bundle);
-    if (asset) {
-      ws.generatedAssets = [asset, ...(ws.generatedAssets || [])];
-      await persistMobileGeneratedAsset(asset, shot, bundle);
-      if (typeof showToast === 'function') showToast('생성 완료');
-    } else {
-      if (typeof showToast === 'function') showToast('생성 결과가 없습니다', 'warn');
-    }
-  } catch (e) {
-    console.error('[mobile] generate shot asset failed', e);
-    if (typeof showToast === 'function') showToast('생성 중 오류가 발생했습니다', 'error');
-  } finally {
-    ws.isGenerating = false;
-    renderMobileProduction();
-  }
+  const projectId = bundle.project?.id || MobileState.currentProjectId;
+  const draft = {
+    shotId:         ws.shotId,
+    projectId,
+    modelId:        ws.selectedModelId,
+    mode:           ws.mode || 'image',
+    prompt:         ws.promptText,
+    aspectRatio:    ws.aspectRatio || '16:9',
+    duration:       ws.duration    || 5,
+    motionStrength: ws.motionStrength || 5
+  };
+  const cost = estimateMobileGenerationCost(draft.modelId, draft.mode, draft.duration);
+  if (cost) draft.costEstimate = cost;
+  openMobileGenerationConfirm(draft);
 }
 window.generateMobileShotAsset = generateMobileShotAsset;
 
@@ -53184,6 +53904,7 @@ const MOBILE_STATE_KEY = 'soaviz.mobile.state.v1';
 function saveMobileRuntimeState() {
   try {
     const ws = MobileState.shotWorkspace || {};
+    const gq = MobileState.generationQueue || {};
     localStorage.setItem(MOBILE_STATE_KEY, JSON.stringify({
       current:             MobileApp?.current || 'home',
       selectedTone:        MobileState.selectedTone,
@@ -53200,7 +53921,11 @@ function saveMobileRuntimeState() {
       wsAspect:            ws.aspectRatio || '16:9',
       wsDuration:          ws.duration || 5,
       wsMotion:            ws.motionStrength || 'medium',
-      wsAssetId:           ws.selectedAssetId || null
+      wsAssetId:           ws.selectedAssetId || null,
+      gqActiveJobId:       gq.activeJobId || null,
+      gqFilter:            gq.filter || 'all',
+      gqBatchMode:         gq.batchMode || false,
+      gqSelectedShotIds:   gq.selectedShotIds || []
     }));
   } catch (_) {}
 }
@@ -53226,6 +53951,12 @@ function restoreMobileRuntimeState() {
     if (data.wsDuration)              ws.duration        = data.wsDuration;
     if (data.wsMotion)                ws.motionStrength  = data.wsMotion;
     if (data.wsAssetId !== undefined) ws.selectedAssetId = data.wsAssetId;
+    if (!MobileState.generationQueue) MobileState.generationQueue = {};
+    const gq2 = MobileState.generationQueue;
+    if (data.gqActiveJobId !== undefined) gq2.activeJobId     = data.gqActiveJobId;
+    if (data.gqFilter)                    gq2.filter          = data.gqFilter;
+    if (data.gqBatchMode  !== undefined)  gq2.batchMode       = data.gqBatchMode;
+    if (data.gqSelectedShotIds)           gq2.selectedShotIds = data.gqSelectedShotIds;
     if (data.current && window.MobileApp?.go) {
       setTimeout(() => MobileApp.go(data.current), 0);
     }
@@ -53361,6 +54092,13 @@ async function renderMobileProduction() {
   `;
   bindMobileProductionEvents(root, bundle);
   root.querySelector('#mobile-open-pipeline')?.addEventListener('click', async () => await MobileActions.openPipeline());
+  // 6차: shots 뷰에서 큐 복원 (jobs가 비어 있을 때)
+  if (view === 'shots') {
+    const gq = MobileState.generationQueue;
+    if (!gq.jobs || !gq.jobs.length) {
+      if (typeof restoreMobileGenerationJobs === 'function') restoreMobileGenerationJobs();
+    }
+  }
 }
 window.renderMobileProduction = renderMobileProduction;
 
