@@ -18281,6 +18281,309 @@
       left: 0 !important; right: 0 !important;
     }
   }
+
+  /* ════════════════════════════════════════════════════════════
+     MOBILE APP SHELL — 768px 이하 전용
+     데스크톱 UI는 절대 건드리지 않음
+     ════════════════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      background: #06050F;
+      -webkit-text-size-adjust: 100%;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      min-width: 0;
+    }
+    .layout { display: none !important; }
+    .sidebar, .mobile-nav-backdrop { display: none !important; }
+    .topbar {
+      height: 52px;
+      padding: 0 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-sub, .kbd,
+    .top-logout-btn span,
+    .pro-upgrade-btn .pro-label { display: none !important; }
+    /* Shell */
+    #mobile-app-shell {
+      display: block;
+      min-height: 100dvh;
+      padding-top: 52px;
+      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+      background:
+        radial-gradient(circle at 10% -5%, rgba(167,139,250,0.12), transparent 35%),
+        #06050F;
+    }
+    .mobile-screen {
+      display: none;
+      padding: 18px 16px 24px;
+    }
+    .mobile-screen.active { display: block; }
+    /* Tab bar */
+    .mobile-tabbar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 300;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      background: rgba(8,8,16,0.94);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-tab {
+      min-height: 50px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+      color: var(--text-faint);
+      font-size: 10px;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-tab.active {
+      color: white;
+      background: rgba(167,139,250,0.16);
+      box-shadow: inset 0 0 0 1px rgba(167,139,250,0.20);
+    }
+    .mobile-tab-ic { font-size: 17px; line-height: 1; }
+    /* Typography */
+    .mobile-page-title {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.12;
+      letter-spacing: -0.045em;
+      font-weight: 800;
+    }
+    .mobile-page-sub {
+      margin: 8px 0 0;
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .mobile-section { margin-top: 18px; }
+    .mobile-section-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    /* Cards */
+    .mobile-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-card + .mobile-card { margin-top: 12px; }
+    .mobile-hero-card {
+      padding: 20px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(167,139,250,0.22), transparent 45%),
+        rgba(255,255,255,0.045);
+      border: 1px solid rgba(167,139,250,0.20);
+    }
+    /* Buttons */
+    .mobile-primary-btn {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2, #6366F1));
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 16px 40px rgba(167,139,250,0.28);
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-secondary-btn {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-sticky-cta {
+      position: sticky;
+      bottom: calc(84px + env(safe-area-inset-bottom));
+      z-index: 60;
+      margin-top: 18px;
+    }
+    /* Chips */
+    .mobile-chip-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .mobile-chip-row::-webkit-scrollbar { display: none; }
+    .mobile-chip {
+      flex: 0 0 auto;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-chip.active {
+      color: white;
+      background: rgba(167,139,250,0.20);
+      border-color: rgba(167,139,250,0.35);
+    }
+    /* Inputs */
+    .mobile-input, .mobile-select, .mobile-textarea {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.22);
+      color: var(--text);
+      padding: 13px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+    .mobile-textarea {
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+    /* Layout helpers */
+    .mobile-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    .mobile-list { display: grid; gap: 12px; }
+    .mobile-scroll-x {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mobile-scroll-x > * { flex: 0 0 auto; }
+    .desktop-only-on-mobile { display: none !important; }
+    /* Character sheet step flow */
+    .mobile-step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .mobile-step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(167,139,250,0.20);
+      border: 1px solid rgba(167,139,250,0.35);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .mobile-step-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .mobile-model-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .mobile-model-card {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.035);
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      text-align: left;
+    }
+    .mobile-model-card.selected {
+      border-color: rgba(167,139,250,0.5);
+      background: rgba(167,139,250,0.12);
+    }
+    .mobile-model-card .mc-name {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .mobile-model-card .mc-cost {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .mobile-model-card .mc-meta {
+      font-size: 10px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+    .mobile-model-card .mc-rec {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(167,139,250,0.20);
+      color: var(--accent);
+      margin-top: 4px;
+    }
+    /* Upload zone */
+    .mobile-upload-zone {
+      border: 2px dashed rgba(167,139,250,0.30);
+      border-radius: 20px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-upload-zone.has-image {
+      border-style: solid;
+      border-color: rgba(167,139,250,0.50);
+    }
+    .mobile-upload-zone img {
+      width: 100%;
+      border-radius: 14px;
+      max-height: 200px;
+      object-fit: cover;
+    }
+  }
+  @media (min-width: 769px) {
+    #mobile-app-shell { display: none !important; }
+  }
   </style>
 </head>
 <body>
@@ -18377,6 +18680,39 @@
     <div class="avatar" id="user-avatar" title="프로필"></div>
   </div>
 </header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MOBILE APP SHELL — 768px 이하 전용. 데스크톱에서 display:none
+     ═══════════════════════════════════════════════════════════ -->
+<div id="mobile-app-shell" class="mobile-app-shell" aria-hidden="true">
+  <main id="mobile-screen-home"       class="mobile-screen active" data-mobile-screen="home"></main>
+  <main id="mobile-screen-story"      class="mobile-screen"        data-mobile-screen="story"></main>
+  <main id="mobile-screen-character"  class="mobile-screen"        data-mobile-screen="character"></main>
+  <main id="mobile-screen-production" class="mobile-screen"        data-mobile-screen="production"></main>
+  <main id="mobile-screen-library"    class="mobile-screen"        data-mobile-screen="library"></main>
+  <nav class="mobile-tabbar" aria-label="모바일 하단 네비게이션">
+    <button class="mobile-tab active" data-mobile-tab="home">
+      <span class="mobile-tab-ic">⌂</span>
+      <span>홈</span>
+    </button>
+    <button class="mobile-tab" data-mobile-tab="story">
+      <span class="mobile-tab-ic">✎</span>
+      <span>스토리</span>
+    </button>
+    <button class="mobile-tab" data-mobile-tab="character">
+      <span class="mobile-tab-ic">◉</span>
+      <span>캐릭터</span>
+    </button>
+    <button class="mobile-tab" data-mobile-tab="production">
+      <span class="mobile-tab-ic">▦</span>
+      <span>제작</span>
+    </button>
+    <button class="mobile-tab" data-mobile-tab="library">
+      <span class="mobile-tab-ic">▣</span>
+      <span>보관함</span>
+    </button>
+  </nav>
+</div>
 
 <div class="layout">
 
@@ -50655,6 +50991,550 @@ setInterval(checkR2Health, 30000);
     }
   });
 })();
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE APP SHELL — 768px 이하 전용 라우터 + 렌더 시스템
+   ════════════════════════════════════════════════════════════ */
+
+/* ── MobileApp 라우터 ────────────────────────────────────── */
+const MobileApp = (() => {
+  let current = 'home';
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function syncMode() {
+    const shell = document.getElementById('mobile-app-shell');
+    if (!shell) return;
+    if (isMobile()) {
+      shell.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('mobile-app-mode');
+      document.body.classList.remove('mobile-nav-open', 'sidebar-open');
+    } else {
+      shell.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('mobile-app-mode');
+    }
+  }
+
+  function bindTabs() {
+    document.querySelectorAll('.mobile-tab[data-mobile-tab]').forEach(btn => {
+      btn.addEventListener('click', () => go(btn.dataset.mobileTab));
+    });
+  }
+
+  function go(name) {
+    current = name;
+    document.querySelectorAll('.mobile-screen').forEach(screen => {
+      screen.classList.toggle('active', screen.dataset.mobileScreen === name);
+    });
+    document.querySelectorAll('.mobile-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.mobileTab === name);
+    });
+    render(name);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderAll() {
+    ['home', 'story', 'character', 'production', 'library'].forEach(name => render(name));
+  }
+
+  function render(name) {
+    if (name === 'home')       return renderMobileHome();
+    if (name === 'story')      return renderMobileStory();
+    if (name === 'character')  return renderMobileCharacter();
+    if (name === 'production') return renderMobileProduction();
+    if (name === 'library')    return renderMobileLibrary();
+  }
+
+  function init() {
+    bindTabs();
+    if (isMobile()) renderAll();
+    syncMode();
+    window.addEventListener('resize', () => {
+      syncMode();
+      if (isMobile()) render(current);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => init());
+
+  return { init, isMobile, syncMode, go, render, renderAll, get current() { return current; } };
+})();
+window.MobileApp = MobileApp;
+
+/* ── MobileActions 어댑터 ────────────────────────────────── */
+const MobileActions = {
+  openDesktopPage(page) {
+    if (typeof showPage === 'function') showPage(page);
+  },
+
+  async createStoryFromMobile(text) {
+    const clean = String(text || '').trim();
+    if (clean.length < 10) {
+      if (typeof showToast === 'function') showToast('스토리 아이디어를 10자 이상 입력해 주세요', 'error');
+      return false;
+    }
+    if (window.STORY_DOC) {
+      STORY_DOC.body   = clean;
+      STORY_DOC.title  = STORY_DOC.title || '모바일 스토리';
+      STORY_DOC.source = 'mobile';
+    }
+    const storyBtn = document.getElementById('story-generate');
+    if (storyBtn) {
+      storyBtn.click();
+      return true;
+    }
+    if (typeof showToast === 'function') showToast('스토리 입력이 저장되었습니다');
+    return true;
+  },
+
+  async sendStoryToPipeline() {
+    const btn = document.getElementById('sv-to-pipeline');
+    if (btn) {
+      btn.click();
+      MobileApp.go('production');
+      return true;
+    }
+    if (typeof showPage === 'function') {
+      showPage('story');
+      if (typeof showToast === 'function') showToast('Story 화면에서 Pipeline 보내기를 실행해 주세요');
+    }
+    return false;
+  },
+
+  openCharacterSheet() {
+    if (typeof openCharacterSheetMaker === 'function') {
+      openCharacterSheetMaker();
+    } else if (typeof showPage === 'function') {
+      showPage('characters');
+      if (typeof showToast === 'function') showToast('캐릭터 시트 만들기 버튼을 선택하세요');
+    }
+  },
+
+  async openPipeline() {
+    if (typeof showPage === 'function') showPage('pipeline');
+    if (typeof renderPipelinePage === 'function') await renderPipelinePage();
+  },
+
+  uploadMedia() {
+    const input = document.getElementById('file-input');
+    if (input) { input.click(); return; }
+    // 없으면 데스크톱 video 업로드 페이지로 이동
+    if (typeof showPage === 'function') showPage('video-editor');
+    if (typeof showToast === 'function') showToast('영상/이미지 파일을 선택하세요');
+  },
+
+  openLibrary() {
+    if (typeof showPage === 'function') showPage('library');
+  },
+};
+window.MobileActions = MobileActions;
+
+/* ── 모바일 홈 ───────────────────────────────────────────── */
+function renderMobileHome() {
+  const root = document.getElementById('mobile-screen-home');
+  if (!root) return;
+  root.innerHTML = `
+    <section>
+      <h1 class="mobile-page-title">SOAVIZ Studio</h1>
+      <p class="mobile-page-sub">아이디어를 스토리, 캐릭터, 샷리스트, 영상 프롬프트로 연결하세요.</p>
+    </section>
+    <section class="mobile-section mobile-hero-card">
+      <div style="font-size:12px;color:var(--accent);font-weight:800;margin-bottom:8px;letter-spacing:0.06em">TODAY FLOW</div>
+      <h2 style="margin:0;font-size:22px;line-height:1.2;font-weight:800">오늘은 무엇을 만들까요?</h2>
+      <p style="margin:10px 0 18px;color:var(--text-dim);font-size:13px;line-height:1.55">
+        모바일에서는 한 번에 하나의 작업만 진행합니다.
+      </p>
+      <button class="mobile-primary-btn" data-mobile-action="start-story">스토리부터 시작하기</button>
+    </section>
+    <section class="mobile-section">
+      <h3 class="mobile-section-title">빠른 실행</h3>
+      <div class="mobile-grid-2">
+        <button class="mobile-card" data-mobile-action="character" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+          <div style="font-size:24px">◉</div>
+          <strong>캐릭터</strong>
+          <p style="margin:2px 0 0;color:var(--text-faint);font-size:12px">페르소나/시트</p>
+        </button>
+        <button class="mobile-card" data-mobile-action="production" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+          <div style="font-size:24px">▦</div>
+          <strong>제작</strong>
+          <p style="margin:2px 0 0;color:var(--text-faint);font-size:12px">Pipeline 확인</p>
+        </button>
+        <button class="mobile-card" data-mobile-action="upload" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+          <div style="font-size:24px">⇧</div>
+          <strong>업로드</strong>
+          <p style="margin:2px 0 0;color:var(--text-faint);font-size:12px">영상/오디오</p>
+        </button>
+        <button class="mobile-card" data-mobile-action="library" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px">
+          <div style="font-size:24px">▣</div>
+          <strong>보관함</strong>
+          <p style="margin:2px 0 0;color:var(--text-faint);font-size:12px">결과 보기</p>
+        </button>
+      </div>
+    </section>
+  `;
+  root.querySelector('[data-mobile-action="start-story"]')?.addEventListener('click', () => MobileApp.go('story'));
+  root.querySelector('[data-mobile-action="character"]')?.addEventListener('click',   () => MobileApp.go('character'));
+  root.querySelector('[data-mobile-action="production"]')?.addEventListener('click',  () => MobileApp.go('production'));
+  root.querySelector('[data-mobile-action="upload"]')?.addEventListener('click',      () => MobileActions.uploadMedia());
+  root.querySelector('[data-mobile-action="library"]')?.addEventListener('click',     () => MobileApp.go('library'));
+}
+
+/* ── 모바일 스토리 ───────────────────────────────────────── */
+function renderMobileStory() {
+  const root = document.getElementById('mobile-screen-story');
+  if (!root) return;
+  const currentText = window.STORY_DOC?.body || '';
+  root.innerHTML = `
+    <section>
+      <h1 class="mobile-page-title">스토리 만들기</h1>
+      <p class="mobile-page-sub">한 줄 아이디어를 입력하면 캐릭터와 샷리스트로 확장합니다.</p>
+    </section>
+    <section class="mobile-section">
+      <textarea id="mobile-story-input" class="mobile-textarea"
+        placeholder="예: AI가 감정을 통제하는 미래 서울에서 자유를 찾는 여성 전사">${escapeHTML(currentText)}</textarea>
+    </section>
+    <section class="mobile-section">
+      <h3 class="mobile-section-title">톤 선택</h3>
+      <div class="mobile-chip-row" id="mobile-story-tone">
+        <button class="mobile-chip active" data-tone="cinematic">Cinematic</button>
+        <button class="mobile-chip"        data-tone="cyberpunk">Cyberpunk</button>
+        <button class="mobile-chip"        data-tone="fantasy">Fantasy</button>
+        <button class="mobile-chip"        data-tone="korean">Korean Mood</button>
+        <button class="mobile-chip"        data-tone="horror">Dark/Horror</button>
+        <button class="mobile-chip"        data-tone="romance">Romance</button>
+      </div>
+    </section>
+    <section class="mobile-section mobile-card">
+      <strong>파이프라인 자동 연결</strong>
+      <p style="margin:8px 0 0;color:var(--text-dim);font-size:13px;line-height:1.55">
+        스토리 → 캐릭터 팩 → 월드 바이블 → 샷리스트로 자동 확장됩니다.
+      </p>
+    </section>
+    <div class="mobile-sticky-cta">
+      <button class="mobile-primary-btn" id="mobile-story-send">Pipeline으로 보내기</button>
+    </div>
+  `;
+  root.querySelectorAll('.mobile-chip[data-tone]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      root.querySelectorAll('.mobile-chip[data-tone]').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  root.querySelector('#mobile-story-send')?.addEventListener('click', async () => {
+    const text = root.querySelector('#mobile-story-input')?.value || '';
+    const ok = await MobileActions.createStoryFromMobile(text);
+    if (!ok) return;
+    await MobileActions.sendStoryToPipeline();
+  });
+}
+
+/* ── 모바일 캐릭터 ───────────────────────────────────────── */
+async function renderMobileCharacter() {
+  const root = document.getElementById('mobile-screen-character');
+  if (!root) return;
+
+  let count = 0;
+  try {
+    if (window.SoavizDB?.db) {
+      await SoavizDB.ready;
+      const all = await SoavizDB.db.characters.toArray().catch(() => []);
+      count = all.filter(x => !x.archived).length;
+    }
+  } catch (_) {}
+
+  root.innerHTML = `
+    <section>
+      <h1 class="mobile-page-title">캐릭터</h1>
+      <p class="mobile-page-sub">페르소나와 캐릭터 시트를 생성하고 제작에 재사용합니다.</p>
+    </section>
+    <section class="mobile-section mobile-hero-card">
+      <div style="font-size:12px;color:var(--accent);font-weight:800;margin-bottom:8px;letter-spacing:0.06em">CHARACTER LIBRARY</div>
+      <h2 style="margin:0;font-size:22px;font-weight:800">${count}개 캐릭터</h2>
+      <p style="margin:10px 0 18px;color:var(--text-dim);font-size:13px">
+        캐릭터는 샷리스트와 이미지 생성에 자동 주입됩니다.
+      </p>
+      <button class="mobile-primary-btn" id="mobile-character-sheet">캐릭터 시트 만들기</button>
+    </section>
+    <section class="mobile-section">
+      <div class="mobile-list">
+        <button class="mobile-card" id="mobile-new-character">
+          <strong style="font-size:15px">＋ 새 캐릭터 만들기</strong>
+          <p style="margin:8px 0 0;color:var(--text-faint);font-size:13px">이름, 외형, 성격, 역할을 등록합니다.</p>
+        </button>
+        <button class="mobile-card" id="mobile-open-character-desktop">
+          <strong style="font-size:15px">전체 캐릭터 목록 보기</strong>
+          <p style="margin:8px 0 0;color:var(--text-faint);font-size:13px">데스크톱형 캐릭터 페르소나 페이지를 엽니다.</p>
+        </button>
+      </div>
+    </section>
+    <!-- 캐릭터 시트 만들기 인라인 step flow -->
+    <section class="mobile-section" id="mobile-sheet-flow" style="display:none">
+      ${renderMobileSheetFlow()}
+    </section>
+  `;
+
+  root.querySelector('#mobile-character-sheet')?.addEventListener('click', () => {
+    const flow = root.querySelector('#mobile-sheet-flow');
+    if (flow) {
+      const hidden = flow.style.display === 'none';
+      flow.style.display = hidden ? 'block' : 'none';
+      if (hidden) flow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+  root.querySelector('#mobile-new-character')?.addEventListener('click', () => {
+    if (typeof openCharacterModal === 'function') openCharacterModal();
+    else { MobileActions.openDesktopPage('characters'); }
+  });
+  root.querySelector('#mobile-open-character-desktop')?.addEventListener('click', () => {
+    MobileActions.openDesktopPage('characters');
+  });
+  bindMobileSheetFlow(root);
+}
+
+function renderMobileSheetFlow() {
+  const modelConfig = [
+    { id:'flash',      name:'Flash',      costLabel:'₩64/장',  speed:'빠름', quality:'중상', recommended:true  },
+    { id:'pro',        name:'Pro',        costLabel:'₩180/장', speed:'중간', quality:'높음', recommended:true  },
+    { id:'ultra',      name:'Ultra',      costLabel:'₩290/장', speed:'느림', quality:'최상', recommended:true  },
+    { id:'gpt-image',  name:'GPT Image',  costLabel:'변동',    speed:'중간', quality:'높음', recommended:false },
+    { id:'flux-pro',   name:'Flux Pro',   costLabel:'변동',    speed:'중간', quality:'높음', recommended:false },
+    { id:'recraft',    name:'Recraft',    costLabel:'변동',    speed:'중간', quality:'높음', recommended:false },
+  ];
+  return `
+    <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;margin-top:4px">
+      <h3 style="margin:0 0 16px;font-size:18px;font-weight:800;letter-spacing:-0.03em">캐릭터 시트 만들기</h3>
+
+      <!-- Step 1: 이미지 업로드 -->
+      <div class="mobile-step-header">
+        <span class="mobile-step-num">1</span>
+        <span class="mobile-step-label">참고 이미지 업로드 (선택)</span>
+      </div>
+      <div class="mobile-upload-zone" id="mobile-sheet-upload-zone">
+        <div id="mobile-sheet-upload-inner">
+          <div style="font-size:28px;margin-bottom:8px">⇧</div>
+          <p style="margin:0;font-size:13px;color:var(--text-dim)">JPG/PNG/WebP · 최대 10MB</p>
+          <p style="margin:6px 0 0;font-size:11px;color:var(--text-faint)">탭하여 선택</p>
+        </div>
+        <input type="file" id="mobile-sheet-img-input" accept="image/*" style="display:none">
+      </div>
+
+      <!-- Step 2: 앵글 선택 -->
+      <div class="mobile-step-header" style="margin-top:18px">
+        <span class="mobile-step-num">2</span>
+        <span class="mobile-step-label">앵글 선택</span>
+      </div>
+      <div class="mobile-chip-row" id="mobile-sheet-angles">
+        <button class="mobile-chip active" data-angle="front">정면</button>
+        <button class="mobile-chip" data-angle="side">측면</button>
+        <button class="mobile-chip" data-angle="3/4">3/4뷰</button>
+        <button class="mobile-chip" data-angle="back">후면</button>
+        <button class="mobile-chip" data-angle="dynamic">다이나믹</button>
+        <button class="mobile-chip" data-angle="close-up">클로즈업</button>
+      </div>
+
+      <!-- Step 3: 모델 선택 -->
+      <div class="mobile-step-header" style="margin-top:18px">
+        <span class="mobile-step-num">3</span>
+        <span class="mobile-step-label">AI 모델 선택</span>
+      </div>
+      <div class="mobile-model-grid" id="mobile-sheet-models">
+        ${modelConfig.map((m, i) => `
+          <button class="mobile-model-card${i === 0 ? ' selected' : ''}" data-model-id="${escapeHTML(m.id)}">
+            <div class="mc-name">${escapeHTML(m.name)}</div>
+            <div class="mc-cost">${escapeHTML(m.costLabel)}</div>
+            <div class="mc-meta">${escapeHTML(m.speed)} · ${escapeHTML(m.quality)}</div>
+            ${m.recommended ? '<div class="mc-rec">추천</div>' : ''}
+          </button>
+        `).join('')}
+      </div>
+
+      <!-- Step 4: 캐릭터 설명 -->
+      <div class="mobile-step-header" style="margin-top:18px">
+        <span class="mobile-step-num">4</span>
+        <span class="mobile-step-label">캐릭터 설명</span>
+      </div>
+      <textarea id="mobile-sheet-desc" class="mobile-textarea" style="min-height:100px"
+        placeholder="예: 짧은 검은 머리, 사이버펑크 코트, 날카로운 눈빛, 20대 여성 전사"></textarea>
+
+      <!-- Step 5: 생성 CTA -->
+      <button class="mobile-primary-btn" id="mobile-sheet-generate" style="margin-top:18px">
+        캐릭터 시트 생성하기
+      </button>
+    </div>
+  `;
+}
+
+function bindMobileSheetFlow(root) {
+  if (!root) return;
+  // 이미지 업로드
+  const zone  = root.querySelector('#mobile-sheet-upload-zone');
+  const input = root.querySelector('#mobile-sheet-img-input');
+  if (zone && input) {
+    zone.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const inner = root.querySelector('#mobile-sheet-upload-inner');
+      if (inner) {
+        inner.innerHTML = `<img src="${url}" alt="preview" style="width:100%;border-radius:14px;max-height:200px;object-fit:cover">`;
+      }
+      zone.classList.add('has-image');
+    });
+  }
+  // 앵글 chip 토글
+  root.querySelectorAll('#mobile-sheet-angles .mobile-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      root.querySelectorAll('#mobile-sheet-angles .mobile-chip').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  // 모델 선택
+  root.querySelectorAll('#mobile-sheet-models .mobile-model-card').forEach(card => {
+    card.addEventListener('click', () => {
+      root.querySelectorAll('#mobile-sheet-models .mobile-model-card').forEach(x => x.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+  // 생성 버튼 — 기존 데스크톱 sheet maker 함수 재사용
+  root.querySelector('#mobile-sheet-generate')?.addEventListener('click', () => {
+    const angle    = root.querySelector('#mobile-sheet-angles .mobile-chip.active')?.dataset.angle || 'front';
+    const modelId  = root.querySelector('#mobile-sheet-models .mobile-model-card.selected')?.dataset.modelId || 'flash';
+    const desc     = root.querySelector('#mobile-sheet-desc')?.value?.trim() || '';
+    const imgFile  = root.querySelector('#mobile-sheet-img-input')?.files?.[0] || null;
+
+    // 기존 generateCharacterSheet 함수가 있으면 위임
+    if (typeof generateCharacterSheet === 'function') {
+      generateCharacterSheet({ angle, modelId, desc, imgFile, source: 'mobile' });
+      if (typeof showToast === 'function') showToast('캐릭터 시트 생성 시작 — 잠시 기다려 주세요');
+    } else {
+      // 없으면 데스크톱 characters 페이지 열고 안내
+      MobileActions.openDesktopPage('characters');
+      if (typeof showToast === 'function') showToast('캐릭터 시트 만들기 탭에서 생성하세요');
+    }
+  });
+}
+
+/* ── 모바일 제작 ─────────────────────────────────────────── */
+async function renderMobileProduction() {
+  const root = document.getElementById('mobile-screen-production');
+  if (!root) return;
+
+  let stats = { characters: 0, shots: 0, projects: 0 };
+  try {
+    if (window.SoavizDB?.db) {
+      await SoavizDB.ready;
+      const chars = await SoavizDB.db.characters.toArray().catch(() => []);
+      const projs = await SoavizDB.db.projects.toArray().catch(() => []);
+      stats.characters = chars.filter(x => !x.archived).length;
+      stats.projects   = projs.filter(x => !x.archived).length;
+    }
+    if (window.SoavizPipeline?.state?.projectId) {
+      const eps = await SoavizPipeline.listEpisodes(SoavizPipeline.state.projectId).catch(() => []);
+      let shotCount = 0;
+      for (const ep of eps) {
+        const scenes = await SoavizPipeline.listScenes(ep.id).catch(() => []);
+        for (const sc of scenes) {
+          const shots = await SoavizPipeline.listShots(sc.id).catch(() => []);
+          shotCount += shots.length;
+        }
+      }
+      stats.shots = shotCount;
+    }
+  } catch (_) {}
+
+  root.innerHTML = `
+    <section>
+      <h1 class="mobile-page-title">제작</h1>
+      <p class="mobile-page-sub">캐릭터, 세계관, 샷리스트를 확인하고 다음 제작 단계로 이동합니다.</p>
+    </section>
+    <section class="mobile-section mobile-grid-2">
+      <div class="mobile-card" style="pointer-events:none">
+        <div style="color:var(--text-faint);font-size:12px;font-weight:700;margin-bottom:4px">프로젝트</div>
+        <strong style="font-size:28px;font-weight:800">${stats.projects}</strong>
+      </div>
+      <div class="mobile-card" style="pointer-events:none">
+        <div style="color:var(--text-faint);font-size:12px;font-weight:700;margin-bottom:4px">샷</div>
+        <strong style="font-size:28px;font-weight:800">${stats.shots}</strong>
+      </div>
+      <div class="mobile-card" style="pointer-events:none">
+        <div style="color:var(--text-faint);font-size:12px;font-weight:700;margin-bottom:4px">캐릭터</div>
+        <strong style="font-size:28px;font-weight:800">${stats.characters}</strong>
+      </div>
+      <div class="mobile-card" style="pointer-events:none">
+        <div style="color:var(--text-faint);font-size:12px;font-weight:700;margin-bottom:4px">상태</div>
+        <strong style="font-size:16px;font-weight:800;color:var(--accent)">Ready</strong>
+      </div>
+    </section>
+    <section class="mobile-section mobile-card">
+      <strong>Pre-Production Stack</strong>
+      <p style="margin:8px 0 16px;color:var(--text-dim);font-size:13px;line-height:1.55">
+        Character Pack, World Bible, Shotlist는 Pipeline 화면에서 확인할 수 있습니다.
+      </p>
+      <button class="mobile-secondary-btn" id="mobile-open-pipeline">Pipeline 전체 보기</button>
+    </section>
+    <section class="mobile-section mobile-card">
+      <strong>다음 작업</strong>
+      <p style="margin:8px 0 16px;color:var(--text-dim);font-size:13px;line-height:1.55">
+        샷리스트가 준비되면 이미지/영상 프롬프트로 이어갈 수 있습니다.
+      </p>
+      <button class="mobile-primary-btn" id="mobile-go-story">스토리에서 다시 생성</button>
+    </section>
+  `;
+  root.querySelector('#mobile-open-pipeline')?.addEventListener('click', async () => {
+    await MobileActions.openPipeline();
+  });
+  root.querySelector('#mobile-go-story')?.addEventListener('click', () => {
+    MobileApp.go('story');
+  });
+}
+
+/* ── 모바일 보관함 ───────────────────────────────────────── */
+async function renderMobileLibrary() {
+  const root = document.getElementById('mobile-screen-library');
+  if (!root) return;
+
+  let assets = [];
+  try {
+    if (window.SoavizDB?.db?.assets) {
+      await SoavizDB.ready;
+      const all = await SoavizDB.db.assets.toArray().catch(() => []);
+      assets = all.filter(x => !x.archived).slice(0, 20);
+    }
+  } catch (_) {}
+
+  root.innerHTML = `
+    <section>
+      <h1 class="mobile-page-title">보관함</h1>
+      <p class="mobile-page-sub">생성된 이미지, 영상, 오디오, 프롬프트 결과를 확인합니다.</p>
+    </section>
+    <section class="mobile-section">
+      ${
+        assets.length
+          ? `<div class="mobile-list">${assets.map(a => `
+              <article class="mobile-card" style="pointer-events:none">
+                <strong>${escapeHTML(a.title || a.name || 'Untitled Asset')}</strong>
+                <p style="margin:8px 0 0;color:var(--text-faint);font-size:12px">${escapeHTML(a.type || 'asset')}</p>
+              </article>
+            `).join('')}</div>`
+          : `<div class="mobile-card" style="text-align:center;padding:32px 18px">
+              <div style="font-size:32px;margin-bottom:12px">▣</div>
+              <strong>아직 저장된 결과가 없습니다</strong>
+              <p style="margin:8px 0 18px;color:var(--text-faint);font-size:13px">스토리나 캐릭터 시트를 먼저 생성하세요.</p>
+              <button class="mobile-primary-btn" id="mobile-library-start">생성 시작하기</button>
+            </div>`
+      }
+    </section>
+    ${assets.length ? `
+    <section class="mobile-section">
+      <button class="mobile-secondary-btn" id="mobile-open-full-library">전체 보관함 열기</button>
+    </section>` : ''}
+  `;
+  root.querySelector('#mobile-library-start')?.addEventListener('click',       () => MobileApp.go('story'));
+  root.querySelector('#mobile-open-full-library')?.addEventListener('click',   () => MobileActions.openLibrary());
+}
 </script>
 <script src="js/heatmap.js"></script>
 </body>
