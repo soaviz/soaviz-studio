@@ -29661,6 +29661,7 @@ function showExtractState(which) {
 async function checkBackend() {
   const statusEl = $('#server-status');
   const textEl = $('#server-status-text');
+  if (!statusEl || !textEl) return;
   try {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 2500);
