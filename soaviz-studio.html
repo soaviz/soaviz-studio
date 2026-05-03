@@ -54345,14 +54345,58 @@ function createMobileShareToken() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 function getMobileReviewShareUrl(reviewPackage) {
-  const base = window.location.origin + window.location.pathname;
+  // 서버 업로드 완료 후 serverShareUrl이 있으면 우선 사용
+  if (reviewPackage?.serverShareUrl) return reviewPackage.serverShareUrl;
+  const base     = window.location.origin + window.location.pathname;
   const reviewId = reviewPackage?.reviewId || '';
   const token    = reviewPackage?.shareToken || '';
   return `${base}?mobileReview=${encodeURIComponent(reviewId)}&token=${encodeURIComponent(token)}`;
 }
-window.createMobileReviewId    = createMobileReviewId;
-window.createMobileShareToken  = createMobileShareToken;
-window.getMobileReviewShareUrl = getMobileReviewShareUrl;
+
+// 서버 URL (BACKEND_URL 또는 window.__SOAVIZ_CONFIG__.backendUrl)
+function getMobileReviewApiBase() {
+  return window.__SOAVIZ_CONFIG__?.backendUrl
+    || (typeof BACKEND_URL !== 'undefined' ? BACKEND_URL : '')
+    || 'http://localhost:8787';
+}
+
+async function uploadMobileReviewToServer(reviewPackage) {
+  try {
+    const base = getMobileReviewApiBase();
+    const res  = await fetch(`${base}/api/mobile-review/share`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ reviewPackage })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.success && data.shareUrl) return data.shareUrl;
+    return null;
+  } catch (e) {
+    console.warn('[mobile] upload review to server failed:', e.message);
+    return null;
+  }
+}
+
+async function fetchMobileReviewFromServer(shareId, token) {
+  try {
+    const base = getMobileReviewApiBase();
+    const res  = await fetch(`${base}/api/mobile-review/${encodeURIComponent(shareId)}?token=${encodeURIComponent(token)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.success ? data.reviewPackage : null;
+  } catch (e) {
+    console.warn('[mobile] fetch review from server failed:', e.message);
+    return null;
+  }
+}
+
+window.createMobileReviewId        = createMobileReviewId;
+window.createMobileShareToken      = createMobileShareToken;
+window.getMobileReviewShareUrl     = getMobileReviewShareUrl;
+window.getMobileReviewApiBase      = getMobileReviewApiBase;
+window.uploadMobileReviewToServer  = uploadMobileReviewToServer;
+window.fetchMobileReviewFromServer = fetchMobileReviewFromServer;
 
 function buildMobileReviewTimelineSnapshot(bundle) {
   const cuts = (typeof buildMobileTimelineCuts === 'function') ? buildMobileTimelineCuts(bundle) : [];
@@ -54426,8 +54470,21 @@ async function createMobileReviewPackage(bundle, options) {
     await saveMobileReviewPackage(reviewPackage);
     MobileState.review.activeReviewId = reviewId;
     if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
-    if (typeof showToast === 'function') showToast('리뷰 패키지 생성 완료');
+    if (typeof showToast === 'function') showToast('리뷰 패키지 생성 중...');
     if (typeof renderMobileProduction === 'function') renderMobileProduction();
+
+    // 서버 업로드 (비동기 — 실패해도 로컬은 유지)
+    uploadMobileReviewToServer(reviewPackage).then(async serverShareUrl => {
+      if (serverShareUrl) {
+        const updated = { ...reviewPackage, serverShareUrl, status: 'shared' };
+        await saveMobileReviewPackage(updated);
+        if (typeof showToast === 'function') showToast('✓ 공유 링크 준비 완료');
+        if (typeof renderMobileProduction === 'function') renderMobileProduction();
+      } else {
+        if (typeof showToast === 'function') showToast('리뷰 생성 완료 (로컬 전용)');
+      }
+    }).catch(() => {});
+
     return reviewPackage;
   } catch (e) {
     console.error('[mobile] create review package failed', e);
@@ -55710,6 +55767,123 @@ async function renderMobileLibrary() {
     });
   });
 }
+
+/* ────────────────────────────────────────────────────────────
+   § 16. 공유 리뷰 링크 — 읽기 전용 뷰
+   ──────────────────────────────────────────────────────────── */
+function renderSharedReviewPage(reviewPackage) {
+  const stats    = getReviewFeedbackStats(reviewPackage);
+  const cuts     = reviewPackage.timelineSnapshot?.cuts || [];
+  const feedback = reviewPackage.feedback || [];
+
+  const cutCards = cuts.map(cut => {
+    const fb     = feedback.find(f => f.cutId === cut.id) || {};
+    const status = fb.status || 'unresolved';
+    const media  = cut.assetUrl
+      ? (cut.assetKind === 'video'
+          ? `<video src="${escapeHTML(cut.assetUrl)}" controls muted playsinline style="width:100%;border-radius:10px;display:block;"></video>`
+          : `<img src="${escapeHTML(cut.assetUrl)}" alt="${escapeHTML(cut.title || '')}" style="width:100%;border-radius:10px;display:block;">`)
+      : `<div style="aspect-ratio:16/9;background:#111;border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:13px;">에셋 없음</div>`;
+    const statusColor = { approved:'rgba(52,211,153,0.8)', needs_revision:'rgba(251,191,36,0.8)', rejected:'rgba(248,113,113,0.8)', unresolved:'rgba(255,255,255,0.3)' }[status] || 'rgba(255,255,255,0.3)';
+    return `
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;margin-bottom:16px;">
+        ${media}
+        <div style="padding:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:11px;font-weight:900;color:rgba(255,255,255,0.4);">CUT ${String((cut.index || 0) + 1).padStart(2,'0')}</span>
+            <span style="font-size:11px;font-weight:700;color:${statusColor};">${escapeHTML(status)}</span>
+          </div>
+          <strong style="display:block;font-size:15px;margin-bottom:6px;">${escapeHTML(cut.title || 'Untitled Cut')}</strong>
+          ${cut.description ? `<p style="font-size:13px;color:rgba(255,255,255,0.5);margin:0 0 10px;line-height:1.5;">${escapeHTML(cut.description.slice(0,200))}</p>` : ''}
+          ${fb.comment ? `<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;color:rgba(255,255,255,0.75);"><span style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.3);display:block;margin-bottom:4px;">COMMENT</span>${escapeHTML(fb.comment)}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.body.innerHTML = `
+    <div style="min-height:100vh;background:#0a0a0f;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:0 0 60px;">
+      <div style="max-width:520px;margin:0 auto;padding:0 16px;">
+        <div style="padding:28px 0 20px;">
+          <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;color:#8b5cf6;margin-bottom:10px;">SOAVIZ STUDIO · CLIENT REVIEW</div>
+          <h1 style="margin:0 0 6px;font-size:22px;font-weight:800;line-height:1.25;">${escapeHTML(reviewPackage.title || 'Review Package')}</h1>
+          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.4);">${escapeHTML(reviewPackage.projectTitle || '')} · ${escapeHTML(reviewPackage.reviewerName || '')}${reviewPackage.reviewerRole ? ' · ' + escapeHTML(reviewPackage.reviewerRole) : ''}</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:24px;">
+          <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.2);border-radius:14px;padding:12px;text-align:center;">
+            <div style="font-size:10px;font-weight:900;color:rgba(52,211,153,0.7);margin-bottom:4px;">APPROVED</div>
+            <div style="font-size:22px;font-weight:800;color:#6ee7b7;">${stats.approved}</div>
+          </div>
+          <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:14px;padding:12px;text-align:center;">
+            <div style="font-size:10px;font-weight:900;color:rgba(251,191,36,0.7);margin-bottom:4px;">REVISION</div>
+            <div style="font-size:22px;font-weight:800;color:#fde68a;">${stats.needsRevision}</div>
+          </div>
+          <div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.2);border-radius:14px;padding:12px;text-align:center;">
+            <div style="font-size:10px;font-weight:900;color:rgba(248,113,113,0.7);margin-bottom:4px;">REJECTED</div>
+            <div style="font-size:22px;font-weight:800;color:#fca5a5;">${stats.rejected}</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;text-align:center;">
+            <div style="font-size:10px;font-weight:900;color:rgba(255,255,255,0.3);margin-bottom:4px;">OPEN</div>
+            <div style="font-size:22px;font-weight:800;color:rgba(255,255,255,0.6);">${stats.unresolved}</div>
+          </div>
+        </div>
+        <div>${cutCards || '<p style="text-align:center;color:rgba(255,255,255,0.3);padding:40px 0;">컷 정보가 없습니다</p>'}</div>
+        <div style="text-align:center;padding:30px 0 0;color:rgba(255,255,255,0.2);font-size:12px;">
+          Powered by <strong style="color:rgba(139,92,246,0.6);">SOAVIZ Studio</strong>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function handleMobileReviewShareUrl() {
+  const params   = new URLSearchParams(window.location.search);
+  const shareId  = params.get('mobileReview');
+  const token    = params.get('token');
+  if (!shareId || !token) return false;
+
+  // 공유 링크 — 전체 페이지를 읽기 전용 리뷰로 교체
+  document.body.innerHTML = `
+    <div style="min-height:100vh;background:#0a0a0f;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;color:rgba(255,255,255,0.4);">
+        <div style="font-size:32px;margin-bottom:12px;">◌</div>
+        <div>리뷰 로딩 중...</div>
+      </div>
+    </div>`;
+
+  try {
+    const pkg = await fetchMobileReviewFromServer(shareId, token);
+    if (pkg) {
+      renderSharedReviewPage(pkg);
+      return true;
+    }
+    document.body.innerHTML = `
+      <div style="min-height:100vh;background:#0a0a0f;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;color:rgba(255,255,255,0.4);max-width:320px;padding:24px;">
+          <div style="font-size:32px;margin-bottom:12px;">✕</div>
+          <strong style="color:rgba(255,255,255,0.7);display:block;margin-bottom:8px;">리뷰를 찾을 수 없습니다</strong>
+          <p style="font-size:13px;line-height:1.55;">링크가 만료되었거나 올바르지 않습니다.</p>
+          <a href="${escapeHTML(window.location.origin + window.location.pathname)}" style="display:inline-block;margin-top:16px;padding:10px 20px;background:#8b5cf6;color:#fff;border-radius:10px;text-decoration:none;font-size:14px;">SOAVIZ 열기</a>
+        </div>
+      </div>`;
+    return true;
+  } catch (e) {
+    console.error('[mobile] handleMobileReviewShareUrl failed', e);
+    return false;
+  }
+}
+window.renderSharedReviewPage    = renderSharedReviewPage;
+window.handleMobileReviewShareUrl = handleMobileReviewShareUrl;
+
+// 페이지 로드 시 공유 URL 감지 — 일반 앱 초기화보다 먼저 실행
+(function checkMobileReviewShareOnLoad() {
+  const params  = new URLSearchParams(window.location.search);
+  if (!params.get('mobileReview')) return;
+  // DOM 준비 후 실행
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => handleMobileReviewShareUrl());
+  } else {
+    handleMobileReviewShareUrl();
+  }
+})();
 </script>
 <script src="js/heatmap.js"></script>
 </body>
