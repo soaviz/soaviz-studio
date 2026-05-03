@@ -21382,7 +21382,7 @@
             <span id="random-credit-track" style="display:inline-block;width:60px;height:4px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;margin-left:4px">
               <span id="random-credit-fill" style="display:block;height:100%;background:linear-gradient(90deg, var(--accent), #6366F1);border-radius:999px;transition:width 320ms cubic-bezier(0.22,0.61,0.36,1);width:0%"></span>
             </span>
-            <a href="javascript:openDocsModal?.('pricing-page')" style="margin-left:6px;color:var(--accent);font-weight:600;text-decoration:none">충전 →</a>
+            <a href="javascript:showPage('credits')" style="margin-left:6px;color:var(--accent);font-weight:600;text-decoration:none">충전 →</a>
           </div>
         </div>
 
@@ -21604,7 +21604,7 @@
         <span class="tts-credit-sep">·</span>
         <span>잔여 <strong id="tts-credit-remain" style="color:var(--accent)">—</strong> / <span id="tts-credit-total">—</span></span>
         <span class="tts-credit-bar-track"><span class="tts-credit-bar-fill" id="tts-credit-fill" style="width:0%"></span></span>
-        <a class="tts-credit-upgrade" href="javascript:openDocsModal?.('pricing-page')">충전 →</a>
+        <a class="tts-credit-upgrade" href="javascript:showPage('credits')">충전 →</a>
       </div>
 
       <section>
@@ -21670,7 +21670,7 @@
           <div class="sfx-credit-bar">
             <span class="sfx-credit-ic" aria-hidden="true">⚡</span>
             <span>이번 생성 <strong id="sfx-credit-cost">50</strong> 크레딧 · 잔여 <strong id="sfx-credit-remain" style="color:var(--accent)">205,818</strong></span>
-            <a class="sfx-credit-upgrade" href="javascript:openDocsModal?.('pricing-page')">충전 →</a>
+            <a class="sfx-credit-upgrade" href="javascript:showPage('credits')">충전 →</a>
           </div>
         </div>
 
@@ -21810,7 +21810,7 @@
             <span>이번 생성 <strong id="music-credit-cost">50</strong> 크레딧 사용</span>
             <span class="music-credit-sep">·</span>
             <span>잔여 <strong id="music-credit-remain" style="color:var(--accent)">205,818</strong></span>
-            <a class="music-credit-upgrade" href="javascript:openDocsModal?.('pricing-page')">충전 / 업그레이드 →</a>
+            <a class="music-credit-upgrade" href="javascript:showPage('credits')">충전 / 업그레이드 →</a>
           </div>
 
           <div id="music-status" class="mw-status"></div>
@@ -24795,6 +24795,10 @@ function showPage(name) {
   if (name === 'project-archive' && typeof renderProjectArchive === 'function') renderProjectArchive();
   if (name === 'memory-graph' && typeof renderMemoryGraph === 'function') renderMemoryGraph();
   if (name === 'shot-detail' && typeof renderShotLogbook === 'function') renderShotLogbook();
+  if (name === 'pipeline' && typeof renderPipelinePage === 'function') { try { renderPipelinePage(); } catch (_) {} }
+  if (name === 'compare' && typeof renderComparePage === 'function') { try { renderComparePage(); } catch (_) {} }
+  if (name === 'cinema' && typeof renderCinemaPage === 'function') { try { renderCinemaPage(); } catch (_) {} }
+  if (name === 'styles' && typeof renderStylesPage === 'function') { try { renderStylesPage(); } catch (_) {} }
   try {
     if (name === 'landing') window.SoavizAuth?.hideGuestBanner?.();
     else window.SoavizAuth?.showGuestBanner?.();
@@ -25085,7 +25089,7 @@ function renderGenerationQueueCard(data) {
   return `<section class="prod-card prod-queue-card">
     <div class="prod-card-head">
       <h3>생성 큐 <span class="prod-queue-count">${active.length}</span></h3>
-      <button class="ghost-link" onclick="showPage('production')">전체 보기 ›</button>
+      <button class="ghost-link" onclick="showPage('history')">전체 보기 ›</button>
     </div>
     <div class="prod-queue-list">
       ${active.length ? active.map(job => {
@@ -25254,7 +25258,7 @@ function bindMainProductionDashboardEvents(root, data) {
     showPage?.('pipeline');
   });
   root.querySelector('#open-shot-list')?.addEventListener('click', () => showPage?.('pipeline'));
-  root.querySelector('#open-generation-queue')?.addEventListener('click', () => showPage?.('production'));
+  root.querySelector('#open-generation-queue')?.addEventListener('click', () => showPage?.('history'));
 }
 window.bindMainProductionDashboardEvents = bindMainProductionDashboardEvents;
 
@@ -25469,9 +25473,9 @@ function clearProductionGoal() {
 const LIB_LS_PROD_GOALS_V2 = 'soaviz.production.goals.v2';
 const LIB_LS_PROD_ACTIVE_ID = 'soaviz.production.activeGoalId.v1';
 const _GOAL_COLORS = ['#A78BFA', '#22D3EE', '#34D399', '#FB923C', '#F472B6', '#FACC15', '#818CF8'];
-/* 요금제별 한도 — Free 5 / Standard 10 / Pro 30 / Team 무제한 */
+/* 요금제별 한도 — Free 3 / Standard 10 / Pro 30 / Team 무제한 */
 const PROJECT_PLAN_LIMITS = {
-  free: 5,
+  free: 3,
   standard: 10,
   pro: 30,
   team: 9999,
@@ -25482,9 +25486,9 @@ const PLAN_FEATURES = {
   free: {
     label: '무료',
     tools: 'all',
-    chars: 20,                                 // 캐릭터 한도 — 무료 20명
+    chars: 3,                                  // 캐릭터 한도 — 무료 3명
     storyMaxLen: 'medium',
-    pipelineShots: 5,
+    pipelineShots: 10,                         // 쇼트리스트 10개/월
     ttsCharsPerMonth: 5000,
     musicPerMonth: 0,
     sfxPerMonth: 0,
@@ -25495,11 +25499,13 @@ const PLAN_FEATURES = {
     styleBible: false,
     cinemaLibrary: false,
     quality: 'preview',
-    storageGB: 0.5,
+    storageGB: 1,                              // 1GB 스토리지
     versionDays: 30,
     modelAccess: ['basic', 'fast', 'safe'],
-    apiRouter: false,
-    export: 'watermark',
+    apiRouter: false,                          // API 키 없음
+    export: 'watermark',                       // 워터마크 내보내기
+    export4k: false,                           // 4K 내보내기 없음
+    teamSharing: false,                        // 팀 공유 없음
     // 비즈니스 모델 — 모든 플랜 통합 크레딧 모델
     billing: 'credits',
     creditsPerMonth: 200,                      // 체험용
@@ -25600,8 +25606,9 @@ function showUpgradeGate(featureLabel = '이 기능', recommendedPlan = 'pro') {
   const msg = `🔒 ${featureLabel}은(는) ${planName} 플랜부터 사용 가능합니다.\n\n` +
               `${planName}: ${planPrice}/월\n\n` +
               `[확인] 요금제 보기 → / [취소] 닫기`;
-  if (confirm(msg) && typeof window.openDocsModal === 'function') {
-    window.openDocsModal('pricing-page');
+  if (confirm(msg)) {
+    if (typeof showPage === 'function') showPage('credits');
+    else if (typeof window.openDocsModal === 'function') window.openDocsModal('pricing-page');
   }
 }
 window.canAccessTool = canAccessTool;
@@ -25909,8 +25916,9 @@ function openMonetizationGate({
     '',
     '[확인] 요금제 보기 / [취소] 닫기',
   ].join('\n');
-  if (confirm(body) && typeof window.openDocsModal === 'function') {
-    window.openDocsModal('pricing-page');
+  if (confirm(body)) {
+    if (typeof showPage === 'function') showPage('credits');
+    else if (typeof window.openDocsModal === 'function') window.openDocsModal('pricing-page');
   }
 }
 window.openMonetizationGate = openMonetizationGate;
@@ -26063,9 +26071,8 @@ function refreshCreditPill() {
   pill.type = 'button';
   pill.className = 'credit-pill';
   pill.addEventListener('click', () => {
-    if (typeof window.openDocsModal === 'function') {
-      window.openDocsModal('pricing-page');
-    }
+    if (typeof showPage === 'function') showPage('credits');
+    else if (typeof window.openDocsModal === 'function') window.openDocsModal('pricing-page');
   });
   _renderCreditPill(pill);
   head.appendChild(pill);
@@ -26157,12 +26164,10 @@ function addProductionGoal(goalData) {
       msg = `프로젝트 한도 ${limit}개에 도달했습니다.\n완료된 프로젝트를 보관함으로 옮겨주세요.`;
     }
     try { showToast?.(`⚠ ${msg.replace(/\n/g, ' ')}`); } catch (_) {}
-    // Free 플랜 → Pro 업그레이드 모달 띄우기
-    if (plan === 'free' && typeof window.openDocsModal === 'function') {
-      const ok = confirm(msg + '\n\n[확인] Pro 요금제 보기 → / [취소] 닫기');
-      if (ok) window.openDocsModal('pricing-page');
-    } else {
-      try { alert(msg); } catch (_) {}
+    // 프로젝트 한도 → 요금제 페이지로
+    {
+      const ok = confirm(msg + '\n\n[확인] 요금제 보기 → / [취소] 닫기');
+      if (ok && typeof showPage === 'function') showPage('credits');
     }
     return null;
   }
@@ -29770,6 +29775,7 @@ const NAV_MAP = {
   'video-studio':    { page: 'sync',    label: 'Generate' },
   'video-editor':    { page: 'video-editor', label: 'Edit' },
   'production-log':  { page: 'history', label: 'Production Log' },
+  'production':      { page: 'history', label: 'Production Log' },
 
   // ═══ 기존 라우트 호환 (직접 page id 호출 시) ═══
   voices:   { page: 'voices',   label: 'Voices' },
@@ -29872,12 +29878,7 @@ $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
   });
 });
 $('#nav-upgrade-btn')?.addEventListener('click', () => {
-  if (typeof window.openDocsModal === 'function') {
-    window.openDocsModal('pricing-page');
-  } else {
-    showToast('요금제 안내 페이지로 이동합니다', 'info');
-    setTimeout(() => location.href = 'docs/index.html#pricing-page', 200);
-  }
+  showPage('credits');
 });
 
 function showExtractState(which) {
@@ -47689,9 +47690,7 @@ async function _ensureCharLimit() {
       ? `\n\n[확인] Standard로 업그레이드 (100명) →`
       : `\n\n[확인] 요금제 안내 보기 →`;
     const ok = confirm(`🔒 캐릭터 한도 도달 (${planLabel}: ${limit}명)\n현재 ${total}명 등록되어 있어요.${upgradeMsg}`);
-    if (ok && typeof window.openDocsModal === 'function') {
-      window.openDocsModal('pricing-page');
-    }
+    if (ok && typeof showPage === 'function') showPage('credits');
     return false;
   } catch (e) {
     return true;  // 체크 실패 시 통과
