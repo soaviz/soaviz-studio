@@ -19080,6 +19080,89 @@
       opacity: 0.35;
       pointer-events: none;
     }
+
+    /* 8차 — Review */
+    .mobile-review-stat {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-review-stat span {
+      display: block;
+      color: var(--text-faint);
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .mobile-review-stat strong {
+      font-size: 20px;
+      color: var(--text);
+    }
+    .mobile-review-cut-card {
+      overflow: hidden;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 12px;
+    }
+    .mobile-review-cut-card.approved {
+      border-color: rgba(52,211,153,0.34);
+    }
+    .mobile-review-cut-card.needs_revision {
+      border-color: rgba(251,191,36,0.34);
+    }
+    .mobile-review-cut-card.rejected {
+      border-color: rgba(248,113,113,0.34);
+    }
+    .mobile-review-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: rgba(0,0,0,0.32);
+      display: grid;
+      place-items: center;
+      color: var(--text-faint);
+      font-size: 24px;
+    }
+    .mobile-review-thumb img,
+    .mobile-review-thumb video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .mobile-review-body {
+      padding: 14px;
+    }
+    .mobile-review-body strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .mobile-review-body p {
+      margin: 7px 0 0;
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .mobile-review-comment {
+      min-height: 92px;
+      font-size: 15px;
+    }
+    .mobile-mini-badge.needs_revision,
+    .mobile-mini-badge.warning {
+      background: rgba(251,191,36,0.14);
+      color: #fbbf24;
+    }
+    .mobile-mini-badge.rejected {
+      background: rgba(248,113,113,0.14);
+      color: #fca5a5;
+    }
+    .mobile-mini-badge.approved {
+      background: rgba(52,211,153,0.14);
+      color: #86efac;
+    }
   }
   @media (min-width: 769px) {
     #mobile-app-shell { display: none !important; }
@@ -51563,6 +51646,16 @@ MobileState.timeline = MobileState.timeline || {
   defaultDurationSec: 5,
   defaultTransition: 'cut'
 };
+// 8차 확장 필드
+MobileState.review = MobileState.review || {
+  activeReviewId:  null,
+  selectedCutId:   null,
+  filter:          'all',
+  shareSheetOpen:  false,
+  reviewerName:    '',
+  reviewerRole:    '',
+  exportFormat:    'json'
+};
 
 /* ────────────────────────────────────────────────────────────
    § 2. 모델 / 앵글 설정
@@ -52436,7 +52529,7 @@ async function getMobileLibraryItems() {
     const tableName = detectMobileAssetTableName();
     if (tableName && db[tableName]) {
       const raw = await db[tableName].toArray().catch(() => []);
-      const ALLOWED_TYPES = new Set(['image','video','shot-prompt','prompt','character-sheet','asset']);
+      const ALLOWED_TYPES = new Set(['image','video','shot-prompt','prompt','character-sheet','asset','review-package']);
       raw.filter(x => !x.archived).forEach(x => {
         const type = x.type || 'asset';
         items.push({
@@ -54244,6 +54337,181 @@ window.buildMobileTimelineExportText    = buildMobileTimelineExportText;
 window.formatEDLTime                    = formatEDLTime;
 window.buildMobileTimelineEDL           = buildMobileTimelineEDL;
 
+/* ── 8차: Review Package 유틸 + 저장/로드 ───────────────────── */
+function createMobileReviewId() {
+  return `review_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+function createMobileShareToken() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+function getMobileReviewShareUrl(reviewPackage) {
+  const base = window.location.origin + window.location.pathname;
+  const reviewId = reviewPackage?.reviewId || '';
+  const token    = reviewPackage?.shareToken || '';
+  return `${base}?mobileReview=${encodeURIComponent(reviewId)}&token=${encodeURIComponent(token)}`;
+}
+window.createMobileReviewId    = createMobileReviewId;
+window.createMobileShareToken  = createMobileShareToken;
+window.getMobileReviewShareUrl = getMobileReviewShareUrl;
+
+function buildMobileReviewTimelineSnapshot(bundle) {
+  const cuts = (typeof buildMobileTimelineCuts === 'function') ? buildMobileTimelineCuts(bundle) : [];
+  return {
+    exportedAt:       new Date().toISOString(),
+    cutCount:         cuts.length,
+    approvedCount:    cuts.filter(c => c.approvedAssetId && c.asset).length,
+    totalDurationSec: cuts.reduce((s, c) => s + Number(c.durationSec || 0), 0),
+    cuts: cuts.map(cut => ({
+      id:             cut.id,
+      index:          cut.index,
+      shotId:         cut.shotId,
+      sceneId:        cut.sceneId,
+      title:          cut.title,
+      description:    cut.description,
+      approvedAssetId:cut.approvedAssetId,
+      assetKind:      cut.assetKind,
+      assetUrl:       cut.assetUrl,
+      durationSec:    cut.durationSec,
+      transition:     cut.transition,
+      prompt:         cut.prompt,
+      motionPrompt:   cut.motionPrompt,
+      camera:         cut.camera,
+      emotion:        cut.emotion
+    }))
+  };
+}
+function createInitialReviewFeedback(snapshot, reviewerName) {
+  reviewerName = reviewerName || '';
+  return (snapshot.cuts || []).map(cut => ({
+    id:           `feedback_${cut.shotId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    cutId:        cut.id,
+    shotId:       cut.shotId,
+    status:       'unresolved',
+    comment:      '',
+    reviewerName: reviewerName,
+    createdAt:    Date.now(),
+    updatedAt:    Date.now()
+  }));
+}
+async function createMobileReviewPackage(bundle, options) {
+  options = options || {};
+  try {
+    if (!bundle?.project) {
+      if (typeof showToast === 'function') showToast('프로젝트가 없습니다', 'error');
+      return null;
+    }
+    const now         = Date.now();
+    const reviewId    = createMobileReviewId();
+    const shareToken  = createMobileShareToken();
+    const snapshot    = buildMobileReviewTimelineSnapshot(bundle);
+    const reviewerName = options.reviewerName || MobileState.review.reviewerName || '';
+    const reviewPackage = {
+      id:             reviewId,
+      type:           'review-package',
+      projectId:      bundle.project.id,
+      title:          options.title || `Review · ${bundle.project.title || 'SOAVIZ Project'}`,
+      reviewId,
+      shareToken,
+      status:         'draft',
+      reviewerName,
+      reviewerRole:   options.reviewerRole || MobileState.review.reviewerRole || '',
+      projectTitle:   bundle.project.title || 'Untitled Project',
+      timelineSnapshot: snapshot,
+      feedback:       createInitialReviewFeedback(snapshot, reviewerName),
+      source:         'mobile-review-mode',
+      createdAt:      now,
+      updatedAt:      now,
+      archived:       false
+    };
+    await saveMobileReviewPackage(reviewPackage);
+    MobileState.review.activeReviewId = reviewId;
+    if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+    if (typeof showToast === 'function') showToast('리뷰 패키지 생성 완료');
+    if (typeof renderMobileProduction === 'function') renderMobileProduction();
+    return reviewPackage;
+  } catch (e) {
+    console.error('[mobile] create review package failed', e);
+    if (typeof showToast === 'function') showToast('리뷰 패키지 생성 실패', 'error');
+    return null;
+  }
+}
+async function saveMobileReviewPackage(reviewPackage) {
+  try {
+    if (!reviewPackage?.id) return false;
+    if (!window.SoavizDB?.db) {
+      window.__mobileReviewPackages = window.__mobileReviewPackages || [];
+      const idx = window.__mobileReviewPackages.findIndex(x => x.id === reviewPackage.id);
+      if (idx >= 0) window.__mobileReviewPackages[idx] = reviewPackage;
+      else window.__mobileReviewPackages.unshift(reviewPackage);
+      return true;
+    }
+    await SoavizDB.ready;
+    if (SoavizDB.db.assets) {
+      await SoavizDB.db.assets.put({
+        ...reviewPackage,
+        url:      getMobileReviewShareUrl(reviewPackage),
+        updatedAt: Date.now(),
+        archived:  false
+      });
+      return true;
+    }
+    if (SoavizDB.db.projects && reviewPackage.projectId) {
+      const project = await SoavizDB.db.projects.get(reviewPackage.projectId);
+      const prev    = Array.isArray(project?.reviewPackages) ? project.reviewPackages : [];
+      const idx     = prev.findIndex(x => x.id === reviewPackage.id);
+      if (idx >= 0) prev[idx] = reviewPackage;
+      else prev.unshift(reviewPackage);
+      await SoavizDB.db.projects.update(reviewPackage.projectId, { reviewPackages: prev, updatedAt: Date.now() });
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('[mobile] save review package failed', e);
+    if (typeof showToast === 'function') showToast('리뷰 저장 실패', 'warn');
+    return false;
+  }
+}
+async function loadMobileReviewPackages(projectId) {
+  projectId = projectId || MobileState.currentProjectId;
+  try {
+    if (!projectId) return [];
+    if (!window.SoavizDB?.db) {
+      return (window.__mobileReviewPackages || []).filter(x => x.projectId === projectId && !x.archived);
+    }
+    await SoavizDB.ready;
+    if (SoavizDB.db.assets) {
+      const all = await SoavizDB.db.assets.toArray();
+      return all
+        .filter(x => !x.archived && x.type === 'review-package' && x.projectId === projectId)
+        .sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+    }
+    if (SoavizDB.db.projects) {
+      const project  = await SoavizDB.db.projects.get(projectId);
+      const packages = Array.isArray(project?.reviewPackages) ? project.reviewPackages : [];
+      return packages.filter(x => !x.archived).sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
+    }
+    return [];
+  } catch (e) {
+    console.warn('[mobile] load review packages failed', e);
+    return [];
+  }
+}
+async function getActiveMobileReviewPackage(projectId) {
+  projectId = projectId || MobileState.currentProjectId;
+  const packages = await loadMobileReviewPackages(projectId);
+  if (MobileState.review.activeReviewId) {
+    const found = packages.find(p => p.reviewId === MobileState.review.activeReviewId || p.id === MobileState.review.activeReviewId);
+    if (found) return found;
+  }
+  return packages[0] || null;
+}
+window.buildMobileReviewTimelineSnapshot = buildMobileReviewTimelineSnapshot;
+window.createInitialReviewFeedback       = createInitialReviewFeedback;
+window.createMobileReviewPackage         = createMobileReviewPackage;
+window.saveMobileReviewPackage           = saveMobileReviewPackage;
+window.loadMobileReviewPackages          = loadMobileReviewPackages;
+window.getActiveMobileReviewPackage      = getActiveMobileReviewPackage;
+
 /* ── 7차: Timeline 렌더 함수 ─────────────────────────────────── */
 function renderMobileTimelineExportPanel(bundle, cuts) {
   const fmt = MobileState.timeline.exportFormat || 'json';
@@ -54412,6 +54680,432 @@ window.renderMobileTimelineView       = renderMobileTimelineView;
 window.renderMobileTimelinePlayer     = renderMobileTimelinePlayer;
 window.renderMobileTimelineCutCard    = renderMobileTimelineCutCard;
 window.renderMobileTimelineExportPanel = renderMobileTimelineExportPanel;
+
+/* ── 8차: Review 렌더 함수 ──────────────────────────────────── */
+function renderMobileReviewView(bundle) {
+  return `
+    <section class="mobile-section mobile-card" style="text-align:center;padding:30px 18px;">
+      <div style="font-size:34px;margin-bottom:12px;">◌</div>
+      <strong>리뷰 패키지 로딩 중</strong>
+      <p style="margin:8px 0 0;color:var(--text-faint);font-size:13px;">잠시만 기다려 주세요.</p>
+    </section>
+  `;
+}
+async function renderMobileReviewViewAsync(bundle, root) {
+  if (!root) return;
+  try {
+    const pid      = bundle.project?.id || MobileState.currentProjectId;
+    const packages = await loadMobileReviewPackages(pid);
+    const active   = await getActiveMobileReviewPackage(pid);
+    root.innerHTML = `
+      ${renderMobileReviewHeader(bundle, active, packages)}
+      ${active ? renderMobileReviewPackageView(active) : renderMobileReviewEmptyState(bundle)}
+    `;
+    bindMobileReviewEvents(root, bundle, active, packages);
+  } catch (e) {
+    console.error('[mobile] renderMobileReviewViewAsync failed', e);
+    root.innerHTML = `<section class="mobile-section mobile-card" style="text-align:center;padding:24px 18px;"><strong>리뷰 로드 실패</strong></section>`;
+  }
+}
+function renderMobileReviewHeader(bundle, active, packages) {
+  packages = packages || [];
+  return `
+    <section class="mobile-section mobile-hero-card">
+      <div style="font-size:12px;color:var(--accent);font-weight:900;margin-bottom:8px;letter-spacing:0.08em;">CLIENT REVIEW MODE</div>
+      <h2 style="margin:0;font-size:22px;">${escapeHTML(bundle.project?.title || 'Untitled Project')}</h2>
+      <p style="margin:10px 0 0;color:var(--text-dim);font-size:13px;line-height:1.55;">
+        ${packages.length} review package${packages.length !== 1 ? 's' : ''} · ${active ? escapeHTML(active.status || 'draft') : 'no active review'}
+      </p>
+      <div style="display:grid;gap:10px;margin-top:16px;">
+        <button class="mobile-primary-btn" id="mobile-create-review-package">
+          ${active ? '새 리뷰 패키지 생성' : '리뷰 패키지 생성'}
+        </button>
+        ${active ? `<button class="mobile-secondary-btn" id="mobile-open-review-share">공유 링크 만들기</button>` : ''}
+      </div>
+    </section>
+    ${packages.length > 1 ? `
+      <section class="mobile-section mobile-card">
+        <h3 class="mobile-section-title">리뷰 패키지 선택</h3>
+        <div class="mobile-chip-row">
+          ${packages.slice(0, 10).map(pkg => `
+            <button class="mobile-chip${active?.id === pkg.id ? ' active' : ''}" data-select-review="${escapeHTML(pkg.id)}">
+              ${escapeHTML(pkg.title || pkg.reviewId)}
+            </button>
+          `).join('')}
+        </div>
+      </section>` : ''}
+  `;
+}
+function renderMobileReviewEmptyState(bundle) {
+  const cuts     = (typeof buildMobileTimelineCuts === 'function') ? buildMobileTimelineCuts(bundle) : [];
+  const approved = cuts.filter(c => c.approvedAssetId && c.asset).length;
+  return `
+    <section class="mobile-section mobile-card" style="text-align:center;padding:32px 18px;">
+      <div style="font-size:34px;margin-bottom:12px;">◎</div>
+      <strong>아직 리뷰 패키지가 없습니다</strong>
+      <p style="margin:8px 0 18px;color:var(--text-faint);font-size:13px;line-height:1.55;">
+        현재 타임라인 기준으로 ${cuts.length}개 컷, ${approved}개 승인 asset을 리뷰 패키지로 만들 수 있습니다.
+      </p>
+      <button class="mobile-primary-btn" id="mobile-create-review-package-empty">리뷰 패키지 생성</button>
+    </section>
+  `;
+}
+function getReviewFeedbackStats(reviewPackage) {
+  const f = reviewPackage?.feedback || [];
+  return {
+    total:         f.length,
+    approved:      f.filter(x => x.status === 'approved').length,
+    needsRevision: f.filter(x => x.status === 'needs_revision').length,
+    rejected:      f.filter(x => x.status === 'rejected').length,
+    unresolved:    f.filter(x => !x.status || x.status === 'unresolved').length
+  };
+}
+function getFilteredReviewFeedback(reviewPackage) {
+  const filter   = MobileState.review.filter || 'all';
+  const feedback = reviewPackage?.feedback || [];
+  if (filter === 'all') return feedback;
+  return feedback.filter(f => filter === 'unresolved'
+    ? (!f.status || f.status === 'unresolved')
+    : f.status === filter);
+}
+function findReviewCut(reviewPackage, cutId) {
+  return (reviewPackage?.timelineSnapshot?.cuts || []).find(c => c.id === cutId) || null;
+}
+function renderMobileReviewPackageView(reviewPackage) {
+  const stats    = getReviewFeedbackStats(reviewPackage);
+  const filtered = getFilteredReviewFeedback(reviewPackage);
+  const shareUrl = getMobileReviewShareUrl(reviewPackage);
+  return `
+    <section class="mobile-section mobile-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+        <div>
+          <strong>${escapeHTML(reviewPackage.title || 'Review Package')}</strong>
+          <p style="margin:6px 0 0;color:var(--text-faint);font-size:12px;">
+            ${escapeHTML(reviewPackage.reviewId)} · ${escapeHTML(reviewPackage.status || 'draft')}
+          </p>
+        </div>
+        <span class="mobile-mini-badge">${stats.approved}/${stats.total} approved</span>
+      </div>
+      <div class="mobile-grid-2" style="margin-top:14px;">
+        <div class="mobile-review-stat"><span>Approved</span><strong>${stats.approved}</strong></div>
+        <div class="mobile-review-stat"><span>Needs Revision</span><strong>${stats.needsRevision}</strong></div>
+        <div class="mobile-review-stat"><span>Rejected</span><strong>${stats.rejected}</strong></div>
+        <div class="mobile-review-stat"><span>Unresolved</span><strong>${stats.unresolved}</strong></div>
+      </div>
+      <div style="display:grid;gap:10px;margin-top:14px;">
+        <button class="mobile-secondary-btn" id="mobile-copy-review-url">공유 URL 복사</button>
+        <button class="mobile-secondary-btn" id="mobile-share-review-url">시스템 공유</button>
+      </div>
+      <textarea id="mobile-review-url-value" hidden>${escapeHTML(shareUrl)}</textarea>
+    </section>
+    <section class="mobile-section mobile-card">
+      <h3 class="mobile-section-title">리뷰어 정보</h3>
+      <label class="mobile-label">이름</label>
+      <input class="mobile-input" id="mobile-reviewer-name" value="${escapeHTML(reviewPackage.reviewerName || '')}" placeholder="Reviewer name">
+      <label class="mobile-label" style="margin-top:10px;">역할</label>
+      <input class="mobile-input" id="mobile-reviewer-role" value="${escapeHTML(reviewPackage.reviewerRole || '')}" placeholder="Client / Director / Producer">
+    </section>
+    <section class="mobile-section mobile-card">
+      <h3 class="mobile-section-title">필터</h3>
+      <div class="mobile-chip-row">
+        ${[['all','전체'],['unresolved','미해결'],['approved','승인'],['needs_revision','수정 요청'],['rejected','반려']].map(([value, label]) => `
+          <button class="mobile-chip${MobileState.review.filter === value ? ' active' : ''}" data-review-filter="${value}">${label}</button>
+        `).join('')}
+      </div>
+    </section>
+    <section class="mobile-section">
+      <div class="mobile-list">
+        ${filtered.map(item => renderMobileReviewCutCard(reviewPackage, item)).join('')}
+        ${filtered.length === 0 ? `<div class="mobile-card" style="text-align:center;padding:20px;color:var(--text-faint);">해당 조건의 피드백이 없습니다</div>` : ''}
+      </div>
+    </section>
+    ${renderMobileReviewExportPanel(reviewPackage)}
+  `;
+}
+function renderMobileReviewCutCard(reviewPackage, feedback) {
+  const cut = findReviewCut(reviewPackage, feedback.cutId);
+  if (!cut) return '';
+  const media = cut.assetUrl
+    ? (cut.assetKind === 'video'
+        ? `<video src="${escapeHTML(cut.assetUrl)}" muted playsinline></video>`
+        : `<img src="${escapeHTML(cut.assetUrl)}" alt="${escapeHTML(cut.title || '')}">`)
+    : `<span>EMPTY</span>`;
+  const status = feedback.status || 'unresolved';
+  return `
+    <article class="mobile-review-cut-card ${status}" data-review-cut="${escapeHTML(feedback.cutId)}">
+      <div class="mobile-review-thumb">${media}</div>
+      <div class="mobile-review-body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <span class="mobile-mini-badge">CUT ${String((cut.index || 0) + 1).padStart(2, '0')}</span>
+          <span class="mobile-mini-badge ${status === 'needs_revision' ? 'warning' : ''} ${status}">${escapeHTML(status)}</span>
+        </div>
+        <strong>${escapeHTML(cut.title || 'Untitled Cut')}</strong>
+        <p>${escapeHTML((cut.description || '').slice(0, 150))}</p>
+        <label class="mobile-label" style="margin-top:10px;">상태</label>
+        <select class="mobile-select compact" data-review-status="${escapeHTML(feedback.id)}">
+          <option value="unresolved"${status === 'unresolved' ? ' selected' : ''}>미해결</option>
+          <option value="approved"${status === 'approved' ? ' selected' : ''}>승인</option>
+          <option value="needs_revision"${status === 'needs_revision' ? ' selected' : ''}>수정 요청</option>
+          <option value="rejected"${status === 'rejected' ? ' selected' : ''}>반려</option>
+        </select>
+        <label class="mobile-label" style="margin-top:10px;">코멘트</label>
+        <textarea class="mobile-textarea mobile-review-comment" data-review-comment="${escapeHTML(feedback.id)}" placeholder="피드백을 입력하세요">${escapeHTML(feedback.comment || '')}</textarea>
+        <div class="mobile-grid-2" style="margin-top:10px;">
+          <button class="mobile-secondary-btn" data-save-review-feedback="${escapeHTML(feedback.id)}">저장</button>
+          <button class="mobile-secondary-btn" data-copy-review-cut="${escapeHTML(feedback.id)}">컷 정보 복사</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+function buildMobileReviewExportPayload(reviewPackage) {
+  const stats = getReviewFeedbackStats(reviewPackage);
+  return {
+    app:          'soaviz-studio',
+    kind:         'mobile-review-feedback-export',
+    exportedAt:   new Date().toISOString(),
+    reviewId:     reviewPackage.reviewId,
+    shareToken:   reviewPackage.shareToken,
+    shareUrl:     getMobileReviewShareUrl(reviewPackage),
+    projectId:    reviewPackage.projectId,
+    projectTitle: reviewPackage.projectTitle,
+    reviewerName: reviewPackage.reviewerName,
+    reviewerRole: reviewPackage.reviewerRole,
+    status:       reviewPackage.status,
+    stats,
+    timelineSnapshot: reviewPackage.timelineSnapshot,
+    feedback:     reviewPackage.feedback
+  };
+}
+function buildMobileReviewExportText(reviewPackage) {
+  const payload = buildMobileReviewExportPayload(reviewPackage);
+  const lines   = [];
+  lines.push(`# Review Feedback — ${payload.projectTitle || 'SOAVIZ Project'}`);
+  lines.push('');
+  lines.push(`Review ID: ${payload.reviewId}`);
+  lines.push(`Reviewer: ${payload.reviewerName || '-'}`);
+  lines.push(`Role: ${payload.reviewerRole || '-'}`);
+  lines.push(`Exported At: ${payload.exportedAt}`);
+  lines.push('');
+  lines.push('## Summary');
+  lines.push(`Approved: ${payload.stats.approved}`);
+  lines.push(`Needs Revision: ${payload.stats.needsRevision}`);
+  lines.push(`Rejected: ${payload.stats.rejected}`);
+  lines.push(`Unresolved: ${payload.stats.unresolved}`);
+  lines.push('');
+  lines.push('## Feedback');
+  for (const item of (payload.feedback || [])) {
+    const cut = (payload.timelineSnapshot?.cuts || []).find(c => c.id === item.cutId);
+    lines.push(`### ${cut?.title || item.cutId}`);
+    lines.push(`Status: ${item.status || 'unresolved'}`);
+    lines.push(`Shot ID: ${item.shotId}`);
+    lines.push(`Asset: ${cut?.assetUrl || 'EMPTY'}`);
+    lines.push(`Comment: ${item.comment || '-'}`);
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+function buildMobileReviewCSV(reviewPackage) {
+  const payload = buildMobileReviewExportPayload(reviewPackage);
+  const rows    = [['cut_index','cut_title','shot_id','status','comment','asset_url','reviewer','updated_at']];
+  for (const item of (payload.feedback || [])) {
+    const cut = (payload.timelineSnapshot?.cuts || []).find(c => c.id === item.cutId);
+    rows.push([
+      String((cut?.index ?? 0) + 1),
+      cut?.title || '',
+      item.shotId || '',
+      item.status || 'unresolved',
+      item.comment || '',
+      cut?.assetUrl || '',
+      item.reviewerName || payload.reviewerName || '',
+      item.updatedAt ? new Date(item.updatedAt).toISOString() : ''
+    ]);
+  }
+  return rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+}
+function renderMobileReviewExportPanel(reviewPackage) {
+  const fmt = MobileState.review.exportFormat || 'json';
+  return `
+    <section class="mobile-section mobile-card">
+      <strong>리뷰 결과 내보내기</strong>
+      <p style="margin:8px 0 16px;color:var(--text-dim);font-size:13px;line-height:1.55;">컷별 피드백을 JSON, TXT, CSV로 저장합니다.</p>
+      <div class="mobile-grid-2">
+        <button class="mobile-secondary-btn${fmt === 'json' ? ' active' : ''}" data-review-export-format="json">JSON</button>
+        <button class="mobile-secondary-btn${fmt === 'txt'  ? ' active' : ''}" data-review-export-format="txt">TXT</button>
+      </div>
+      <button class="mobile-secondary-btn${fmt === 'csv' ? ' active' : ''}" data-review-export-format="csv" style="margin-top:10px;width:100%;">CSV</button>
+      <div style="display:grid;gap:10px;margin-top:14px;">
+        <button class="mobile-primary-btn" id="mobile-download-review">리뷰 결과 다운로드</button>
+        <button class="mobile-secondary-btn" id="mobile-copy-review">리뷰 결과 복사</button>
+      </div>
+    </section>
+  `;
+}
+async function updateMobileReviewFeedback(reviewPackage, feedbackId, patch) {
+  patch = patch || {};
+  try {
+    if (!reviewPackage || !feedbackId) return false;
+    const now      = Date.now();
+    const feedback = Array.isArray(reviewPackage.feedback) ? reviewPackage.feedback : [];
+    const next     = feedback.map(item => {
+      if (item.id !== feedbackId) return item;
+      return { ...item, ...patch, updatedAt: now, reviewerName: patch.reviewerName ?? item.reviewerName ?? reviewPackage.reviewerName ?? '' };
+    });
+    const nextPackage = { ...reviewPackage, feedback: next, status: 'reviewed', updatedAt: now };
+    await saveMobileReviewPackage(nextPackage);
+    if (typeof showToast === 'function') showToast('피드백 저장 완료');
+    return nextPackage;
+  } catch (e) {
+    console.error('[mobile] update review feedback failed', e);
+    if (typeof showToast === 'function') showToast('피드백 저장 실패', 'error');
+    return false;
+  }
+}
+async function updateMobileReviewReviewer(reviewPackage, patch) {
+  patch = patch || {};
+  try {
+    const nextPackage = { ...reviewPackage, ...patch, updatedAt: Date.now() };
+    await saveMobileReviewPackage(nextPackage);
+    if (patch.reviewerName !== undefined) MobileState.review.reviewerName = patch.reviewerName;
+    if (patch.reviewerRole !== undefined) MobileState.review.reviewerRole = patch.reviewerRole;
+    if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+    if (typeof showToast === 'function') showToast('리뷰어 정보 저장 완료');
+    return nextPackage;
+  } catch (e) {
+    console.error('[mobile] update reviewer failed', e);
+    if (typeof showToast === 'function') showToast('리뷰어 정보 저장 실패', 'error');
+    return false;
+  }
+}
+function bindMobileReviewEvents(root, bundle, active, packages) {
+  root.querySelector('#mobile-create-review-package')?.addEventListener('click', async () => {
+    await createMobileReviewPackage(bundle);
+  });
+  root.querySelector('#mobile-create-review-package-empty')?.addEventListener('click', async () => {
+    await createMobileReviewPackage(bundle);
+  });
+  root.querySelectorAll('[data-select-review]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      MobileState.review.activeReviewId = btn.dataset.selectReview;
+      if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+      if (typeof renderMobileProduction === 'function') renderMobileProduction();
+    });
+  });
+  root.querySelector('#mobile-copy-review-url')?.addEventListener('click', async () => {
+    if (!active) return;
+    if (typeof copyText === 'function') await copyText(getMobileReviewShareUrl(active));
+    if (typeof showToast === 'function') showToast('리뷰 공유 URL 복사 완료');
+  });
+  root.querySelector('#mobile-share-review-url')?.addEventListener('click', async () => {
+    if (!active) return;
+    const url   = getMobileReviewShareUrl(active);
+    const title = active.title || 'SOAVIZ Review Package';
+    const text  = `${title}\n${url}`;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); return; }
+      catch (e) { console.warn('[mobile] review share cancelled', e); }
+    }
+    if (typeof copyText === 'function') await copyText(text);
+    if (typeof showToast === 'function') showToast('공유가 지원되지 않아 URL을 복사했습니다');
+  });
+  root.querySelector('#mobile-open-review-share')?.addEventListener('click', async () => {
+    if (!active) return;
+    if (typeof copyText === 'function') await copyText(getMobileReviewShareUrl(active));
+    if (typeof showToast === 'function') showToast('공유 링크가 클립보드에 복사되었습니다');
+  });
+  root.querySelector('#mobile-reviewer-name')?.addEventListener('change', async e => {
+    if (!active) return;
+    await updateMobileReviewReviewer(active, { reviewerName: e.target.value });
+    if (typeof renderMobileProduction === 'function') renderMobileProduction();
+  });
+  root.querySelector('#mobile-reviewer-role')?.addEventListener('change', async e => {
+    if (!active) return;
+    await updateMobileReviewReviewer(active, { reviewerRole: e.target.value });
+    if (typeof renderMobileProduction === 'function') renderMobileProduction();
+  });
+  root.querySelectorAll('[data-review-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      MobileState.review.filter = btn.dataset.reviewFilter;
+      if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+      if (typeof renderMobileProduction === 'function') renderMobileProduction();
+    });
+  });
+  root.querySelectorAll('[data-save-review-feedback]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!active) return;
+      const feedbackId    = btn.dataset.saveReviewFeedback;
+      const statusInput   = root.querySelector(`[data-review-status="${feedbackId}"]`);
+      const commentInput  = root.querySelector(`[data-review-comment="${feedbackId}"]`);
+      const reviewerInput = root.querySelector('#mobile-reviewer-name');
+      const result = await updateMobileReviewFeedback(active, feedbackId, {
+        status:       statusInput?.value  || 'unresolved',
+        comment:      commentInput?.value || '',
+        reviewerName: reviewerInput?.value || active.reviewerName || ''
+      });
+      if (result) { active = result; }
+      if (typeof renderMobileProduction === 'function') renderMobileProduction();
+    });
+  });
+  root.querySelectorAll('[data-copy-review-cut]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!active) return;
+      const feedbackId = btn.dataset.copyReviewCut;
+      const feedback   = (active.feedback || []).find(f => f.id === feedbackId);
+      const cut        = feedback ? findReviewCut(active, feedback.cutId) : null;
+      if (!feedback || !cut) return;
+      const text = [`Cut: ${cut.title}`,`Shot ID: ${feedback.shotId}`,`Status: ${feedback.status}`,`Asset: ${cut.assetUrl || 'EMPTY'}`,`Comment: ${feedback.comment || '-'}`].join('\n');
+      if (typeof copyText === 'function') await copyText(text);
+      if (typeof showToast === 'function') showToast('컷 리뷰 정보 복사 완료');
+    });
+  });
+  root.querySelectorAll('[data-review-export-format]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      MobileState.review.exportFormat = btn.dataset.reviewExportFormat;
+      if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+      if (typeof renderMobileProduction === 'function') renderMobileProduction();
+    });
+  });
+  root.querySelector('#mobile-download-review')?.addEventListener('click', () => {
+    if (!active) return;
+    const date      = new Date().toISOString().slice(0, 10);
+    const safeTitle = String(active.projectTitle || 'soaviz-review').replace(/[^\w가-힣-]+/g, '_');
+    const format    = MobileState.review.exportFormat || 'json';
+    if (format === 'txt') {
+      downloadBlob(new Blob([buildMobileReviewExportText(active)], { type: 'text/plain;charset=utf-8' }), `soaviz_review_${safeTitle}_${date}.txt`);
+    } else if (format === 'csv') {
+      downloadBlob(new Blob([buildMobileReviewCSV(active)], { type: 'text/csv;charset=utf-8' }), `soaviz_review_${safeTitle}_${date}.csv`);
+    } else {
+      downloadBlob(new Blob([JSON.stringify(buildMobileReviewExportPayload(active), null, 2)], { type: 'application/json' }), `soaviz_review_${safeTitle}_${date}.json`);
+    }
+    if (typeof showToast === 'function') showToast('리뷰 결과 내보내기 완료');
+  });
+  root.querySelector('#mobile-copy-review')?.addEventListener('click', async () => {
+    if (!active) return;
+    const format = MobileState.review.exportFormat || 'json';
+    let text;
+    if (format === 'txt')      text = buildMobileReviewExportText(active);
+    else if (format === 'csv') text = buildMobileReviewCSV(active);
+    else                       text = JSON.stringify(buildMobileReviewExportPayload(active), null, 2);
+    if (typeof copyText === 'function') await copyText(text);
+    if (typeof showToast === 'function') showToast('리뷰 결과 복사 완료');
+  });
+}
+window.renderMobileReviewView         = renderMobileReviewView;
+window.renderMobileReviewViewAsync    = renderMobileReviewViewAsync;
+window.renderMobileReviewHeader       = renderMobileReviewHeader;
+window.renderMobileReviewEmptyState   = renderMobileReviewEmptyState;
+window.getReviewFeedbackStats         = getReviewFeedbackStats;
+window.getFilteredReviewFeedback      = getFilteredReviewFeedback;
+window.findReviewCut                  = findReviewCut;
+window.renderMobileReviewPackageView  = renderMobileReviewPackageView;
+window.renderMobileReviewCutCard      = renderMobileReviewCutCard;
+window.buildMobileReviewExportPayload = buildMobileReviewExportPayload;
+window.buildMobileReviewExportText    = buildMobileReviewExportText;
+window.buildMobileReviewCSV           = buildMobileReviewCSV;
+window.renderMobileReviewExportPanel  = renderMobileReviewExportPanel;
+window.updateMobileReviewFeedback     = updateMobileReviewFeedback;
+window.updateMobileReviewReviewer     = updateMobileReviewReviewer;
+window.bindMobileReviewEvents         = bindMobileReviewEvents;
 
 /* ── 6차: 생성 실행 — Confirm Sheet로 라우팅 ─────────────────── */
 function generateMobileShotAsset(bundle) {
@@ -54643,6 +55337,14 @@ function saveMobileRuntimeState() {
         previewScale:       MobileState.timeline.previewScale || 'fit',
         defaultDurationSec: MobileState.timeline.defaultDurationSec || 5,
         defaultTransition:  MobileState.timeline.defaultTransition || 'cut'
+      },
+      review: {
+        activeReviewId: MobileState.review.activeReviewId || null,
+        selectedCutId:  MobileState.review.selectedCutId  || null,
+        filter:         MobileState.review.filter         || 'all',
+        reviewerName:   MobileState.review.reviewerName   || '',
+        reviewerRole:   MobileState.review.reviewerRole   || '',
+        exportFormat:   MobileState.review.exportFormat   || 'json'
       }
     }));
   } catch (_) {}
@@ -54684,6 +55386,17 @@ function restoreMobileRuntimeState() {
         previewScale:       data.timeline.previewScale   || 'fit',
         defaultDurationSec: data.timeline.defaultDurationSec || 5,
         defaultTransition:  data.timeline.defaultTransition  || 'cut'
+      };
+    }
+    if (data.review) {
+      MobileState.review = {
+        ...MobileState.review,
+        activeReviewId: data.review.activeReviewId || null,
+        selectedCutId:  data.review.selectedCutId  || null,
+        filter:         data.review.filter         || 'all',
+        reviewerName:   data.review.reviewerName   || '',
+        reviewerRole:   data.review.reviewerRole   || '',
+        exportFormat:   data.review.exportFormat   || 'json'
       };
     }
     if (data.current && window.MobileApp?.go) {
@@ -54796,6 +55509,14 @@ async function renderMobileProduction() {
   const bundle  = await getMobilePipelineBundle(project?.id || MobileState.currentProjectId);
 
   const view = MobileState.productionView || 'summary';
+  const viewHtml =
+    view === 'shots'    ? renderMobileShotCards(bundle)
+    : view === 'prompts'  ? renderMobilePromptCards(bundle)
+    : view === 'timeline' ? renderMobileTimelineView(bundle)
+    : view === 'review'   ? renderMobileReviewView(bundle)
+    : view === 'export'   ? renderMobileExportPanel(bundle)
+    :                       renderMobileProductionSummary(bundle);
+
   root.innerHTML = `
     <section>
       <h1 class="mobile-page-title">제작</h1>
@@ -54807,15 +55528,12 @@ async function renderMobileProduction() {
         <button class="mobile-chip${view === 'shots'    ? ' active' : ''}" data-prod-view="shots">샷</button>
         <button class="mobile-chip${view === 'prompts'  ? ' active' : ''}" data-prod-view="prompts">프롬프트</button>
         <button class="mobile-chip${view === 'timeline' ? ' active' : ''}" data-prod-view="timeline">타임라인</button>
+        <button class="mobile-chip${view === 'review'   ? ' active' : ''}" data-prod-view="review">리뷰</button>
         <button class="mobile-chip${view === 'export'   ? ' active' : ''}" data-prod-view="export">내보내기</button>
       </div>
     </section>
     <div id="mobile-production-view-root">
-      ${view === 'shots'    ? renderMobileShotCards(bundle)
-      : view === 'prompts'  ? renderMobilePromptCards(bundle)
-      : view === 'timeline' ? renderMobileTimelineView(bundle)
-      : view === 'export'   ? renderMobileExportPanel(bundle)
-      :                       renderMobileProductionSummary(bundle)}
+      ${viewHtml}
     </div>
     <section class="mobile-section">
       <button class="mobile-secondary-btn" id="mobile-open-pipeline">Pipeline 전체 보기</button>
@@ -54828,6 +55546,13 @@ async function renderMobileProduction() {
     const gq = MobileState.generationQueue;
     if (!gq.jobs || !gq.jobs.length) {
       if (typeof restoreMobileGenerationJobs === 'function') restoreMobileGenerationJobs();
+    }
+  }
+  // 8차: review 뷰 비동기 렌더
+  if (view === 'review') {
+    const viewRoot = root.querySelector('#mobile-production-view-root');
+    if (viewRoot && typeof renderMobileReviewViewAsync === 'function') {
+      renderMobileReviewViewAsync(bundle, viewRoot);
     }
   }
 }
@@ -54845,6 +55570,26 @@ async function renderMobileLibrary() {
   const items = await getMobileLibraryItems();
 
   const cardsHTML = items.map(a => {
+    // 8차: review-package 특수 렌더
+    if (a.type === 'review-package') {
+      const stats = typeof getReviewFeedbackStats === 'function' ? getReviewFeedbackStats(a) : { approved: 0, total: 0 };
+      return `<article class="mobile-library-card" data-library-id="${escapeHTML(a.id)}">
+        <div class="mobile-library-thumb" style="background:rgba(167,139,250,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+          <span style="font-size:24px;">◎</span>
+          <span style="font-size:10px;font-weight:900;color:var(--accent);letter-spacing:0.06em;">REVIEW</span>
+        </div>
+        <div class="mobile-library-body">
+          <strong style="font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(a.title || 'Review Package')}</strong>
+          <p style="margin:3px 0 0;color:var(--text-faint);font-size:11px">${escapeHTML(a.status || 'draft')} · ${stats.approved}/${stats.total} approved · ${new Date(a.createdAt || 0).toLocaleDateString('ko-KR', { month:'short', day:'numeric' })}</p>
+          <p style="margin:3px 0 0;color:var(--text-faint);font-size:11px">${escapeHTML(a.reviewId || '')}</p>
+          <div class="mobile-library-actions">
+            <button class="mobile-secondary-btn" data-lib-review-open="${escapeHTML(a.reviewId || a.id)}">리뷰 열기</button>
+            <button class="mobile-secondary-btn" data-lib-review-url="${escapeHTML(a.id)}">URL 복사</button>
+            <button class="mobile-secondary-btn" data-lib-review-json="${escapeHTML(a.id)}">JSON</button>
+          </div>
+        </div>
+      </article>`;
+    }
     const isVideo    = a.type === 'video';
     const isPrompt   = a.type === 'prompt' || a.type === 'shot-prompt';
     const thumbHTML  = isVideo && (a.videoUrl || a.url)
@@ -54929,6 +55674,39 @@ async function renderMobileLibrary() {
       if (!text) { if (typeof showToast === 'function') showToast('복사할 텍스트가 없습니다', 'error'); return; }
       if (typeof copyText === 'function') await copyText(text);
       if (typeof showToast === 'function') showToast('프롬프트 텍스트 복사 완료');
+    });
+  });
+  // 8차: review-package 이벤트
+  root.querySelectorAll('[data-lib-review-open]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      MobileState.productionView = 'review';
+      MobileState.review.activeReviewId = btn.dataset.libReviewOpen;
+      if (typeof saveMobileRuntimeState === 'function') saveMobileRuntimeState();
+      if (typeof MobileApp !== 'undefined') MobileApp.go('production');
+    });
+  });
+  root.querySelectorAll('[data-lib-review-url]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const item = items.find(x => x.id === btn.dataset.libReviewUrl);
+      if (!item) return;
+      const url = typeof getMobileReviewShareUrl === 'function' ? getMobileReviewShareUrl(item) : (item.url || '');
+      if (typeof copyText === 'function') await copyText(url);
+      if (typeof showToast === 'function') showToast('리뷰 URL 복사 완료');
+    });
+  });
+  root.querySelectorAll('[data-lib-review-json]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = items.find(x => x.id === btn.dataset.libReviewJson);
+      if (!item) return;
+      const payload = typeof buildMobileReviewExportPayload === 'function'
+        ? buildMobileReviewExportPayload(item)
+        : item;
+      const date      = new Date().toISOString().slice(0, 10);
+      const safeTitle = String(item.projectTitle || 'review').replace(/[^\w가-힣-]+/g, '_');
+      if (typeof downloadBlob === 'function') {
+        downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `soaviz_review_${safeTitle}_${date}.json`);
+      }
+      if (typeof showToast === 'function') showToast('리뷰 JSON 다운로드');
     });
   });
 }
