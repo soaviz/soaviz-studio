@@ -403,6 +403,56 @@
     padding: 32px 24px;
   }
 
+  /* ========== PROJECT SWITCHER ========== */
+  .project-switcher {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .project-switcher-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .project-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+  }
+  .project-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--accent-soft);
+  }
+  .project-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0B0B0F;
+    font-weight: 700;
+  }
+  .project-btn .pdot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.75;
+    flex-shrink: 0;
+  }
+
   /* ========== DASHBOARD ========== */
   .dashboard {
     display: grid;
@@ -4331,6 +4381,17 @@
 
 <div class="container">
 
+  <!-- ================= PROJECT SWITCHER ================= -->
+  <div class="project-switcher" id="project-switcher">
+    <span class="project-switcher-label">Project</span>
+    <button class="project-btn active" id="btn-project-soaviz" onclick="switchProject('soaviz')">
+      <span class="pdot"></span> Soaviz Studio
+    </button>
+    <button class="project-btn" id="btn-project-sovita" onclick="switchProject('sovita')">
+      <span class="pdot"></span> Sovita
+    </button>
+  </div>
+
   <!-- ================= DASHBOARD ================= -->
   <div class="dashboard">
     <div class="stat-card">
@@ -4822,1067 +4883,1029 @@
 <script>
 /* ==================== DATA ==================== */
 const DAYS_DATA = [
-  // ---------- WEEK 1 ----------
+  // ---------- WEEK 1 · 토대 재정립 ----------
   {
-    day: 1, week: 1, weekday: '월', theme: '부트스트랩 + DB',
-    goal: 'Next.js 빈 앱 + Supabase 13개 테이블',
+    day: 1, week: 1, weekday: '월', theme: '부트스트랩 + 영상 제작 DB 스키마 ✅',
+    goal: '✅ 완료 — Next.js 앱 + 영상 제작 특화 DB 설계',
     blocks: [
       {
-        id: '1A', title: 'Block A · 컨텍스트 문서 3개', time: '22:30~00:00',
+        id: '1A', title: 'Block A · 아키텍처 문서', time: '22:30~00:00',
         items: [
-          { text: 'soaviz/ 폴더 + reference/ 안에 기존 HTML' },
-          { text: '마스터 프롬프트 Day 1 → Cursor 붙여넣기' },
-          { text: 'README.md 생성 확인' },
-          { text: 'ARCHITECTURE.md 생성 확인' },
-          { text: 'SCHEMA.md 생성 확인' },
-          { text: 'git init + commit "day1-A: docs"' },
-        ],
-        detail: {
-          goal: 'Cursor가 SOAVIZ 프로젝트 컨텍스트를 100% 이해하도록 3개 문서를 주입한다. 이 문서들이 앞으로 14일 동안 모든 코드의 기준이 된다.',
-          prompt: `# Day 1 · Block A · 컨텍스트 문서 3개
-
-## 프로젝트 정의
-SOAVIZ - "내가 만든 또 하나의 나, 그 페르소나가 살아가는 세계"
-AI 페르소나 소셜 플랫폼 (제작 도구 X / OS X / 소셜 플랫폼 O)
-
-## 너의 역할
-시니어 풀스택 엔지니어 + 시스템 아키텍트.
-지금부터 새 폴더 'soaviz/'를 워크스페이스로 사용한다.
-
-## 작업 (순서 엄수)
-
-### Step 1: 폴더 구조 생성
-\`\`\`
-soaviz/
-├── reference/      ← 기존 HTML prototype 보관
-├── README.md       ← 다음 단계
-├── ARCHITECTURE.md ← 다음 단계
-└── SCHEMA.md       ← 다음 단계
-\`\`\`
-
-### Step 2: README.md 작성
-다음 내용을 정확히 포함:
-- 한 줄 정의: "SOAVIZ는 AI 페르소나가 살아가는 소셜 플랫폼"
-- 5주 일정 표 (Week 1~5)
-- 7개 메인 탭 목록 (Home/Personas/Projects/Studio/Library/Publish/Insights)
-- 3레이어 (CREATE / LIVE / CONNECT)
-- 시작 방법 (pnpm install → .env.local → pnpm dev)
-
-### Step 3: ARCHITECTURE.md 작성
-- Next.js 14 App Router 폴더 구조 (\`app/\`, \`components/\`, \`lib/\`)
-- (auth) 라우트 그룹 vs (app) 라우트 그룹 분리
-- Server Components 우선, Client는 인터랙티브만
-- 디자인 토큰 (--bg #0B0B0F / --accent #8B5CF6 / Pretendard)
-- 외부 API: ElevenLabs / Replicate / Fal.ai / OpenAI
-
-### Step 4: SCHEMA.md 작성
-13개 테이블 명세 (각각 컬럼 + RLS 정책):
-1. **users** (id, email, nickname, avatar_url, verified_level: enum)
-2. **personas** (id, user_id, name, slug UNIQUE, tagline, mbti, element_code, genre, avatar_url, visual_lock jsonb, voice_lock jsonb, tone_lock jsonb, is_public)
-3. **assets** (id, persona_id, type: enum tts/image/video/sfx, url, prompt, metadata jsonb)
-4. **projects** (id, user_id, persona_id, title, channel, status: enum)
-5. **project_steps** (id, project_id, step_name, content jsonb)
-6. **posts** (id, persona_id, content, media_urls text[], hashtags text[], is_public)
-7. **follows** (follower_id, following_persona_id, PK 복합)
-8. **likes** (user_id, post_id, PK 복합)
-9. **comments** (id, post_id, user_id, content)
-10. **verifications** (id, user_id, embedding vector(128), liveness_score)
-11. **insights_events** (id, user_id, event_type, metadata jsonb)
-12. **notifications** (id, user_id, type, content jsonb)
-13. **invites** (id, code UNIQUE, used_by)
-
-### Step 5: git init
-\`\`\`bash
-cd soaviz
-git init
-git add .
-git commit -m "day1-A: docs (README + ARCHITECTURE + SCHEMA)"
-\`\`\`
-
-## 출력 형식
-각 문서 작성 완료 시 다음 보고:
-✓ 파일명: <경로>
-✓ 라인 수: <대략>
-✓ 핵심 내용: <한 줄 요약>
-
-## 주의사항
-- 코드는 작성하지 마. 오직 문서만.
-- 마크다운 제목 계층은 #/##/###으로 명확히
-- 한글 + 영어 코드는 자유롭게 혼용`,
-          verify: 'soaviz/ 안에 README.md / ARCHITECTURE.md / SCHEMA.md 3개 파일 + git log에 첫 commit "day1-A: docs"가 보이면 완료.',
-          troubleshoot: 'SCHEMA가 너무 길어 한 번에 안 나오면 → "SCHEMA만 다시 작성해줘"로 분할 요청. 13개 테이블이 빠짐없이 들어갔는지 grep -c "^##" SCHEMA.md 로 검증 (13 이상이어야 함).'
-        }
+          { text: '✅ README.md — 영상 제작 SaaS OS 정의' },
+          { text: '✅ ARCHITECTURE.md — App Router 구조' },
+          { text: '✅ SCHEMA.md — Pipeline/Asset/Credit 테이블 설계' },
+          { text: '✅ git init + commit "day1-A: docs"' },
+        ]
       },
       {
-        id: '1B', title: 'Block B · Next.js 부트스트랩', time: '00:02~01:32',
+        id: '1B', title: 'Block B · Next.js + 디자인 시스템', time: '00:02~01:32',
         items: [
-          { text: 'pnpm create next-app + 의존성 설치' },
-          { text: 'shadcn init (New York / Zinc)' },
-          { text: '디자인 토큰 globals.css 주입' },
-          { text: 'Pretendard 폰트 적용' },
-          { text: '폴더 구조 + .env.local.example' },
-          { text: 'pnpm dev → 다크모드 랜딩 + 보라 버튼' },
-          { text: 'git commit "day1-B: bootstrap"' },
+          { text: '✅ pnpm create next-app + TypeScript + Tailwind' },
+          { text: '✅ 디자인 토큰 (--bg #0B0B0F / --accent #8B5CF6 / Pretendard)' },
+          { text: '✅ globals.css + 다크모드 확인' },
+          { text: '✅ git commit "day1-B: bootstrap"' },
+        ]
+      },
+      {
+        id: '1C', title: 'Block C · Supabase 연결 + 테이블 생성', time: '01:34~03:04',
+        items: [
+          { text: '✅ createBrowserClient / createServerClient 설정' },
+          { text: '✅ projects / episodes / scenes / shots 테이블' },
+          { text: '✅ characters / assets / asset_versions 테이블' },
+          { text: '✅ RLS 기초 정책 (user_id 기반)' },
+        ]
+      },
+      {
+        id: '1D', title: 'Block D · 검증', time: '03:06~04:36',
+        items: [
+          { text: '✅ pnpm dev → 다크모드 랜딩 확인' },
+          { text: '✅ Supabase Dashboard 테이블 확인' },
+          { text: '✅ git commit + push' },
+        ]
+      }
+    ]
+  },
+  {
+    day: 2, week: 1, weekday: '화', theme: 'Auth + App Shell ✅',
+    goal: '✅ 완료 — 로그인/온보딩 + 제작자 전용 App Shell',
+    blocks: [
+      {
+        id: '2A', title: 'Block A · 인증 플로우', time: '22:30~00:00',
+        items: [
+          { text: '✅ /login 이메일 + 구글 OAuth UI' },
+          { text: '✅ /auth/callback 처리' },
+          { text: '✅ /onboarding 닉네임/작업 스타일 입력' },
+        ]
+      },
+      {
+        id: '2B', title: 'Block B · App Shell 기초', time: '00:02~01:32',
+        items: [
+          { text: '✅ Sidebar 컴포넌트' },
+          { text: '✅ Topbar (유저 메뉴 + 크레딧 현황)' },
+          { text: '✅ (app)/layout.tsx 인증 가드' },
+        ]
+      },
+      {
+        id: '2C', title: 'Block C · 미들웨어 + 기초 라우트', time: '01:34~03:04',
+        items: [
+          { text: '✅ middleware.ts 미인증 → /login 리다이렉트' },
+          { text: '✅ /home stub 페이지' },
+          { text: '✅ git commit + push' },
+        ]
+      },
+      {
+        id: '2D', title: 'Block D · 배포 확인', time: '03:06~04:36',
+        items: [
+          { text: '✅ Vercel 연결 + 환경변수 등록' },
+          { text: '✅ 로그인 → 홈 플로우 확인' },
+          { text: '✅ git commit + push' },
+        ]
+      }
+    ]
+  },
+  {
+    day: 3, week: 1, weekday: '수', theme: '🔄 PIVOT — 사이드바 재설계 + Pipeline 스키마',
+    goal: '영상 제작 OS 구조로 전면 재정립 — Nav 교체 + Pipeline DB 완성',
+    blocks: [
+      {
+        id: '3A', title: 'Block A · 사이드바 영상 제작 OS로 교체', time: '22:30~00:00',
+        items: [
+          { text: 'sidebar.tsx NAV_ITEMS 전면 교체 (아래 구조로)' },
+          { text: 'MAIN: 홈(⌂) / 파이프라인(▦) / 라이브러리(◫)' },
+          { text: 'CREATE: 샷 스튜디오(✦) / 보이스(♪) / 뮤직(♫) / SFX(◈) / 비교(⊞)' },
+          { text: 'REFERENCE: 캐릭터(◎) / 스타일(◉) / 시네마(▣)' },
+          { text: 'SYSTEM: 설정(⚙) / 크레딧(◆)' },
+          { text: 'git commit "day3-A: sidebar nav redesign"' },
         ],
         detail: {
-          goal: '빈 Next.js 앱이 다크모드 + Pretendard + 보라 액센트로 떠있는 상태까지. 이 시각적 베이스가 14일 내내 유지된다.',
-          prompt: `# Day 1 · Block B · Next.js 부트스트랩
+          goal: '사이드바를 영상 제작 전용 구조로 완전 교체. 페르소나/퍼블리시/인사이트 제거.',
+          prompt: `# Day 3 · Block A · 사이드바 재설계
 
-## 컨텍스트
-ARCHITECTURE.md를 참고해서 Next.js 14 빈 앱을 만들고 디자인 시스템을 주입한다.
+## 핵심 원칙
+Soaviz Studio = 영상 제작 전용 SaaS OS
+- 페르소나/소셜 기능은 Sovita의 영역 (완전 분리)
+- 제작자의 워크플로우: 기획 → 제작 → 아카이브
 
-## 작업 (순서 엄수)
-
-### Step 1: Next.js 14 프로젝트 생성
-\`\`\`bash
-cd soaviz
-pnpm create next-app@latest . \\
-  --typescript --tailwind --app --src-dir=false \\
-  --import-alias "@/*" --no-eslint
-\`\`\`
-(이미 폴더 안에 있으니 . 사용. 기존 .md 파일은 유지)
-
-### Step 2: 의존성 추가
-\`\`\`bash
-pnpm add @supabase/supabase-js @supabase/ssr
-pnpm add zod react-hook-form @hookform/resolvers
-pnpm add lucide-react clsx tailwind-merge
-pnpm add class-variance-authority
-\`\`\`
-
-### Step 3: shadcn/ui 초기화
-\`\`\`bash
-pnpm dlx shadcn@latest init
-\`\`\`
-- Style: **New York**
-- Base color: **Zinc**
-- CSS variables: **Yes**
-
-### Step 4: 자주 쓰는 shadcn 컴포넌트 미리 설치
-\`\`\`bash
-pnpm dlx shadcn@latest add button input label card dialog \\
-  dropdown-menu tabs textarea select sheet badge avatar \\
-  toast sonner
-\`\`\`
-
-### Step 5: app/globals.css에 디자인 토큰 주입
-기존 :root와 .dark 블록 안에 다음 추가:
-\`\`\`css
-:root {
-  --bg: #0B0B0F;
-  --bg-elev: #121218;
-  --bg-card: rgba(255,255,255,0.025);
-  --border: rgba(255,255,255,0.07);
-  --text: #E8E8EA;
-  --text-dim: #B3B3BC;
-  --accent: #8B5CF6;
-  --accent-2: #6366F1;
-  --accent-soft: rgba(139,92,246,0.14);
-  --radius: 14px;
-}
-\`\`\`
-shadcn 변수도 보라 톤으로 오버라이드:
-\`\`\`css
-.dark {
-  --primary: 263 84% 64%;  /* 보라 */
-  --background: 240 10% 4%;
-  --foreground: 240 5% 91%;
-}
-\`\`\`
-
-### Step 6: Pretendard Variable 주입
-app/layout.tsx \`<head>\` 안:
-\`\`\`html
-<link rel="preconnect" href="https://cdn.jsdelivr.net" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-\`\`\`
-tailwind.config.ts:
+## 교체할 NAV_ITEMS
 \`\`\`ts
-fontFamily: {
-  sans: ['"Pretendard Variable"', 'Pretendard', 'system-ui', 'sans-serif'],
-}
+const NAV_SECTIONS = [
+  {
+    label: 'MAIN',
+    items: [
+      { href: '/home',     icon: '⌂',  label: '홈' },
+      { href: '/pipeline', icon: '▦',  label: '파이프라인' },
+      { href: '/library',  icon: '◫',  label: '라이브러리' },
+    ]
+  },
+  {
+    label: 'CREATE',
+    items: [
+      { href: '/studio/shot',   icon: '✦', label: '샷 스튜디오' },
+      { href: '/studio/voice',  icon: '♪', label: '보이스' },
+      { href: '/studio/music',  icon: '♫', label: '뮤직' },
+      { href: '/studio/sfx',    icon: '◈', label: 'SFX' },
+      { href: '/studio/compare',icon: '⊞', label: '비교 모드' },
+    ]
+  },
+  {
+    label: 'REFERENCE',
+    items: [
+      { href: '/bible/characters', icon: '◎', label: '캐릭터' },
+      { href: '/bible/styles',     icon: '◉', label: '스타일' },
+      { href: '/bible/cinema',     icon: '▣', label: '시네마' },
+    ]
+  },
+  {
+    label: 'SYSTEM',
+    items: [
+      { href: '/settings', icon: '⚙', label: '설정' },
+      { href: '/credits',  icon: '◆', label: '크레딧' },
+    ]
+  },
+]
 \`\`\`
 
-### Step 7: 폴더 구조 정리
-\`\`\`
-app/
-├── (auth)/
-│   ├── login/
-│   └── onboarding/
-├── (app)/
-│   ├── layout.tsx
-│   ├── home/
-│   ├── personas/
-│   ├── projects/
-│   ├── studio/
-│   ├── library/
-│   ├── publish/
-│   └── insights/
-├── api/
-├── layout.tsx
-├── page.tsx
-└── globals.css
-
-components/
-├── ui/         ← shadcn
-├── layout/     ← Sidebar, Topbar
-└── features/   ← 도메인별
-
-lib/
-├── supabase/
-├── utils.ts
-└── constants.ts
-
-types/
-\`\`\`
-
-### Step 8: .env.local.example 생성
-\`\`\`
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-ELEVENLABS_API_KEY=
-REPLICATE_API_TOKEN=
-FAL_KEY=
-OPENAI_API_KEY=
-\`\`\`
-
-### Step 9: 랜딩 페이지 (/page.tsx)
-- 다크 배경 #0B0B0F
-- "SOAVIZ" 타이틀 (Pretendard 700)
-- 한 줄 태그라인: "내가 만든 또 하나의 나"
-- 보라 버튼 "시작하기" (shadcn Button, default variant)
-- 가운데 정렬
-
-### Step 10: pnpm dev 후 검증
-http://localhost:3000 → 다크모드 + 보라 버튼이 보이면 OK
-
-### Step 11: 커밋
-\`\`\`bash
-git add .
-git commit -m "day1-B: bootstrap (Next.js + shadcn + tokens)"
-\`\`\`
-
-## 출력 형식
-각 Step 종료 시:
-✓ Step N: <한 줄 요약>
-파일: <변경 경로>
-다음 진행 가능: yes/no`,
-          verify: 'pnpm dev 후 http://localhost:3000 → 다크모드 화면 + "SOAVIZ" + 보라 버튼이 보이면 통과. 폰트는 Pretendard (Sans 계열보다 한글이 또렷).',
-          troubleshoot: 'shadcn init이 실패하면 components.json 직접 작성. Pretendard가 안 보이면 layout.tsx의 link 위치 확인 (head 안). 보라가 안 보이면 globals.css의 --primary HSL 형식 확인 (263 84% 64% 띄어쓰기).'
+## 사이드바 섹션 레이블 추가
+각 그룹 위에 \`<div class="nav-section-label">\` 추가 (10px 대문자)`,
+          verify: '사이드바에 4개 섹션이 구분되어 표시되고 기존 personas/publish/insights 링크가 없으면 완료.',
+          troubleshoot: '사이드바 교체 후 /personas 직접 접근 시 404가 나오면 OK. 기존 personas 폴더는 삭제하거나 redirect 처리.'
         }
       },
       {
-        id: '1C', title: 'Block C · DB 스키마', time: '01:34~03:04',
+        id: '3B', title: 'Block B · Pipeline DB 스키마 완성', time: '00:02~01:32',
         items: [
-          { text: 'supabase/migrations/001_init.sql 생성' },
-          { text: 'Supabase SQL Editor에서 Run' },
-          { text: '13개 테이블 생성 확인' },
-          { text: 'Storage 버킷 4개 (avatars/face-verify/persona-assets/project-renders)' },
-          { text: 'vector extension 활성화' },
-          { text: 'git commit "day1-C: db schema"' },
+          { text: 'projects: format(short/series/film/mv/ad) + logline + genre[]' },
+          { text: 'episodes: project_id + number + title + synopsis' },
+          { text: 'scenes: episode_id + heading + beat + character_ids[]' },
+          { text: 'shots: scene_id + type + camera_move + duration + description + status + approved_asset_id' },
+          { text: 'Supabase 마이그레이션 실행 + RLS 재설정' },
+          { text: 'git commit "day3-B: pipeline schema"' },
         ],
         detail: {
-          goal: 'Supabase 프로젝트에 13개 테이블 + RLS + Storage 4개 버킷이 모두 만들어진 상태. 이게 백엔드의 뼈대.',
-          prompt: `# Day 1 · Block C · DB 스키마
+          goal: 'Pipeline의 핵심 트리 구조 (Project → Episode → Scene → Shot) DB 완성.',
+          prompt: `# Day 3 · Block B · Pipeline DB 스키마
 
-## 사전 준비
-1. https://supabase.com 에서 새 프로젝트 생성 (region: Northeast Asia (Seoul))
-2. 프로젝트 URL + anon key + service_role key를 .env.local에 입력
-3. Settings > Database > Extensions에서 'vector' 확인 (pgvector)
+## 테이블 구조 (순서대로 생성)
 
-## 작업
-
-### Step 1: SCHEMA.md를 SQL DDL로 변환
-SCHEMA.md를 참고해서 supabase/migrations/001_init.sql 작성.
-다음 순서로:
-1. CREATE EXTENSION IF NOT EXISTS vector;
-2. CREATE EXTENSION IF NOT EXISTS pgcrypto;
-3. CREATE TYPE 정의 (verified_level, asset_type, project_status 등)
-4. CREATE TABLE × 13 (FK 순서 주의: users → personas → assets/projects → ...)
-5. CREATE INDEX (자주 조회될 컬럼: slug, user_id, persona_id, created_at)
-6. ALTER TABLE ... ENABLE ROW LEVEL SECURITY × 13
-7. RLS POLICY × 테이블당 SELECT/INSERT/UPDATE/DELETE 4개씩
-
-### Step 2: 핵심 RLS 패턴
+### projects
 \`\`\`sql
--- 본인 데이터만 INSERT/UPDATE/DELETE
-CREATE POLICY "users_own_personas"
-ON personas FOR ALL
-USING (auth.uid() = user_id);
-
--- 공개 페르소나는 누구나 SELECT
-CREATE POLICY "public_personas_read"
-ON personas FOR SELECT
-USING (is_public = true OR auth.uid() = user_id);
+CREATE TABLE projects (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users NOT NULL,
+  title text NOT NULL,
+  logline text,
+  format text CHECK (format IN ('short','series','film','mv','ad')) DEFAULT 'short',
+  genre text[] DEFAULT '{}',
+  status text DEFAULT 'draft',
+  color text DEFAULT '#8B5CF6',
+  cover_asset_id uuid,
+  target_runtime int,   -- 분
+  deadline date,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "본인만" ON projects USING (auth.uid() = user_id);
 \`\`\`
 
-### Step 3: Supabase SQL Editor에서 실행
-- 001_init.sql 전체 복사 → SQL Editor → Run
-- 에러가 있으면 그 부분만 수정 후 재실행
-- 성공 시 Table Editor에 13개 테이블 표시
+### episodes, scenes, shots (동일 패턴)
+- 각각 parent FK + number + status + created_at
+- shots에 approved_asset_id, candidate_asset_ids uuid[] 추가
 
-### Step 4: Storage 버킷 4개 생성
-Storage > New bucket:
-1. **avatars** (Public, max 5MB, image/*)
-2. **face-verify** (Private, max 10MB, image/* + video/*)
-3. **persona-assets** (Public, max 50MB, image/* + video/* + audio/*)
-4. **project-renders** (Public, max 100MB, video/*)
-
-각 버킷에 RLS 정책:
+### characters
 \`\`\`sql
--- 본인 폴더에만 업로드 (auth.uid() prefix)
-CREATE POLICY "users_upload_own"
-ON storage.objects FOR INSERT
-WITH CHECK (
-  bucket_id IN ('avatars', 'face-verify', 'persona-assets', 'project-renders')
-  AND (storage.foldername(name))[1] = auth.uid()::text
+CREATE TABLE characters (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id uuid REFERENCES projects,
+  name text NOT NULL,
+  role text,
+  appearance_notes text,
+  visual_prompt text,        -- 이미지 생성용 베이스 프롬프트
+  voice_settings jsonb,      -- { provider, voice_id, stability, clarity }
+  reference_asset_ids uuid[] DEFAULT '{}',
+  created_at timestamptz DEFAULT now()
 );
 \`\`\`
 
-### Step 5: 검증 SQL
+### assets (자동 아카이브 핵심 테이블)
 \`\`\`sql
--- 13개 확인
-SELECT count(*) FROM information_schema.tables
-WHERE table_schema = 'public';
--- → 13
-
--- RLS 활성 확인
-SELECT tablename FROM pg_tables
-WHERE schemaname = 'public' AND rowsecurity = true;
--- → 13개 모두
-
--- vector extension
-SELECT * FROM pg_extension WHERE extname = 'vector';
--- → 1 row
-\`\`\`
-
-### Step 6: 커밋
-\`\`\`bash
-git add supabase/
-git commit -m "day1-C: db schema (13 tables + RLS + 4 buckets)"
-\`\`\`
-
-## 출력 형식
-✓ 001_init.sql 작성 완료 (총 X줄)
-✓ Supabase 실행 결과: 성공 / 에러 N개
-✓ 13개 테이블: <목록>
-✓ 4개 버킷: <목록>`,
-          verify: 'Supabase Dashboard > Table Editor에서 13개 테이블 보임 / Storage에 4개 버킷 / Database > Extensions에 vector 활성. 검증 SQL 3개 모두 통과.',
-          troubleshoot: 'FK 에러 = 테이블 생성 순서 잘못. users 먼저 → personas → assets 순. RLS 충돌 = USING/WITH CHECK 둘 다 명시. vector 미활성 = Settings > Database > Extensions에서 vector 검색 후 enable.'
+CREATE TABLE assets (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES auth.users NOT NULL,
+  project_id uuid REFERENCES projects,
+  shot_id uuid REFERENCES shots,
+  type text CHECK (type IN ('image','video','voice','music','sfx','script')),
+  url text NOT NULL,
+  prompt text,
+  model text,
+  metadata jsonb DEFAULT '{}',
+  status text DEFAULT 'candidate',   -- candidate | approved | final | archived
+  version int DEFAULT 1,
+  parent_asset_id uuid REFERENCES assets(id),  -- 버전 체인
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "본인만" ON assets USING (auth.uid() = user_id);
+\`\`\``,
+          verify: 'Supabase Dashboard에서 5개 테이블(projects/episodes/scenes/shots/characters/assets) 확인되면 완료.',
+          troubleshoot: 'FK 오류 시 테이블 생성 순서 확인: projects → episodes → scenes → shots → assets'
         }
       },
       {
-        id: '1D', title: 'Block D · 클라이언트 + RLS 테스트', time: '03:06~04:36',
+        id: '3C', title: 'Block C · /home 제작 대시보드 기초', time: '01:34~03:04',
         items: [
-          { text: 'lib/supabase/client.ts + server.ts' },
-          { text: 'middleware.ts (/app/* 보호)' },
-          { text: 'types/database.ts 생성' },
-          { text: 'RLS 차단 확인 (비로그인 personas SELECT X)' },
-          { text: 'git commit "day1-D: client + types"' },
-          { text: 'git push' },
-          { text: '내일 메모 작성' },
+          { text: '/home 제작 현황 대시보드 (진행 중 프로젝트 / 최근 에셋 / 크레딧)' },
+          { text: '"새 프로젝트 시작" 빠른 시작 CTA' },
+          { text: 'projects SELECT (최근 3개)' },
+          { text: 'git commit "day3-C: home dashboard"' },
+        ]
+      },
+      {
+        id: '3D', title: 'Block D · personas 제거 + 배포', time: '03:06~04:36',
+        items: [
+          { text: 'next-app/app/(app)/personas/ 폴더 삭제 (→ Sovita 프로젝트로 이동)' },
+          { text: '/personas 접근 시 /pipeline redirect 처리' },
+          { text: 'Vercel 배포 + 사이드바 확인' },
+          { text: 'git commit + push "day3: pivot to video production OS"' },
+        ]
+      }
+    ]
+  },
+
+  // ---------- WEEK 2 · Pipeline + Pre-production ----------
+  {
+    day: 4, week: 2, weekday: '월', theme: 'Pipeline UI — 프로젝트 트리',
+    goal: '/pipeline 페이지 완성 — Project/Episode/Scene/Shot 트리 완전 동작',
+    blocks: [
+      {
+        id: '4A', title: 'Block A · Projects 목록 + 생성', time: '22:30~00:00',
+        items: [
+          { text: '/pipeline 페이지 — 프로젝트 카드 그리드' },
+          { text: '"새 프로젝트" 다이얼로그 (제목/포맷/장르/로그라인)' },
+          { text: 'projects INSERT server action' },
+          { text: 'git commit "day4-A: projects list"' },
         ],
         detail: {
-          goal: 'Next.js → Supabase 통신 클라이언트 셋업 + 타입 안전성 + RLS가 실제로 작동하는지 확인. 내일을 위한 메모 작성.',
-          prompt: `# Day 1 · Block D · 클라이언트 + RLS 테스트
+          goal: '/pipeline은 Soaviz Studio의 핵심 진입점. 모든 제작 흐름이 여기서 시작.',
+          prompt: `# Day 4 · Block A · Pipeline — Projects
 
-## 작업
-
-### Step 1: lib/supabase/client.ts (Client Component용)
-\`\`\`ts
-import { createBrowserClient } from '@supabase/ssr'
-import type { Database } from '@/types/database'
-
-export function createClient() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+## 페이지 레이아웃
+\`\`\`
+/pipeline
+├── 헤더: "파이프라인" + "새 프로젝트" 버튼
+├── 프로젝트 카드 그리드 (3열)
+│   ├── 커버 이미지 or 컬러 플레이스홀더
+│   ├── 포맷 배지 (단편/시리즈/MV)
+│   ├── 제목 + 로그라인
+│   └── 진행률 바 (승인된 Shot / 전체 Shot)
+└── 빈 상태: "첫 프로젝트를 시작해보세요"
 \`\`\`
 
-### Step 2: lib/supabase/server.ts (Server Component / Route Handler용)
-\`\`\`ts
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import type { Database } from '@/types/database'
-
-export async function createClient() {
-  const cookieStore = await cookies()
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll(list) {
-          try { list.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )} catch {}
-        },
-      },
-    }
-  )
-}
+## NewProjectDialog
+\`\`\`tsx
+<Dialog>
+  <input name="title" placeholder="프로젝트 제목" />
+  <Select name="format"> // short/series/film/mv/ad
+  <input name="logline" placeholder="한 줄 컨셉 (선택)" />
+  <ColorPicker name="color" /> // 프로젝트 대표 컬러
+</Dialog>
 \`\`\`
 
-### Step 3: middleware.ts (보호 라우트)
+## server action
 \`\`\`ts
-import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request })
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return request.cookies.getAll() },
-        setAll(list) {
-          list.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
-          list.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options))
-        },
-      },
-    }
-  )
+async function createProject(formData: FormData) {
+  'use server'
+  const supabase = createServerClient(...)
   const { data: { user } } = await supabase.auth.getUser()
-
-  // /home, /personas, /projects, /studio, /library, /publish, /insights 보호
-  const protectedPaths = ['/home','/personas','/projects','/studio','/library','/publish','/insights']
-  if (!user && protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-  return response
+  await supabase.from('projects').insert({
+    user_id: user.id,
+    title: formData.get('title'),
+    format: formData.get('format'),
+    logline: formData.get('logline'),
+    color: formData.get('color') || '#8B5CF6',
+  })
+  revalidatePath('/pipeline')
 }
-
-export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
-}
-\`\`\`
-
-### Step 4: types/database.ts 자동 생성
-\`\`\`bash
-pnpm dlx supabase gen types typescript \\
-  --project-id <YOUR_PROJECT_ID> \\
-  --schema public > types/database.ts
-\`\`\`
-또는 Supabase Dashboard > API Docs > TypeScript 탭에서 복사
-
-### Step 5: RLS 차단 테스트
-1. 시크릿 브라우저로 http://localhost:3000/personas 접속
-2. → /login으로 자동 리다이렉트되면 통과
-3. SQL Editor에서:
-\`\`\`sql
--- anon 역할로 시도 (실패해야 함)
-SET LOCAL ROLE anon;
-SELECT * FROM personas;
--- → 0 rows 또는 permission denied
-\`\`\`
-
-### Step 6: 커밋 + 푸시
-\`\`\`bash
-git add .
-git commit -m "day1-D: supabase client + middleware + types"
-git push -u origin main  # 처음이면 GitHub repo 만들기
-\`\`\`
-
-### Step 7: 내일을 위한 메모
-soaviz/NOTES.md (또는 본 워크시트의 Diary 탭) 에 다음 작성:
-- 오늘 막힌 것:
-- 내일 가장 먼저 할 것: Day 2 Block A (로그인 페이지)
-- 환경 이슈: (있으면)
-
-## 출력 형식
-✓ 4개 파일 생성: <경로 목록>
-✓ middleware 보호 동작: yes/no
-✓ types/database.ts 라인 수: <대략>
-✓ RLS 차단 테스트 결과: pass/fail
-✓ git push 완료: yes/no`,
-          verify: '시크릿 모드로 /home 접속 시 /login으로 리다이렉트 + types/database.ts에 13개 테이블 타입 정의 존재 + git remote에 push 성공.',
-          troubleshoot: 'middleware 무한 리다이렉트 = matcher가 /login 포함하면 X. /login은 보호에서 빼기. types 생성 실패 = supabase 로그인 (pnpm dlx supabase login). cookies API 에러 = Next.js 15에서 await cookies() 필수.'
+\`\`\``,
+          verify: '새 프로젝트 생성 후 카드 그리드에 표시되면 완료.',
+          troubleshoot: 'revalidatePath 미작동 시 redirect("/pipeline") 추가. 빈 상태 UI는 data.length === 0 조건으로.'
         }
-      }
-    ]
-  },
-  {
-    day: 2, week: 1, weekday: '화', theme: '인증 + App Shell',
-    goal: '본인 계정 로그인 + 사이드바 7탭',
-    blocks: [
+      },
       {
-        id: '2A', title: 'Block A · 로그인 페이지', time: '22:30~00:00',
+        id: '4B', title: 'Block B · Episode/Scene 트리', time: '00:02~01:32',
         items: [
-          { text: '/login 페이지 (중앙 Card)' },
-          { text: '달 로고 SVG (reference HTML에서 이식)' },
-          { text: '이메일 매직링크 + Google OAuth' },
-          { text: '본인 메일 발송 테스트' },
-          { text: 'git commit "day2-A: login"' },
+          { text: '/pipeline/[projectId] 상세 — 3패널 레이아웃' },
+          { text: '왼쪽: Episode 목록 (E01/E02...) + "에피소드 추가"' },
+          { text: '중간: 선택된 Episode의 Scene 목록 (S01/S02...)' },
+          { text: 'Scene 카드: heading(INT./EXT.) + beat + 씬 상태 배지' },
+          { text: 'git commit "day4-B: episode scene tree"' },
         ]
       },
       {
-        id: '2B', title: 'Block B · 콜백 + 온보딩', time: '00:02~01:32',
+        id: '4C', title: 'Block C · Shot 목록 + 상태 관리', time: '01:34~03:04',
         items: [
-          { text: '/auth/callback route handler' },
-          { text: '/onboarding (닉네임 + 프로필 이미지)' },
-          { text: 'users 테이블 자동 생성 트리거' },
-          { text: '매직링크 → /home 도달 확인' },
-          { text: 'git commit "day2-B: callback + onboarding"' },
+          { text: '오른쪽 패널: 선택된 Scene의 Shot 카드 목록' },
+          { text: 'Shot 카드: 번호 + 타입(WS/MS/CU) + 설명 + 상태 컬러' },
+          { text: '상태 배지: draft(회색) / generated(파랑) / approved(초록) / final(보라)' },
+          { text: '"Shot 추가" 버튼 + 드래그 순서 변경 (drag-over 기초)' },
+          { text: 'git commit "day4-C: shot list"' },
         ]
       },
       {
-        id: '2C', title: 'Block C · 사이드바', time: '01:34~03:04',
+        id: '4D', title: 'Block D · 진행률 + 배포', time: '03:06~04:36',
         items: [
-          { text: 'CREATE / ASSETS / GROW 그룹 + 구분선' },
-          { text: '7개 메뉴 (Personas/Projects/Studio/Library/Publish/Insights)' },
-          { text: 'active 스타일 (--accent-soft)' },
-          { text: '모바일 햄버거 (shadcn Sheet)' },
-          { text: 'git commit "day2-C: sidebar"' },
-        ]
-      },
-      {
-        id: '2D', title: 'Block D · 상단바 + Layout + Placeholder 7개', time: '03:06~04:36',
-        items: [
-          { text: 'Topbar.tsx + PageHeader.tsx' },
-          { text: '(app)/layout.tsx 보호 라우트' },
-          { text: '7개 placeholder 페이지' },
-          { text: '로그아웃 동작' },
-          { text: 'git commit "day2-D: shell + placeholders"' },
-          { text: 'git push + 내일 메모' },
-        ]
-      }
-    ]
-  },
-  {
-    day: 3, week: 1, weekday: '수', theme: '페르소나 CRUD + Identity',
-    goal: '페르소나 3개 실제 생성·저장',
-    blocks: [
-      {
-        id: '3A', title: 'Block A · 페르소나 목록', time: '22:30~00:00',
-        items: [
-          { text: '/personas 그리드 뷰' },
-          { text: '장르 필터 31종 (전체/판타지/SF...)' },
-          { text: '검색 (debounce 150ms)' },
-          { text: '카운트 표시' },
-          { text: 'git commit "day3-A: list"' },
-        ]
-      },
-      {
-        id: '3B', title: 'Block B · 새 페르소나 에디터 골격', time: '00:02~01:32',
-        items: [
-          { text: '/personas/new 풀페이지' },
-          { text: '4탭 골격 (Identity/Visual/Voice/Tone)' },
-          { text: '미리보기 카드 자리' },
-          { text: 'git commit "day3-B: editor skeleton"' },
-        ]
-      },
-      {
-        id: '3C', title: 'Block C · Identity 탭', time: '01:34~03:04',
-        items: [
-          { text: '필드 (name/slug/tagline/backstory/mbti/element_code/genre/avatar)' },
-          { text: 'zod 검증 스키마' },
-          { text: '미리보기 실시간 반영' },
-          { text: 'git commit "day3-C: identity"' },
-        ]
-      },
-      {
-        id: '3D', title: 'Block D · 저장 + 테스트 3개', time: '03:06~04:36',
-        items: [
-          { text: 'Server Action createPersona/updatePersona' },
-          { text: 'Slug unique 자동 처리' },
-          { text: '이루나 / 박리라 / 자유 3개 생성' },
-          { text: 'DB row 3개 확인' },
-          { text: '삭제 confirm dialog' },
-          { text: 'git commit + push + 내일 메모' },
-        ]
-      }
-    ]
-  },
-  // ---------- WEEK 2 ----------
-  {
-    day: 4, week: 2, weekday: '월', theme: 'Lock 3종 + 페르소나 상세',
-    goal: '페르소나 시스템 100% 완성',
-    blocks: [
-      {
-        id: '4A', title: 'Block A · Visual Lock', time: '22:30~00:00',
-        items: [
-          { text: 'visual_lock jsonb 구조' },
-          { text: '프롬프트 시드 + 네거티브' },
-          { text: '참고 이미지 multi 업로드 (max 5)' },
-          { text: '파라미터 칩 (헤어/눈/의상/아트)' },
-          { text: 'git commit "day4-A: visual lock"' },
-        ]
-      },
-      {
-        id: '4B', title: 'Block B · Voice Lock', time: '00:02~01:32',
-        items: [
-          { text: 'ElevenLabs 계정 + API 키' },
-          { text: 'voice 드롭다운 (voices fetch)' },
-          { text: '슬라이더 4종 (Stability/Clarity/Style/Speaker)' },
-          { text: '"샘플 듣기" 버튼' },
-          { text: 'git commit "day4-B: voice lock"' },
-        ]
-      },
-      {
-        id: '4C', title: 'Block C · Tone Lock', time: '01:34~03:04',
-        items: [
-          { text: '말투 규칙 (multi tag)' },
-          { text: '금기어 (빨간 칩)' },
-          { text: '예시 문장 3개' },
-          { text: '보이스 페르소나 한 줄' },
-          { text: 'git commit "day4-C: tone lock"' },
-        ]
-      },
-      {
-        id: '4D', title: 'Block D · 페르소나 상세 페이지', time: '03:06~04:36',
-        items: [
-          { text: '/personas/[id] Cover + 헤더 + 메타' },
-          { text: 'Lock 요약 카드 3개' },
-          { text: '편집/복제/공개/삭제 액션' },
-          { text: 'verified 배지 자리' },
+          { text: '프로젝트 카드에 진행률 계산 (approved shots / total shots)' },
+          { text: '파이프라인 헤더에 전체 통계 (총 Shot / 완성 / 미완성)' },
+          { text: 'Vercel 배포 + URL 확인' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 5, week: 2, weekday: '화', theme: '본인인증 (🔵 Self)',
-    goal: '셀피 → face-api → 🔵 배지',
+    day: 5, week: 2, weekday: '화', theme: 'Shot 워크스페이스 + Script 에디터',
+    goal: 'Shot 상세 편집 공간 + 씬별 대본 에디터',
     blocks: [
       {
-        id: '5A', title: 'Block A · WebRTC 셀피 UI', time: '22:30~00:00',
+        id: '5A', title: 'Block A · Shot 워크스페이스 레이아웃', time: '22:30~00:00',
         items: [
-          { text: '/verify 3스텝 wizard' },
-          { text: '카메라 권한 요청' },
-          { text: '3초 영상 녹화 (MediaRecorder)' },
-          { text: '눈 깜빡임 안내' },
-          { text: 'git commit "day5-A: verify ui"' },
+          { text: '/pipeline/[projectId]/shot/[shotId] 전용 페이지' },
+          { text: '상단: Shot 번호 / 씬 정보 / 상태 배지' },
+          { text: '왼쪽: Shot 메타 (타입/카메라무브/길이/설명/대사)' },
+          { text: '오른쪽: 에셋 영역 (생성 전: 빈 상태 + CTA 버튼 3개)' },
+          { text: 'git commit "day5-A: shot workspace"' },
+        ],
+        detail: {
+          goal: 'Shot 워크스페이스 = 에셋 생성의 핵심 허브. 이 화면에서 이미지/영상/보이스를 생성하고 채택한다.',
+          prompt: `# Day 5 · Block A · Shot 워크스페이스
+
+## 레이아웃 (2컬럼)
+\`\`\`
+┌─────────────────────────────────────────┐
+│ < 파이프라인  S03 · 03  [draft] [편집]   │
+├──────────────┬──────────────────────────┤
+│ SHOT 메타    │ ASSETS                   │
+│              │                          │
+│ 타입: CU     │  [ + 이미지 생성 ]       │
+│ 무브: static │  [ + 영상 생성 ]         │
+│ 길이: 3.5초  │  [ + 보이스 녹음 ]       │
+│              │                          │
+│ 설명:        │  (생성 후 카드 표시)      │
+│ 그녀가 눈을  │                          │
+│ 천천히 뜬다  │                          │
+│              │                          │
+│ 대사:        │                          │
+│ "어디...?"   │                          │
+│              │                          │
+│ 캐릭터:      │                          │
+│ [이루나]     │                          │
+└──────────────┴──────────────────────────┘
+\`\`\`
+
+## 에셋 CTA 버튼 동작
+- "+ 이미지 생성" → /studio/shot?shotId={id}&type=image
+- "+ 영상 생성"   → /studio/shot?shotId={id}&type=video
+- "+ 보이스"      → /studio/shot?shotId={id}&type=voice
+
+## Shot 수정 (인라인 편집)
+- 설명/대사/길이/타입 모두 인라인 클릭 편집
+- onBlur → shot UPDATE server action`,
+          verify: 'Shot 클릭 시 워크스페이스 열리고 메타 편집 + 에셋 CTA 3개 보이면 완료.',
+          troubleshoot: '인라인 편집은 Client Component 필요 ("use client"). 저장은 server action 호출.'
+        }
+      },
+      {
+        id: '5B', title: 'Block B · Script 에디터', time: '00:02~01:32',
+        items: [
+          { text: '/pipeline/[projectId]/script 씬별 대본 에디터' },
+          { text: '씬 헤딩 자동 포맷 (INT./EXT. 장소 — 시간대)' },
+          { text: 'scenes 테이블 script_content jsonb 컬럼 추가' },
+          { text: '씬 이동 단축키 (Ctrl+↑↓)' },
+          { text: 'git commit "day5-B: script editor"' },
         ]
       },
       {
-        id: '5B', title: 'Block B · face-api 임베딩', time: '00:02~01:32',
+        id: '5C', title: 'Block C · Character Bible 기초', time: '01:34~03:04',
         items: [
-          { text: 'face-api.js 설치' },
-          { text: 'public/models/ 배치 (ssd + landmark + recognition)' },
-          { text: '128-dim descriptor 추출' },
-          { text: '라이브니스 (EAR 눈 깜빡임)' },
-          { text: 'face-verify 버킷 업로드' },
-          { text: 'git commit "day5-B: embedding"' },
+          { text: '/bible/characters 캐릭터 카드 목록 (프로젝트별 필터)' },
+          { text: '"새 캐릭터" 폼 (이름/역할/외형 설명/visual_prompt)' },
+          { text: 'characters INSERT/UPDATE server action' },
+          { text: 'Shot 워크스페이스 캐릭터 연결 (character_ids 선택)' },
+          { text: 'git commit "day5-C: character bible"' },
         ]
       },
       {
-        id: '5C', title: 'Block C · Edge Function verify-face', time: '01:34~03:04',
+        id: '5D', title: 'Block D · AI Shotlist 자동 생성', time: '03:06~04:36',
         items: [
-          { text: 'supabase/functions/verify-face 작성' },
-          { text: 'supabase functions deploy' },
-          { text: 'users.verified_level=self 확인' },
-          { text: 'verifications row 생성' },
-          { text: 'git commit "day5-C: edge function"' },
-        ]
-      },
-      {
-        id: '5D', title: 'Block D · 배지 + 셀프포트레이트 차단', time: '03:06~04:36',
-        items: [
-          { text: 'VerifiedBadge 컴포넌트 (🔵🟣🟡)' },
-          { text: '페르소나 카드/상세/사이드바 적용' },
-          { text: 'cosine similarity 차단 (≥ 0.85)' },
-          { text: '본인 얼굴 통과 + 비본인 차단 테스트' },
+          { text: '/api/shotlist/generate POST → OpenAI GPT-4o 호출' },
+          { text: '입력: 씬 설명 + 장르 + 분위기 → 출력: Shot 배열 JSON' },
+          { text: '"AI 샷리스트 생성" 버튼 → 결과 미리보기 → 일괄 삽입' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 6, week: 2, weekday: '수', theme: 'Vercel 배포 + Studio TTS',
-    goal: '공개 URL + 첫 TTS',
+    day: 6, week: 2, weekday: '수', theme: 'Style Bible + 1차 배포',
+    goal: '스타일 프리셋 시스템 + Vercel 1차 production 배포',
     blocks: [
       {
-        id: '6A', title: 'Block A · Vercel Production', time: '22:30~00:00',
+        id: '6A', title: 'Block A · Style Bible', time: '22:30~00:00',
         items: [
-          { text: 'vercel.com 연동 + 환경변수 등록' },
-          { text: 'Supabase Auth URL 추가 (production)' },
-          { text: 'face-api 모델 배포 확인' },
-          { text: 'production 로그인 성공' },
-          { text: 'git commit "day6-A: vercel"' },
+          { text: '/bible/styles 스타일 프리셋 카드 목록' },
+          { text: '스타일 카드: 컬러팔레트 / 카메라 / 라이팅 / 분위기 태그' },
+          { text: '"새 스타일" 폼 + 프리뷰 이미지 (asset 연결)' },
+          { text: 'shots.style_id 연결 (Scene/Shot 레벨 오버라이드)' },
+          { text: 'git commit "day6-A: style bible"' },
         ]
       },
       {
-        id: '6B', title: 'Block B · API 키 + Studio 골격', time: '00:02~01:32',
+        id: '6B', title: 'Block B · Cinema Library (참고 영상)', time: '00:02~01:32',
         items: [
-          { text: 'Replicate / Fal.ai / OpenAI 키 발급' },
-          { text: '.env.local + Vercel 모두 등록' },
-          { text: '/studio 5탭 골격' },
-          { text: '페르소나 드롭다운' },
-          { text: 'git commit "day6-B: studio skeleton"' },
+          { text: '/bible/cinema — YouTube/Vimeo URL 임베드 + 타임코드 메모' },
+          { text: '참고 클립 카드 (썸네일 + 제목 + 태그)' },
+          { text: '"이 장면에 적용" → style_id 자동 생성 CTA' },
+          { text: 'git commit "day6-B: cinema library"' },
         ]
       },
       {
-        id: '6C', title: 'Block C · TTS API', time: '01:34~03:04',
+        id: '6C', title: 'Block C · Credits 시스템 기초', time: '01:34~03:04',
         items: [
-          { text: '/api/studio/tts (ElevenLabs)' },
-          { text: 'mp3 Storage 업로드' },
-          { text: 'assets insert + insights_events' },
-          { text: '일일 10회 가드' },
-          { text: 'git commit "day6-C: tts api"' },
+          { text: 'users 테이블 credits_remaining int 컬럼 추가' },
+          { text: '/credits 페이지 — 잔여 크레딧 + 사용 내역' },
+          { text: '에셋 생성 시 크레딧 차감 미들웨어 기초' },
+          { text: '가입 시 무료 크레딧 100 지급 (Supabase trigger)' },
+          { text: 'git commit "day6-C: credits system"' },
         ]
       },
       {
-        id: '6D', title: 'Block D · TTS UI + 첫 음성', time: '03:06~04:36',
+        id: '6D', title: 'Block D · Vercel 1차 배포 + 검증', time: '03:06~04:36',
         items: [
-          { text: 'TTSPanel.tsx (좌 입력 / 우 결과)' },
-          { text: 'Voice Lock 자동 적용 표시' },
-          { text: 'Library에서 조회' },
-          { text: '모바일 재생 확인' },
+          { text: '전체 환경변수 Vercel 대시보드 확인' },
+          { text: '로그인 → 파이프라인 → Shot 워크스페이스 플로우 E2E' },
+          { text: '사이드바 모든 링크 동작 확인' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
-  // ---------- WEEK 3 ----------
+
+  // ---------- WEEK 3 · AI 에셋 생성 엔진 ----------
   {
-    day: 7, week: 3, weekday: '월', theme: 'Studio Image',
-    goal: '페르소나 얼굴 생성 + 표정시트 7종',
+    day: 7, week: 3, weekday: '월', theme: 'Image Studio — Shot 이미지 생성',
+    goal: 'Shot 워크스페이스에서 직접 이미지 생성 + 자동 아카이브',
     blocks: [
       {
-        id: '7A', title: 'Block A · Replicate API + 폴링', time: '22:30~00:00',
+        id: '7A', title: 'Block A · Shot Image Studio UI', time: '22:30~00:00',
         items: [
-          { text: '/api/studio/image (flux.1-dev)' },
-          { text: '/api/studio/image/[id] (status polling)' },
-          { text: '/api/assets/save-image' },
-          { text: 'git commit "day7-A: image api"' },
+          { text: '/studio/shot?type=image Shot 이미지 생성 페이지' },
+          { text: 'Shot 메타에서 자동 프롬프트 조립 (설명 + 캐릭터 visual_prompt + 스타일 프리셋)' },
+          { text: '프롬프트 미리보기 + 수동 편집 가능' },
+          { text: '모델 선택 (fal.ai flux-pro / flux-dev)' },
+          { text: '비율 칩 (1:1 / 16:9 / 9:16 / 2.39:1)' },
+          { text: 'git commit "day7-A: shot image studio"' },
+        ],
+        detail: {
+          goal: '이미지 생성의 핵심: Shot 메타를 자동으로 프롬프트에 조립해서 클릭 한 번으로 생성.',
+          prompt: `# Day 7 · Block A · Shot Image Studio
+
+## 프롬프트 자동 조립 로직
+\`\`\`ts
+function buildImagePrompt(shot: Shot, characters: Character[], style: StylePreset) {
+  const parts = [
+    shot.description,                     // "그녀가 천천히 눈을 뜬다"
+    shot.type === 'cu' ? 'close-up shot' : '',
+    characters.map(c => c.visual_prompt).join(', '), // 캐릭터 외형
+    style ? \`\${style.lighting}, \${style.mood}\` : '',
+  ]
+  return parts.filter(Boolean).join(', ')
+}
+\`\`\`
+
+## 생성 플로우
+1. 프롬프트 조립 → 미리보기 표시
+2. 사용자 수동 편집 가능
+3. "생성" 클릭 → fal.ai API 호출 → 4장 생성
+4. 결과 카드 표시 → "채택" 버튼
+
+## fal.ai 연동
+\`\`\`ts
+// /api/generate/image
+import { fal } from '@fal-ai/client'
+const result = await fal.subscribe('fal-ai/flux-pro', {
+  input: { prompt, image_size: aspectRatioToSize(ratio), num_images: 4 }
+})
+\`\`\``,
+          verify: '생성 클릭 후 4장 이미지 카드가 표시되면 완료. 프롬프트에 Shot 설명이 포함되어 있어야 함.',
+          troubleshoot: 'fal.ai 크레딧 없으면 mock 이미지(picsum.photos)로 UI 선완성. API 연결은 나중에.'
+        }
+      },
+      {
+        id: '7B', title: 'Block B · 채택 + 자동 아카이브', time: '00:02~01:32',
+        items: [
+          { text: '"채택" 클릭 → assets INSERT (shot_id + type=image + status=approved)' },
+          { text: 'shots.approved_asset_id 업데이트 + status="approved"' },
+          { text: '채택 즉시 파이프라인 진행률 자동 갱신' },
+          { text: '"후보 보관" → status=candidate로 assets에 저장 (자동 아카이브)' },
+          { text: 'git commit "day7-B: asset approval + archive"' },
         ]
       },
       {
-        id: '7B', title: 'Block B · Image UI', time: '00:02~01:32',
+        id: '7C', title: 'Block C · 버전 체인 + 재생성', time: '01:34~03:04',
         items: [
-          { text: 'ImagePanel.tsx + 비율 옵션' },
-          { text: 'useImageGeneration 훅 (3s 폴링)' },
-          { text: '자동 저장' },
-          { text: 'git commit "day7-B: image ui"' },
+          { text: '재생성 시 parent_asset_id로 이전 버전 연결' },
+          { text: '버전 히스토리 슬라이드오버 (v1/v2/v3 카드)' },
+          { text: '"이전 버전으로 되돌리기" 기능' },
+          { text: 'git commit "day7-C: version chain"' },
         ]
       },
       {
-        id: '7C', title: 'Block C · 표정시트 7종', time: '01:34~03:04',
+        id: '7D', title: 'Block D · 크레딧 차감 + 검증', time: '03:06~04:36',
         items: [
-          { text: '7표정 (neutral/smile/intense/sad/laughing/wink/surprised)' },
-          { text: '일괄 생성 API + 진행률' },
-          { text: 'visual_lock.expressions 통합' },
-          { text: 'git commit "day7-C: expressions"' },
-        ]
-      },
-      {
-        id: '7D', title: 'Block D · 비용 가드 + 테스트', time: '03:06~04:36',
-        items: [
-          { text: '일일 5회 제한 + 첫 사용 confirm' },
-          { text: '페르소나 1개로 이미지 5장' },
-          { text: '표정시트 1세트' },
-          { text: 'git commit + push' },
-        ]
-      }
-    ]
-  },
-  {
-    day: 8, week: 3, weekday: '화', theme: 'Studio Video + SFX + Library',
-    goal: '영상 생성 + Library 정비',
-    blocks: [
-      {
-        id: '8A', title: 'Block A · Video API (Fal.ai Kling)', time: '22:30~00:00',
-        items: [
-          { text: '/api/studio/video 큐 등록' },
-          { text: '/api/studio/video/[id] 상태 폴링' },
-          { text: '/api/assets/save-video' },
-          { text: 'git commit "day8-A: video api"' },
-        ]
-      },
-      {
-        id: '8B', title: 'Block B · Video UI', time: '00:02~01:32',
-        items: [
-          { text: 'VideoPanel.tsx + 시드 이미지 선택' },
-          { text: '진행률 표시 (60s+)' },
-          { text: '비용 confirm 모달' },
-          { text: '1편 생성 성공' },
-          { text: 'git commit "day8-B: video ui"' },
-        ]
-      },
-      {
-        id: '8C', title: 'Block C · SFX 모듈', time: '01:34~03:04',
-        items: [
-          { text: '/api/studio/sfx (ElevenLabs Sound)' },
-          { text: 'SFXPanel.tsx + 카테고리 칩' },
-          { text: 'git commit "day8-C: sfx"' },
-        ]
-      },
-      {
-        id: '8D', title: 'Block D · Library 정비', time: '03:06~04:36',
-        items: [
-          { text: '필터 (타입/페르소나/정렬)' },
-          { text: '자산 카드 4종' },
-          { text: '통계 헤더' },
+          { text: '이미지 생성 1회당 크레딧 5 차감 (4장 기준)' },
+          { text: '크레딧 부족 시 생성 차단 + /credits CTA' },
+          { text: 'assets 테이블 데이터 확인 (Supabase Dashboard)' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 9, week: 3, weekday: '수', theme: 'Projects 칸반 + Brief + Script',
-    goal: '프로젝트 1개 + GPT-4o 자동 대본',
+    day: 8, week: 3, weekday: '화', theme: 'Voice Studio + Music/SFX',
+    goal: '캐릭터 보이스 생성 + 배경음악/효과음 추가',
     blocks: [
       {
-        id: '9A', title: 'Block A · 프로젝트 칸반', time: '22:30~00:00',
+        id: '8A', title: 'Block A · Voice Studio UI', time: '22:30~00:00',
         items: [
-          { text: '/projects 4컬럼 (기획/제작/완료/배포)' },
-          { text: '카드 + List 뷰 토글' },
-          { text: 'git commit "day9-A: board"' },
-        ]
-      },
-      {
-        id: '9B', title: 'Block B · 새 프로젝트 + 상세 골격', time: '00:02~01:32',
-        items: [
-          { text: '새 프로젝트 모달 (제목/페르소나/채널)' },
-          { text: '/projects/[id] 헤더 + 7탭 골격' },
-          { text: '진행도 시스템 (project_steps)' },
-          { text: 'git commit "day9-B: detail"' },
-        ]
-      },
-      {
-        id: '9C', title: 'Block C · Brief 탭', time: '01:34~03:04',
-        items: [
-          { text: '필드 (주제/훅/메시지/톤)' },
-          { text: 'AI 훅 추천 (선택)' },
-          { text: 'project_steps 저장' },
-          { text: 'git commit "day9-C: brief"' },
-        ]
-      },
-      {
-        id: '9D', title: 'Block D · Script 탭 (GPT-4o)', time: '03:06~04:36',
-        items: [
-          { text: '/api/projects/[id]/script/generate' },
-          { text: 'Tone Lock 반영 system prompt' },
-          { text: '씬 카드 (감정 태그 + 편집)' },
-          { text: '금기어 검증' },
-          { text: 'git commit + push' },
-        ]
-      }
-    ]
-  },
-  // ---------- WEEK 4 ----------
+          { text: '/studio/voice Shot 대사 → 보이스 생성 페이지' },
+          { text: 'Shot.dialogue 자동 주입 + 캐릭터 voice_settings 연결' },
+          { text: '감정 슬라이더 (기쁨/슬픔/화남/차분)' },
+          { text: '속도(0.5~2.0x) + 피치(±5) 제어' },
+          { text: 'git commit "day8-A: voice studio"' },
+        ],
+        detail: {
+          goal: '캐릭터 대사를 ElevenLabs로 생성. character.voice_settings의 voice_id를 자동으로 사용.',
+          prompt: `# Day 8 · Block A · Voice Studio
+
+## 플로우
+1. Shot에 dialogue 있으면 자동 주입
+2. 캐릭터 voice_settings에서 provider/voice_id 읽기
+3. 생성 → 인라인 플레이어 → 채택 → assets 저장
+
+## ElevenLabs 연동
+\`\`\`ts
+// /api/generate/voice
+const response = await fetch(
+  \`https://api.elevenlabs.io/v1/text-to-speech/\${voiceId}\`,
   {
-    day: 10, week: 4, weekday: '월', theme: 'Voice + Visual 자동',
-    goal: '씬별 자동 TTS · 자동 이미지',
-    blocks: [
+    method: 'POST',
+    headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY },
+    body: JSON.stringify({
+      text: dialogue,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability, similarity_boost, style }
+    })
+  }
+)
+const audioBlob = await response.blob()
+// → Supabase Storage 업로드 → assets INSERT
+\`\`\`
+
+## 캐릭터에 voice_settings 없는 경우
+- "캐릭터 바이블에서 보이스 설정" CTA 표시`,
+          verify: '대사 입력 → 생성 → 인라인 플레이어 재생 되면 완료.',
+          troubleshoot: 'ElevenLabs 무료 크레딧 한계 주의. 테스트는 짧은 텍스트(<50자)로.'
+        }
+      },
       {
-        id: '10A', title: 'Block A · Voice 탭 (씬별)', time: '22:30~00:00',
+        id: '8B', title: 'Block B · Music Studio (BGM)', time: '00:02~01:32',
         items: [
-          { text: '씬별 개별 TTS + 일괄 생성' },
-          { text: 'emotion_tag → voice settings 매핑' },
-          { text: 'project_steps 저장' },
-          { text: 'git commit "day10-A: voice"' },
+          { text: '/studio/music 배경음악 생성 페이지' },
+          { text: '분위기 태그 선택 + 길이 설정 → Suno AI 또는 Replicate MusicGen' },
+          { text: '생성 결과 → assets INSERT (type=music)' },
+          { text: 'Scene에 BGM 연결 (scene.music_asset_id)' },
+          { text: 'git commit "day8-B: music studio"' },
         ]
       },
       {
-        id: '10B', title: 'Block B · 음성 합치기 (ffmpeg-wasm)', time: '00:02~01:32',
+        id: '8C', title: 'Block C · SFX Studio (효과음)', time: '01:34~03:04',
         items: [
-          { text: '@ffmpeg/ffmpeg 설치' },
-          { text: 'lib/ffmpeg/audio-concat.ts' },
-          { text: '"전체 음성 합치기" UI' },
-          { text: 'git commit "day10-B: concat"' },
+          { text: '/studio/sfx 효과음 생성 + 검색 페이지' },
+          { text: '텍스트 설명 → ElevenLabs Sound Effects API' },
+          { text: 'Freesound API 연계 (무료 효과음 검색)' },
+          { text: 'assets INSERT (type=sfx) + Shot 연결' },
+          { text: 'git commit "day8-C: sfx studio"' },
         ]
       },
       {
-        id: '10C', title: 'Block C · Visual 탭 (씬별)', time: '01:34~03:04',
+        id: '8D', title: 'Block D · Character Bible 보이스 설정', time: '03:06~04:36',
         items: [
-          { text: '씬별 자동 프롬프트 합성' },
-          { text: '일괄 이미지 생성' },
-          { text: '표정 자동 매핑' },
-          { text: 'git commit "day10-C: visual"' },
-        ]
-      },
-      {
-        id: '10D', title: 'Block D · 프리뷰', time: '03:06~04:36',
-        items: [
-          { text: '씬별 [이미지+음성] 그리드' },
-          { text: '"프로젝트 흐름 재생" 슬라이드쇼' },
-          { text: '이루나로 1개 프로젝트 완성' },
+          { text: '캐릭터 카드에 "보이스 설정" 탭 추가' },
+          { text: 'ElevenLabs 목소리 목록 fetch + 선택 드롭다운' },
+          { text: '"샘플 듣기" 버튼 (30초 미리보기)' },
+          { text: 'characters.voice_settings 업데이트' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 11, week: 4, weekday: '화', theme: 'Render + 🎬 첫 숏폼 완주',
-    goal: '페르소나로 만든 숏폼 1편 완성',
+    day: 9, week: 3, weekday: '수', theme: 'Video Studio + Compare Mode',
+    goal: 'Shot 영상 생성 (Replicate) + A/B/C 비교 채택',
     blocks: [
       {
-        id: '11A', title: 'Block A · Render 탭 + 자산 ZIP', time: '22:30~00:00',
+        id: '9A', title: 'Block A · Video Studio UI', time: '22:30~00:00',
         items: [
-          { text: 'JSZip 설치' },
-          { text: 'lib/utils/zip-export.ts (씬별 폴더)' },
-          { text: 'SRT 자막 자동 생성' },
-          { text: 'ZIP 다운로드 작동' },
-          { text: 'git commit "day11-A: zip"' },
+          { text: '/studio/shot?type=video Shot 영상 생성 페이지' },
+          { text: 'Shot 채택 이미지 → reference image로 자동 주입' },
+          { text: 'Replicate 모델 선택 (Stable Video / Kling / Wan)' },
+          { text: '길이 칩 (3초 / 5초 / 10초) + 모션 강도 슬라이더' },
+          { text: 'git commit "day9-A: video studio"' },
         ]
       },
       {
-        id: '11B', title: 'Block B · CapCut 가이드', time: '00:02~01:32',
+        id: '9B', title: 'Block B · 영상 생성 + 결과', time: '00:02~01:32',
         items: [
-          { text: 'CapCut 가이드 모달' },
-          { text: '외부 링크 + 편집 팁' },
-          { text: '최종 영상 업로드 라우트' },
-          { text: 'git commit "day11-B: capcut"' },
+          { text: '/api/generate/video POST → Replicate API 호출' },
+          { text: '비동기 폴링 (prediction.status 30초마다 체크)' },
+          { text: '결과 영상 인라인 플레이어 + 채택 → assets INSERT' },
+          { text: 'git commit "day9-B: video generation"' },
         ]
       },
       {
-        id: '11C', title: 'Block C · 브라우저 자동 합성 (BETA)', time: '01:34~03:04',
+        id: '9C', title: 'Block C · Compare Mode (A/B/C)', time: '01:34~03:04',
         items: [
-          { text: 'lib/ffmpeg/video-render.ts' },
-          { text: 'BETA UI + 진행 상태' },
-          { text: '슬라이드쇼 mp4 출력' },
-          { text: 'git commit "day11-C: render beta"' },
+          { text: '/studio/compare 동일 Shot → N개 모델 동시 비교' },
+          { text: '3패널 레이아웃 (A / B / C) 각각 모델 선택' },
+          { text: '"동시 생성" 버튼 → 3개 병렬 API 호출' },
+          { text: '"채택" → approved_asset_id 업데이트 + 나머지 candidate 보관' },
+          { text: 'git commit "day9-C: compare mode"' },
+        ],
+        detail: {
+          goal: 'Compare Mode = 같은 Shot에 대해 3가지 모델/프롬프트 변형을 동시에 생성하고 최선을 선택하는 기능.',
+          prompt: `# Day 9 · Block C · Compare Mode
+
+## 핵심 UX
+- "내가 원하는 것"을 정확히 모를 때 A/B/C로 탐색
+- 채택된 것은 자동으로 approved, 나머지는 자동 보관
+
+## 레이아웃
+\`\`\`
+┌─────────────────────────────────────────┐
+│ Compare Mode · Shot 03                   │
+│ [동시 생성]                              │
+├─────────┬──────────┬───────────────────-│
+│  A      │  B       │  C                 │
+│ flux-pro│ flux-dev │ stable-diff-xl     │
+│ [결과]  │ [결과]   │ [결과]             │
+│ [채택]  │ [채택]   │ [채택]             │
+└─────────┴──────────┴────────────────────┘
+\`\`\`
+
+## 병렬 API 호출
+\`\`\`ts
+const [a, b, c] = await Promise.all([
+  generateImage({ model: 'flux-pro', prompt }),
+  generateImage({ model: 'flux-dev', prompt }),
+  generateImage({ model: 'stable-diffusion-xl', prompt }),
+])
+// 3개 모두 assets에 candidate로 저장
+\`\`\``,
+          verify: '3개 패널에 각각 다른 모델 결과가 표시되고 채택 시 해당 Shot의 approved_asset_id가 업데이트되면 완료.',
+          troubleshoot: 'Promise.all 중 하나 실패 시 전체 실패 방지: Promise.allSettled 사용.'
+        }
+      },
+      {
+        id: '9D', title: 'Block D · Studio 통합 테스트 + 배포', time: '03:06~04:36',
+        items: [
+          { text: 'Shot 워크스페이스에서 이미지→영상→보이스 생성 전체 플로우 테스트' },
+          { text: 'assets 테이블에 shot_id 연결 확인' },
+          { text: 'Vercel 배포 + URL 확인' },
+          { text: 'git commit + push' },
+        ]
+      }
+    ]
+  },
+
+  // ---------- WEEK 4 · 자동 아카이브 + Library + Export ----------
+  {
+    day: 10, week: 4, weekday: '월', theme: 'Library — 자동 아카이브 시스템',
+    goal: '제작된 모든 에셋이 자동 저장/분류되는 Library 완성',
+    blocks: [
+      {
+        id: '10A', title: 'Block A · Library 메인 페이지', time: '22:30~00:00',
+        items: [
+          { text: '/library 전체 에셋 뷰어 (그리드 + 리스트 전환)' },
+          { text: '필터: 타입(전체/이미지/영상/보이스/음악/SFX) + 상태(후보/채택/최종)' },
+          { text: '프로젝트별 필터 + 정렬 (최신순/프로젝트별)' },
+          { text: 'assets SELECT + Supabase Storage URL 생성' },
+          { text: 'git commit "day10-A: library main"' },
+        ],
+        detail: {
+          goal: 'Library = 생성한 모든 에셋의 자동 아카이브. 따로 저장 버튼 없이 생성 즉시 등록.',
+          prompt: `# Day 10 · Block A · Library
+
+## 핵심 원칙
+"제작자가 따로 저장하지 않아도 생성한 모든 것이 자동으로 Library에 쌓인다."
+
+## 에셋 카드 구조
+\`\`\`tsx
+<AssetCard>
+  {type === 'image' && <img src={url} />}
+  {type === 'video' && <video src={url} />}
+  {type === 'voice' && <AudioWaveform src={url} />}
+  <div>
+    <TypeBadge type={type} />
+    <StatusBadge status={status} />  // candidate | approved | final
+    <ProjectTag project={project.title} />
+    <ShotTag shot={\`\${scene.heading} · Shot \${shot.number}\`} />
+    <CreatedAt>{formatRelative(createdAt)}</CreatedAt>
+  </div>
+</AssetCard>
+\`\`\`
+
+## 필터 컨트롤
+\`\`\`tsx
+// URL search params로 상태 유지
+const { type, status, projectId, sort } = useSearchParams()
+\`\`\``,
+          verify: 'Library 접속 시 이전에 생성한 에셋들이 프로젝트/Shot 정보와 함께 표시되면 완료.',
+          troubleshoot: 'Supabase Storage URL 만료 시 signedUrl 사용 (1시간 유효). getPublicUrl은 버킷이 public일 때만.'
+        }
+      },
+      {
+        id: '10B', title: 'Block B · 에셋 상세 + 연결 관리', time: '00:02~01:32',
+        items: [
+          { text: '에셋 클릭 → 슬라이드오버 (전체 메타 + 버전 히스토리)' },
+          { text: '"이 Shot으로 이동" 버튼 → /pipeline/.../shot/[id]' },
+          { text: '"다른 Shot에 연결" 기능 (shot_id 재할당)' },
+          { text: '"최종 확정" → status=final 업데이트' },
+          { text: 'git commit "day10-B: asset detail"' },
         ]
       },
       {
-        id: '11D', title: 'Block D · 🎬 첫 숏폼 완주', time: '03:06~04:36',
+        id: '10C', title: 'Block C · Prompts 메모리 + 재사용', time: '01:34~03:04',
         items: [
-          { text: '이루나로 "새벽 스킨케어" 30초 완성' },
-          { text: 'Brief → Script → Voice → Visual → Render' },
-          { text: 'CapCut에서 합치기' },
-          { text: '인스타 스토리에 수동 업로드' },
-          { text: '친구 1명 피드백' },
+          { text: 'prompts 테이블 (id / content / tags / used_count)' },
+          { text: '생성할 때 사용한 프롬프트 자동 저장' },
+          { text: '프롬프트 검색 + 재사용 (Shot 워크스페이스에서)' },
+          { text: '"프롬프트 템플릿" 저장 기능' },
+          { text: 'git commit "day10-C: prompt memory"' },
+        ]
+      },
+      {
+        id: '10D', title: 'Block D · 스토리지 사용량 + 배포', time: '03:06~04:36',
+        items: [
+          { text: '/credits 페이지에 스토리지 사용량 표시 (MB/GB)' },
+          { text: 'Supabase Storage 버킷 정책 점검 (user_id 폴더 분리)' },
+          { text: 'Vercel 배포 확인' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 12, week: 4, weekday: '수', theme: 'Publish + 공개 프로필',
-    goal: '친구에게 보낼 URL 보유',
+    day: 11, week: 4, weekday: '화', theme: 'Export 패키지 + Home 대시보드 완성',
+    goal: '프로젝트 전체 다운로드 + Home 제작 현황 완성',
     blocks: [
       {
-        id: '12A', title: 'Block A · Publish 페이지', time: '22:30~00:00',
+        id: '11A', title: 'Block A · Export 패키지 생성', time: '22:30~00:00',
         items: [
-          { text: '완성본 라이브러리 + 게시 폼' },
-          { text: '캡션/해시태그/공개 범위' },
-          { text: 'posts insert' },
-          { text: 'git commit "day12-A: publish"' },
+          { text: '/pipeline/[projectId]/export 익스포트 페이지' },
+          { text: '"패키지 생성" → 에셋 ZIP 압축 (최종 확정 에셋만)' },
+          { text: '포함 항목 선택: 이미지 / 영상 / 보이스 / 대본 PDF' },
+          { text: 'export_packages 테이블 + Supabase Storage 저장' },
+          { text: 'git commit "day11-A: export package"' },
+        ],
+        detail: {
+          goal: '제작 완료 후 모든 에셋을 한 번에 패키지로 다운로드. 감독이 NLE로 넘길 준비.',
+          prompt: `# Day 11 · Block A · Export 패키지
+
+## 패키지 구조
+\`\`\`
+[프로젝트명]_export/
+├── 00_script/
+│   └── script.pdf
+├── 01_images/
+│   ├── S01_shot01_final.png
+│   ├── S01_shot02_final.png
+│   └── ...
+├── 02_videos/
+│   ├── S01_shot01_final.mp4
+│   └── ...
+├── 03_audio/
+│   ├── voice/
+│   │   └── S01_shot01_dialogue.mp3
+│   ├── music/
+│   └── sfx/
+└── 04_metadata/
+    └── project.json  ← 전체 Shot 메타 + 프롬프트
+\`\`\`
+
+## 서버 구현
+\`\`\`ts
+// /api/export/[projectId]
+// 1. shots JOIN assets WHERE status=final
+// 2. 각 URL fetch → ArrayBuffer
+// 3. JSZip으로 압축
+// 4. Supabase Storage 저장 → download URL 반환
+import JSZip from 'jszip'
+\`\`\``,
+          verify: 'ZIP 다운로드 후 폴더 구조가 위와 같으면 완료. 최소 이미지 1장 포함 확인.',
+          troubleshoot: 'JSZip 메모리 한계: 대용량은 서버리스 대신 별도 서버(Fly.io) 사용 고려.'
+        }
+      },
+      {
+        id: '11B', title: 'Block B · Home 대시보드 완성', time: '00:02~01:32',
+        items: [
+          { text: '진행 중 프로젝트 카드 (Shot 완성률 % + 상태)' },
+          { text: '오늘 생성한 에셋 수 + 크레딧 잔여량' },
+          { text: '"오늘 이어서 작업" CTA → 가장 최근 Shot 워크스페이스' },
+          { text: '최근 생성 에셋 스트립 (최근 8개 이미지/영상)' },
+          { text: 'git commit "day11-B: home dashboard"' },
         ]
       },
       {
-        id: '12B', title: 'Block B · posts RLS + AI 캡션', time: '00:02~01:32',
+        id: '11C', title: 'Block C · 프로젝트 아카이브 + 복제', time: '01:34~03:04',
         items: [
-          { text: 'supabase/migrations/002_posts_rls.sql' },
-          { text: '/api/publish/suggest-caption (GPT-4o-mini)' },
-          { text: '추천 해시태그 (장르 기반)' },
-          { text: 'git commit "day12-B: rls + caption"' },
+          { text: '프로젝트 "아카이브" → status=archived (목록에서 숨김)' },
+          { text: '프로젝트 "복제" → 전체 구조 deep copy (에셋 제외)' },
+          { text: '아카이브 뷰 토글 (숨긴 프로젝트 보기)' },
+          { text: 'git commit "day11-C: project archive"' },
         ]
       },
       {
-        id: '12C', title: 'Block C · /p/[slug] 공개 프로필', time: '01:34~03:04',
+        id: '11D', title: 'Block D · 검증 + 배포', time: '03:06~04:36',
         items: [
-          { text: '비로그인 접근 가능' },
-          { text: '헤더 (Cover + 아바타 + 배지 + Follow)' },
-          { text: '탭 (Feed/About/World)' },
-          { text: 'generateMetadata (OG)' },
-          { text: 'git commit "day12-C: public profile"' },
-        ]
-      },
-      {
-        id: '12D', title: 'Block D · 첫 공개 + 친구 공유', time: '03:06~04:36',
-        items: [
-          { text: '페르소나 1개 is_public=true' },
-          { text: '첫 포스트 게시' },
-          { text: '시크릿 모드에서 URL 확인' },
-          { text: '친구 1명 카톡 URL 전송' },
-          { text: 'git commit + push' },
-        ]
-      }
-    ]
-  },
-  // ---------- WEEK 5 ----------
-  {
-    day: 13, week: 5, weekday: '월', theme: 'Follow + 홈 피드 + Discover',
-    goal: '소셜 그래프 작동',
-    blocks: [
-      {
-        id: '13A', title: 'Block A · Follow API + 버튼', time: '22:30~00:00',
-        items: [
-          { text: '/api/follow POST/DELETE' },
-          { text: 'FollowButton 컴포넌트' },
-          { text: '본인 페르소나 차단' },
-          { text: 'git commit "day13-A: follow"' },
-        ]
-      },
-      {
-        id: '13B', title: 'Block B · 홈 피드', time: '00:02~01:32',
-        items: [
-          { text: '/home 재구성' },
-          { text: '내 페르소나 근황 + 팔로우 피드' },
-          { text: '좋아요 토글 + 카운트 트리거' },
-          { text: 'git commit "day13-B: home feed"' },
-        ]
-      },
-      {
-        id: '13C', title: 'Block C · Discover', time: '01:34~03:04',
-        items: [
-          { text: '/discover 5섹션' },
-          { text: '비로그인 접근 가능' },
-          { text: '검색 (full-text)' },
-          { text: 'git commit "day13-C: discover"' },
-        ]
-      },
-      {
-        id: '13D', title: 'Block D · 알림 + 통합 테스트', time: '03:06~04:36',
-        items: [
-          { text: 'insights_events 기록' },
-          { text: '상단바 알림 카운트' },
-          { text: '부계정으로 팔로우/좋아요 테스트' },
+          { text: '전체 제작 플로우 E2E 테스트 (Shot → 생성 → 채택 → Library → Export)' },
+          { text: 'assets 자동 아카이브 동작 확인' },
+          { text: 'Vercel 배포 + 도메인 확인' },
           { text: 'git commit + push' },
         ]
       }
     ]
   },
   {
-    day: 14, week: 5, weekday: '화', theme: '도메인 + PWA + 약관',
-    goal: '출시 준비 100%',
+    day: 12, week: 4, weekday: '수', theme: 'SaaS 구독 + Stripe 결제',
+    goal: '구독 플랜 + Stripe 결제 + 크레딧 충전 시스템',
     blocks: [
       {
-        id: '14A', title: 'Block A · 도메인', time: '22:30~00:00',
+        id: '12A', title: 'Block A · 구독 플랜 설계 + UI', time: '22:30~00:00',
         items: [
-          { text: 'soaviz.io 구매 (Cloudflare Registrar)' },
-          { text: 'DNS + Vercel 연결' },
-          { text: 'HTTPS 자동' },
-          { text: 'Supabase Auth URL 업데이트' },
-          { text: 'git commit "day14-A: domain"' },
+          { text: '/credits 구독 플랜 페이지 (Free / Pro / Studio)' },
+          { text: 'Free: 월 100 크레딧 / Pro: 월 1,000 크레딧 / Studio: 무제한' },
+          { text: '플랜별 기능 비교표 + 추천 배지' },
+          { text: 'users 테이블 plan + credits_reset_date 컬럼' },
+          { text: 'git commit "day12-A: subscription plans"' },
         ]
       },
       {
-        id: '14B', title: 'Block B · 모바일 점검', time: '00:02~01:32',
+        id: '12B', title: 'Block B · Stripe 결제 연동', time: '00:02~01:32',
         items: [
-          { text: '본인 휴대폰에서 모든 페이지 클릭' },
-          { text: 'P0 버그 즉시 수정' },
-          { text: '빈 상태/로딩/에러 일관성' },
-          { text: 'git commit "day14-B: mobile"' },
+          { text: 'Stripe 계정 + 상품/가격 ID 생성' },
+          { text: '/api/stripe/checkout POST → Stripe Session 생성' },
+          { text: '/api/stripe/webhook → 결제 완료 시 credits 지급' },
+          { text: 'git commit "day12-B: stripe"' },
+        ],
+        detail: {
+          goal: 'SaaS 수익화의 핵심. Stripe Checkout으로 빠르게 구현.',
+          prompt: `# Day 12 · Block B · Stripe 연동
+
+## 크레딧 패키지 (일회성 구매도 지원)
+- 100 크레딧: ₩9,900
+- 500 크레딧: ₩39,000
+- 2,000 크레딧: ₩99,000
+
+## 구독 (월정액)
+- Pro: ₩29,000/월 → 월 1,000 크레딧 리셋
+- Studio: ₩79,000/월 → 무제한 (daily cap 200)
+
+## Stripe Checkout
+\`\`\`ts
+// /api/stripe/checkout
+const session = await stripe.checkout.sessions.create({
+  mode: 'payment', // or 'subscription'
+  line_items: [{ price: priceId, quantity: 1 }],
+  success_url: \`\${origin}/credits?success=1\`,
+  cancel_url: \`\${origin}/credits\`,
+  metadata: { userId: user.id, credits: creditsToAdd }
+})
+return { url: session.url }
+\`\`\`
+
+## Webhook 처리
+\`\`\`ts
+// /api/stripe/webhook
+case 'checkout.session.completed':
+  const { userId, credits } = session.metadata
+  await supabase.rpc('add_credits', { user_id: userId, amount: +credits })
+\`\`\``,
+          verify: 'Stripe 테스트 카드(4242...)로 결제 완료 후 credits_remaining 증가 확인.',
+          troubleshoot: 'Webhook 로컬 테스트: stripe listen --forward-to localhost:3000/api/stripe/webhook'
+        }
+      },
+      {
+        id: '12C', title: 'Block C · 크레딧 사용 내역 + 알림', time: '01:34~03:04',
+        items: [
+          { text: 'credit_transactions 테이블 (user_id / amount / type / description)' },
+          { text: '/credits 사용 내역 테이블 (에셋 생성 기록)' },
+          { text: '크레딧 20% 이하 시 경고 배너 + 충전 CTA' },
+          { text: 'git commit "day12-C: credit history"' },
         ]
       },
       {
-        id: '14C', title: 'Block C · PWA + OG + SEO', time: '01:34~03:04',
+        id: '12D', title: 'Block D · 설정 페이지 + 배포', time: '03:06~04:36',
         items: [
-          { text: 'manifest.json + 아이콘' },
-          { text: 'next-pwa 설치' },
-          { text: '/p/[slug]/opengraph-image.tsx' },
-          { text: 'sitemap.ts + robots.ts' },
-          { text: 'git commit "day14-C: pwa + og"' },
+          { text: '/settings 계정/플랜/API 키 관리 페이지' },
+          { text: 'ElevenLabs / fal.ai / Replicate API 키 직접 입력 지원 (BYOK)' },
+          { text: 'Vercel 배포 + Stripe 웹훅 URL 등록' },
+          { text: 'git commit + push' },
+        ]
+      }
+    ]
+  },
+
+  // ---------- WEEK 5 · 런칭 준비 ----------
+  {
+    day: 13, week: 5, weekday: '월', theme: '모바일 최적화 + PWA',
+    goal: '모바일 완벽 대응 + PWA 설정',
+    blocks: [
+      {
+        id: '13A', title: 'Block A · 반응형 레이아웃 전수 점검', time: '22:30~00:00',
+        items: [
+          { text: '모든 페이지 375px 모바일 레이아웃 확인' },
+          { text: '사이드바 → 모바일 슬라이드 드로어' },
+          { text: 'Pipeline 트리 → 모바일 스택 (아코디언)' },
+          { text: 'Studio 패널 → 모바일 탭 전환' },
+          { text: 'git commit "day13-A: responsive"' },
         ]
       },
       {
-        id: '14D', title: 'Block D · 약관 4종', time: '03:06~04:36',
+        id: '13B', title: 'Block B · 모바일 하단 탭 바', time: '00:02~01:32',
         items: [
-          { text: '/legal/terms (이용약관)' },
-          { text: '/legal/privacy (개인정보)' },
-          { text: '/legal/data-deletion (삭제)' },
-          { text: '/legal/copyright (저작권)' },
-          { text: '푸터 링크' },
+          { text: '모바일 전용 하단 탭바 (홈/파이프라인/스튜디오/라이브러리/설정)' },
+          { text: 'tablet/desktop은 사이드바만 노출' },
+          { text: '활성 탭 표시 + 크레딧 배지' },
+          { text: 'git commit "day13-B: mobile nav"' },
+        ]
+      },
+      {
+        id: '13C', title: 'Block C · PWA 설정', time: '01:34~03:04',
+        items: [
+          { text: 'public/manifest.json (name/icons/theme_color #0B0B0F)' },
+          { text: '앱 아이콘 192px / 512px (SOAVIZ 로고)' },
+          { text: 'iOS Safari 메타 태그 (apple-mobile-web-app)' },
+          { text: 'git commit "day13-C: pwa"' },
+        ]
+      },
+      {
+        id: '13D', title: 'Block D · 성능 최적화', time: '03:06~04:36',
+        items: [
+          { text: 'next/image 모든 img 교체' },
+          { text: 'Suspense + loading.tsx 스켈레톤 추가 (Pipeline/Library)' },
+          { text: 'Lighthouse 모바일 90+ 목표' },
+          { text: 'git commit + push' },
+        ]
+      }
+    ]
+  },
+  {
+    day: 14, week: 5, weekday: '화', theme: 'QA + 보안 + Sentry',
+    goal: '출시 전 품질 보증 — 전체 플로우 QA + 보안 점검',
+    blocks: [
+      {
+        id: '14A', title: 'Block A · 전체 기능 QA 체크리스트', time: '22:30~00:00',
+        items: [
+          { text: '핵심 플로우 20개 시나리오 수동 테스트' },
+          { text: '로그인 → 파이프라인 → Shot 워크스페이스 → 생성 → Library → Export' },
+          { text: '크레딧 부족 시나리오 (차단 + CTA 확인)' },
+          { text: '버그 수정 + git commit "day14-A: qa fixes"' },
+        ]
+      },
+      {
+        id: '14B', title: 'Block B · Supabase RLS + 보안 검증', time: '00:02~01:32',
+        items: [
+          { text: '모든 테이블 RLS 정책 검토' },
+          { text: '타인 프로젝트/에셋 접근 차단 테스트 (postman)' },
+          { text: 'Stripe webhook 서명 검증 (stripe.webhooks.constructEvent)' },
+          { text: 'git commit "day14-B: security"' },
+        ]
+      },
+      {
+        id: '14C', title: 'Block C · Sentry + Vercel Analytics', time: '01:34~03:04',
+        items: [
+          { text: 'Sentry 연동 (@sentry/nextjs) + Source Maps' },
+          { text: '전역 error.tsx + global-error.tsx' },
+          { text: '/api/health 엔드포인트 + Vercel Analytics' },
+          { text: 'git commit "day14-C: monitoring"' },
+        ]
+      },
+      {
+        id: '14D', title: 'Block D · 최종 배포 체크', time: '03:06~04:36',
+        items: [
+          { text: '환경변수 Vercel 전체 재확인' },
+          { text: 'soaviz.com custom domain + SSL' },
+          { text: 'OG 메타태그 (og:image / og:title / og:description)' },
           { text: 'git commit + push' },
         ]
       }
@@ -5890,46 +5913,42 @@ soaviz/NOTES.md (또는 본 워크시트의 Diary 탭) 에 다음 작성:
   },
   {
     day: 15, week: 5, weekday: '수', theme: '🚀 OFFICIAL LAUNCH',
-    goal: '🚀 PUBLIC LAUNCH - 첫 외부 유저',
+    goal: '🚀 SOAVIZ Studio — 세상에 공개',
     blocks: [
       {
-        id: '15A', title: 'Block A · Sentry + 모니터링', time: '22:30~00:00',
+        id: '15A', title: 'Block A · 런칭 전 최종 점검', time: '22:30~00:00',
         items: [
-          { text: 'Sentry 연동 (@sentry/nextjs)' },
-          { text: 'Vercel Analytics' },
-          { text: '/api/health' },
-          { text: 'git commit "day15-A: monitoring"' },
+          { text: 'robots.txt + sitemap.xml 생성' },
+          { text: '이용약관 + 개인정보처리방침 페이지' },
+          { text: '쿠키 동의 배너' },
+          { text: 'git commit "day15-A: launch prep"' },
         ]
       },
       {
-        id: '15B', title: 'Block B · 페르소나 3개 마무리', time: '00:02~01:32',
+        id: '15B', title: 'Block B · 데모 프로젝트 완성', time: '00:02~01:32',
         items: [
-          { text: '이루나 (LUNA-01) 완성도 90%+' },
-          { text: '박리라 (LIRA-02) 완성도 90%+' },
-          { text: '셀프 페르소나 🔵 배지' },
-          { text: '모두 is_public + Cover' },
-          { text: 'git commit "day15-B: 3 personas"' },
+          { text: '데모 단편 프로젝트 — 3씬 9샷 완성본' },
+          { text: '각 Shot에 채택 이미지 + 영상 포함' },
+          { text: 'Export 패키지 다운로드 시연용 준비' },
+          { text: 'git commit "day15-B: demo project"' },
         ]
       },
       {
-        id: '15C', title: 'Block C · 공개 포스트 5개', time: '01:34~03:04',
+        id: '15C', title: 'Block C · 소셜 런칭 포스팅', time: '01:34~03:04',
         items: [
-          { text: '이루나 2개 (Day 11 영상 + 추가)' },
-          { text: '박리라 2개' },
-          { text: '셀프 1개 (인사 영상)' },
-          { text: 'AI 캡션 + 해시태그' },
-          { text: 'git commit "day15-C: 5 posts"' },
+          { text: '제품 데모 영상 (30초 — 파이프라인부터 Export까지)' },
+          { text: '인스타그램 스토리 3장 + 피드 1장' },
+          { text: 'X/Threads 런칭 포스트 (영문 + 한글)' },
+          { text: 'git commit "day15-C: social launch"' },
         ]
       },
       {
         id: '15D', title: 'Block D · 🚀 LAUNCH', time: '03:06~04:36',
         items: [
-          { text: '지인 10명 DM (카톡/인스타)' },
-          { text: '인스타 스토리 3장 + 피드 1장' },
-          { text: 'X/Threads 런칭 포스트' },
-          { text: '첫 외부 유저 1명 가입 확인' },
-          { text: 'git commit "🚀 SOAVIZ Public Launch"' },
-          { text: 'git tag v1.0.0-launch + push --tags' },
+          { text: '영상 제작자 커뮤니티 공유 (영크리에이터 / 독립영화 포럼)' },
+          { text: '첫 유료 가입 확인 (Stripe 대시보드)' },
+          { text: 'git commit "🚀 SOAVIZ Studio Public Launch"' },
+          { text: 'git tag v1.0.0 + push --tags' },
         ]
       }
     ]
@@ -5937,11 +5956,11 @@ soaviz/NOTES.md (또는 본 워크시트의 Diary 탭) 에 다음 작성:
 ];
 
 const WEEKS = [
-  { week: 1, days: 'Day 1~3', theme: '토대 + 페르소나 시작' },
-  { week: 2, days: 'Day 4~6', theme: 'Lock + 인증 + 1차 배포' },
-  { week: 3, days: 'Day 7~9', theme: 'Studio 완성 + Projects 시작' },
-  { week: 4, days: 'Day 10~12', theme: 'Projects 완주 + 공유 시작' },
-  { week: 5, days: 'Day 13~15', theme: '소셜 + LAUNCH' },
+  { week: 1, days: 'Day 1~3', theme: '토대 ✅ + 영상 제작 OS PIVOT' },
+  { week: 2, days: 'Day 4~6', theme: 'Pipeline 트리 + Pre-production' },
+  { week: 3, days: 'Day 7~9', theme: 'AI 에셋 생성 (Image/Voice/Video)' },
+  { week: 4, days: 'Day 10~12', theme: '자동 아카이브 + Export + SaaS 결제' },
+  { week: 5, days: 'Day 13~15', theme: '모바일 + QA + 🚀 LAUNCH' },
 ];
 
 const SCORE_LABELS = [
@@ -5961,8 +5980,15 @@ const ROADMAP_CATEGORIES = {
   tech: '🔧 기술 부채',
 };
 
+/* ==================== PROJECT ==================== */
+let currentProject = 'soaviz';
+const PROJECT_KEYS = {
+  soaviz: 'soaviz-worksheet-v1',
+  sovita: 'sovita-worksheet-v1',
+};
+function getStorageKey() { return PROJECT_KEYS[currentProject] || PROJECT_KEYS.soaviz; }
+
 /* ==================== STATE ==================== */
-const STORAGE_KEY = 'soaviz-worksheet-v1';
 let state = {
   checks: {},       // { '1A-0': true, ... }
   dayOpen: {},      // { 1: true, ... }
@@ -5978,14 +6004,51 @@ let state = {
 
 function load() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if (raw) state = { ...state, ...JSON.parse(raw) };
   } catch (e) { console.error(e); }
 }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(getStorageKey(), JSON.stringify(state));
   updateStats();
+}
+
+/* ==================== PROJECT SWITCH ==================== */
+function switchProject(projectId) {
+  if (!PROJECT_KEYS[projectId] || projectId === currentProject) return;
+
+  // 현재 프로젝트 상태 저장
+  localStorage.setItem(getStorageKey(), JSON.stringify(state));
+
+  // 프로젝트 전환
+  currentProject = projectId;
+
+  // 상태 초기화 후 새 프로젝트 로드
+  state = {
+    checks: {}, dayOpen: {}, bugs: [], roadmap: [], weekly: {}, diary: {},
+    timerPos: null, startDate: null, launchWeeks: 6, customTimerLabel: null,
+  };
+  try {
+    const raw = localStorage.getItem(getStorageKey());
+    if (raw) state = { ...state, ...JSON.parse(raw) };
+  } catch (e) { console.error(e); }
+
+  // 버튼 활성화 상태 업데이트
+  document.querySelectorAll('.project-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById('btn-project-' + projectId);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // 전체 재렌더
+  renderDays();
+  updateStats();
+  renderBugs();
+  renderRoadmap();
+  renderWeekly();
+  renderDiary();
+
+  const label = projectId === 'soaviz' ? 'Soaviz Studio' : 'Sovita';
+  showToast('✦ ' + label + ' 프로젝트로 전환됨', 'info');
 }
 
 /* ==================== RENDER DAYS ==================== */
@@ -7079,7 +7142,7 @@ function importData() {
 function resetAll() {
   if (!confirm('정말 모든 데이터를 초기화할까요? 이 작업은 되돌릴 수 없습니다.')) return;
   if (!confirm('한 번 더 확인: 체크박스·버그·ROADMAP·일기 전부 삭제됩니다.')) return;
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(getStorageKey());
   location.reload();
 }
 
@@ -8629,6 +8692,28 @@ document.addEventListener('keydown', (e) => {
 
 /* ==================== INIT ==================== */
 load();
+
+// ── 진행된 작업 자동 체크 (Claude Cowork, 2026-05-04) ──────────────────
+// 이미 체크된 항목은 덮어쓰지 않고, 새로 완료된 항목만 병합
+(function applyCompletedChecks() {
+  const PREFILL_KEY = 'soaviz-worksheet-prefill-v1';
+  if (localStorage.getItem(PREFILL_KEY)) return; // 이미 적용됨
+  const completed = {
+    // Day 1 · Block B — Next.js 부트스트랩
+    '1B-0': true,  // pnpm create next-app + @supabase/ssr + @supabase/supabase-js 설치
+    '1B-4': true,  // 폴더 구조 + .env.local.example 생성
+    // Day 1 · Block D — 클라이언트 + RLS 테스트
+    '1D-0': true,  // lib/supabase/client.ts + server.ts 생성
+    '1D-1': true,  // middleware.ts (7개 보호 경로) 생성
+    '1D-2': true,  // types/database.ts 생성 + tsc --noEmit 통과
+    '1D-6': true,  // NOTES.md (내일 메모) 작성
+  };
+  // 기존 state.checks와 병합 (기존 값 우선)
+  state.checks = { ...completed, ...state.checks };
+  save();
+  localStorage.setItem(PREFILL_KEY, '1');
+})();
+// ─────────────────────────────────────────────────────────────────────────
 
 // 사용자 정의 타이머 라벨 적용 (Block A 라벨 동기화)
 if (state.customTimerLabel) {

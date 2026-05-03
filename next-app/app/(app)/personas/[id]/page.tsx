@@ -1,4 +1,4 @@
 import { redirect } from 'next/navigation'
-export default function PersonaNewRedirect() {
+export default function PersonaDetailRedirect() {
   redirect('/pipeline')
 }

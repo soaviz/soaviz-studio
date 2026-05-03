@@ -47,7 +47,7 @@ export const personaIdentitySchema = z.object({
     .or(z.literal('')),
 
   mbti: z
-    .enum(MBTI_LIST, { error: 'MBTI를 선택해 주세요.' })
+    .enum(MBTI_LIST)
     .optional()
     .or(z.literal('')),
 
@@ -57,9 +57,11 @@ export const personaIdentitySchema = z.object({
     .or(z.literal('')),
 
   genre: z
-    .enum(GENRE_LIST, { error: '장르를 선택해 주세요.' })
+    .enum(GENRE_LIST)
     .optional()
     .or(z.literal('')),
+
+
 
   avatar_url: z
     .string()

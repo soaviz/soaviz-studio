@@ -53,6 +53,13 @@ export interface Database {
           id: string
           user_id: string
           name: string
+          slug: string
+          tagline: string | null
+          backstory: string | null
+          mbti: string | null
+          element_code: string | null
+          genre: string | null
+          avatar_url: string | null
           description: string | null
           voice_config: Json | null
           created_at: string
@@ -60,8 +67,15 @@ export interface Database {
         }
         Insert: {
           id?: string
-          user_id: string
+          user_id?: string
           name: string
+          slug: string
+          tagline?: string | null
+          backstory?: string | null
+          mbti?: string | null
+          element_code?: string | null
+          genre?: string | null
+          avatar_url?: string | null
           description?: string | null
           voice_config?: Json | null
           created_at?: string
@@ -71,6 +85,13 @@ export interface Database {
           id?: string
           user_id?: string
           name?: string
+          slug?: string
+          tagline?: string | null
+          backstory?: string | null
+          mbti?: string | null
+          element_code?: string | null
+          genre?: string | null
+          avatar_url?: string | null
           description?: string | null
           voice_config?: Json | null
           updated_at?: string

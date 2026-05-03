@@ -22090,7 +22090,7 @@
     </section>
 
     <!-- ================ PAGE: LANDING ================ -->
-    <section id="page-landing" class="page landing-page active">
+    <section id="page-landing" class="page landing-page">
       <section class="soaviz-landing" id="soavizLanding">
 
         <!-- ── HERO ── -->
@@ -24542,6 +24542,7 @@ function showPage(name) {
   if (name === 'today' && typeof renderTodayPage === 'function') renderTodayPage();
   if (name === 'extract' && typeof renderAudioAssetList === 'function') renderAudioAssetList();
   if (name === 'projects' && typeof renderProjectsPage === 'function') renderProjectsPage();
+  if (name === 'characters' && typeof renderCharactersPage === 'function') renderCharactersPage();
   if (name === 'admin' && typeof renderAdminPage === 'function') renderAdminPage();
   if (name === 'studio' && typeof refreshTtsCreditBar === 'function') refreshTtsCreditBar();
   if (name === 'video-editor') {
@@ -45431,7 +45432,9 @@ function openCharacterKeyImageStudio(id) {
   CHARACTER_PAGE_STATE.view = 'keyimage';
   CHARACTER_PAGE_STATE.activeCharacterId = id;
   CHARACTER_PAGE_STATE.returnScrollY = window.scrollY || 0;
-  renderCharactersPage();
+  // showPage가 page-characters 활성화 + renderCharactersPage() 트리거
+  if (typeof showPage === 'function') showPage('characters');
+  else renderCharactersPage();
 }
 function closeCharacterKeyImageStudio() {
   CHARACTER_PAGE_STATE.view = 'list';
@@ -49098,7 +49101,18 @@ function bindCharactersPage() {
   $('#ch-add-btn')?.addEventListener('click', () => openCharacterEditor(null));
   $('#ch-keyimage-studio-btn')?.addEventListener('click', () => {
     const ids = [...(CHARACTER_PAGE_STATE?.selected || [])];
-    openCharacterKeyImageStudio(ids.length > 0 ? ids[0] : null);
+    if (ids.length > 0) {
+      openCharacterKeyImageStudio(ids[0]);
+    } else {
+      // 선택된 캐릭터 없으면 첫 번째 캐릭터로 자동 진입 or 안내
+      const firstCard = document.querySelector('#ch-grid [data-ch-id]');
+      const firstId = firstCard?.dataset?.chId;
+      if (firstId) {
+        openCharacterKeyImageStudio(firstId);
+      } else {
+        showToast?.('캐릭터를 먼저 선택하거나 추가해 주세요', 'warn');
+      }
+    }
   });
   $('#ch-sheet-btn')?.addEventListener('click', () => openCharacterEditor(null, null, 'sheet'));
   $('#ch-project-select')?.addEventListener('change', () => renderCharactersPage());
@@ -54773,13 +54787,15 @@ bindComparePage();
 bindCinemaPage();
 bindVideoEditor();
 syncGuestLockedNavigation();
-// 첫 화면: Landing 표시. file://에서도 ?page=projects / #projects 딥링크 허용.
+// 첫 화면: Today 대시보드가 기본 홈. file://에서도 ?page=projects / #projects 딥링크 허용.
+// voice/transcript/audio/extract 계열 URL 파라미터는 무시하고 today로 진입.
 try {
-  const initialRoute = new URLSearchParams(location.search || '').get('page') || (location.hash || '').replace(/^#/, '');
-  if (initialRoute) showPage(initialRoute);
-  else if (typeof renderTodayPage === 'function') renderTodayPage();
+  const _rawRoute = new URLSearchParams(location.search || '').get('page') || (location.hash || '').replace(/^#/, '');
+  const _blockedAsHome = new Set(['voice', 'voices', 'transcript', 'audio', 'extract', 'studio', 'landing', '']);
+  const initialRoute = (_rawRoute && !_blockedAsHome.has(_rawRoute)) ? _rawRoute : 'today';
+  showPage(initialRoute);
 } catch (_) {
-  try { if (typeof renderTodayPage === 'function') renderTodayPage(); } catch (_) {}
+  try { showPage('today'); } catch (_) {}
 }
 $('#story-view-result')?.addEventListener('click', () => viewLastStory('story'));
 $('#random-view-result')?.addEventListener('click', () => viewLastStory('random'));

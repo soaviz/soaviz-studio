@@ -1,0 +1,42 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  soaviz studio 배포 가이드
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【매번 배포할 때】 ← 이것만 씀
+
+  cd ~/Desktop/soaviz-studio && git push origin main && npx vercel --prod
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【server.js 수정했을 때만 추가】
+
+  fly deploy -a soaviz-studio-api
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【최초 1회만 — 이미 했으면 불필요】
+
+  fly secrets set OPENAI_API_KEY=sk-...           -a soaviz-studio-api
+  fly secrets set ANTHROPIC_API_KEY=sk-ant-...    -a soaviz-studio-api
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【단축키 등록 (한 번만) — ~/.zshrc 에 추가】
+
+  alias deploy='cd ~/Desktop/soaviz-studio && git push origin main && npx vercel --prod'
+
+  → 이후 터미널에서 deploy 입력만 하면 끝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【사이트 주소】
+
+  프론트   https://www.soaviz.com
+  백엔드   https://soaviz-studio-api.fly.dev
+  GitHub   https://github.com/soavizstudio/soaviz-studio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
