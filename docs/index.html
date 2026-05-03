@@ -13649,12 +13649,13 @@
       display: flex; gap: 12px; align-items: center;
     }
     .bible-avatar {
-      width: 56px; height: 56px;
+      width: 80px; height: 80px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--bib-c1, #a78bfa), var(--bib-c2, #6366f1));
       display: grid; place-items: center;
-      color: white; font-weight: 700; font-size: 22px;
+      color: white; font-weight: 700; font-size: 28px;
       flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.08);
     }
     .bible-avatar.style-tile {
       border-radius: 8px;
@@ -13772,26 +13773,41 @@
     .ch-metrics {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
+      gap: 12px;
       margin-bottom: 14px;
     }
     .ch-metric {
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.024);
+      padding: 16px 18px;
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 14px;
       color: var(--text-faint);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
+    .ch-metric-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ch-metric-icon.purple { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .ch-metric-icon.green  { background: rgba(52,211,153,0.15);  color: #34d399; }
+    .ch-metric-icon.blue   { background: rgba(96,165,250,0.15);  color: #60a5fa; }
+    .ch-metric-icon.pink   { background: rgba(251,113,133,0.15); color: #fb7185; }
+    .ch-metric-body { display: flex; flex-direction: column; gap: 2px; }
     .ch-metric strong {
       display: block;
-      margin-top: 4px;
       color: var(--text);
-      font-size: 20px;
-      letter-spacing: 0;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       font-variant-numeric: tabular-nums;
+      line-height: 1;
     }
     .ch-bulkbar {
       display: none;
@@ -13856,14 +13872,31 @@
     }
     .ch-card-actions {
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .ch-card-actions-row {
+      display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      margin-top: 2px;
     }
     .ch-card-btn {
       min-height: 30px;
       padding: 0 10px;
       font-size: 10.5px;
+    }
+    .ch-card-btn.imagegen {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      border-color: transparent;
+      box-shadow: var(--shadow-accent);
+      gap: 5px;
+    }
+    .ch-card-btn.imagegen:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      color: white;
     }
     .ch-empty {
       grid-column: 1 / -1;
@@ -21900,11 +21933,30 @@
           </select>
         </div>
         <div class="ch-actions">
-          <button class="ch-action-btn primary" id="ch-add-btn">＋ 새 캐릭터</button>
-          <button class="ch-action-btn" id="ch-sheet-btn" title="새 캐릭터를 만들고 바로 이미지 시트 생성">🎨 캐릭터 시트 만들기</button>
-          <button class="ch-action-btn" id="ch-random-btn">🎲 랜덤 생성</button>
-          <button class="ch-action-btn" id="ch-pack-btn">Prompt Pack 복사</button>
-          <button class="ch-action-btn" id="ch-relmap-btn">관계 맵</button>
+          <button class="ch-action-btn primary" id="ch-add-btn">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            새 캐릭터
+          </button>
+          <button class="ch-action-btn" id="ch-sheet-btn" title="새 캐릭터를 만들고 바로 이미지 시트 생성">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            캐릭터 시트 만들기
+          </button>
+          <button class="ch-action-btn" id="ch-random-btn">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+            랜덤 생성
+          </button>
+          <button class="ch-action-btn" id="ch-pack-btn">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Prompt Pack 복사
+          </button>
+          <button class="ch-action-btn" id="ch-relmap-btn">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8" y1="11" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="18"/></svg>
+            관계 맵
+          </button>
+          <button class="ch-action-btn imagegen" id="ch-imagegen-btn" style="margin-left:auto;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-color:transparent;color:white;box-shadow:0 4px 14px -4px rgba(124,58,237,0.5)">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L9.6 9.6 2 12l7.6 2.4L12 22l2.4-7.6L22 12l-7.6-2.4z"/></svg>
+            이미지 생성
+          </button>
         </div>
       </div>
       <div id="ch-metrics" class="ch-metrics"></div>
@@ -44016,10 +44068,22 @@ async function renderCharactersPage() {
     const photoCount = rawList.filter(c => getCharacterReadiness(c).hasPhoto).length;
     const voiceCount = rawList.filter(c => getCharacterReadiness(c).hasVoice).length;
     metrics.innerHTML = `
-      <div class="ch-metric">표시<strong>${list.length}</strong></div>
-      <div class="ch-metric">생성 준비<strong>${readyCount}</strong></div>
-      <div class="ch-metric">사진 참조<strong>${photoCount}</strong></div>
-      <div class="ch-metric">보이스 연결<strong>${voiceCount}</strong></div>
+      <div class="ch-metric">
+        <div class="ch-metric-icon purple"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="ch-metric-body"><span>표시</span><strong>${list.length}</strong></div>
+      </div>
+      <div class="ch-metric">
+        <div class="ch-metric-icon green"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="7 12 10.5 15.5 17 9"/></svg></div>
+        <div class="ch-metric-body"><span>생성 준비</span><strong>${readyCount}</strong></div>
+      </div>
+      <div class="ch-metric">
+        <div class="ch-metric-icon blue"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div class="ch-metric-body"><span>사진 참조</span><strong>${photoCount}</strong></div>
+      </div>
+      <div class="ch-metric">
+        <div class="ch-metric-icon pink"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+        <div class="ch-metric-body"><span>보이스 연결</span><strong>${voiceCount}</strong></div>
+      </div>
     `;
   }
 
@@ -44086,24 +44150,37 @@ async function renderCharactersPage() {
             </div>
             <div class="ch-card-topline" style="gap:4px;margin-top:4px">
               <span class="ch-pill ${ready.ready ? 'ready' : 'warn'}">${ready.ready ? 'Ready' : 'Need ' + ready.missing.length}</span>
-              ${ready.hasPhoto ? '<span class="ch-pill ready">Photo</span>' : '<span class="ch-pill warn">No photo</span>'}
-              ${ready.hasVoice ? '<span class="ch-pill ready">Voice</span>' : '<span class="ch-pill">No voice</span>'}
+              ${ready.hasPhoto ? '<span class="ch-pill ready">사진 있음</span>' : '<span class="ch-pill warn">No photo</span>'}
+              ${ready.hasVoice ? '<span class="ch-pill ready">보이스 있음</span>' : '<span class="ch-pill">No voice</span>'}
             </div>
           </div>
         </div>
         <div class="ch-card-progress" style="--ready:${ready.percent}%"><span></span></div>
         ${(c.promptFragment || c.appearance) ? `<div class="bible-fragment">${escapeHTML(c.promptFragment || c.appearance)}</div>` : ''}
-        <div class="bible-meta">
-          ${c.voiceId ? `<span>🎙 ${escapeHTML(c.voiceId.slice(0, 12))}…</span>` : '<span style="opacity:0.5">보이스 없음</span>'}
-          <span style="margin-left:auto">${formatRelTime(c.updatedAt)}</span>
-        </div>
         <div class="ch-card-actions">
-          <button class="ch-card-btn primary" data-ch-action="edit" data-ch-id="${escapeHTML(c.id)}">편집</button>
-          <button class="ch-card-btn" data-ch-action="copy" data-ch-id="${escapeHTML(c.id)}">프롬프트 복사</button>
-          <button class="ch-card-btn" data-ch-action="assign" data-ch-id="${escapeHTML(c.id)}">Shot 연결</button>
-          <button class="ch-card-btn" data-ch-action="usage" data-ch-id="${escapeHTML(c.id)}">사용샷</button>
-          <button class="ch-card-btn" data-ch-action="relations" data-ch-id="${escapeHTML(c.id)}">관계</button>
-          <button class="ch-card-btn" data-ch-action="duplicate" data-ch-id="${escapeHTML(c.id)}">복제</button>
+          <div class="ch-card-actions-row">
+            <button class="ch-card-btn primary" data-ch-action="edit" data-ch-id="${escapeHTML(c.id)}">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              편집
+            </button>
+            <button class="ch-card-btn" data-ch-action="copy" data-ch-id="${escapeHTML(c.id)}">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              프롬프트 복사
+            </button>
+            <button class="ch-card-btn" data-ch-action="assign" data-ch-id="${escapeHTML(c.id)}">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Shot 연결
+            </button>
+          </div>
+          <div class="ch-card-actions-row">
+            <button class="ch-card-btn" data-ch-action="usage" data-ch-id="${escapeHTML(c.id)}">사용샷</button>
+            <button class="ch-card-btn" data-ch-action="relations" data-ch-id="${escapeHTML(c.id)}">관계</button>
+            <button class="ch-card-btn" data-ch-action="duplicate" data-ch-id="${escapeHTML(c.id)}">복제</button>
+            <button class="ch-card-btn imagegen" data-ch-action="imagegen" data-ch-id="${escapeHTML(c.id)}">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L9.6 9.6 2 12l7.6 2.4L12 22l2.4-7.6L22 12l-7.6-2.4z"/></svg>
+              이미지 생성
+            </button>
+          </div>
         </div>
       </article>
     `;
@@ -45715,6 +45792,11 @@ function bindCharactersPage() {
   $('#ch-random-btn')?.addEventListener('click', () => createRandomCharacterQuick());
   $('#ch-pack-btn')?.addEventListener('click', () => copyCharacterPromptPack());
   $('#ch-relmap-btn')?.addEventListener('click', () => openCharacterRelationMap());
+  $('#ch-imagegen-btn')?.addEventListener('click', () => {
+    const ids = [...CHARACTER_PAGE_STATE.selected];
+    if (ids.length > 0) openCharacterEditor(ids[0], null, 'sheet');
+    else openCharacterEditor(null, null, 'sheet');
+  });
   $('#ch-grid')?.addEventListener('click', async e => {
     const btn = e.target.closest('[data-ch-action]');
     if (!btn) return;
@@ -45734,6 +45816,7 @@ function bindCharactersPage() {
     else if (action === 'usage' && id) await openCharacterUsageModal(id);
     else if (action === 'relations' && id) await openCharacterRelationsModal(id);
     else if (action === 'duplicate' && id) await duplicateCharacter(id);
+    else if (action === 'imagegen' && id) openCharacterEditor(id, null, 'sheet');
     else if (action === 'delete' && id) {
       try {
         const c = await SoavizDB.db.characters.get(id);
