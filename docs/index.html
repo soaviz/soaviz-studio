@@ -14378,6 +14378,54 @@
     .ck-library-keyimage-card { border-color:rgba(167,139,250,.16); }
     .ck-library-keyimage-thumb { width:100%; aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:rgba(0,0,0,.28); display:grid; place-items:center; color:var(--text-faint); }
     .ck-library-keyimage-thumb img { width:100%; height:100%; object-fit:cover; }
+
+    /* ── Task #85: Identity Lock UI ── */
+    /* Identity Settings Panel in CK Sidebar */
+    .ck-identity-settings-panel { padding:12px 0 4px; }
+    .ck-identity-header { display:flex; align-items:center; gap:8px; padding:0 0 10px; }
+    .ck-identity-icon { font-size:14px; }
+    .ck-identity-title { font-size:12px; font-weight:600; color:var(--text-dim); letter-spacing:.05em; text-transform:uppercase; flex:1; }
+    .ck-identity-body { display:flex; flex-direction:column; gap:8px; transition:opacity .2s; }
+    .ck-identity-body--disabled { opacity:.4; pointer-events:none; }
+    .ck-identity-row { display:flex; align-items:center; gap:8px; font-size:12px; }
+    .ck-identity-label { color:var(--text-faint); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ck-identity-ref-thumb { width:32px; height:32px; border-radius:6px; object-fit:cover; border:1px solid var(--border); flex-shrink:0; }
+    .ck-identity-ref-name { color:var(--text-dim); font-size:11px; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80px; }
+    .ck-identity-empty { color:var(--text-faint); font-size:11px; font-style:italic; }
+    .ck-identity-slider { flex:1; accent-color:var(--accent); }
+    .ck-identity-strength-val { font-size:11px; color:var(--text-dim); min-width:32px; text-align:right; }
+    /* Toggle switch */
+    .ck-identity-toggle { display:inline-flex; align-items:center; cursor:pointer; position:relative; }
+    .ck-identity-toggle input { opacity:0; width:0; height:0; position:absolute; }
+    .ck-toggle-track { width:32px; height:18px; background:var(--border); border-radius:999px; position:relative; transition:background .2s; display:block; }
+    .ck-identity-toggle input:checked + .ck-toggle-track { background:var(--accent); }
+    .ck-toggle-thumb { position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; transition:transform .2s; display:block; }
+    .ck-identity-toggle input:checked + .ck-toggle-track .ck-toggle-thumb { transform:translateX(14px); }
+    .ck-identity-toggle--sm .ck-toggle-track { width:26px; height:15px; }
+    .ck-identity-toggle--sm .ck-toggle-thumb { width:11px; height:11px; }
+    .ck-identity-toggle--sm input:checked + .ck-toggle-track .ck-toggle-thumb { transform:translateX(11px); }
+
+    /* Shot Identity Lock Panel */
+    .shot-identity-lock-panel { margin:0 0 10px; padding:12px 16px; background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.28); border-radius:12px; }
+    .sil-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+    .sil-icon { font-size:14px; }
+    .sil-title { font-size:12px; font-weight:600; color:#10b981; }
+    .sil-chars { display:flex; flex-direction:column; gap:6px; }
+    .sil-char-row { display:flex; align-items:center; gap:10px; }
+    .sil-char-thumb { width:32px; height:32px; border-radius:6px; object-fit:cover; border:1px solid rgba(16,185,129,.3); flex-shrink:0; }
+    .sil-char-thumb--empty { background:rgba(16,185,129,.12); }
+    .sil-char-info { flex:1; display:flex; flex-direction:column; gap:1px; }
+    .sil-char-name { font-size:12px; font-weight:600; color:var(--text); }
+    .sil-char-strength { font-size:10px; color:var(--text-faint); }
+    .sil-lock-badge { font-size:9px; font-weight:700; letter-spacing:.08em; background:#10b981; color:#fff; border-radius:4px; padding:2px 5px; flex-shrink:0; }
+
+    /* Identity Trace Badges (Library cards) */
+    .identity-trace-badges { display:flex; flex-wrap:wrap; gap:4px; margin:6px 0 0; }
+    .identity-trace-badge { font-size:9px; font-weight:600; letter-spacing:.05em; padding:2px 6px; border-radius:4px; white-space:nowrap; }
+    .identity-trace-badge--locked { background:rgba(16,185,129,.15); color:#10b981; border:1px solid rgba(16,185,129,.3); }
+    .identity-trace-badge--strength { background:rgba(99,102,241,.12); color:var(--accent); border:1px solid rgba(99,102,241,.25); }
+    .identity-trace-badge--char { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.25); }
+    .identity-trace-badge--source { background:rgba(var(--text-faint-rgb,128,128,128),.1); color:var(--text-faint); border:1px solid var(--border); }
     /* Action button tone for production flow buttons */
     .ck-result-buttons button[data-send-key-to-shot],
     .ck-result-buttons button[data-send-key-to-sheet],
@@ -45389,6 +45437,16 @@ async function approveCKImage(characterId, imageId) {
   if (!img.imageUrl && !img.url) { showToast?.('mock 이미지는 대표 이미지로 지정할 수 없습니다', 'warn'); return false; }
   await persistCKGeneratedImage(characterId, { ...img, status: 'approved' }, { saveAsGenerated: true, saveAsReference: true, saveAsKeyImage: true, setAsAvatar: true, saveToAssets: true });
   window.CharacterKeyImageStudio.selectedImageId = imageId;
+  // Identity Lock: auto-update defaultReferenceId/Url on approval (Task #85)
+  if (typeof updateCharacterIdentityLock === 'function') {
+    const refUrl = img.imageUrl || img.url || '';
+    if (refUrl) {
+      updateCharacterIdentityLock(characterId, {
+        defaultReferenceId:  img.id,
+        defaultReferenceUrl: refUrl
+      }).catch(() => {});
+    }
+  }
   showToast?.('대표 키이미지로 지정했습니다');
   await renderCharacterKeyImageStudioShell(characterId);
   return true;
@@ -45522,6 +45580,8 @@ function bindCKStudioEvents(character) {
 
   /* Production Flow 보강 이벤트 (Task #84) */
   bindCKProductionFlowEvents(root, character);
+  /* Identity Settings 이벤트 (Task #85) */
+  bindCKIdentitySettingsEvents(root, character);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -45777,6 +45837,7 @@ function renderCharacterKeyImageLibraryCard(asset = {}) {
         <p style="margin:6px 0 0;color:var(--text-faint);font-size:12px;">
           ${escapeHTML(asset.model || '')}${asset.pipeline ? ` · ${escapeHTML(asset.pipeline)}` : ''}${asset.status ? ` · ${escapeHTML(asset.status)}` : ''}
         </p>
+        ${typeof renderIdentityTraceBadges === 'function' ? renderIdentityTraceBadges(asset) : ''}
         <div class="mobile-grid-2" style="margin-top:10px;">
           <button class="mobile-secondary-btn" data-open-keyimage-asset-character="${cid}">캐릭터 열기</button>
           <button class="mobile-secondary-btn" data-copy-keyimage-asset-url="${aid}">URL 복사</button>
@@ -45847,6 +45908,12 @@ function getCharacterVisualBadges(c = {}) {
   ].filter(x => x?.imageUrl || x?.url).length;
   if (refs) badges.push({ label: `Refs ${refs}`, tone: 'info' });
   if (Array.isArray(c.sheetImages) && c.sheetImages.length) badges.push({ label: 'Sheet Ready', tone: 'info' });
+  // Identity Lock badges (Task #85)
+  const lock = c.identityLock;
+  if (lock?.enabled) {
+    badges.push({ label: '🔒 ID Lock', tone: 'ready' });
+    if (lock.autoInjectToShots !== false) badges.push({ label: 'Auto Shot Ref', tone: 'info' });
+  }
   return badges;
 }
 window.getCharacterVisualBadges = getCharacterVisualBadges;
@@ -45914,6 +45981,305 @@ function bindCKProductionFlowEvents(root, character) {
   });
 }
 window.bindCKProductionFlowEvents = bindCKProductionFlowEvents;
+
+/* ═══════════════════════════════════════════════════════════════
+   Task #85 — Character Identity Lock / Shot Auto Reference
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Primary Reference Helpers */
+function getCharacterPrimaryReferenceUrl(c = {}) {
+  if (c.keyImageUrl) return c.keyImageUrl;
+  const ki = Array.isArray(c.keyImages) && c.keyImages.find(x => x.status === 'approved' && (x.imageUrl || x.url));
+  if (ki) return ki.imageUrl || ki.url;
+  const ri = Array.isArray(c.referenceImages) && c.referenceImages.find(x => x.imageUrl || x.url);
+  if (ri) return ri.imageUrl || ri.url;
+  return c.avatarUrl || c.mainImageUrl || null;
+}
+window.getCharacterPrimaryReferenceUrl = getCharacterPrimaryReferenceUrl;
+
+function getCharacterPrimaryReferenceId(c = {}) {
+  if (c.keyImageId) return c.keyImageId;
+  const ki = Array.isArray(c.keyImages) && c.keyImages.find(x => x.status === 'approved');
+  if (ki) return ki.id;
+  const ri = Array.isArray(c.referenceImages) && c.referenceImages.find(x => x.imageUrl || x.url);
+  if (ri) return ri.id;
+  return null;
+}
+window.getCharacterPrimaryReferenceId = getCharacterPrimaryReferenceId;
+
+/* 2. Default Identity Lock object */
+function getDefaultCharacterIdentityLock() {
+  return {
+    enabled:             false,
+    strength:            0.85,
+    defaultReferenceId:  null,
+    defaultReferenceUrl: null,
+    autoInjectToShots:   true,
+    autoInjectToVideos:  true,
+    autoInjectToSheets:  false,
+    updatedAt:           null
+  };
+}
+window.getDefaultCharacterIdentityLock = getDefaultCharacterIdentityLock;
+
+/* 3. Update identity lock in DB */
+async function updateCharacterIdentityLock(characterId, patch = {}) {
+  try {
+    await SoavizDB?.ready;
+    const c = await SoavizDB.db.characters.get(characterId);
+    if (!c) return false;
+    const current = c.identityLock || getDefaultCharacterIdentityLock();
+    const updated  = { ...current, ...patch, updatedAt: Date.now() };
+    await SoavizDB.db.characters.update(characterId, { identityLock: updated, updatedAt: Date.now() });
+    return true;
+  } catch (e) {
+    console.warn('[identity-lock] update failed', e);
+    return false;
+  }
+}
+window.updateCharacterIdentityLock = updateCharacterIdentityLock;
+
+/* 4. Character Bridge — resolve characters for a shot */
+async function resolveCharactersForShot(shot = {}) {
+  if (!window.SoavizDB?.db?.characters) return [];
+  await SoavizDB.ready;
+  const ids = [
+    ...(Array.isArray(shot.characterIds) ? shot.characterIds : []),
+    ...(Array.isArray(shot.characters)
+      ? shot.characters.map(x => (typeof x === 'string' ? x : x?.id)).filter(Boolean)
+      : []),
+    shot.characterId,
+    shot.primaryCharacterId
+  ].filter(Boolean);
+  const uniqueIds = [...new Set(ids)];
+  if (!uniqueIds.length) {
+    const selId = typeof MobileState !== 'undefined' && MobileState?.selectedCharacterId;
+    if (selId) uniqueIds.push(selId);
+  }
+  if (!uniqueIds.length) return [];
+  try {
+    const all = await Promise.all(uniqueIds.map(id => SoavizDB.db.characters.get(id).catch(() => null)));
+    return all.filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+window.resolveCharactersForShot = resolveCharactersForShot;
+
+function buildCharacterIdentityPromptLine(c = {}) {
+  const parts = [];
+  if (c.name)       parts.push(c.name);
+  if (c.role)       parts.push(c.role);
+  if (c.gender)     parts.push(c.gender);
+  if (c.age)        parts.push(`${c.age}세`);
+  if (c.occupation) parts.push(c.occupation);
+  if (c.appearance) parts.push(c.appearance.slice(0, 80));
+  const lock = c.identityLock || {};
+  if (lock.enabled) return `[identity:${parts.join(', ')}]`;
+  return parts.length ? parts.join(', ') : '';
+}
+window.buildCharacterIdentityPromptLine = buildCharacterIdentityPromptLine;
+
+function buildCharacterIdentityReference(c = {}) {
+  const url  = getCharacterPrimaryReferenceUrl(c);
+  const id   = getCharacterPrimaryReferenceId(c);
+  const lock = c.identityLock || getDefaultCharacterIdentityLock();
+  return {
+    characterId:   c.id,
+    characterName: c.name || '',
+    referenceId:   id,
+    referenceUrl:  url,
+    strength:      lock.strength || 0.85,
+    identityLock:  lock.enabled || false,
+    promptLine:    buildCharacterIdentityPromptLine(c)
+  };
+}
+window.buildCharacterIdentityReference = buildCharacterIdentityReference;
+
+/* buildShotCharacterReferencePayload — API payload contract:
+ * {
+ *   characterReferences: [
+ *     { characterId, characterName, referenceId, referenceUrl,
+ *       strength, identityLock, promptLine }
+ *   ],
+ *   hasIdentityLock: boolean   // true if any character has identityLock.enabled
+ * }
+ * Passed to /api/image/generate and /api/video/generate as-is.
+ */
+async function buildShotCharacterReferencePayload(shot = {}) {
+  const chars = await resolveCharactersForShot(shot);
+  if (!chars.length) return { characterReferences: [], hasIdentityLock: false };
+  const refs = chars.map(buildCharacterIdentityReference).filter(r => r.referenceUrl);
+  const hasIdentityLock = refs.some(r => r.identityLock);
+  return { characterReferences: refs, hasIdentityLock };
+}
+window.buildShotCharacterReferencePayload = buildShotCharacterReferencePayload;
+
+async function enhanceShotPromptWithCharacterIdentity(prompt = '', shot = {}) {
+  try {
+    const chars = await resolveCharactersForShot(shot);
+    if (!chars.length) return prompt;
+    const lines = chars
+      .filter(c => c.identityLock?.enabled || c.keyImageUrl || c.keyImageId)
+      .map(c => buildCharacterIdentityPromptLine(c))
+      .filter(Boolean);
+    if (!lines.length) return prompt;
+    return `${prompt.trim()}, ${lines.join(', ')}`;
+  } catch (e) {
+    return prompt;
+  }
+}
+window.enhanceShotPromptWithCharacterIdentity = enhanceShotPromptWithCharacterIdentity;
+
+/* 5. Shot Identity Lock Panel UI */
+async function hydrateShotIdentityLockPanel(root, shot = {}) {
+  const target = root?.querySelector('[data-shot-identity-lock-root]');
+  if (!target) return;
+  const chars = await resolveCharactersForShot(shot);
+  if (!chars.length) { target.innerHTML = ''; return; }
+  const lockedChars = chars.filter(c => c.identityLock?.enabled);
+  if (!lockedChars.length) { target.innerHTML = ''; return; }
+  target.innerHTML = `
+    <div class="shot-identity-lock-panel">
+      <div class="sil-header">
+        <span class="sil-icon">🔒</span>
+        <span class="sil-title">Identity Lock 활성</span>
+      </div>
+      <div class="sil-chars">
+        ${lockedChars.map(c => {
+          const url  = getCharacterPrimaryReferenceUrl(c);
+          const lock = c.identityLock || {};
+          return `
+            <div class="sil-char-row">
+              ${url
+                ? `<img class="sil-char-thumb" src="${escapeHTML(url)}" alt="">`
+                : '<div class="sil-char-thumb sil-char-thumb--empty"></div>'}
+              <div class="sil-char-info">
+                <span class="sil-char-name">${escapeHTML(c.name || '캐릭터')}</span>
+                <span class="sil-char-strength">강도 ${Math.round((lock.strength || 0.85) * 100)}%</span>
+              </div>
+              <span class="sil-lock-badge">LOCKED</span>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+window.hydrateShotIdentityLockPanel = hydrateShotIdentityLockPanel;
+
+/* 6. CK Studio Identity Settings Panel */
+function renderCKIdentitySettingsPanel(c = {}) {
+  const lock   = c.identityLock || getDefaultCharacterIdentityLock();
+  const refUrl = getCharacterPrimaryReferenceUrl(c);
+  const refId  = getCharacterPrimaryReferenceId(c);
+  return `
+    <div class="ck-identity-settings-panel" id="ck-identity-settings-panel">
+      <div class="ck-identity-header">
+        <span class="ck-identity-icon">🔒</span>
+        <span class="ck-identity-title">Identity Lock</span>
+        <label class="ck-identity-toggle">
+          <input type="checkbox" id="ck-identity-lock-enabled" data-identity-lock-toggle
+            ${lock.enabled ? 'checked' : ''}>
+          <span class="ck-toggle-track"><span class="ck-toggle-thumb"></span></span>
+        </label>
+      </div>
+      <div class="ck-identity-body${lock.enabled ? '' : ' ck-identity-body--disabled'}">
+        <div class="ck-identity-row">
+          <label class="ck-identity-label">기준 이미지</label>
+          ${refUrl
+            ? `<img class="ck-identity-ref-thumb" src="${escapeHTML(refUrl)}" data-identity-lock-ref-id="${escapeHTML(refId || '')}"><span class="ck-identity-ref-name">${escapeHTML(refId ? refId.slice(0, 12) + '…' : 'key image')}</span>`
+            : `<span class="ck-identity-empty">키이미지를 먼저 생성해 주세요</span>`}
+        </div>
+        <div class="ck-identity-row">
+          <label class="ck-identity-label">강도</label>
+          <input type="range" class="ck-identity-slider" min="0" max="1" step="0.05"
+            data-identity-lock-strength value="${lock.strength || 0.85}">
+          <span class="ck-identity-strength-val" id="ck-identity-strength-display">${Math.round((lock.strength || 0.85) * 100)}%</span>
+        </div>
+        <div class="ck-identity-row">
+          <label class="ck-identity-label">Shot 자동 주입</label>
+          <label class="ck-identity-toggle ck-identity-toggle--sm">
+            <input type="checkbox" data-identity-auto-shots
+              ${lock.autoInjectToShots !== false ? 'checked' : ''}>
+            <span class="ck-toggle-track"><span class="ck-toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="ck-identity-row">
+          <label class="ck-identity-label">Video 자동 주입</label>
+          <label class="ck-identity-toggle ck-identity-toggle--sm">
+            <input type="checkbox" data-identity-auto-videos
+              ${lock.autoInjectToVideos !== false ? 'checked' : ''}>
+            <span class="ck-toggle-track"><span class="ck-toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </div>`;
+}
+window.renderCKIdentitySettingsPanel = renderCKIdentitySettingsPanel;
+
+/* 7. Library Identity Trace Badges */
+function renderIdentityTraceBadges(asset = {}) {
+  const refs = Array.isArray(asset.characterReferences) ? asset.characterReferences : [];
+  if (!refs.length && !asset.identityLock && !asset.identitySource) return '';
+  const badges = [];
+  if (asset.identityLock) {
+    badges.push(`<span class="identity-trace-badge identity-trace-badge--locked">🔒 ID Lock</span>`);
+  }
+  if (asset.identityStrength != null) {
+    badges.push(`<span class="identity-trace-badge identity-trace-badge--strength">${Math.round(asset.identityStrength * 100)}%</span>`);
+  }
+  refs.forEach(r => {
+    if (r.characterName) {
+      badges.push(`<span class="identity-trace-badge identity-trace-badge--char">${escapeHTML(r.characterName)}</span>`);
+    }
+  });
+  if (asset.identitySource) {
+    badges.push(`<span class="identity-trace-badge identity-trace-badge--source">${escapeHTML(asset.identitySource)}</span>`);
+  }
+  if (!badges.length) return '';
+  return `<div class="identity-trace-badges">${badges.join('')}</div>`;
+}
+window.renderIdentityTraceBadges = renderIdentityTraceBadges;
+
+/* 8. bindCKIdentitySettingsEvents — identity panel 이벤트 */
+function bindCKIdentitySettingsEvents(root, character) {
+  if (!root || !character) return;
+  const cid = character.id;
+  const toggle = root.querySelector('[data-identity-lock-toggle]');
+  if (toggle) {
+    toggle.addEventListener('change', async () => {
+      await updateCharacterIdentityLock(cid, { enabled: toggle.checked });
+      const body = root.querySelector('.ck-identity-body');
+      if (body) {
+        if (toggle.checked) body.classList.remove('ck-identity-body--disabled');
+        else                body.classList.add('ck-identity-body--disabled');
+      }
+      showToast?.(toggle.checked ? 'Identity Lock 활성화됨' : 'Identity Lock 비활성화됨');
+    });
+  }
+  const slider = root.querySelector('[data-identity-lock-strength]');
+  const display = root.querySelector('#ck-identity-strength-display');
+  if (slider) {
+    slider.addEventListener('input', () => {
+      if (display) display.textContent = Math.round(parseFloat(slider.value) * 100) + '%';
+    });
+    slider.addEventListener('change', async () => {
+      await updateCharacterIdentityLock(cid, { strength: parseFloat(slider.value) });
+    });
+  }
+  const autoShots = root.querySelector('[data-identity-auto-shots]');
+  if (autoShots) {
+    autoShots.addEventListener('change', async () => {
+      await updateCharacterIdentityLock(cid, { autoInjectToShots: autoShots.checked });
+    });
+  }
+  const autoVideos = root.querySelector('[data-identity-auto-videos]');
+  if (autoVideos) {
+    autoVideos.addEventListener('change', async () => {
+      await updateCharacterIdentityLock(cid, { autoInjectToVideos: autoVideos.checked });
+    });
+  }
+}
+window.bindCKIdentitySettingsEvents = bindCKIdentitySettingsEvents;
 
 /* ── 메인 Shell 렌더 ── */
 async function renderCharacterKeyImageStudioShell(charId) {
@@ -45999,6 +46365,8 @@ async function renderCharacterKeyImageStudioShell(charId) {
           <div class="ck-side-tabs">
             ${TABS.map(([id, label]) => `<button class="ck-side-tab${s.activeTab === id ? ' active' : ''}" data-cktab="${id}">${label}</button>`).join('')}
           </div>
+          <div class="ck-sidebar-divider"></div>
+          ${renderCKIdentitySettingsPanel(c)}
         </aside>
         <div class="ck-main">
           <div class="ck-tabs">
@@ -55353,6 +55721,8 @@ function renderMobileShotWorkspace(bundle) {
     </section>
     <!-- Guard CTA placeholder — 키이미지 없는 캐릭터 감지 시 hydrateCKShotGuard로 채워짐 (Task #84) -->
     <div data-ck-shot-guard-root></div>
+    <!-- Identity Lock panel placeholder — Task #85 -->
+    <div data-shot-identity-lock-root></div>
     <section class="mobile-section mobile-card">
       <h3 class="mobile-section-title">Shot 정보</h3>
       <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6;">${escapeHTML((shot.description || shot.action || shot.summary || '').slice(0, 220))}</p>
@@ -55465,6 +55835,10 @@ function bindMobileShotWorkspaceEvents(root, bundle) {
   const shot = bundle?.shots?.find(s => s.id === ws.shotId) || {};
   if (typeof hydrateCKShotGuard === 'function') {
     hydrateCKShotGuard(root, shot);
+  }
+  // Identity Lock panel hydration (Task #85)
+  if (typeof hydrateShotIdentityLockPanel === 'function') {
+    hydrateShotIdentityLockPanel(root, shot);
   }
 }
 window.bindMobileShotWorkspaceEvents = bindMobileShotWorkspaceEvents;
@@ -55742,15 +56116,25 @@ async function simulateMobileJobProgress(jobId, from, to, totalMs) {
 
 async function mobileGenerateImageAssetFromJob(job) {
   const BACKEND_URL = window.__SOAVIZ_CONFIG__?.backendUrl || '';
+  // Identity Lock: resolve character references (Task #85)
+  let charRefPayload = { characterReferences: [], hasIdentityLock: false };
+  if (job.shotId && typeof buildShotCharacterReferencePayload === 'function') {
+    try {
+      const _shot = await SoavizDB?.db?.shots?.get(job.shotId).catch(() => null);
+      if (_shot) charRefPayload = await buildShotCharacterReferencePayload(_shot);
+    } catch (_) {}
+  }
   let resultUrl = null;
   try {
     const resp = await fetch(`${BACKEND_URL}/api/generate-image`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt:      job.prompt,
-        model:       job.modelId,
-        aspectRatio: job.aspectRatio
+        prompt:              job.prompt,
+        model:               job.modelId,
+        aspectRatio:         job.aspectRatio,
+        characterReferences: charRefPayload.characterReferences,
+        identityLock:        charRefPayload.hasIdentityLock
       })
     });
     if (resp.ok) {
@@ -55775,7 +56159,13 @@ async function mobileGenerateImageAssetFromJob(job) {
     aspectRatio: job.aspectRatio,
     createdAt:   Date.now(),
     updatedAt:   Date.now(),
-    archived:    0
+    archived:    0,
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock,
+      identitySource:      'shot-workspace',
+      identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+    } : {})
   };
   try { await SoavizDB.db.assets.put(asset); } catch (_) {}
   if (job.shotId) {
@@ -55793,17 +56183,27 @@ async function mobileGenerateImageAssetFromJob(job) {
 
 async function mobileGenerateVideoAssetFromJob(job) {
   const BACKEND_URL = window.__SOAVIZ_CONFIG__?.backendUrl || '';
+  // Identity Lock: resolve character references (Task #85)
+  let charRefPayload = { characterReferences: [], hasIdentityLock: false };
+  if (job.shotId && typeof buildShotCharacterReferencePayload === 'function') {
+    try {
+      const _shot = await SoavizDB?.db?.shots?.get(job.shotId).catch(() => null);
+      if (_shot) charRefPayload = await buildShotCharacterReferencePayload(_shot);
+    } catch (_) {}
+  }
   let resultUrl = null;
   try {
     const resp = await fetch(`${BACKEND_URL}/api/generate-video`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt:         job.prompt,
-        model:          job.modelId,
-        duration:       job.duration,
-        motionStrength: job.motionStrength,
-        aspectRatio:    job.aspectRatio
+        prompt:              job.prompt,
+        model:               job.modelId,
+        duration:            job.duration,
+        motionStrength:      job.motionStrength,
+        aspectRatio:         job.aspectRatio,
+        characterReferences: charRefPayload.characterReferences,
+        identityLock:        charRefPayload.hasIdentityLock
       })
     });
     if (resp.ok) {
@@ -55826,7 +56226,13 @@ async function mobileGenerateVideoAssetFromJob(job) {
     aspectRatio: job.aspectRatio,
     createdAt:   Date.now(),
     updatedAt:   Date.now(),
-    archived:    0
+    archived:    0,
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock,
+      identitySource:      'shot-workspace',
+      identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+    } : {})
   };
   try { await SoavizDB.db.assets.put(asset); } catch (_) {}
   if (job.shotId) {
@@ -57165,6 +57571,11 @@ window.generateMobileShotAsset = generateMobileShotAsset;
 async function mobileGenerateImageAsset(shot, bundle) {
   const ws        = MobileState.shotWorkspace;
   const projectId = bundle.project?.id || MobileState.currentProjectId;
+  // Identity Lock: resolve character references (Task #85)
+  let charRefPayload = { characterReferences: [], hasIdentityLock: false };
+  if (typeof buildShotCharacterReferencePayload === 'function') {
+    try { charRefPayload = await buildShotCharacterReferencePayload(shot); } catch (_) {}
+  }
   const endpoint  = window.__SOAVIZ_CONFIG__?.backendUrl
     ? `${window.__SOAVIZ_CONFIG__.backendUrl}/api/image/generate`
     : '/api/image/generate';
@@ -57172,7 +57583,11 @@ async function mobileGenerateImageAsset(shot, bundle) {
     projectId, shotId: shot.id,
     model: ws.selectedModelId, prompt: ws.promptText,
     negativePrompt: ws.negativePrompt, aspectRatio: ws.aspectRatio,
-    source: 'mobile-shot-workspace'
+    source: 'mobile-shot-workspace',
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock
+    } : {})
   };
   try {
     const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
@@ -57186,7 +57601,13 @@ async function mobileGenerateImageAsset(shot, bundle) {
         url, imageUrl: url, model: ws.selectedModelId,
         prompt: ws.promptText, negativePrompt: ws.negativePrompt,
         aspectRatio: ws.aspectRatio, source: 'mobile-shot-workspace',
-        createdAt: Date.now(), updatedAt: Date.now(), archived: false
+        createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+        ...(charRefPayload.characterReferences.length ? {
+          characterReferences: charRefPayload.characterReferences,
+          identityLock:        charRefPayload.hasIdentityLock,
+          identitySource:      'shot-workspace',
+          identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+        } : {})
       };
     }
   } catch (e) { console.warn('[mobile] image generation API fallback', e); }
@@ -57197,7 +57618,13 @@ async function mobileGenerateImageAsset(shot, bundle) {
     url: '', imageUrl: '', model: ws.selectedModelId,
     prompt: ws.promptText, negativePrompt: ws.negativePrompt,
     aspectRatio: ws.aspectRatio, source: 'mobile-shot-workspace',
-    mock: true, createdAt: Date.now(), updatedAt: Date.now(), archived: false
+    mock: true, createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock,
+      identitySource:      'shot-workspace',
+      identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+    } : {})
   };
 }
 window.mobileGenerateImageAsset = mobileGenerateImageAsset;
@@ -57206,6 +57633,11 @@ window.mobileGenerateImageAsset = mobileGenerateImageAsset;
 async function mobileGenerateVideoAsset(shot, bundle) {
   const ws        = MobileState.shotWorkspace;
   const projectId = bundle.project?.id || MobileState.currentProjectId;
+  // Identity Lock: resolve character references (Task #85)
+  let charRefPayload = { characterReferences: [], hasIdentityLock: false };
+  if (typeof buildShotCharacterReferencePayload === 'function') {
+    try { charRefPayload = await buildShotCharacterReferencePayload(shot); } catch (_) {}
+  }
   if (typeof VIDEO_STATE !== 'undefined') {
     VIDEO_STATE.prompt      = ws.promptText;
     VIDEO_STATE.duration    = ws.duration;
@@ -57220,7 +57652,11 @@ async function mobileGenerateVideoAsset(shot, bundle) {
     model: ws.selectedModelId, prompt: ws.promptText,
     negativePrompt: ws.negativePrompt, aspectRatio: ws.aspectRatio,
     duration: ws.duration, motionStrength: ws.motionStrength,
-    source: 'mobile-shot-workspace'
+    source: 'mobile-shot-workspace',
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock
+    } : {})
   };
   try {
     const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
@@ -57235,7 +57671,13 @@ async function mobileGenerateVideoAsset(shot, bundle) {
         prompt: ws.promptText, negativePrompt: ws.negativePrompt,
         aspectRatio: ws.aspectRatio, duration: ws.duration,
         motionStrength: ws.motionStrength, source: 'mobile-shot-workspace',
-        createdAt: Date.now(), updatedAt: Date.now(), archived: false
+        createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+        ...(charRefPayload.characterReferences.length ? {
+          characterReferences: charRefPayload.characterReferences,
+          identityLock:        charRefPayload.hasIdentityLock,
+          identitySource:      'shot-workspace',
+          identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+        } : {})
       };
     }
   } catch (e) { console.warn('[mobile] video generation API fallback', e); }
@@ -57247,7 +57689,13 @@ async function mobileGenerateVideoAsset(shot, bundle) {
     prompt: ws.promptText, negativePrompt: ws.negativePrompt,
     aspectRatio: ws.aspectRatio, duration: ws.duration,
     motionStrength: ws.motionStrength, source: 'mobile-shot-workspace',
-    mock: true, createdAt: Date.now(), updatedAt: Date.now(), archived: false
+    mock: true, createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+    ...(charRefPayload.characterReferences.length ? {
+      characterReferences: charRefPayload.characterReferences,
+      identityLock:        charRefPayload.hasIdentityLock,
+      identitySource:      'shot-workspace',
+      identityStrength:    charRefPayload.characterReferences[0]?.strength || null
+    } : {})
   };
 }
 window.mobileGenerateVideoAsset = mobileGenerateVideoAsset;
