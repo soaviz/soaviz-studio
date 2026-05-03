@@ -14366,6 +14366,29 @@
     /* approved card */
     .ck-result-card.approved-card { border: 2px solid #10b981; box-shadow: 0 0 0 2px rgba(16,185,129,.2); }
     .approved-badge { background: #10b981 !important; color: #fff !important; }
+    /* Guard CTA */
+    .ck-shot-guard-card { border-color: rgba(251,191,36,.28) !important; background: rgba(251,191,36,.08) !important; }
+    /* Character Visual Badges */
+    .character-visual-badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .character-visual-badge { padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800; background:rgba(255,255,255,.06); color:var(--text-faint); }
+    .character-visual-badge.ready { background:rgba(52,211,153,.14); color:#86efac; }
+    .character-visual-badge.warn  { background:rgba(251,191,36,.14); color:#fbbf24; }
+    .character-visual-badge.info  { background:rgba(96,165,250,.14); color:#93c5fd; }
+    /* Library Key Image */
+    .ck-library-keyimage-card { border-color:rgba(167,139,250,.16); }
+    .ck-library-keyimage-thumb { width:100%; aspect-ratio:1/1; border-radius:16px; overflow:hidden; background:rgba(0,0,0,.28); display:grid; place-items:center; color:var(--text-faint); }
+    .ck-library-keyimage-thumb img { width:100%; height:100%; object-fit:cover; }
+    /* Action button tone for production flow buttons */
+    .ck-result-buttons button[data-send-key-to-shot],
+    .ck-result-buttons button[data-send-key-to-sheet],
+    .ck-result-buttons button[data-use-key-as-base] { color:var(--accent); border-color:rgba(167,139,250,.28); background:rgba(167,139,250,.10); }
+    /* History row */
+    .ck-history-row { width:100%; min-height:38px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid var(--border); color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; padding:9px 11px; margin-top:8px; text-align:left; cursor:pointer; }
+    .ck-history-row:hover { border-color:rgba(167,139,250,.34); background:rgba(167,139,250,.08); }
+    @media (max-width:520px) {
+      .character-visual-badges { gap:4px; }
+      .character-visual-badge { font-size:10px; }
+    }
     /* Empty results */
     .ck-empty-results {
       grid-column: 1 / -1; display: flex; flex-direction: column;
@@ -44830,6 +44853,10 @@ async function renderCharactersPage() {
               ${ready.hasVoice ? '<span class="ch-pill ready">보이스 있음</span>' : '<span class="ch-pill muted">No voice</span>'}
               ${c.keyImageUrl ? '<span class="ch-pill keyimage-done">키이미지 ✓</span>' : ''}
             </div>
+            ${(() => {
+              const vb = typeof getCharacterVisualBadges === 'function' ? getCharacterVisualBadges(c) : [];
+              return vb.length ? `<div class="character-visual-badges">${vb.map(b => `<span class="character-visual-badge ${escapeHTML(b.tone)}">${escapeHTML(b.label)}</span>`).join('')}</div>` : '';
+            })()}
           </div>
         </div>
         <div class="ch-card-progress" style="--ready:${ready.percent}%"><span></span></div>
@@ -45492,7 +45519,401 @@ function bindCKStudioEvents(character) {
     showToast?.('Variation 기준 이미지로 설정됨 ✓');
     await renderCharacterKeyImageStudioShell(s.characterId);
   }));
+
+  /* Production Flow 보강 이벤트 (Task #84) */
+  bindCKProductionFlowEvents(root, character);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PRODUCTION FLOW INTEGRATION — Task #84
+   sendCKImageToCharacterSheet / sendCKImageToShotReference /
+   useCKImageAsBase / importCKImageToCharacterSheet /
+   Guard CTA / Library helpers / History / Visual Badges
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 3. Character Sheet 연결 ── */
+async function sendCKImageToCharacterSheet(characterId, imageId) {
+  try {
+    const state = window.CharacterKeyImageStudio || {};
+    const img = (state.generatedImages || []).find(x => x.id === imageId);
+    if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'error'); return false; }
+    if (!window.SoavizDB?.db?.characters) { showToast?.('characters 테이블을 찾을 수 없습니다', 'error'); return false; }
+    await SoavizDB.ready;
+    const character = await SoavizDB.db.characters.get(characterId);
+    if (!character) { showToast?.('캐릭터를 찾을 수 없습니다', 'error'); return false; }
+    const imageUrl = img.imageUrl || img.url || '';
+    if (!imageUrl) { showToast?.('mock 이미지는 캐릭터 시트 소스로 저장할 수 없습니다', 'warn'); return false; }
+    const now = Date.now();
+    const sheetItem = {
+      id: `sheet_source_${img.id}`,
+      characterId,
+      imageUrl,
+      url: img.url || img.imageUrl || '',
+      angle: img.angle || state.angle || 'front',
+      model: img.model || state.modelId || '',
+      pipeline: img.pipeline || state.pipeline || '',
+      prompt: img.prompt || state.promptText || '',
+      negativePrompt: img.negativePrompt || state.negativePrompt || '',
+      aspectRatio: img.aspectRatio || state.aspectRatio || '',
+      stylePreset: img.stylePreset || state.stylePreset || '',
+      moodPreset: img.moodPreset || state.moodPreset || '',
+      referenceStrength: img.referenceStrength || state.referenceStrength || '',
+      source: 'character-key-image-studio',
+      createdAt: now,
+      updatedAt: now
+    };
+    const prevSheetImages = Array.isArray(character.sheetImages) ? character.sheetImages : [];
+    const alreadyExists = prevSheetImages.some(item => item.id === sheetItem.id || item.imageUrl === sheetItem.imageUrl);
+    await SoavizDB.db.characters.update(characterId, {
+      sheetImages: alreadyExists ? prevSheetImages : [sheetItem, ...prevSheetImages],
+      updatedAt: now
+    });
+    showToast?.('캐릭터 시트 소스로 추가했습니다');
+    return true;
+  } catch (e) {
+    console.error('[ck-sheet] send failed', e);
+    showToast?.('캐릭터 시트 추가 실패', 'error');
+    return false;
+  }
+}
+window.sendCKImageToCharacterSheet = sendCKImageToCharacterSheet;
+
+/* ── 4. Shot Reference 연결 ── */
+async function sendCKImageToShotReference(characterId, imageId) {
+  try {
+    const state = window.CharacterKeyImageStudio || {};
+    const img = (state.generatedImages || []).find(x => x.id === imageId);
+    if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'error'); return false; }
+    const imageUrl = img.imageUrl || img.url || '';
+    if (!imageUrl) { showToast?.('mock 이미지는 Shot Reference로 저장할 수 없습니다', 'warn'); return false; }
+    if (typeof persistCKGeneratedImage !== 'function') { showToast?.('persistCKGeneratedImage 함수를 찾을 수 없습니다', 'error'); return false; }
+    await persistCKGeneratedImage(characterId, {
+      ...img,
+      status: 'candidate',
+      source: 'character-key-image-studio'
+    }, { saveAsReference: true, saveToAssets: true });
+    showToast?.('Shot Reference에서 사용할 수 있도록 저장했습니다');
+    return true;
+  } catch (e) {
+    console.error('[ck-shot-reference] send failed', e);
+    showToast?.('Shot Reference 저장 실패', 'error');
+    return false;
+  }
+}
+window.sendCKImageToShotReference = sendCKImageToShotReference;
+
+/* ── 5. Variation 기준 이미지 ── */
+function useCKImageAsBase(imageId) {
+  const state = window.CharacterKeyImageStudio || {};
+  const img = (state.generatedImages || []).find(x => x.id === imageId);
+  if (!img) { showToast?.('기준 이미지를 찾을 수 없습니다', 'error'); return; }
+  const url = img.imageUrl || img.url || '';
+  if (!url) { showToast?.('mock 이미지는 기준 이미지로 사용할 수 없습니다', 'warn'); return; }
+  state.selectedBaseImageId = imageId;
+  state.selectedImageId = imageId;
+  state.referenceSlots = {
+    ...(state.referenceSlots || {}),
+    front: {
+      id: `base_${img.id}`,
+      slot: 'front',
+      imageUrl: url,
+      url,
+      source: 'generated-result-as-base',
+      model: img.model || state.modelId || '',
+      prompt: img.prompt || state.promptText || '',
+      createdAt: Date.now()
+    }
+  };
+  const addition = 'use the selected image as the visual identity reference, keep the same character identity, create a controlled variation';
+  if (!String(state.promptText || '').includes(addition)) {
+    state.promptText = `${state.promptText || ''}, ${addition}`.replace(/^,\s*/, '');
+  }
+  state.activeTab = 'settings';
+  showToast?.('선택 이미지를 Variation 기준으로 설정했습니다');
+  if (typeof renderCharacterKeyImageStudioShell === 'function') {
+    renderCharacterKeyImageStudioShell(state.activeCharacterId || state.characterId);
+  }
+}
+window.useCKImageAsBase = useCKImageAsBase;
+
+/* ── 8. 캐릭터 시트 → 키이미지 가져오기 ── */
+async function importCKImageToCharacterSheet(characterId) {
+  try {
+    if (!window.SoavizDB?.db?.characters) { showToast?.('characters 테이블을 찾을 수 없습니다', 'error'); return false; }
+    await SoavizDB.ready;
+    const character = await SoavizDB.db.characters.get(characterId);
+    if (!character) { showToast?.('캐릭터를 찾을 수 없습니다', 'error'); return false; }
+    const source =
+      character.keyImages?.find?.(x => x?.imageUrl || x?.url) ||
+      character.referenceImages?.find?.(x => x?.imageUrl || x?.url) ||
+      character.generatedImages?.find?.(x => x?.imageUrl || x?.url) ||
+      (character.keyImageUrl ? {
+        id: character.keyImageId || `key_url_${characterId}`,
+        imageUrl: character.keyImageUrl,
+        url: character.keyImageUrl,
+        angle: 'front',
+        source: 'character-key-image-url'
+      } : null);
+    if (!source) {
+      showToast?.('가져올 키이미지가 없습니다. 먼저 키이미지를 생성해 주세요.', 'warn');
+      if (typeof openCharacterKeyImageStudio === 'function') openCharacterKeyImageStudio(characterId);
+      return false;
+    }
+    const imageUrl = source.imageUrl || source.url || '';
+    if (!imageUrl) { showToast?.('가져올 이미지 URL이 없습니다', 'warn'); return false; }
+    const now = Date.now();
+    const item = {
+      id: `sheet_import_${now}_${characterId}`,
+      characterId,
+      imageUrl,
+      url: source.url || source.imageUrl || '',
+      angle: source.angle || 'front',
+      model: source.model || '',
+      pipeline: source.pipeline || '',
+      prompt: source.prompt || '',
+      negativePrompt: source.negativePrompt || '',
+      source: 'character-key-image-import',
+      createdAt: now,
+      updatedAt: now
+    };
+    const prevSheetImages = Array.isArray(character.sheetImages) ? character.sheetImages : [];
+    const alreadyExists = prevSheetImages.some(x => x.imageUrl === imageUrl || x.url === imageUrl);
+    await SoavizDB.db.characters.update(characterId, {
+      sheetImages: alreadyExists ? prevSheetImages : [item, ...prevSheetImages],
+      updatedAt: now
+    });
+    showToast?.('키이미지를 캐릭터 시트 소스로 가져왔습니다');
+    return true;
+  } catch (e) {
+    console.error('[ck-import-sheet] failed', e);
+    showToast?.('키이미지 가져오기 실패', 'error');
+    return false;
+  }
+}
+window.importCKImageToCharacterSheet = importCKImageToCharacterSheet;
+
+/* ── 9. Shot Workspace Guard CTA ── */
+async function getCharacterForShotGuard(shot = {}) {
+  try {
+    const characterId =
+      shot.characterId ||
+      shot.primaryCharacterId ||
+      (Array.isArray(shot.characterIds) ? shot.characterIds[0] : null) ||
+      (Array.isArray(shot.characters)
+        ? (typeof shot.characters[0] === 'string'
+            ? shot.characters[0]
+            : shot.characters[0]?.id || shot.characters[0]?.characterId)
+        : null) ||
+      window.MobileState?.selectedCharacterId ||
+      null;
+    if (!characterId || !window.SoavizDB?.db?.characters) return null;
+    await SoavizDB.ready;
+    return await SoavizDB.db.characters.get(characterId);
+  } catch (e) {
+    console.warn('[ck-shot-guard] resolve failed', e);
+    return null;
+  }
+}
+function renderCKShotGuardCTA(character) {
+  if (!character || (typeof hasCharacterVisualReference === 'function' && hasCharacterVisualReference(character))) return '';
+  const cid = escapeHTML(character.id || '');
+  return `
+    <section class="mobile-section mobile-card ck-shot-guard-card">
+      <strong>이 캐릭터는 아직 키이미지가 없습니다</strong>
+      <p style="margin:8px 0 14px;color:var(--text-dim);font-size:13px;line-height:1.55;">
+        Shot 생성 전에 키이미지를 만들면 얼굴, 의상, 분위기 일관성이 좋아집니다.
+      </p>
+      <div class="mobile-grid-2">
+        <button class="mobile-primary-btn" data-guard-create-keyimage="${cid}">키이미지 먼저 만들기</button>
+        <button class="mobile-secondary-btn" data-guard-skip-keyimage>그냥 진행</button>
+      </div>
+    </section>`;
+}
+async function hydrateCKShotGuard(root, shot) {
+  try {
+    if (!root) return;
+    const target = root.querySelector('[data-ck-shot-guard-root]');
+    if (!target) return;
+    const character = await getCharacterForShotGuard(shot);
+    target.innerHTML = renderCKShotGuardCTA(character);
+    target.querySelectorAll('[data-guard-create-keyimage]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof showPage === 'function') showPage('characters');
+        setTimeout(() => openCharacterKeyImageStudio(btn.dataset.guardCreateKeyimage), 0);
+      });
+    });
+    target.querySelectorAll('[data-guard-skip-keyimage]').forEach(btn => {
+      btn.addEventListener('click', () => btn.closest('.ck-shot-guard-card')?.remove());
+    });
+  } catch (e) {
+    console.warn('[ck-shot-guard] hydrate failed', e);
+  }
+}
+window.getCharacterForShotGuard = getCharacterForShotGuard;
+window.renderCKShotGuardCTA = renderCKShotGuardCTA;
+window.hydrateCKShotGuard = hydrateCKShotGuard;
+
+/* ── 10. Library helpers (character-key-image) ── */
+function isCharacterKeyImageAsset(asset = {}) {
+  return asset.type === 'character-key-image';
+}
+function renderCharacterKeyImageLibraryCard(asset = {}) {
+  const url = asset.imageUrl || asset.url || '';
+  const title = asset.title || asset.name || 'Character Key Image';
+  const aid = escapeHTML(asset.id || '');
+  const cid = escapeHTML(asset.characterId || '');
+  return `
+    <article class="mobile-library-card ck-library-keyimage-card">
+      <div class="ck-library-keyimage-thumb">
+        ${url
+          ? `<img src="${escapeHTML(url)}" alt="${escapeHTML(title)}" loading="lazy">`
+          : `<div class="ck-mock-image">Mock Key Image</div>`}
+      </div>
+      <div class="mobile-library-card-body">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+          <strong>${escapeHTML(title)}</strong>
+          ${asset.mock ? `<span class="mobile-mini-badge">MOCK</span>` : ''}
+        </div>
+        <p style="margin:6px 0 0;color:var(--text-faint);font-size:12px;">
+          ${escapeHTML(asset.model || '')}${asset.pipeline ? ` · ${escapeHTML(asset.pipeline)}` : ''}${asset.status ? ` · ${escapeHTML(asset.status)}` : ''}
+        </p>
+        <div class="mobile-grid-2" style="margin-top:10px;">
+          <button class="mobile-secondary-btn" data-open-keyimage-asset-character="${cid}">캐릭터 열기</button>
+          <button class="mobile-secondary-btn" data-copy-keyimage-asset-url="${aid}">URL 복사</button>
+        </div>
+        <div class="mobile-grid-2" style="margin-top:10px;">
+          <button class="mobile-secondary-btn" data-copy-keyimage-asset-prompt="${aid}">프롬프트 복사</button>
+          <button class="mobile-secondary-btn" data-download-keyimage-asset="${aid}">다운로드</button>
+        </div>
+      </div>
+    </article>`;
+}
+function bindCharacterKeyImageLibraryEvents(root, assets = []) {
+  if (!root) return;
+  root.querySelectorAll('[data-open-keyimage-asset-character]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const characterId = btn.dataset.openKeyimageAssetCharacter;
+      if (!characterId) { showToast?.('연결된 캐릭터가 없습니다', 'warn'); return; }
+      if (typeof showPage === 'function') showPage('characters');
+      setTimeout(() => openCharacterKeyImageStudio(characterId), 0);
+    });
+  });
+  root.querySelectorAll('[data-copy-keyimage-asset-url]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const asset = assets.find(x => x.id === btn.dataset.copyKeyimageAssetUrl);
+      const url = asset?.imageUrl || asset?.url || '';
+      if (!url) { showToast?.('복사할 URL이 없습니다', 'warn'); return; }
+      await copyText?.(url); showToast?.('URL 복사 완료');
+    });
+  });
+  root.querySelectorAll('[data-copy-keyimage-asset-prompt]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const asset = assets.find(x => x.id === btn.dataset.copyKeyimageAssetPrompt);
+      const prompt = asset?.prompt || '';
+      if (!prompt) { showToast?.('복사할 프롬프트가 없습니다', 'warn'); return; }
+      await copyText?.(prompt); showToast?.('프롬프트 복사 완료');
+    });
+  });
+  root.querySelectorAll('[data-download-keyimage-asset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const asset = assets.find(x => x.id === btn.dataset.downloadKeyimageAsset);
+      const url = asset?.imageUrl || asset?.url || '';
+      if (!url) { showToast?.('다운로드할 URL이 없습니다', 'warn'); return; }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `soaviz-character-key-image-${asset.characterId || asset.id || Date.now()}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  });
+}
+window.isCharacterKeyImageAsset = isCharacterKeyImageAsset;
+window.renderCharacterKeyImageLibraryCard = renderCharacterKeyImageLibraryCard;
+window.bindCharacterKeyImageLibraryEvents = bindCharacterKeyImageLibraryEvents;
+
+/* ── 11. 캐릭터 카드 Visual Badges ── */
+function getCharacterVisualBadges(c = {}) {
+  const badges = [];
+  const hasKeyImg = !!(c.keyImageUrl || c.keyImageId || (Array.isArray(c.keyImages) && c.keyImages.length));
+  const hasVisRef = typeof hasCharacterVisualReference === 'function' ? hasCharacterVisualReference(c) : hasKeyImg;
+  if (hasKeyImg) {
+    badges.push({ label: 'Key Image Ready', tone: 'ready' });
+  } else if (!hasVisRef) {
+    badges.push({ label: 'No Image', tone: 'warn' });
+  }
+  if (c.avatarUrl || c.mainImageUrl) badges.push({ label: 'Avatar Set', tone: 'ready' });
+  const refs = [
+    ...(Array.isArray(c.referenceImages) ? c.referenceImages : []),
+    ...(Array.isArray(c.generatedImages) ? c.generatedImages : [])
+  ].filter(x => x?.imageUrl || x?.url).length;
+  if (refs) badges.push({ label: `Refs ${refs}`, tone: 'info' });
+  if (Array.isArray(c.sheetImages) && c.sheetImages.length) badges.push({ label: 'Sheet Ready', tone: 'info' });
+  return badges;
+}
+window.getCharacterVisualBadges = getCharacterVisualBadges;
+
+/* ── 12. History 재사용 ── */
+function loadCKHistoryItem(character, imageId) {
+  const pool = [
+    ...(Array.isArray(character.keyImages) ? character.keyImages : []),
+    ...(Array.isArray(character.generatedImages) ? character.generatedImages : []),
+    ...(Array.isArray(character.referenceImages) ? character.referenceImages : [])
+  ];
+  const item = pool.find(x => x.id === imageId);
+  if (!item) { showToast?.('히스토리를 찾을 수 없습니다', 'error'); return; }
+  const s = window.CharacterKeyImageStudio;
+  if (!s) return;
+  if (item.prompt)            s.promptText = item.prompt;
+  if (item.negativePrompt)    s.negativePrompt = item.negativePrompt;
+  if (item.model)             s.modelId = item.model;
+  if (item.aspectRatio)       s.aspectRatio = item.aspectRatio;
+  if (item.stylePreset)       s.stylePreset = item.stylePreset;
+  if (item.moodPreset)        s.moodPreset = item.moodPreset;
+  if (item.angle)             s.angle = item.angle;
+  if (item.referenceStrength) s.referenceStrength = item.referenceStrength;
+  s.selectedBaseImageId = item.id;
+  s.activeTab = 'settings';
+  const url = item.imageUrl || item.url;
+  if (url) {
+    s.referenceSlots = {
+      ...(s.referenceSlots || {}),
+      front: { id: `history_base_${item.id}`, slot: 'front', imageUrl: url, url, source: 'history-as-reference', createdAt: Date.now() }
+    };
+  }
+  showToast?.('히스토리 설정을 불러왔습니다');
+  renderCharacterKeyImageStudioShell(character.id);
+}
+window.loadCKHistoryItem = loadCKHistoryItem;
+
+/* ── 7. bindCKProductionFlowEvents (보강 이벤트 묶음) ── */
+function bindCKProductionFlowEvents(root, character) {
+  if (!root || !character) return;
+  root.querySelectorAll('[data-send-key-to-sheet]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sendCKImageToCharacterSheet(character.id, btn.dataset.sendKeyToSheet);
+    });
+  });
+  root.querySelectorAll('[data-send-key-to-shot]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sendCKImageToShotReference(character.id, btn.dataset.sendKeyToShot);
+    });
+  });
+  root.querySelectorAll('[data-use-key-as-base]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      useCKImageAsBase(btn.dataset.useKeyAsBase);
+    });
+  });
+  root.querySelectorAll('[data-import-keyimage-to-sheet]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      importCKImageToCharacterSheet(btn.dataset.importKeyimageToSheet);
+    });
+  });
+  root.querySelectorAll('[data-load-ck-history]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadCKHistoryItem(character, btn.dataset.loadCkHistory);
+    });
+  });
+}
+window.bindCKProductionFlowEvents = bindCKProductionFlowEvents;
 
 /* ── 메인 Shell 렌더 ── */
 async function renderCharacterKeyImageStudioShell(charId) {
@@ -45875,6 +46296,15 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
           <div class="csheet-layout">
             <!-- Left: Settings -->
             <div class="csheet-left">
+              <!-- 키이미지에서 가져오기 CTA (Task #84) -->
+              <div class="csheet-section" id="cf-keyimage-import-section" style="display:none">
+                <div class="csheet-section-title">키이미지 소스</div>
+                <p style="font-size:12px;color:var(--text-faint);margin:0 0 8px">생성된 키이미지를 참조 소스로 바로 가져옵니다.</p>
+                <button class="vault-btn" id="cf-import-keyimage-btn" style="width:100%;justify-content:center;">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  키이미지에서 가져오기
+                </button>
+              </div>
               <div class="csheet-section">
                 <div class="csheet-section-title">참조 이미지 <span style="font-weight:400;opacity:.6">(선택)</span></div>
                 <div class="csheet-upload-zone" id="cf-sheet-upload-zone">
@@ -46235,6 +46665,24 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
     _addTag(v);
     e.target.value = '';
   });
+
+  // 키이미지에서 가져오기 버튼 — 키이미지가 있으면 섹션 표시 (Task #84)
+  (async () => {
+    const importSection = root.querySelector('#cf-keyimage-import-section');
+    const importBtn = root.querySelector('#cf-import-keyimage-btn');
+    if (!importSection || !importBtn) return;
+    try {
+      if (c && !isNew && (c.keyImageUrl || c.keyImageId || (Array.isArray(c.keyImages) && c.keyImages.length) || (Array.isArray(c.referenceImages) && c.referenceImages.length) || (Array.isArray(c.generatedImages) && c.generatedImages.length))) {
+        importSection.style.display = '';
+      }
+    } catch (_e) { /* noop */ }
+    importBtn.addEventListener('click', () => {
+      const charId = c?.id || root.querySelector('#cf-char-id')?.value;
+      if (charId && typeof importCKImageToCharacterSheet === 'function') {
+        importCKImageToCharacterSheet(charId);
+      }
+    });
+  })();
 
   // 외형·성격 → fragment 빌드 (편집 시에도 사용)
   root.querySelector('#cf-fragment-build')?.addEventListener('click', () => {
@@ -53618,7 +54066,7 @@ async function renderMobileCharacter() {
       <button class="mobile-primary-btn" id="mobile-character-sheet">캐릭터 시트 만들기</button>
       <button class="mobile-secondary-btn" id="mobile-character-keyimage" style="margin-top:8px">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        키이미지 스튜디오
+        ${selectedId ? '키이미지 생성 / 관리' : '키이미지 스튜디오'}
       </button>
     </section>
     <section class="mobile-section">
@@ -54903,6 +55351,8 @@ function renderMobileShotWorkspace(bundle) {
         <button class="mobile-chip${ws.mode === 'video' ? ' active' : ''}" data-shot-mode="video">영상</button>
       </div>
     </section>
+    <!-- Guard CTA placeholder — 키이미지 없는 캐릭터 감지 시 hydrateCKShotGuard로 채워짐 (Task #84) -->
+    <div data-ck-shot-guard-root></div>
     <section class="mobile-section mobile-card">
       <h3 class="mobile-section-title">Shot 정보</h3>
       <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6;">${escapeHTML((shot.description || shot.action || shot.summary || '').slice(0, 220))}</p>
@@ -55010,6 +55460,12 @@ function bindMobileShotWorkspaceEvents(root, bundle) {
       if (typeof showToast === 'function') showToast('URL 복사 완료');
     });
   });
+
+  // Guard CTA hydration — 키이미지 없는 캐릭터 감지 (Task #84)
+  const shot = bundle?.shots?.find(s => s.id === ws.shotId) || {};
+  if (typeof hydrateCKShotGuard === 'function') {
+    hydrateCKShotGuard(root, shot);
+  }
 }
 window.bindMobileShotWorkspaceEvents = bindMobileShotWorkspaceEvents;
 
@@ -57145,6 +57601,10 @@ async function renderMobileLibrary() {
   const items = await getMobileLibraryItems();
 
   const cardsHTML = items.map(a => {
+    // Task #84: character-key-image 특수 렌더
+    if (a.type === 'character-key-image' && typeof renderCharacterKeyImageLibraryCard === 'function') {
+      return renderCharacterKeyImageLibraryCard(a);
+    }
     // 8차: review-package 특수 렌더
     if (a.type === 'review-package') {
       const stats = typeof getReviewFeedbackStats === 'function' ? getReviewFeedbackStats(a) : { approved: 0, total: 0 };
@@ -57284,6 +57744,12 @@ async function renderMobileLibrary() {
       if (typeof showToast === 'function') showToast('리뷰 JSON 다운로드');
     });
   });
+
+  // Task #84: character-key-image 이벤트 바인딩
+  if (typeof bindCharacterKeyImageLibraryEvents === 'function') {
+    const ckAssets = items.filter(x => x.type === 'character-key-image');
+    bindCharacterKeyImageLibraryEvents(root, ckAssets);
+  }
 }
 
 /* ────────────────────────────────────────────────────────────
