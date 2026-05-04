@@ -46508,6 +46508,9 @@ function openCharacterKeyImageStudio(id) {
     });
   } catch (_) {}
 
+  // 스크롤 최상단으로 이동 (스튜디오가 #ch-grid 상단에 렌더됨)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
   // 2) shell 직접 렌더 (에러 visible)
   renderCharacterKeyImageStudioShell(id).catch(e => {
     console.error('[CKStudio] shell render 실패:', e);
