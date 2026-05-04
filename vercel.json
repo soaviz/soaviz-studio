@@ -41,13 +41,19 @@
       ]
     },
     {
+      "source": "/assets/brand/(.*)\\.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
       "source": "/(.*)\\.(woff2|woff|ttf|otf|eot)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/(.*)\\.(js|css|svg|png|jpg|jpeg|webp|avif|ico)",
+      "source": "/(.*)\\.(js|css|svg|jpg|jpeg|webp|avif|ico)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
