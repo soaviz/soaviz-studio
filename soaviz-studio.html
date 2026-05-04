@@ -46702,6 +46702,9 @@ async function renderCharactersPage() {
   CHARACTER_PAGE_STATE.selected = new Set([...CHARACTER_PAGE_STATE.selected].filter(id => visibleIds.has(id)));
   renderCharacterBulkbar();
 
+  // Race condition guard: openCharacterKeyImageStudio may have been called during awaits above
+  if (CHARACTER_PAGE_STATE.view === 'keyimage') return;
+
   if (!list.length) {
     grid.innerHTML = `
       <div class="ch-empty">
