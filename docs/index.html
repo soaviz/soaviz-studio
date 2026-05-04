@@ -40,22 +40,16 @@ header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:rgb
 .h-row{width:100%;display:grid;grid-template-columns:var(--sb-w) 1fr auto;align-items:center;padding:0 24px 0 22px;gap:24px}
 .h-brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;letter-spacing:-0.02em;color:var(--text);cursor:default;user-select:none}
 .h-brand .sub{color:var(--text-faint);font-weight:500;font-size:13px}
-/* 달 로고 — 메인 앱 brand-mark와 동일 */
+/* 브랜드 마크 — 메인 앱과 동일 */
 .brand-mark{
-  width:30px;height:30px;border-radius:50%;position:relative;flex-shrink:0;
-  background:radial-gradient(circle at 30% 28%,#F4E9FF 0 16%,#D4B5FF 38%,#9E7BFF 68%,#5B21B6 100%);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 0 24px rgba(158,123,255,0.50),inset 2px 3px 6px rgba(255,255,255,0.12);
-  overflow:hidden;
+  width:30px;height:30px;border-radius:9px;flex-shrink:0;overflow:hidden;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)),rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 0 0 1px rgba(167,139,250,0.08),0 8px 24px rgba(34,211,238,0.10),0 10px 28px rgba(124,58,237,0.14);
 }
-.brand-mark::before{
-  content:"";position:absolute;top:-6px;left:2px;width:24px;height:24px;border-radius:50%;
-  background:var(--bg);opacity:0.97;
-}
-.brand-mark::after{
-  content:"";position:absolute;top:5px;right:4px;width:3px;height:3px;border-radius:50%;
-  background:rgba(255,255,255,0.95);
-  box-shadow:0 0 4px rgba(255,255,255,0.8),10px 5px 0 -1px rgba(255,255,255,0.6),5px 13px 0 -1.5px rgba(255,255,255,0.5);
-}
+.brand-mark::before,.brand-mark::after{content:none!important;display:none!important;}
+.brand-mark img{width:100%;height:100%;display:block;object-fit:contain;}
 
 .shell{display:grid;grid-template-columns:var(--sb-w) 1fr;padding-top:var(--header-h);min-height:100vh;position:relative;z-index:1}
 
@@ -148,7 +142,7 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 <header>
   <div class="h-row">
     <div class="h-brand">
-      <span class="brand-mark"></span>
+      <span class="brand-mark"><img src="../assets/brand/soaviz-logo-symbol.png" srcset="../assets/brand/soaviz-logo-symbol.png 1x, ../assets/brand/soaviz-logo-symbol@2x.png 2x" alt="soaviz" /></span>
       <span>soaviz</span><span class="sub">/ 가이드</span>
     </div>
     <div></div>
