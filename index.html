@@ -19321,6 +19321,145 @@
       z-index: 60;
       margin-top: 18px;
     }
+    /* ── 뒤로가기 버튼 ── */
+    .mobile-back-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .mobile-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: background 180ms, color 180ms;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-back-btn:active { background: rgba(255,255,255,0.13); color: var(--text); }
+    .mobile-back-btn svg { flex-shrink: 0; }
+
+    /* ── 스토리 모드 탭 ── */
+    .mobile-story-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--bg-card);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .mobile-story-tab {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 12px;
+      border-radius: calc(var(--r-xl) - 2px);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-faint);
+      transition: background 200ms, color 200ms, box-shadow 200ms;
+    }
+    .mobile-story-tab.active {
+      background: var(--bg-elev);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+    .mobile-story-tab svg { flex-shrink: 0; }
+
+    /* ── 랜덤 아이디어 ── */
+    .mobile-dice-card {
+      background: linear-gradient(135deg, var(--accent-soft) 0%, rgba(167,139,250,0.06) 100%);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: var(--r-xl);
+      padding: 22px 20px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .mobile-dice-icon-wrap {
+      width: 60px; height: 60px;
+      margin: 0 auto 12px;
+      border-radius: 16px;
+      background: rgba(167,139,250,0.18);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+    }
+    .mobile-dice-icon-wrap.rolling { animation: mDiceRoll 0.45s linear infinite; }
+    @keyframes mDiceRoll {
+      0%  { transform: rotate(0deg)  scale(1); }
+      25% { transform: rotate(9deg)  scale(1.06); }
+      75% { transform: rotate(-9deg) scale(1.06); }
+      100%{ transform: rotate(0deg)  scale(1); }
+    }
+    .mobile-dice-result {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      margin-bottom: 14px;
+      text-align: left;
+      min-height: 76px;
+    }
+    .mobile-dice-result .idea-genre {
+      font-size: 10px; font-weight: 800; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+    }
+    .mobile-dice-result .idea-text {
+      font-size: 15px; font-weight: 600; line-height: 1.55; color: var(--text);
+    }
+    .mobile-dice-result .idea-hook {
+      margin-top: 7px; font-size: 12px; color: var(--text-faint); line-height: 1.5;
+    }
+    .mobile-dice-roll-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px;
+      border-radius: var(--r-lg);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2, #818cf8));
+      color: #fff; font-size: 15px; font-weight: 700;
+      box-shadow: 0 4px 18px rgba(167,139,250,0.3);
+      transition: opacity 180ms, transform 180ms;
+    }
+    .mobile-dice-roll-btn:active { opacity: .85; transform: scale(.98); }
+    .mobile-dice-use-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 12px; margin-top: 8px;
+      border-radius: var(--r-lg);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text); font-size: 13px; font-weight: 600;
+      transition: background 180ms;
+    }
+    .mobile-dice-use-btn:active { background: rgba(255,255,255,0.13); }
+    .mobile-dice-mini-list { display: flex; flex-direction: column; gap: 8px; }
+    .mobile-dice-mini-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 13px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); text-align: left;
+      transition: background 180ms, border-color 180ms;
+    }
+    .mobile-dice-mini-item:active { background: var(--bg-elev); border-color: var(--accent); }
+    .mobile-dice-mini-item .item-num {
+      font-size: 10px; font-weight: 800; color: var(--accent); min-width: 18px; padding-top: 2px;
+    }
+    .mobile-dice-mini-item .item-body { flex: 1; min-width: 0; }
+    .mobile-dice-mini-item .item-genre {
+      font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--text-faint); margin-bottom: 3px;
+    }
+    .mobile-dice-mini-item .item-text {
+      font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.45;
+    }
+
     /* Chips */
     .mobile-chip-row {
       display: flex;
@@ -56427,6 +56566,133 @@ MobileState.review = MobileState.review || {
   reviewerRole:    '',
   exportFormat:    'json'
 };
+MobileState.storyMode = MobileState.storyMode || 'write'; // 'write' | 'dice'
+
+/* ────────────────────────────────────────────────────────────
+   § 1-B. 뒤로가기 헬퍼
+   ──────────────────────────────────────────────────────────── */
+function mobileGoBack() { MobileApp.go('home'); }
+
+/* ────────────────────────────────────────────────────────────
+   § 1-C. 100개 스토리 아이디어 데이터베이스 (크레딧 0, API 없음)
+   ──────────────────────────────────────────────────────────── */
+const MOBILE_STORY_IDEAS = [
+  // ── Sci-Fi / Cyberpunk ──────────────────────────────────────
+  { genre:'SCI-FI', text:'AI가 감정을 관리하는 2087년 서울, 감정을 숨기는 여성 해커가 시스템 붕괴의 열쇠를 쥔다', hook:'테크 누아르 + 감성 드라마' },
+  { genre:'CYBERPUNK', text:'인공지능 검열관과 인간 시인의 금지된 협업, 마지막 언어를 지키는 투쟁', hook:'언어와 창작의 자유에 관한 이야기' },
+  { genre:'SCI-FI', text:'복제 인간들이 원본 기억을 경매에 부치는 세계에서 자신의 정체성을 찾는 탐정', hook:'정체성과 기억의 소유권' },
+  { genre:'CYBERPUNK', text:'뇌-인터넷 직결 세대의 오프라인 명상 카페, 디지털 해독이 범죄가 되는 사회', hook:'연결과 고립의 역설' },
+  { genre:'SCI-FI', text:'인류의 꿈을 디지털로 보존하는 아카이브 사서, 어떤 꿈은 삭제 명령을 받는다', hook:'드림 아카이브 스릴러' },
+  { genre:'SPACE', text:'블랙홀 근처 정거장에서 홀로 남겨진 엔지니어, 시간이 다르게 흐르는 공간에서 지구 메시지를 기다린다', hook:'시간 딜레마 서바이벌' },
+  { genre:'SCI-FI', text:'노화를 금지한 사회에서 늙기를 선택한 예술가, 주름 하나가 반항의 상징이 된다', hook:'신체 자율성과 반문화' },
+  { genre:'CYBERPUNK', text:'버려진 도시의 AI 보육원 로봇, 마지막 아이를 탈출시키기 위해 프로그램을 어긴다', hook:'로봇 모성애 드라마' },
+  { genre:'SCI-FI', text:'기억 이식 수술 부작용으로 타인의 기억과 뒤섞인 형사, 살인 사건의 목격자가 자신인지 범인인지 모른다', hook:'기억 미스터리 스릴러' },
+  { genre:'POST-APOC', text:'태양 폭발 이후 낮에 나갈 수 없는 세계, 야행성 문명을 건설하는 마지막 세대', hook:'역전된 생태계 생존기' },
+
+  // ── Fantasy ─────────────────────────────────────────────────
+  { genre:'FANTASY', text:'마법이 사라져 가는 세계에서 마지막 마법사의 제자를 찾아 헤매는 늙은 지도제작자', hook:'종말의 유산과 계승' },
+  { genre:'DARK-FANTASY', text:'저주받은 왕국의 왕자, 밤마다 괴물이 되는 자신을 사랑하는 기사를 배신할 수 없다', hook:'변신과 사랑의 비극' },
+  { genre:'FANTASY', text:'말을 글자로 바꾸는 언어 마법사, 어떤 말은 쓰는 순간 현실이 된다는 걸 너무 늦게 안다', hook:'언어 마법 세계관' },
+  { genre:'ISEKAI', text:'전통 한식당 주인이 소환된 다른 세계, 음식으로 마음을 치유하는 이세계 요리 판타지', hook:'K-Food 이세계' },
+  { genre:'FANTASY', text:'신들이 죽어 별자리가 사라지는 세계, 인간 항해사들이 새 별자리를 그리기 위해 바다를 건넌다', hook:'신화 재창조 서사' },
+  { genre:'DARK-FANTASY', text:'모든 감정이 물리적 형태로 존재하는 왕국, 슬픔을 팔고 기쁨을 사는 감정 시장의 중개인', hook:'감정 경제학 판타지' },
+  { genre:'FANTASY', text:'죽은 자의 목소리를 듣는 소녀, 전쟁터의 마지막 말을 수집하다 진짜 전쟁의 이유를 알게 된다', hook:'반전 미디엄 드라마' },
+  { genre:'WUXIA', text:'무공 대신 요리 비법에 무림 비급이 숨겨진 중세 중국, 요리 경연으로 천하를 통일한다', hook:'먹방 무협 코미디' },
+  { genre:'FANTASY', text:'색을 훔치는 도둑이 회색 도시를 무너뜨리기 위해 금기의 빨간 물감을 찾아 떠난다', hook:'색채 판타지 반란' },
+  { genre:'MYTH', text:'올림포스 신들이 현대 서울 골목 상가에서 생계를 꾸리는 가게 주인이 된다', hook:'신화 현대판 코미디' },
+
+  // ── Korean Drama / Slice of Life ────────────────────────────
+  { genre:'K-DRAMA', text:'반지하에 사는 웹툰 작가, 옆집 이사 온 이웃이 자신의 팬이자 첫 독자인 중년 여성임을 알게 된다', hook:'세대 공감 로맨스 드라마' },
+  { genre:'SLICE-OF-LIFE', text:'폐업 위기 동네 세탁소, 마지막 달 고객들의 옷에 담긴 사연이 기적을 만든다', hook:'따뜻한 옴니버스 드라마' },
+  { genre:'K-DRAMA', text:'전국 노래자랑 예선에서 탈락한 60대 할머니 트리오, 유튜브로 역주행을 노린다', hook:'시니어 밴드 성장기' },
+  { genre:'ROMANCE', text:'각자의 이유로 매일 같은 편의점에 오는 두 사람, 계산대 너머 100일간의 비밀 대화', hook:'편의점 로맨스' },
+  { genre:'FAMILY', text:'30년 만에 형제가 모인 부모님 집 단독 매각 협의, 사흘 만에 쌓인 오해가 풀린다', hook:'가족 화해 드라마' },
+  { genre:'K-DRAMA', text:'기억을 잃어가는 노 요리사와 레시피를 복원하려는 손녀, 음식으로 연결된 가족사', hook:'치유 요리 가족 드라마' },
+  { genre:'SLICE-OF-LIFE', text:'도심 옥상 텃밭을 가꾸는 이웃들, 씨앗 하나가 불씨가 되고 공동체가 싹튼다', hook:'도시 농부 힐링 드라마' },
+  { genre:'ROMANCE', text:'이별 전문 사진작가, 마지막 작별 사진을 찍어 주다 의뢰인과 사랑에 빠진다', hook:'이별의 역설적 시작' },
+  { genre:'K-DRAMA', text:'연고 없는 서울에 상경한 지방 출신 네 명의 반지하 쉐어하우스 생존기', hook:'청춘 하우스메이트 드라마' },
+  { genre:'SLICE-OF-LIFE', text:'소도시 마지막 비디오 대여점 주인, 손님들의 취향으로 마을 역사를 써 내려간다', hook:'필름 아카이브 인간극장' },
+
+  // ── Thriller / Mystery ──────────────────────────────────────
+  { genre:'THRILLER', text:'완벽한 알리바이를 가진 살인 사건, 피해자의 SNS가 사후에도 계속 업로드된다', hook:'디지털 포스트모텀 스릴러' },
+  { genre:'MYSTERY', text:'작은 섬마을에서 매년 같은 날 발생하는 실종, 지도에 없는 섬의 열두 번째 비밀', hook:'섬 미스터리 고딕' },
+  { genre:'THRILLER', text:'번역가가 극비 문서를 번역하다 국가 기밀을 알게 된다, 모국어로 쓴 일기가 증거가 된다', hook:'언어 스파이 스릴러' },
+  { genre:'CRIME', text:'화재 조사관이 도시 연쇄 화재를 추적하다 방화범이 자신의 아버지임을 의심한다', hook:'가족 범죄 스릴러' },
+  { genre:'MYSTERY', text:'폐쇄된 테마파크 속 미완성 롤러코스터, 그 설계도에 40년 전 실종 사건의 지도가 숨어 있다', hook:'폐허 미스터리' },
+  { genre:'THRILLER', text:'교통사고 후 의식을 회복한 여성, 자신이 기억하는 사고와 블랙박스가 다르다', hook:'기억 신뢰도 스릴러' },
+  { genre:'CRIME', text:'사이버 범죄 수사대 신입, 수사 중 해킹당한 자신의 과거가 협박 수단이 된다', hook:'사이버 느와르' },
+  { genre:'MYSTERY', text:'미술관 수복가가 복원하던 그림 속 인물이 매일 위치를 바꾼다', hook:'그림 속 미스터리 판타지' },
+  { genre:'THRILLER', text:'파국 직전 도시를 내다본 정확한 예언서, 저자를 찾아가니 그는 다음 주에 죽는다고 했다', hook:'예언 역설 스릴러' },
+  { genre:'CRIME', text:'범죄 팟캐스터가 생방송 중 자신이 20년 전 사건의 목격자였음을 깨닫는다', hook:'라이브 미스터리' },
+
+  // ── Horror ──────────────────────────────────────────────────
+  { genre:'HORROR', text:'폐교 수련원 봉사자들, 5일째 되는 밤 아무도 외부에 연락이 안 된다는 걸 깨닫는다', hook:'고립 호러' },
+  { genre:'FOLK-HORROR', text:'할머니의 비법 된장에 담긴 금기, 마을 전통을 어긴 손녀에게 찾아오는 것들', hook:'한국 민속 호러' },
+  { genre:'HORROR', text:'수면 동기화 앱이 추천하는 수면 스케줄을 따르다 꿈속에서 깨어나지 못한다', hook:'수면 호러 테크 스릴러' },
+  { genre:'FOLK-HORROR', text:'제주 해녀 마을의 오래된 금기, 바다에서 건진 낯선 것은 절대 집에 들이지 않는다', hook:'해양 민속 호러' },
+  { genre:'HORROR', text:'리노베이션 현장에서 발견된 벽 속 방, 그 안 달력의 마지막 날짜는 오늘이다', hook:'건축 호러' },
+
+  // ── Action / Adventure ──────────────────────────────────────
+  { genre:'ACTION', text:'국가 간 레이서 리그, 각국의 정보기관이 결승선 너머를 노리는 스파이 레이싱 액션', hook:'스파이 레이싱 스릴러' },
+  { genre:'ADVENTURE', text:'바다 속 수몰 도시를 탐험하는 다이버, 그 도시의 주민들이 아직 살고 있다', hook:'언더워터 어드벤처' },
+  { genre:'ACTION', text:'은퇴한 검객, 마지막 의뢰는 자신을 훈련시킨 스승을 막는 것', hook:'사제 대결 액션 드라마' },
+  { genre:'ADVENTURE', text:'지도가 없는 마지막 대륙을 탐험하는 소녀 탐험가, 그 땅은 사라지는 중이다', hook:'생태 어드벤처' },
+  { genre:'ACTION', text:'프리스타일 파쿠르 팀, 도시 재개발 저지를 위해 건물주의 금고를 털기로 한다', hook:'파쿠르 하이스트' },
+
+  // ── Animated / Webtoon Style ────────────────────────────────
+  { genre:'ANIMATION', text:'학교 급식실 냉장고 안에 사는 미생물들의 생존 대작전, 내일이면 청소 당한다', hook:'유아-성인 공감 코미디' },
+  { genre:'WEBTOON', text:'이세계에 소환된 고3 수험생, 마왕보다 수능이 더 무섭다는 걸 증명하는 판타지', hook:'수능 이세계 코미디' },
+  { genre:'ANIMATION', text:'퇴직한 슈퍼히어로들의 실버타운, 능력은 여전하지만 무릎이 문제다', hook:'시니어 히어로 코미디' },
+  { genre:'WEBTOON', text:'배달 로봇이 배달 도중 음식을 맛보기 시작하면서 미식가로 거듭난다', hook:'로봇 미식 성장 코미디' },
+  { genre:'ANIMATION', text:'악당 사업가 아빠를 둔 아이, 몰래 히어로를 도와 아버지를 개과천선시킨다', hook:'패밀리 슈퍼히어로 코미디' },
+
+  // ── Romance / Coming of Age ──────────────────────────────────
+  { genre:'ROMANCE', text:'연극 연출가와 세트 디자이너, 공연마다 다른 시대로 떠나는 무대 위 타임 로맨스', hook:'무대 로맨스 판타지' },
+  { genre:'COMING-OF-AGE', text:'방과후 밴드 동아리 마지막 해, 해체 전 마지막 앨범을 완성하려는 다섯 명의 여름', hook:'청춘 밴드 성장 드라마' },
+  { genre:'ROMANCE', text:'빈티지 LP판 수집가가 레코드에서 발견한 편지, 50년 전 연인의 미완성 사랑 이야기', hook:'시간을 가로지른 로맨스' },
+  { genre:'COMING-OF-AGE', text:'첫 출판을 앞둔 10대 소설가, 편집자와의 관계에서 자신의 목소리를 찾아간다', hook:'작가 청춘 성장기' },
+  { genre:'ROMANCE', text:'기차역 유실물 센터에서 만난 두 사람, 서로의 물건을 찾아주며 삶의 조각을 나눈다', hook:'유실물 로맨스' },
+
+  // ── Historical / Period ─────────────────────────────────────
+  { genre:'HISTORICAL', text:'조선 후기 여성 과학자, 신분을 숨기고 남성 학자들 사이에서 천문학을 연구한다', hook:'퓨전 사극 과학 드라마' },
+  { genre:'PERIOD', text:'일제강점기 경성의 재즈 바, 음악으로 독립운동 메시지를 전달하는 뮤지션들', hook:'경성 재즈 항일 드라마' },
+  { genre:'HISTORICAL', text:'고려 시대 청자 장인과 원나라 도자기 상인의 기술 전쟁, 한 점의 도자기가 운명을 바꾼다', hook:'고려 기술 스파이 사극' },
+  { genre:'PERIOD', text:'1970년대 서울 공사판에서 일하는 이주 노동자, 한강을 보며 고향과 미래를 꿈꾼다', hook:'한강의 기적 노동 드라마' },
+  { genre:'HISTORICAL', text:'벽지에 유배된 화가, 유배지 자연을 그리며 금지된 그림을 남긴다', hook:'유배 예술가 사극' },
+
+  // ── Social Commentary / Literary ────────────────────────────
+  { genre:'SOCIAL', text:'SNS 팔로워 수가 시민권을 결정하는 사회, 비인플루언서 청년이 오프라인 혁명을 시작한다', hook:'소셜미디어 디스토피아' },
+  { genre:'LITERARY', text:'폐지 줍는 노인의 수레 속 책들, 그 책들이 연결하는 도시의 숨겨진 독서 모임', hook:'사회적 연대 드라마' },
+  { genre:'SOCIAL', text:'부동산 가격이 언어로 측정되는 도시, 비싼 말을 쓸수록 집값이 오르는 언어 불평등', hook:'언어 사회 비판 SF' },
+  { genre:'LITERARY', text:'수어 통역사가 청각 장애인 작곡가의 음악을 세계에 전달하기 위해 언어의 경계를 넘는다', hook:'접근성과 예술의 경계' },
+  { genre:'SOCIAL', text:'무인 편의점만 남은 동네, 마지막 유인 가게 주인이 지키는 것은 편의가 아닌 관계다', hook:'인간적 연결의 가치' },
+
+  // ── Music / Art ─────────────────────────────────────────────
+  { genre:'MUSIC', text:'소음으로 취급받던 공장 소음을 채보한 작곡가, 세계 오케스트라에서 초연된다', hook:'산업 소음 클래식 드라마' },
+  { genre:'ART', text:'폐기 직전 건물 벽 위에 그림을 그리는 길거리 화가, 철거 명령과의 마지막 하루', hook:'스트리트 아트 드라마' },
+  { genre:'MUSIC', text:'K-팝 트레이닝 시스템을 거부한 연습생, 자신만의 음악을 찾아 인디씬으로 간다', hook:'K-팝 vs 인디 성장기' },
+  { genre:'ART', text:'AI가 그린 그림이 미술관에 걸리는 시대, 인간 화가의 마지막 전시회를 준비하는 큐레이터', hook:'AI 시대 예술의 가치' },
+  { genre:'MUSIC', text:'어린 시절 들은 노래 한 소절을 60년 후에야 완성하는 할아버지의 마지막 작곡', hook:'평생을 걸친 음악 드라마' },
+
+  // ── Nature / Environment ────────────────────────────────────
+  { genre:'ECO', text:'기후 위기로 사라져가는 꽃을 마지막으로 기록하는 식물 일러스트레이터', hook:'환경 예술 다큐멘터리' },
+  { genre:'NATURE', text:'고래의 노래를 번역하려는 해양 언어학자, 그 노래가 경고라는 걸 깨닫는다', hook:'해양 환경 SF 드라마' },
+  { genre:'ECO', text:'사막화된 마을을 되살리기 위해 씨앗 은행을 여는 농부, 할머니의 종자 봉투가 열쇠다', hook:'생태 회복 드라마' },
+  { genre:'NATURE', text:'북극 연구소의 마지막 기후 과학자, 데이터를 세상에 전달하기 위해 홀로 남는다', hook:'기후 위기 서바이벌 드라마' },
+
+  // ── Genre Mashups / Unique ──────────────────────────────────
+  { genre:'COMEDY-HORROR', text:'귀신이 나오는 고택 민박, 주인인 귀신 할머니가 별점 1점 리뷰어를 혼내러 나타난다', hook:'귀신 민박 코미디 호러' },
+  { genre:'ROM-COM', text:'연애 코치 AI와 그 이용자의 연애 실패를 분석하다 AI가 질투를 배우는 SF 로맨스', hook:'AI 질투 로맨스 코미디' },
+  { genre:'SCI-FI WESTERN', text:'화성 개척지의 보안관, 우주 시대의 황야 법칙으로 다국적 기업에 맞선다', hook:'스페이스 웨스턴' },
+  { genre:'COOKING THRILLER', text:'미슐랭 레스토랑 셰프, 요리 레시피에 담긴 암호를 해독해야 살아남는다', hook:'요리 스파이 스릴러' },
+  { genre:'SPORTS FANTASY', text:'마법 능력이 스포츠에 허용된 세계, 마법 없이 실력만으로 올림픽에 도전하는 선수', hook:'무마법 스포츠 언더독' },
+  { genre:'TIME-ROMANCE', text:'매일 다른 시대에 깨어나는 남자, 그를 기억하는 유일한 사람이 300년을 살아온 여자', hook:'타임루프 역사 로맨스' },
+  { genre:'HEIST-COMEDY', text:'미술품 도둑 퇴직자들의 마지막 작전, 목표물이 자신들이 기증한 그림이었다', hook:'시니어 하이스트 코미디' },
+  { genre:'MECHA-DRAMA', text:'전투 로봇 파일럿이 전쟁이 끝난 후 로봇과 함께 농사를 짓는 평화로운 삶을 선택한다', hook:'전후 메카 힐링 드라마' },
+  { genre:'DANCE-THRILLER', text:'무용단 내부 권력 다툼, 안무가의 죽음 이전 마지막 안무에 진실이 숨어 있다', hook:'댄스 느와르 스릴러' },
+  { genre:'FOOD-MYSTERY', text:'오직 음식으로만 소통하는 마을 탐정, 요리를 맛보며 사건의 진실을 추리한다', hook:'요리 미스터리 코미디' },
+];
+window.MOBILE_STORY_IDEAS = MOBILE_STORY_IDEAS;
 
 /* ────────────────────────────────────────────────────────────
    § 2. 모델 / 앵글 설정
@@ -56798,12 +57064,68 @@ async function renderMobileHome() {
 function renderMobileStory() {
   const root = document.getElementById('mobile-screen-story');
   if (!root) return;
+  const mode = MobileState.storyMode || 'write';
   const currentText = MobileState.storyText || window.STORY_DOC?.body || '';
-  root.innerHTML = `
-    <section>
-      <h1 class="mobile-page-title">스토리 만들기</h1>
-      <p class="mobile-page-sub">한 줄 아이디어를 입력하면 캐릭터와 샷리스트로 확장합니다.</p>
+
+  const DICE_SVG = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="4"/>
+    <circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="16" cy="8" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="8" cy="16" r="1.4" fill="currentColor" stroke="none"/>
+    <circle cx="16" cy="16" r="1.4" fill="currentColor" stroke="none"/>
+  </svg>`;
+
+  const cur = MobileState._diceIdea || null;
+
+  const dicePanel = `
+    <section class="mobile-section">
+      <div class="mobile-dice-card">
+        <div class="mobile-dice-icon-wrap" id="mobile-dice-icon-wrap">🎲</div>
+        <h3 style="margin:0 0 6px;font-size:17px;font-weight:700">주사위를 굴려보세요</h3>
+        <p style="margin:0;color:var(--text-faint);font-size:13px;line-height:1.5">
+          100가지 크리에이터 아이디어 중 하나를 무작위로 뽑습니다.<br>크레딧 0 · API 없음
+        </p>
+      </div>
+      <div class="mobile-dice-result" id="mobile-dice-result">
+        ${cur ? `
+          <div class="idea-genre">${escapeHTML(cur.genre)}</div>
+          <div class="idea-text">${escapeHTML(cur.text)}</div>
+          <div class="idea-hook">💡 ${escapeHTML(cur.hook)}</div>
+        ` : `
+          <p style="margin:0;color:var(--text-faint);font-size:13px;text-align:center;padding:12px 0">
+            아직 아이디어가 없습니다. 주사위를 굴려보세요!
+          </p>
+        `}
+      </div>
+      <button class="mobile-dice-roll-btn" id="mobile-dice-roll">
+        ${DICE_SVG}
+        <span id="mobile-dice-roll-label">주사위 굴리기</span>
+      </button>
+      ${cur ? `
+        <button class="mobile-dice-use-btn" id="mobile-dice-use">
+          ✎ 이 아이디어로 스토리 쓰기
+        </button>` : ''}
     </section>
+    <section class="mobile-section">
+      <h3 class="mobile-section-title" style="margin-bottom:10px">전체 아이디어 훑어보기</h3>
+      <div class="mobile-dice-mini-list">
+        ${MOBILE_STORY_IDEAS.slice(0, 10).map((idea, i) => `
+          <button class="mobile-dice-mini-item" data-idea-idx="${i}">
+            <span class="item-num">${String(i+1).padStart(2,'0')}</span>
+            <span class="item-body">
+              <span class="item-genre">${escapeHTML(idea.genre)}</span>
+              <span class="item-text">${escapeHTML(idea.text)}</span>
+            </span>
+          </button>`).join('')}
+        <button class="mobile-dice-mini-item" id="mobile-dice-show-all" style="justify-content:center;color:var(--accent);font-weight:700">
+          전체 100개 보기 →
+        </button>
+      </div>
+    </section>
+  `;
+
+  const writePanel = `
     <section class="mobile-section">
       <textarea id="mobile-story-input" class="mobile-textarea"
         placeholder="예: AI가 감정을 통제하는 미래 서울에서 자유를 찾는 여성 전사">${escapeHTML(currentText)}</textarea>
@@ -56828,14 +57150,138 @@ function renderMobileStory() {
       <button class="mobile-primary-btn" id="mobile-story-send">Pipeline으로 보내기</button>
     </div>
   `;
-  root.querySelectorAll('.mobile-chip[data-tone]').forEach(btn => {
+
+  root.innerHTML = `
+    <div class="mobile-back-row">
+      <button class="mobile-back-btn" id="mobile-story-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        홈
+      </button>
+    </div>
+    <section>
+      <h1 class="mobile-page-title">스토리 만들기</h1>
+      <p class="mobile-page-sub">아이디어를 캐릭터 · 샷리스트 · 영상 프롬프트로 확장합니다.</p>
+    </section>
+    <div class="mobile-story-tabs">
+      <button class="mobile-story-tab${mode === 'write' ? ' active' : ''}" data-story-tab="write">✎ 직접 쓰기</button>
+      <button class="mobile-story-tab${mode === 'dice' ? ' active' : ''}" data-story-tab="dice">
+        ${DICE_SVG} 랜덤 아이디어
+      </button>
+    </div>
+    ${mode === 'dice' ? dicePanel : writePanel}
+  `;
+
+  // 탭 전환
+  root.querySelectorAll('[data-story-tab]').forEach(btn => {
     btn.addEventListener('click', () => {
-      MobileState.selectedTone = btn.dataset.tone;
-      root.querySelectorAll('.mobile-chip[data-tone]').forEach(x => x.classList.remove('active'));
-      btn.classList.add('active');
+      MobileState.storyMode = btn.dataset.storyTab;
+      renderMobileStory();
     });
   });
-  root.querySelector('#mobile-story-send')?.addEventListener('click', mobileSendStoryToPipeline);
+
+  // 뒤로가기
+  root.querySelector('#mobile-story-back')?.addEventListener('click', mobileGoBack);
+
+  if (mode === 'write') {
+    root.querySelectorAll('.mobile-chip[data-tone]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        MobileState.selectedTone = btn.dataset.tone;
+        root.querySelectorAll('.mobile-chip[data-tone]').forEach(x => x.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    root.querySelector('#mobile-story-send')?.addEventListener('click', mobileSendStoryToPipeline);
+  }
+
+  if (mode === 'dice') {
+    // 주사위 굴리기
+    root.querySelector('#mobile-dice-roll')?.addEventListener('click', () => {
+      const wrap = root.querySelector('#mobile-dice-icon-wrap');
+      const label = root.querySelector('#mobile-dice-roll-label');
+      const resultBox = root.querySelector('#mobile-dice-result');
+      if (!wrap || !resultBox) return;
+
+      wrap.classList.add('rolling');
+      if (label) label.textContent = '굴리는 중…';
+
+      setTimeout(() => {
+        const idx = Math.floor(Math.random() * MOBILE_STORY_IDEAS.length);
+        const idea = MOBILE_STORY_IDEAS[idx];
+        MobileState._diceIdea = idea;
+        wrap.classList.remove('rolling');
+        wrap.textContent = '🎲';
+        if (label) label.textContent = '다시 굴리기';
+        resultBox.innerHTML = `
+          <div class="idea-genre">${escapeHTML(idea.genre)}</div>
+          <div class="idea-text">${escapeHTML(idea.text)}</div>
+          <div class="idea-hook">💡 ${escapeHTML(idea.hook)}</div>
+        `;
+        // "이 아이디어로 쓰기" 버튼 추가
+        let useBtn = root.querySelector('#mobile-dice-use');
+        if (!useBtn) {
+          const btn2 = document.createElement('button');
+          btn2.id = 'mobile-dice-use';
+          btn2.className = 'mobile-dice-use-btn';
+          btn2.textContent = '✎ 이 아이디어로 스토리 쓰기';
+          root.querySelector('.mobile-dice-roll-btn')?.after(btn2);
+          useBtn = btn2;
+        }
+        useBtn.onclick = () => {
+          MobileState.storyText = idea.text;
+          MobileState.storyMode = 'write';
+          renderMobileStory();
+        };
+      }, 600);
+    });
+
+    // 이 아이디어로 쓰기 (초기 렌더 시 이미 있을 때)
+    root.querySelector('#mobile-dice-use')?.addEventListener('click', () => {
+      if (!MobileState._diceIdea) return;
+      MobileState.storyText = MobileState._diceIdea.text;
+      MobileState.storyMode = 'write';
+      renderMobileStory();
+    });
+
+    // 미니 목록 아이템 클릭
+    root.querySelectorAll('[data-idea-idx]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idea = MOBILE_STORY_IDEAS[Number(btn.dataset.ideaIdx)];
+        if (!idea) return;
+        MobileState.storyText = idea.text;
+        MobileState.storyMode = 'write';
+        renderMobileStory();
+      });
+    });
+
+    // 전체 보기 버튼
+    root.querySelector('#mobile-dice-show-all')?.addEventListener('click', () => {
+      const list = root.querySelector('.mobile-dice-mini-list');
+      if (!list) return;
+      const showAllBtn = root.querySelector('#mobile-dice-show-all');
+      if (!showAllBtn) return;
+      const allItems = MOBILE_STORY_IDEAS.slice(10).map((idea, i) => {
+        const btn2 = document.createElement('button');
+        btn2.className = 'mobile-dice-mini-item';
+        btn2.dataset.ideaIdx = String(i + 10);
+        btn2.innerHTML = `
+          <span class="item-num">${String(i+11).padStart(2,'0')}</span>
+          <span class="item-body">
+            <span class="item-genre">${escapeHTML(idea.genre)}</span>
+            <span class="item-text">${escapeHTML(idea.text)}</span>
+          </span>`;
+        btn2.addEventListener('click', () => {
+          MobileState.storyText = idea.text;
+          MobileState.storyMode = 'write';
+          renderMobileStory();
+        });
+        return btn2;
+      });
+      allItems.forEach(el => list.insertBefore(el, showAllBtn));
+      showAllBtn.remove();
+    });
+  }
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -56864,6 +57310,12 @@ async function renderMobileCharacter() {
       </div>`;
 
   root.innerHTML = `
+    <div class="mobile-back-row">
+      <button class="mobile-back-btn" id="mobile-char-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        홈
+      </button>
+    </div>
     <section>
       <h1 class="mobile-page-title">캐릭터</h1>
       <p class="mobile-page-sub">페르소나와 캐릭터 시트를 생성하고 제작에 재사용합니다.</p>
@@ -56910,6 +57362,7 @@ async function renderMobileCharacter() {
     </section>` : ''}
   `;
 
+  root.querySelector('#mobile-char-back')?.addEventListener('click', mobileGoBack);
   root.querySelector('#mobile-character-sheet')?.addEventListener('click', () => {
     openMobileCharacterSheetFlow();
   });
@@ -60446,6 +60899,12 @@ async function renderMobileProduction() {
     :                       renderMobileProductionSummary(bundle);
 
   root.innerHTML = `
+    <div class="mobile-back-row">
+      <button class="mobile-back-btn" id="mobile-prod-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        홈
+      </button>
+    </div>
     <section>
       <h1 class="mobile-page-title">제작</h1>
       <p class="mobile-page-sub">샷리스트와 프롬프트를 모바일에서 확인하고 내보냅니다.</p>
@@ -60467,6 +60926,7 @@ async function renderMobileProduction() {
       <button class="mobile-secondary-btn" id="mobile-open-pipeline">Pipeline 전체 보기</button>
     </section>
   `;
+  root.querySelector('#mobile-prod-back')?.addEventListener('click', mobileGoBack);
   bindMobileProductionEvents(root, bundle);
   root.querySelector('#mobile-open-pipeline')?.addEventListener('click', async () => await MobileActions.openPipeline());
   // 6차: shots 뷰에서 큐 복원 (jobs가 비어 있을 때)
@@ -60550,6 +61010,12 @@ async function renderMobileLibrary() {
   }).join('');
 
   root.innerHTML = `
+    <div class="mobile-back-row">
+      <button class="mobile-back-btn" id="mobile-lib-back">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        홈
+      </button>
+    </div>
     <section>
       <h1 class="mobile-page-title">보관함</h1>
       <p class="mobile-page-sub">생성된 이미지, 영상, 오디오, 프롬프트 결과를 확인합니다.</p>
@@ -60574,6 +61040,7 @@ async function renderMobileLibrary() {
   `;
 
   // 이벤트 바인딩
+  root.querySelector('#mobile-lib-back')?.addEventListener('click', mobileGoBack);
   root.querySelector('#mobile-library-start')?.addEventListener('click', () => MobileApp.go('story'));
   root.querySelector('#mobile-open-full-library')?.addEventListener('click', () => MobileActions.openLibrary());
 
