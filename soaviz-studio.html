@@ -19,8 +19,16 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="soaviz studio — AI 영상 제작 OS" />
   <meta name="twitter:description" content="AI로 영상 만드는 가장 쉬운 방법." />
+  <meta name="twitter:image" content="assets/brand/og-image.png" />
+  <!-- Open Graph image -->
+  <meta property="og:image" content="assets/brand/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <!-- Canonical -->
   <link rel="canonical" href="https://soaviz.studio" />
+  <!-- Favicon / App icons -->
+  <link rel="icon" type="image/png" href="assets/brand/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png" />
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -109,7 +117,7 @@
       --accent-3: #C4B5FD;
       --accent-soft: rgba(167,139,250,0.13);
       --accent-glow: rgba(167,139,250,0.26);
-      --moon-glow: rgba(184,150,255,0.20);
+      --brand-glow-soft: rgba(124, 58, 237, 0.18);
 
       /* ===== Status ===== */
       --danger: #F87171;
@@ -262,76 +270,106 @@
       background: linear-gradient(90deg, transparent 0%, var(--border-glow) 40%, var(--accent-3, #c4b5fd) 50%, var(--border-glow) 60%, transparent 100%);
       opacity: 0.45;
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: -0.02em; user-select: none; cursor: pointer; transition: opacity 0.15s; }
-    .brand:hover { opacity: 0.78; }
-    .brand:active { opacity: 0.6; }
-    .brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+    /* ── Brand / Logo — S 그라디언트 심볼 ──────────────────────── */
+    :root {
+      --brand-blue: #1D4DFF;
+      --brand-cyan: #22D3EE;
+      --brand-violet: #7C3AED;
+      --brand-magenta: #EC4899;
+      --brand-gradient: linear-gradient(135deg, var(--brand-blue), var(--brand-violet), var(--brand-magenta));
+      --brand-glow-soft: rgba(124, 58, 237, 0.18);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      user-select: none;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+    .brand:hover { opacity: 0.88; }
+    .brand:active { transform: translateY(1px); opacity: 0.75; }
+    .brand:focus-visible { outline: 2px solid var(--accent, #A78BFA); outline-offset: 4px; border-radius: 10px; }
     .brand-mark {
       width: 34px; height: 34px;
-      border-radius: 50%;
-      position: relative;
-      background: radial-gradient(circle at 30% 28%, #F4E9FF 0 16%, #D4B5FF 38%, #9E7BFF 68%, #5B21B6 100%);
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.08),
-        0 0 28px rgba(158,123,255,0.55),
-        inset 2px 3px 6px rgba(255,255,255,0.12);
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
       overflow: hidden;
-      transition: box-shadow 600ms cubic-bezier(0.4, 0, 0.2, 1), transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .brand-mark::before {
-      content: "";
-      position: absolute;
-      top: -7px;
-      left: 3px;
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: var(--bg);
-      opacity: 0.97;
-      transition: transform 900ms cubic-bezier(0.65, 0, 0.35, 1), opacity 700ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .brand-mark::after {
-      content: "";
-      position: absolute;
-      top: 5px; right: 5px;
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.95);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+        rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.08);
       box-shadow:
-        0 0 4px rgba(255,255,255,0.8),
-        11px 6px 0 -1px rgba(255,255,255,0.6),
-        6px 15px 0 -1.5px rgba(255,255,255,0.5);
-      transition: opacity 500ms ease, transform 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        0 0 0 1px rgba(167,139,250,0.08),
+        0 8px 24px rgba(34,211,238,0.10),
+        0 10px 28px rgba(124,58,237,0.14);
+      transition:
+        transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        box-shadow 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        border-color 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .brand-mark::before,
+    .brand-mark::after {
+      content: none !important;
+      display: none !important;
+    }
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      object-position: center;
     }
     .brand:hover .brand-mark,
     .brand:focus-visible .brand-mark {
+      transform: translateY(-1px) scale(1.035);
+      border-color: rgba(167,139,250,0.28);
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.2),
-        0 0 50px rgba(183,139,255,0.85),
-        0 0 80px rgba(158,123,255,0.4),
-        inset 2px 3px 6px rgba(255,255,255,0.18);
-      transform: rotate(-5deg) scale(1.06);
+        0 0 0 1px rgba(167,139,250,0.18),
+        0 12px 32px rgba(34,211,238,0.16),
+        0 16px 42px rgba(124,58,237,0.22);
     }
-    .brand:hover .brand-mark::before,
-    .brand:focus-visible .brand-mark::before {
-      transform: translate(28px, -14px) scale(0.85);
-      opacity: 0;
-    }
-    .brand:hover .brand-mark::after,
-    .brand:focus-visible .brand-mark::after {
-      opacity: 0;
-      transform: translateX(10px);
+    .brand-text {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      min-width: 0;
     }
     .brand-name {
-      font-family: var(--font-display);
-      font-size: 19px;
-      font-weight: 600;
-      letter-spacing: -0.028em;
+      font-family: var(--font-sans, system-ui, sans-serif);
+      font-size: 17px;
+      font-weight: 800;
       line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--text, #F0EFF8);
+      text-transform: lowercase;
     }
     .brand-sub {
-      font-size: 10.5px; color: var(--text-faint);
-      padding-left: 10px; margin-left: 4px;
-      border-left: 1px solid var(--border); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+      display: block;
+      margin: 0; padding: 0;
+      border-left: 0;
+      font-family: var(--font-mono, monospace);
+      font-size: 9.5px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint, #76748C);
+    }
+    @media (max-width: 600px) {
+      .brand-mark { width: 32px; height: 32px; flex-basis: 32px; border-radius: 9px; }
+      .brand-name { font-size: 16px; }
+      .brand-sub { display: none; }
     }
     .top-actions { display: flex; align-items: center; gap: 8px; }
     .icon-btn {
@@ -20441,15 +20479,19 @@
     opacity: 0.50 !important;
   }
   .brand-name {
-    font-size: 17.5px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.040em !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.04em !important;
     color: var(--d-ink, #F4F4F8) !important;
+    text-transform: lowercase !important;
   }
   .brand-sub {
-    font-size: 10px !important;
-    letter-spacing: 0.07em !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.08em !important;
     color: var(--d-ink-whisper, #52525E) !important;
+    border-left: 0 !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
   }
 
   /* ── v4.3 Sidebar — 더 정제된 아이콘 내비 ──────────────────────── */
@@ -21000,10 +21042,20 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       <span class="tbb-label">뒤로</span>
     </button>
-    <div class="brand" id="brand-home" role="button" tabindex="0" title="홈으로 이동" aria-label="홈으로">
-      <span class="brand-mark"></span>
-      <span class="brand-name">soaviz studio</span>
-      <span class="brand-sub">Voice · Transcript · Summary</span>
+    <div class="brand" id="brand-home" role="button" tabindex="0" title="홈으로 이동" aria-label="Go to SOAVIZ Studio home">
+      <span class="brand-mark" aria-hidden="true">
+        <img
+          src="assets/brand/soaviz-logo-symbol.png"
+          srcset="assets/brand/soaviz-logo-symbol.png 1x, assets/brand/soaviz-logo-symbol@2x.png 2x"
+          alt=""
+          loading="eager"
+          decoding="async"
+        />
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">soaviz</span>
+        <span class="brand-sub">AI Creative OS</span>
+      </span>
     </div>
   </div>
 
