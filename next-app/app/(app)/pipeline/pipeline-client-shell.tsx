@@ -3,9 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { NewProjectDialog } from './new-project-dialog'
-import type { Tables } from '@/types/database'
-
-type Project = Tables<'projects'>
+import type { ProjectWithProgress } from './actions'
 
 const STATUS_LABEL: Record<string, string> = {
   draft:       '초안',
@@ -21,22 +19,22 @@ const STATUS_COLOR: Record<string, string> = {
   archived:    '#374151',
 }
 
-function getProjectColor(project: Project): string {
+function getProjectColor(project: ProjectWithProgress): string {
   const meta = project.metadata as Record<string, unknown> | null
   return (meta?.color as string) || '#9e7bff'
 }
 
-function getProjectFormat(project: Project): string {
+function getProjectFormat(project: ProjectWithProgress): string {
   const meta = project.metadata as Record<string, unknown> | null
   return (meta?.format as string) || ''
 }
 
-function getProjectLogline(project: Project): string {
+function getProjectLogline(project: ProjectWithProgress): string {
   const meta = project.metadata as Record<string, unknown> | null
   return (meta?.logline as string) || ''
 }
 
-function getProjectGenre(project: Project): string {
+function getProjectGenre(project: ProjectWithProgress): string {
   const meta = project.metadata as Record<string, unknown> | null
   return (meta?.genre as string) || ''
 }
@@ -46,12 +44,12 @@ const FORMAT_ICON: Record<string, string> = {
 }
 
 interface PipelineClientShellProps {
-  initialProjects: Project[]
+  initialProjects: ProjectWithProgress[]
 }
 
 export function PipelineClientShell({ initialProjects }: PipelineClientShellProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [projects] = useState<Project[]>(initialProjects)
+  const [projects] = useState<ProjectWithProgress[]>(initialProjects)
 
   return (
     <div style={{ padding: '40px 48px', maxWidth: '1100px', fontFamily: 'var(--font-display)' }}>
@@ -129,11 +127,14 @@ export function PipelineClientShell({ initialProjects }: PipelineClientShellProp
           gap: '20px',
         }}>
           {projects.map(project => {
-            const color = getProjectColor(project)
-            const format = getProjectFormat(project)
-            const logline = getProjectLogline(project)
-            const genre = getProjectGenre(project)
-            const status = project.status
+            const color    = getProjectColor(project)
+            const format   = getProjectFormat(project)
+            const logline  = getProjectLogline(project)
+            const genre    = getProjectGenre(project)
+            const status   = project.status
+            const { total, done, locked } = project.sceneStat
+            const completed = done + locked
+            const pct = total > 0 ? Math.round((completed / total) * 100) : 0
 
             return (
               <Link
@@ -204,6 +205,34 @@ export function PipelineClientShell({ initialProjects }: PipelineClientShellProp
                       }}>
                         {logline}
                       </p>
+                    )}
+
+                    {/* 진행률 바 */}
+                    {total > 0 ? (
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: 600 }}>진행률</span>
+                          <span style={{ fontSize: '10px', color: pct === 100 ? '#22c55e' : color, fontWeight: 700 }}>
+                            {pct}% <span style={{ fontWeight: 400, opacity: 0.7 }}>({completed}/{total} 씬)</span>
+                          </span>
+                        </div>
+                        <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%',
+                            width: `${pct}%`,
+                            background: pct === 100 ? '#22c55e' : color,
+                            borderRadius: '2px',
+                            transition: 'width 0.3s ease',
+                          }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ marginBottom: '12px' }}>
+                        <div style={{ height: '4px', background: 'var(--border)', borderRadius: '2px' }} />
+                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px', opacity: 0.5 }}>
+                          씬 없음
+                        </div>
+                      </div>
                     )}
 
                     {/* 날짜 */}

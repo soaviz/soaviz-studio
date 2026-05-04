@@ -157,22 +157,27 @@ export function ProjectDetailShell({ project, initialEpisodes }: ProjectDetailSh
 
       {/* 프로젝트 헤더 */}
       <div style={{
-        padding: '14px 24px',
+        padding: '12px 24px',
         borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: '14px',
         background: 'var(--surface)',
         flexShrink: 0,
       }}>
         <div style={{ width: '4px', height: '32px', borderRadius: '2px', background: color, flexShrink: 0 }} />
-        <div>
+
+        {/* 제목 영역 */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-dim)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>
             <Link href="/pipeline" style={{ color: 'inherit', textDecoration: 'none' }}>파이프라인</Link>
             {' / '}
           </div>
-          <h1 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', margin: 0, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {project.title}
           </h1>
         </div>
+
+        {/* 진행률 요약 배지 */}
+        <EpisodeProgressBar episodes={episodes} color={color} />
       </div>
 
       {/* 4패널 */}
@@ -582,4 +587,61 @@ const inputStyle: React.CSSProperties = {
   fontSize: '13px',
   outline: 'none',
   boxSizing: 'border-box',
+}
+
+// ─── 에피소드 진행률 배지 컴포넌트 ───────────────────────────────────────────
+
+interface EpisodeProgressBarProps {
+  episodes: Episode[]
+  color: string
+}
+
+function EpisodeProgressBar({ episodes, color }: EpisodeProgressBarProps) {
+  if (episodes.length === 0) return null
+
+  const counts = { draft: 0, outline: 0, script: 0, locked: 0, done: 0 }
+  for (const ep of episodes) {
+    if (ep.status in counts) counts[ep.status as keyof typeof counts]++
+  }
+
+  const total    = episodes.length
+  const completed = counts.locked + counts.done
+  const pct      = Math.round((completed / total) * 100)
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+      {/* 에피소드 상태 배지 묶음 */}
+      <div style={{ display: 'flex', gap: '4px' }}>
+        {(Object.entries(counts) as [keyof typeof counts, number][])
+          .filter(([, n]) => n > 0)
+          .map(([status, n]) => (
+            <span key={status} style={{
+              fontSize: '9px', fontWeight: 700,
+              color: SCENE_STATUS_COLOR[status],
+              background: `${SCENE_STATUS_COLOR[status]}22`,
+              padding: '2px 6px', borderRadius: '4px',
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+            }}>
+              {SCENE_STATUS_LABEL[status]} {n}
+            </span>
+          ))}
+      </div>
+
+      {/* 진행률 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ width: '80px', height: '4px', background: 'var(--border)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: `${pct}%`,
+            background: pct === 100 ? '#22c55e' : color,
+            borderRadius: '2px',
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+        <span style={{ fontSize: '10px', fontWeight: 700, color: pct === 100 ? '#22c55e' : 'var(--text-dim)', minWidth: '28px' }}>
+          {pct}%
+        </span>
+      </div>
+    </div>
+  )
 }
