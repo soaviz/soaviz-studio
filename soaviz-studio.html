@@ -22834,21 +22834,186 @@
     <!-- ================ PAGE: LANDING ================ -->
     <section id="page-landing" class="page landing-page">
       <section class="soaviz-landing" id="soavizLanding">
+        <style>
+          /* ── BETA LANDING OVERRIDES ── */
+          .beta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(167,139,250,0.22) 0%, rgba(99,102,241,0.18) 100%);
+            border: 1px solid rgba(167,139,250,0.45);
+            color: #c4b5fd;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-right: 6px;
+          }
+          .beta-pill::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a78bfa;
+            box-shadow: 0 0 6px rgba(167,139,250,0.8);
+            animation: beta-pulse 2s ease-in-out infinite;
+          }
+          @keyframes beta-pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50% { opacity:0.5; transform:scale(0.7); }
+          }
+          .beta-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 20px;
+            margin: 32px 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(167,139,250,0.08) 100%);
+            border: 1px solid rgba(167,139,250,0.25);
+          }
+          .beta-notice-icon {
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 1px;
+          }
+          .beta-notice strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #c4b5fd;
+            margin-bottom: 3px;
+          }
+          .beta-notice span {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.5;
+          }
+          .beta-access-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 32px 0;
+          }
+          @media (max-width:600px) {
+            .beta-access-grid { grid-template-columns: 1fr; }
+          }
+          .beta-access-card {
+            padding: 18px 20px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+          }
+          .beta-access-card-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+            line-height: 1;
+            margin-top: 1px;
+          }
+          .beta-access-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.88);
+            margin: 0 0 4px;
+            letter-spacing: -0.01em;
+          }
+          .beta-access-card p {
+            font-size: 11.5px;
+            color: rgba(255,255,255,0.45);
+            margin: 0;
+            line-height: 1.5;
+          }
+          .beta-features-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 28px 0;
+          }
+          @media (max-width:700px) {
+            .beta-features-list { grid-template-columns: repeat(2, 1fr); }
+          }
+          @media (max-width:480px) {
+            .beta-features-list { grid-template-columns: 1fr; }
+          }
+          .beta-feature-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+          }
+          .beta-feature-chip .bfc-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #6ee7b7;
+            flex-shrink: 0;
+          }
+          .beta-feature-chip.coming .bfc-dot {
+            background: rgba(255,255,255,0.18);
+          }
+          .beta-feature-chip.coming {
+            color: rgba(255,255,255,0.3);
+          }
+          .landing-section-kicker {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(167,139,250,0.7);
+            margin-bottom: 8px;
+          }
+          .landing-section-title {
+            font-size: clamp(20px, 3vw, 26px);
+            font-weight: 800;
+            color: rgba(255,255,255,0.92);
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+          }
+          .landing-section-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
+            margin: 0 0 24px;
+          }
+          .landing-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+            margin: 44px 0;
+          }
+        </style>
 
         <!-- ── HERO ── -->
         <div class="landing-hero">
           <div class="landing-copy">
-            <div class="landing-kicker">SOAVIZ STUDIO</div>
-            <h1 class="landing-title">정리는 <em>AI</em>가.<br>창작은 당신이.</h1>
+            <div class="landing-kicker">
+              <span class="beta-pill">OPEN BETA</span>
+              SOAVIZ STUDIO
+            </div>
+            <h1 class="landing-title">AI가 만든다.<br>당신이 <em>완성</em>한다.</h1>
             <p class="landing-subtitle">
-              영상 하나 올리면 AI가 스토리를 잡고, 씬을 구성하고,
-              3가지 편집안을 만들어드립니다. 당신은 고르기만 하면 됩니다.
+              세계관, 캐릭터, 씬, 보이스 — 창작의 모든 단계를 AI와 함께.
+              지금 베타 참여자를 모집합니다.
             </p>
             <div class="landing-actions">
-              <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="영상 하나 올려보기" onclick="startLandingOnboarding()">영상 하나 올려보기</button>
-              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="샘플로 바로 체험" onclick="startLandingSample()">샘플로 바로 체험</button>
+              <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
+              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="샘플로 체험하기" onclick="startLandingSample()">샘플로 체험하기</button>
             </div>
-            <p class="landing-note">30초면 첫 결과가 나옵니다</p>
+            <p class="landing-note">얼리 액세스 · 완전 무료 · 설치 없음</p>
           </div>
 
           <!-- Mock UI Card -->
@@ -22858,108 +23023,163 @@
                 <div class="mock-topbar-dots">
                   <span></span><span></span><span></span>
                 </div>
-                <div style="width:60px"></div>
+                <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:rgba(167,139,250,0.6);text-transform:uppercase">BETA</div>
               </div>
               <div class="mock-content">
-                <div class="mock-badge">✦ AI 추천</div>
-                <h3>편집안 선택</h3>
-                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin:4px 0 2px">⚡ 30초 이하 빠른추천편집</div>
+                <div class="mock-badge">✦ AI 세계관 빌더</div>
+                <h3>프로젝트 구성</h3>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin:4px 0 6px">📖 현재 작업 중</div>
                 <div class="mock-version selected">
-                  <span>A · Balanced Cut</span>
-                  <span class="mock-version-tag">추천</span>
+                  <span>① 세계관 설정</span>
+                  <span class="mock-version-tag" style="background:rgba(110,231,183,0.18);color:#6ee7b7">완료</span>
+                </div>
+                <div class="mock-version selected" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.3)">
+                  <span>② 캐릭터 바이블</span>
+                  <span class="mock-version-tag">진행중</span>
                 </div>
                 <div class="mock-version">
-                  <span>B · Fast Ad Cut</span>
-                  <span class="mock-version-tag">15초</span>
+                  <span>③ 씬 리스트</span>
+                  <span class="mock-version-tag">대기</span>
+                </div>
+                <div style="height:1px;background:rgba(255,255,255,0.07);margin:10px 0 8px"></div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:4px">🎙 보이스 스튜디오</div>
+                <div class="mock-version">
+                  <span>나레이션 생성</span>
+                  <span class="mock-version-tag">AI 음성</span>
                 </div>
                 <div class="mock-version">
-                  <span>C · K-pop MV Cut</span>
-                  <span class="mock-version-tag">감성</span>
-                </div>
-                <div style="height:1px;background:rgba(255,255,255,0.07);margin:10px 0 6px"></div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:2px">🎬 롱폼 버전</div>
-                <div class="mock-version">
-                  <span>D · Cinematic Story</span>
-                  <span class="mock-version-tag">1분</span>
-                </div>
-                <div class="mock-version">
-                  <span>E · Documentary</span>
-                  <span class="mock-version-tag">2분</span>
-                </div>
-                <div class="mock-version">
-                  <span>F · Full Director's Cut</span>
-                  <span class="mock-version-tag">3분+</span>
+                  <span>키이미지 제작</span>
+                  <span class="mock-version-tag">이미지</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- ── BETA NOTICE ── -->
+        <div class="beta-notice">
+          <div class="beta-notice-icon">🎁</div>
+          <div>
+            <strong>베타 참여자 혜택 — 지금 가입하면 영구 적용됩니다</strong>
+            <span>정식 출시 후 유료 전환 시 베타 참여자 전원 <b style="color:#c4b5fd">50% 평생 할인</b>이 적용됩니다. 지금 무료로 시작하고 혜택을 확보하세요.</span>
+          </div>
+        </div>
+
         <!-- ── VALUE GRID ── -->
         <div class="landing-value-grid">
           <article class="landing-value-card">
-            <span class="landing-value-card-icon">🎬</span>
-            <h3>편집이 아니라 선택입니다</h3>
-            <p>어떤 컷을 쓸지 고민하는 시간, 이제 필요 없습니다. AI가 이미 최선을 골랐습니다.</p>
+            <span class="landing-value-card-icon">🌍</span>
+            <h3>세계관부터 씬까지</h3>
+            <p>기획 → 캐릭터 → 스토리보드 → 씬 구성까지 AI와 함께 한 흐름으로 만들어갑니다.</p>
           </article>
           <article class="landing-value-card">
-            <span class="landing-value-card-icon">✦</span>
-            <h3>항상 3가지 결과</h3>
-            <p>A/B/C 중 하나만 고르세요. 톤, 속도, 스타일이 다른 3개 버전이 동시에 준비됩니다.</p>
+            <span class="landing-value-card-icon">🎙</span>
+            <h3>내 목소리로 말하는 AI</h3>
+            <p>캐릭터별 보이스를 설정하면 나레이션과 대사를 AI가 자동으로 생성합니다.</p>
           </article>
           <article class="landing-value-card">
-            <span class="landing-value-card-icon">🧠</span>
-            <h3>당신의 선택은 기억됩니다</h3>
-            <p>한 번 고른 스타일은 다음 작업에서 자동으로 반영됩니다. 점점 당신처럼 만들어집니다.</p>
+            <span class="landing-value-card-icon">🖼</span>
+            <h3>키이미지 스튜디오</h3>
+            <p>캐릭터 설정에서 바로 AI 이미지 프롬프트를 생성하고 레퍼런스를 관리합니다.</p>
           </article>
         </div>
+
+        <div class="landing-divider"></div>
+
+        <!-- ── 지금 사용 가능한 기능 ── -->
+        <div>
+          <div class="landing-section-kicker">What's live now</div>
+          <p class="landing-section-title">베타에서 바로 쓸 수 있습니다</p>
+          <p class="landing-section-sub">아래 기능들이 현재 베타에서 작동 중입니다. 피드백을 반영하며 매주 업데이트됩니다.</p>
+          <div class="beta-features-list">
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>AI 세계관 빌더</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>캐릭터 바이블</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>키이미지 스튜디오</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>씬/쇼트 리스트</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>Voice 스튜디오</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>제작 캘린더</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>Music 스튜디오</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>제작 로그</div>
+            <div class="beta-feature-chip coming"><span class="bfc-dot"></span>결제 시스템 (출시 예정)</div>
+            <div class="beta-feature-chip coming"><span class="bfc-dot"></span>팀 협업 (출시 예정)</div>
+            <div class="beta-feature-chip coming"><span class="bfc-dot"></span>영상 자동 편집 (출시 예정)</div>
+            <div class="beta-feature-chip coming"><span class="bfc-dot"></span>배포 연동 (출시 예정)</div>
+          </div>
+        </div>
+
+        <div class="landing-divider"></div>
+
+        <!-- ── BETA ACCESS BENEFITS ── -->
+        <div>
+          <div class="landing-section-kicker">Early access</div>
+          <p class="landing-section-title">얼리 액세스가 다른 이유</p>
+          <div class="beta-access-grid">
+            <div class="beta-access-card">
+              <div class="beta-access-card-icon">💸</div>
+              <div>
+                <h4>정식 출시 후 50% 평생 할인</h4>
+                <p>베타 참여자에게는 유료 전환 시 50% 할인이 영구 적용됩니다.</p>
+              </div>
+            </div>
+            <div class="beta-access-card">
+              <div class="beta-access-card-icon">🛠</div>
+              <div>
+                <h4>피드백이 제품을 만듭니다</h4>
+                <p>여러분의 의견이 다음 업데이트에 직접 반영됩니다. 원하는 기능을 제안할 수 있습니다.</p>
+              </div>
+            </div>
+            <div class="beta-access-card">
+              <div class="beta-access-card-icon">🔓</div>
+              <div>
+                <h4>모든 기능 무료 사용</h4>
+                <p>베타 기간 동안 추가 비용 없이 모든 기능을 제한 없이 사용합니다.</p>
+              </div>
+            </div>
+            <div class="beta-access-card">
+              <div class="beta-access-card-icon">⚡</div>
+              <div>
+                <h4>빠른 업데이트 알림</h4>
+                <p>새 기능 출시 시 베타 참여자에게 가장 먼저 알림을 보내드립니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="landing-divider"></div>
 
         <!-- ── HOW IT WORKS ── -->
         <div class="landing-how">
           <div class="landing-how-kicker">How it works</div>
-          <h2>설명 없이, 바로 결과까지</h2>
+          <h2>시작부터 완성까지, 한 흐름으로</h2>
           <div class="landing-steps">
             <span>
               <strong>1</strong>
-              <em>영상 업로드</em>
+              <em>세계관 입력</em>
             </span>
             <span>
               <strong>2</strong>
-              <em>AI 자동 분석</em>
+              <em>캐릭터 생성</em>
             </span>
             <span>
               <strong>3</strong>
-              <em>3가지 편집안</em>
+              <em>씬 구성</em>
             </span>
             <span>
               <strong>4</strong>
-              <em>하나 선택</em>
+              <em>보이스 · 이미지</em>
             </span>
             <span>
               <strong>5</strong>
-              <em>완성</em>
+              <em>완성 · 내보내기</em>
             </span>
-          </div>
-        </div>
-
-        <!-- ── BEFORE / AFTER ── -->
-        <div class="landing-before-after">
-          <div class="ba-card before">
-            <strong>Before</strong>
-            <p>툴 5개, 폴더 7개,<br>끝없는 선택</p>
-          </div>
-          <div class="ba-arrow">→</div>
-          <div class="ba-card after">
-            <strong>After soaviz</strong>
-            <p>업로드 → 선택<br>→ 완료</p>
           </div>
         </div>
 
         <!-- ── FINAL CTA ── -->
         <div class="landing-final-cta">
-          <h2>편집은 시스템이 합니다.<br>당신은 선택만 하세요.</h2>
-          <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="지금 시작하기" onclick="startLandingOnboarding()">지금 무료로 시작하기</button>
-          <p class="landing-final-note">설치 없음 · 카드 없음 · 30초면 첫 결과</p>
+          <h2>AI와 함께 만드는<br>첫 번째 프로젝트를 시작하세요.</h2>
+          <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
+          <p class="landing-final-note">설치 없음 · 카드 없음 · 베타 참여자 정식 출시 후 50% 할인</p>
         </div>
 
       </section>
@@ -46296,6 +46516,8 @@ function openCharacterKeyImageStudio(id) {
   });
 }
 function closeCharacterKeyImageStudio() {
+  const _ckGrid = document.getElementById('ch-grid');
+  if (_ckGrid) _ckGrid.className = 'bible-grid';
   CHARACTER_PAGE_STATE.view = 'list';
   CHARACTER_PAGE_STATE.activeCharacterId = null;
   renderCharactersPage();
@@ -48025,7 +48247,7 @@ async function renderCharacterKeyImageStudioShell(charId) {
   document.getElementById('ch-metrics')?.setAttribute('style', 'display:none');
   document.getElementById('ch-stats')?.setAttribute('style', 'display:none');
   document.getElementById('ch-bulkbar')?.setAttribute('style', 'display:none');
-  // .ch-workbench 전체를 숨기면 #ch-grid(shell 삽입 대상)도 숨겨짐 → 제거
+  document.querySelector('#page-characters .ch-workbench')?.setAttribute('style', 'display:none');
   document.querySelector('#page-characters .page-head')?.setAttribute('style', 'display:none');
 
   const grid = document.getElementById('ch-grid');
