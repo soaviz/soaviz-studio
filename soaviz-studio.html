@@ -46858,6 +46858,8 @@ async function renderCharactersPage() {
 window.CharacterKeyImageStudio = window.CharacterKeyImageStudio || {
   activeCharacterId: null,
   activeTab: 'references',
+  purposeTab: 'portrait',
+  advancedOpen: false,
   referenceSlots: { front: null, side: null, back: null, fullBody: null },
   selectedReferenceSlot: 'front',
   stylePreset: 'realistic',
@@ -47217,7 +47219,15 @@ function renderCKResultCardV2(character, img, index) {
 async function generateCKImages(character) {
   const s = window.CharacterKeyImageStudio;
   if (!character?.id) { showToast?.('캐릭터 정보가 없습니다', 'error'); return; }
-  if (!s.promptText || s.promptText.trim().length < 8) { showToast?.('프롬프트를 입력해 주세요', 'error'); return; }
+  if (!s.promptText || s.promptText.trim().length < 8) { showToast?.('프롬프트를 입력해 주세요 (8자 이상)', 'warn'); return; }
+  // OpenAI 키 사전 확인
+  const _openaiKey = (typeof getVaultKey === 'function') ? (getVaultKey('openai') || '') : '';
+  if (!_openaiKey) {
+    showToast?.('Settings → API Keys에서 OpenAI 키를 먼저 등록해 주세요', 'warn');
+    s.lastError = 'OpenAI API 키가 없습니다. Settings → API Keys에서 등록해 주세요.';
+    await renderKeyImageStudioPage();
+    return;
+  }
   s.isGenerating = true;
   s.lastError = '';
   await renderKeyImageStudioPage();
@@ -47225,14 +47235,13 @@ async function generateCKImages(character) {
     const images = await _callCKGenerateAPI(character);
     s.generatedImages = [...images, ...(s.generatedImages || [])];
     for (const img of images) {
-      await persistCKGeneratedImage(character.id, img, { saveAsGenerated: true, saveToAssets: true });
+      try { await persistCKGeneratedImage(character.id, img, { saveAsGenerated: true, saveToAssets: true }); } catch(_) {}
     }
-    s.activeTab = 'results';
-    showToast?.(images.length + '개 키이미지 생성 완료');
+    showToast?.(images.length + '개 키이미지 생성 완료 ✓');
   } catch (e) {
     console.error('[ck-generate]', e);
     s.lastError = e.message || String(e);
-    showToast?.('키이미지 생성 실패', 'error');
+    showToast?.('키이미지 생성 실패: ' + (e.message || ''), 'error');
   } finally {
     s.isGenerating = false;
     await renderKeyImageStudioPage();
@@ -47242,37 +47251,51 @@ async function generateCKImages(character) {
 async function _callCKGenerateAPI(character) {
   const s = window.CharacterKeyImageStudio;
   const primaryRef = getCKPrimaryReference();
+  // referenceImage → 서버가 string(dataUrl) 형태로 기대함
+  const refDataUrl = primaryRef ? (primaryRef.dataUrl || '') : null;
   const payload = {
     projectId: character.projectId || null,
     characterId: character.id,
     characterName: character.name || '',
     modelId: s.modelId,
-    pipeline: primaryRef ? 'reference-ip-adapter' : 'text-to-image',
+    pipeline: refDataUrl ? 'ip-adapter' : 'standard',
     prompt: s.promptText,
     negativePrompt: s.negativePrompt,
-    referenceImage: primaryRef ? { slot: primaryRef.slot, dataUrl: primaryRef.dataUrl || '', mimeType: primaryRef.mimeType || 'image/png' } : null,
+    referenceImage: refDataUrl || null,
     stylePreset: s.stylePreset,
     moodPreset: s.moodPreset,
     cameraPreset: s.cameraPreset,
     angle: s.angle,
-    referenceStrength: s.referenceStrength,
+    referenceStrength: Number(s.referenceStrength === 'balanced' ? 0.7 : s.referenceStrength === 'strong' ? 0.9 : s.referenceStrength === 'light' ? 0.4 : 0.7),
     aspectRatio: s.aspectRatio,
     outputCount: Number(s.outputCount || 4),
     seed: s.seed || null,
     guidanceScale: Number(s.guidanceScale || 7.5),
     source: 'character-key-image-studio'
   };
-  const base = window.__SOAVIZ_CONFIG__?.backendUrl || '';
-  const endpoint = base + '/api/character-key-image/generate';
+  // ── 인증 헤더 (Vault에서 API 키 로드) ──
+  const openaiKey = (typeof getVaultKey === 'function') ? (getVaultKey('openai') || '') : '';
+  const replicateKey = (typeof getVaultKey === 'function') ? (getVaultKey('replicate') || '') : '';
+  const headers = { 'Content-Type': 'application/json' };
+  if (openaiKey) headers['x-openai-key'] = openaiKey;
+  if (replicateKey) headers['x-replicate-token'] = replicateKey;
+  const endpoint = BACKEND_URL + '/api/character-key-image/generate';
   try {
-    const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error('API ' + res.status);
+    const res = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(payload) });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(errData.error || `API ${res.status}`);
+    }
     const data = await res.json();
     const outputs = data.images || data.results || data.outputs || (data.imageUrl ? [data] : []);
     const normalized = outputs.map((item, i) => _normalizeCKResult(character, item, i)).filter(Boolean);
     if (normalized.length) return normalized;
   } catch (e) {
-    console.warn('[ck-generate] fallback to mock:', e.message);
+    console.warn('[ck-generate] API 오류, mock fallback:', e.message);
+    // OpenAI 키 없으면 에러 표면화
+    if (e.message && (e.message.includes('OPENAI_API_KEY') || e.message.includes('API Keys') || e.message.includes('401'))) {
+      throw e;  // 설정 필요 에러는 표면화
+    }
   }
   return _createMockCKImages(character, Number(s.outputCount || 4));
 }
@@ -48382,6 +48405,16 @@ async function renderKeyImageStudioPage() {
 
   // 결과 그리드
   const images = s.generatedImages || [];
+  const _openaiKeyExists = !!(typeof getVaultKey === 'function' && getVaultKey('openai'));
+  const _noKeyBanner = !_openaiKeyExists ? `
+    <div style="padding:14px 16px;background:rgba(251,191,36,0.10);border:1px solid rgba(251,191,36,0.28);border-radius:10px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span style="font-size:12px;color:#fbbf24;font-weight:600">OpenAI API 키가 없습니다. <button onclick="showPage('settings')" style="color:#a78bfa;background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;text-decoration:underline">Settings에서 등록 →</button></span>
+    </div>` : '';
+  const _lastErrorBanner = s.lastError ? `
+    <div style="padding:12px 14px;background:rgba(248,113,113,0.10);border:1px solid rgba(248,113,113,0.28);border-radius:10px;margin-bottom:14px;font-size:12px;color:#fca5a5">
+      ⚠️ ${escapeHTML(s.lastError)}
+    </div>` : '';
   const resultsHTML = images.length
     ? `<div class="ck2-result-grid">${images.map((img, i) => renderCKResultCardV2(c, img, i)).join('')}</div>`
     : `<div class="ck2-empty-results">
@@ -48535,6 +48568,8 @@ async function renderKeyImageStudioPage() {
         </div>
         <!-- 오른쪽 패널 -->
         <div class="ck2-right">
+          ${_noKeyBanner}
+          ${_lastErrorBanner}
           <div class="ck2-results-header">
             <span class="ck2-results-title">생성 결과${images.length ? ' (' + images.length + ')' : ''}</span>
             ${images.length ? `<button class="ck-chip-btn" id="ck-clear-results" style="font-size:11px">비우기</button>` : ''}
