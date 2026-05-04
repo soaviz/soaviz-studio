@@ -141,6 +141,136 @@ export interface Database {
           }
         ]
       }
+      episodes: {
+        Row: {
+          id: string
+          user_id: string
+          project_id: string
+          number: number
+          title: string | null
+          synopsis: string | null
+          status: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived: boolean
+          meta: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          project_id: string
+          number?: number
+          title?: string | null
+          synopsis?: string | null
+          status?: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived?: boolean
+          meta?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          number?: number
+          title?: string | null
+          synopsis?: string | null
+          status?: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived?: boolean
+          meta?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scenes: {
+        Row: {
+          id: string
+          user_id: string
+          project_id: string
+          episode_id: string
+          number: number
+          heading: string | null
+          beat: string | null
+          description: string | null
+          status: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived: boolean
+          meta: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          project_id: string
+          episode_id: string
+          number?: number
+          heading?: string | null
+          beat?: string | null
+          description?: string | null
+          status?: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived?: boolean
+          meta?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          number?: number
+          heading?: string | null
+          beat?: string | null
+          description?: string | null
+          status?: 'draft' | 'outline' | 'script' | 'locked' | 'done'
+          archived?: boolean
+          meta?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shots: {
+        Row: {
+          id: string
+          user_id: string
+          project_id: string
+          scene_id: string
+          number: number
+          shot_type: string | null
+          camera_move: string | null
+          duration_ms: number | null
+          prompt: string | null
+          status: 'draft' | 'generated' | 'approved' | 'rejected' | 'archived'
+          archived: boolean
+          meta: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          project_id: string
+          scene_id: string
+          number?: number
+          shot_type?: string | null
+          camera_move?: string | null
+          duration_ms?: number | null
+          prompt?: string | null
+          status?: 'draft' | 'generated' | 'approved' | 'rejected' | 'archived'
+          archived?: boolean
+          meta?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          number?: number
+          shot_type?: string | null
+          camera_move?: string | null
+          duration_ms?: number | null
+          prompt?: string | null
+          status?: 'draft' | 'generated' | 'approved' | 'rejected' | 'archived'
+          archived?: boolean
+          meta?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
