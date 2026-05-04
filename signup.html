@@ -885,7 +885,9 @@
     /* 이미 프로필 있으면 로그인 모드 자동 */
     (function bootMode() {
       const p = getProfile();
-      if (location.hash === '#login') {
+      // /login URL (Vercel rewrite) 또는 #login hash이면 로그인 탭
+      const isLoginPath = /\/login(?:\.html)?$/i.test(location.pathname);
+      if (isLoginPath || location.hash === '#login') {
         setMode('login');
         if (p?.email) $('#su-email').value = p.email || '';
       } else if (p && p.name) {
