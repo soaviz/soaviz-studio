@@ -24329,6 +24329,10 @@
             <small style="font-size:10px;color:var(--text-faint)">연결하면 Winner 채택 시 Shot의 approvedAssetId가 자동 업데이트</small>
           </div>
           <div class="cmp-cost-row" id="cmp-cost-row"></div>
+          <!-- 이미지 프리뷰 -->
+          <div id="cmp-image-preview" style="display:none;margin-bottom:10px">
+            <img id="cmp-image-thumb" src="" alt="참조 이미지" style="width:100%;max-height:140px;object-fit:cover;border-radius:var(--r-md);border:1px solid var(--border)" />
+          </div>
           <div class="pl-actions">
             <button class="pl-btn primary" id="cmp-run-btn" style="flex:1">⚡ Run Compare</button>
             <button class="pl-btn" id="cmp-reset-btn">초기화</button>
@@ -24351,6 +24355,18 @@
             </div>
           </div>
         </main>
+      </div>
+
+      <!-- 동기 재생 컨트롤 바 (2개 이상 done일 때만 표시) -->
+      <div id="cmp-sync-bar" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-top:12px">
+        <span style="font-size:12px;font-weight:600;color:var(--text)">🎬 동기 재생</span>
+        <button id="cmp-sync-play" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">▶ 전체 재생</button>
+        <button id="cmp-sync-pause" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">⏸ 전체 정지</button>
+        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="cmp-sync-toggle" checked style="accent-color:var(--accent)" />
+          seek 동기화
+        </label>
+        <span id="cmp-sync-pos" style="font-size:11px;color:var(--text-faint);margin-left:auto">00:00</span>
       </div>
 
       <!-- 과거 세션 목록 -->
@@ -52674,21 +52690,38 @@ async function renderCompareShotSelect() {
 async function renderCompareHistory() {
   const wrap = $('#cmp-history');
   if (!wrap) return;
-  const recent = await SoavizCompare.listRecent(8);
+  const recent = await SoavizCompare.listRecent(12);
   if (!recent.length) { wrap.innerHTML = ''; return; }
   wrap.innerHTML = `
     <article class="cmp-history-card">
-      <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:700;margin-bottom:10px">최근 Compare 세션</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:700">최근 Compare 세션</div>
+        <span style="font-size:11px;color:var(--text-faint)">${recent.length}개</span>
+      </div>
       <div class="cmp-history-list">
         ${recent.map(s => {
           const winnerCand = s.winnerAssetId ? s.candidates.find(c => c.assetId === s.winnerAssetId) : null;
           const done = s.candidates.filter(c => c.status === 'done').length;
+          const failed = s.candidates.filter(c => c.status === 'failed').length;
+          const modelChips = s.candidates.slice(0, 4).map(c =>
+            `<span style="font-size:9px;padding:1px 6px;border-radius:8px;background:var(--bg-elev);color:var(--text-dim)">${escapeHTML(c.model.replace('veo-','Veo ').replace('sora-','Sora ').replace('runway-','RW ').replace('luma-','Luma '))}</span>`
+          ).join('');
+          const isCurrent = _CMP_STATE.sessionId === s.id;
           return `
-            <div class="cmp-history-row" data-cmp-load="${escapeHTML(s.id)}">
-              <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(s.promptText.slice(0, 60))}</span>
-              <span style="color:var(--text-faint)">${done}/${s.candidates.length}</span>
-              ${winnerCand ? `<span style="color:#6ee7b7;font-weight:600">★ ${escapeHTML(winnerCand.model)}</span>` : ''}
-              <span style="color:var(--text-faint);font-variant-numeric:tabular-nums">${formatRelTime(s.updatedAt)}</span>
+            <div class="cmp-history-row ${isCurrent ? 'active' : ''}" data-cmp-load="${escapeHTML(s.id)}" style="${isCurrent ? 'background:var(--accent-soft);border-color:var(--accent)' : ''}">
+              <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  ${winnerCand ? `<span style="font-size:9px;padding:1px 7px;border-radius:8px;background:rgba(52,211,153,0.18);color:#34d399;font-weight:700;flex-shrink:0">★ ${escapeHTML(winnerCand.model)}</span>` : ''}
+                  ${modelChips}
+                </div>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text)">${escapeHTML(s.promptText.slice(0, 70))}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+                <span style="font-size:10px;color:var(--text-faint);font-variant-numeric:tabular-nums">${formatRelTime(s.updatedAt)}</span>
+                <span style="font-size:10px;color:${failed ? 'var(--red)' : 'var(--text-faint)'}">
+                  ${done}/${s.candidates.length} 완료${failed ? ` · ${failed} 실패` : ''}
+                </span>
+              </div>
             </div>
           `;
         }).join('')}
@@ -52698,6 +52731,7 @@ async function renderCompareHistory() {
   wrap.querySelectorAll('[data-cmp-load]').forEach(el => el.addEventListener('click', () => {
     _CMP_STATE.sessionId = el.dataset.cmpLoad;
     renderCompareSession();
+    renderCompareHistory(); // active 상태 업데이트
   }));
 }
 
@@ -52713,34 +52747,80 @@ async function renderCompareSession() {
       <h3>Run Compare 후 결과가 여기에 N분할로 표시됩니다</h3>
       <p>각 패널: 모델명 · 생성 시간 · 추정 비용 · 사용자 점수(1~5) · Pick winner</p>
     </div>`;
+    $('#cmp-sync-bar').style.display = 'none';
     return;
   }
   const s = await SoavizCompare.get(_CMP_STATE.sessionId);
   if (!s) { wrap.innerHTML = '<div class="cmp-empty">세션을 찾을 수 없습니다</div>'; return; }
 
+  const allDone   = s.candidates.every(c => c.status === 'done' || c.status === 'failed');
+  const anyRunning = s.candidates.some(c => c.status === 'running' || c.status === 'queued');
+
+  // 메트릭 비교표 (전체 완료 시)
+  let metricsTable = '';
+  if (allDone && s.candidates.length > 1) {
+    const bestTime = Math.min(...s.candidates.filter(c => c.metrics.genTimeMs).map(c => c.metrics.genTimeMs));
+    metricsTable = `
+      <div style="margin-top:18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--text);letter-spacing:0.04em">📊 모델 비교 결과</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--bg-1)">
+              <th style="padding:8px 14px;text-align:left;color:var(--text-faint);font-weight:600">모델</th>
+              <th style="padding:8px 14px;text-align:center;color:var(--text-faint);font-weight:600">생성시간</th>
+              <th style="padding:8px 14px;text-align:center;color:var(--text-faint);font-weight:600">비용</th>
+              <th style="padding:8px 14px;text-align:center;color:var(--text-faint);font-weight:600">점수</th>
+              <th style="padding:8px 14px;text-align:center;color:var(--text-faint);font-weight:600">결과</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${s.candidates.map((c, i) => {
+              const isWinner = s.winnerAssetId === c.assetId && c.assetId;
+              const isFastest = c.metrics.genTimeMs && c.metrics.genTimeMs === bestTime;
+              const genTime = c.metrics.genTimeMs ? `${(c.metrics.genTimeMs/1000).toFixed(1)}s` : '—';
+              const stars = c.metrics.userScore ? '★'.repeat(c.metrics.userScore) + '☆'.repeat(5 - c.metrics.userScore) : '—';
+              return `<tr style="border-top:1px solid var(--border);${isWinner ? 'background:rgba(52,211,153,0.07)' : ''}">
+                <td style="padding:8px 14px;font-weight:600;color:var(--text)">${escapeHTML(c.model)} ${isWinner ? '<span style="font-size:10px;background:#34d399;color:#fff;padding:1px 7px;border-radius:10px;margin-left:4px">Winner</span>' : ''}</td>
+                <td style="padding:8px 14px;text-align:center;color:${isFastest ? 'var(--green)' : 'var(--text-dim)'}">${genTime} ${isFastest ? '⚡' : ''}</td>
+                <td style="padding:8px 14px;text-align:center;color:var(--text-dim)">$${(c.metrics.cost||0).toFixed(2)}</td>
+                <td style="padding:8px 14px;text-align:center;color:var(--accent);letter-spacing:1px">${stars}</td>
+                <td style="padding:8px 14px;text-align:center"><span class="cmp-cell-status ${c.status}">${c.status}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
   wrap.innerHTML = `
-    <div style="margin-bottom:14px;font-size:12px;color:var(--text-dim)">
-      <strong style="color:var(--text)">프롬프트:</strong> ${escapeHTML(s.promptText)}
-      <span style="margin-left:12px;color:var(--text-faint)">${s.duration}초 · ${s.candidates.length}개 모델</span>
+    <div style="margin-bottom:14px;font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <strong style="color:var(--text)">${escapeHTML(s.promptText.slice(0, 100))}${s.promptText.length > 100 ? '…' : ''}</strong>
+      <span style="color:var(--text-faint)">${s.duration}초 · ${s.candidates.length}개 모델</span>
+      ${anyRunning ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,0.15);color:#fbbf24;font-weight:600">⏳ 생성 중</span>` : ''}
+      ${allDone && s.winnerAssetId ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(52,211,153,0.15);color:#34d399;font-weight:600">✓ 완료</span>` : ''}
     </div>
     <div class="cmp-grid">
       ${s.candidates.map((c, i) => {
         const isWinner = s.winnerAssetId === c.assetId && c.assetId;
         const timeLabel = c.metrics.genTimeMs ? `${(c.metrics.genTimeMs / 1000).toFixed(1)}s` : '—';
+        const elapsedAttr = (c.status === 'running' && c.startedAt) ? `data-started="${c.startedAt}"` : '';
         return `
-          <div class="cmp-cell ${isWinner ? 'winner' : ''}" data-ci="${i}">
+          <div class="cmp-cell ${isWinner ? 'winner' : ''}" data-ci="${i}" ${elapsedAttr}>
             <div class="cmp-cell-head">
               <span class="cmp-cell-model">${escapeHTML(c.model)}</span>
-              <span class="cmp-cell-status ${c.status}">${c.status}</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${c.status === 'running' ? `<span class="cmp-elapsed" style="font-size:10px;color:var(--accent);font-variant-numeric:tabular-nums">…</span>` : ''}
+                <span class="cmp-cell-status ${c.status}">${c.status}</span>
+              </div>
             </div>
             <div class="cmp-cell-body">
               ${c.status === 'running' || c.status === 'queued'
-                ? `<div class="cmp-spinner"></div>`
+                ? `<div class="cmp-spinner"></div><div style="font-size:11px;color:var(--text-faint);text-align:center;margin-top:8px">${c.status === 'queued' ? '대기 중…' : '생성 중…'}</div>`
                 : c.status === 'done' && c.videoUrl
-                  ? `<video src="${escapeHTML(c.videoUrl)}" controls preload="metadata"></video>`
+                  ? `<video src="${escapeHTML(c.videoUrl)}" controls preload="metadata" data-sync style="width:100%;border-radius:var(--r-sm)"></video>`
                   : c.status === 'failed'
-                    ? `<div style="text-align:center;padding:20px;color:#fca5a5">❌ ${escapeHTML((c.errorMessage || 'failed').slice(0, 80))}</div>`
-                    : '<span>대기 중</span>'
+                    ? `<div style="text-align:center;padding:20px;color:#fca5a5;font-size:12px">❌ ${escapeHTML((c.errorMessage || 'failed').slice(0, 80))}</div>`
+                    : '<span style="font-size:12px;color:var(--text-faint)">대기 중</span>'
               }
             </div>
             <div class="cmp-cell-foot">
@@ -52761,7 +52841,9 @@ async function renderCompareSession() {
         `;
       }).join('')}
     </div>
+    ${metricsTable}
   `;
+
   // Pick + Score 바인딩
   wrap.querySelectorAll('[data-pick-cell]').forEach(b => b.addEventListener('click', async () => {
     const idx = parseInt(b.dataset.pickCell, 10);
@@ -52770,23 +52852,105 @@ async function renderCompareSession() {
     renderCompareHistory();
   }));
   wrap.querySelectorAll('.cmp-star').forEach(st => {
-    st.addEventListener('click', async (e) => {
+    st.addEventListener('click', async () => {
       const cellIdx = parseInt(st.closest('[data-score-cell]').dataset.scoreCell, 10);
       const score = parseInt(st.dataset.score, 10);
       await SoavizCompare.setScore(_CMP_STATE.sessionId, cellIdx, score);
       renderCompareSession();
     });
   });
+
+  // 동기 재생 바인딩
+  bindCompareSync();
+
+  // 실시간 경과 타이머 (running 있을 때만)
+  if (anyRunning) {
+    clearInterval(window._cmpElapsedTimer);
+    window._cmpElapsedTimer = setInterval(() => {
+      document.querySelectorAll('#cmp-results [data-started]').forEach(el => {
+        const elapsed = Math.round((Date.now() - parseInt(el.dataset.started)) / 1000);
+        const el2 = el.querySelector('.cmp-elapsed');
+        if (el2) el2.textContent = `${elapsed}s`;
+      });
+    }, 1000);
+  } else {
+    clearInterval(window._cmpElapsedTimer);
+  }
+}
+
+function bindCompareSync() {
+  const syncBar = $('#cmp-sync-bar');
+  const videos = [...(document.querySelectorAll('#cmp-results video[data-sync]') || [])];
+  if (videos.length < 2) { if (syncBar) syncBar.style.display = 'none'; return; }
+  if (syncBar) syncBar.style.display = 'flex';
+
+  let _syncing = false;
+  const doSync = (src, event) => {
+    if (_syncing) return;
+    _syncing = true;
+    const seekSync = $('#cmp-sync-toggle')?.checked !== false;
+    videos.forEach(v => {
+      if (v === src) return;
+      if (event === 'play') v.play().catch(() => {});
+      else if (event === 'pause') v.pause();
+      else if (event === 'seeked' && seekSync) v.currentTime = src.currentTime;
+    });
+    _syncing = false;
+  };
+  videos.forEach(v => {
+    v.removeEventListener('play',   v._syncPlay   || (() => {}));
+    v.removeEventListener('pause',  v._syncPause  || (() => {}));
+    v.removeEventListener('seeked', v._syncSeeked || (() => {}));
+    v._syncPlay   = () => { doSync(v, 'play');   updateSyncPos(v); };
+    v._syncPause  = () => { doSync(v, 'pause');  updateSyncPos(v); };
+    v._syncSeeked = () => { doSync(v, 'seeked'); updateSyncPos(v); };
+    v.addEventListener('play',   v._syncPlay);
+    v.addEventListener('pause',  v._syncPause);
+    v.addEventListener('seeked', v._syncSeeked);
+    v.addEventListener('timeupdate', () => updateSyncPos(v));
+  });
+
+  const updateSyncPos = (v) => {
+    const pos = $('#cmp-sync-pos');
+    if (!pos) return;
+    const t = v.currentTime || 0;
+    const m = Math.floor(t / 60).toString().padStart(2, '0');
+    const s2 = Math.floor(t % 60).toString().padStart(2, '0');
+    pos.textContent = `${m}:${s2}`;
+  };
+
+  // 전체 재생/정지 버튼
+  $('#cmp-sync-play')?.addEventListener('click', () => videos.forEach(v => v.play().catch(() => {})));
+  $('#cmp-sync-pause')?.addEventListener('click', () => videos.forEach(v => v.pause()));
 }
 
 function bindComparePage() {
   if (!$('#page-compare')) return;
   $('#cmp-duration')?.addEventListener('change', updateCompareCost);
+
+  // 이미지 파일 선택 → 프리뷰
+  $('#cmp-image')?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    const preview = $('#cmp-image-preview');
+    const thumb = $('#cmp-image-thumb');
+    if (file && preview && thumb) {
+      const url = URL.createObjectURL(file);
+      thumb.src = url;
+      preview.style.display = 'block';
+    } else if (preview) {
+      preview.style.display = 'none';
+    }
+  });
+
   $('#cmp-reset-btn')?.addEventListener('click', () => {
     $('#cmp-prompt').value = '';
     $('#cmp-duration').value = '5';
     $('#cmp-shot-select').value = '';
+    const preview = $('#cmp-image-preview');
+    if (preview) preview.style.display = 'none';
     _CMP_STATE.sessionId = null;
+    $('#cmp-sync-bar').style.display = 'none';
+    clearInterval(window._cmpElapsedTimer);
     renderCompareSession();
   });
   $('#cmp-run-btn')?.addEventListener('click', async () => {
