@@ -21612,6 +21612,15 @@
       </svg>
       Style
     </a>
+    <a class="nav-item" data-page="cinema" title="Cinema Library · 참고 영상 → Style Bible">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="2.18"/>
+        <line x1="7" y1="2" x2="7" y2="22"/>
+        <line x1="17" y1="2" x2="17" y2="22"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+      </svg>
+      Cinema
+    </a>
 
     <!-- ═══ 03 VIDEO GENERATION ═══ -->
     <div class="nav-section-label">영상 생성</div>
@@ -51493,35 +51502,78 @@ async function renderStylesPage() {
   const styles = await SoavizStyles.list(projectId);
   const grid = $('#st-grid');
   if (!grid) return;
+
+  // ── 상단 스탯 바 갱신 ──────────────────────────────────────────
   const stats = $('#st-stats');
-  if (stats) stats.textContent = `${styles.length}개 스타일`;
+  const globalCount  = styles.filter(s => s.scope === 'global').length;
+  const projectCount = styles.filter(s => s.scope !== 'global').length;
+  let cinemaCount = 0;
+  try {
+    if (typeof db !== 'undefined') cinemaCount = await db.refClips.count();
+  } catch (_) {}
+  if (stats) {
+    stats.innerHTML = [
+      `<span style="color:var(--text-dim)">스타일 <strong style="color:var(--text)">${styles.length}</strong></span>`,
+      globalCount  ? `<span style="color:var(--text-faint)">글로벌 ${globalCount}</span>` : '',
+      projectCount ? `<span style="color:var(--text-faint)">프로젝트별 ${projectCount}</span>` : '',
+      cinemaCount  ? `<span style="color:var(--accent);cursor:pointer" onclick="showPage('cinema')">🎞 Cinema ${cinemaCount}개</span>` : '',
+    ].filter(Boolean).join('<span style="color:var(--border-strong);margin:0 6px">·</span>');
+  }
+
+  // ── 스타일 카드 렌더 ───────────────────────────────────────────
+  const SCOPE_COLOR = { global: '#a78bfa', episode: '#4cc9f0', scene: '#10b981' };
+  const SCOPE_LABEL = (typeof SoavizStyles !== 'undefined' && SoavizStyles.SCOPE_LABEL) || { global: '글로벌', episode: '에피소드', scene: '씬' };
+  const LIGHT_LABEL = (typeof SoavizStyles !== 'undefined' && SoavizStyles.LIGHTING_LABEL) || {};
 
   grid.innerHTML = styles.map(s => {
     const grad = s.palette && s.palette.length >= 2
       ? `linear-gradient(135deg, ${s.palette[0]}, ${s.palette[s.palette.length-1]})`
       : `linear-gradient(135deg, #a78bfa, #6366f1)`;
+    const scopeColor = SCOPE_COLOR[s.scope] || '#a78bfa';
+    const scopeLabel = SCOPE_LABEL[s.scope] || s.scope;
+    const lightLabel = LIGHT_LABEL[s.lightingMood] || s.lightingMood || '';
+
+    // 카메라·무드·레퍼런스 태그 조합
+    const tags = [];
+    if (s.cameraStyle)   tags.push(s.cameraStyle.slice(0, 18));
+    if (s.scoreMood)     tags.push('🎵 ' + s.scoreMood.slice(0, 16));
+    if (s.referenceFilms?.length) tags.push(`📽 ${s.referenceFilms[0].slice(0, 16)}`);
+
     return `
       <article class="bible-card" data-st-id="${escapeHTML(s.id)}" style="--bib-grad:${grad}">
         <div class="bible-card-head">
-          <div class="bible-avatar style-tile">🎨</div>
+          <div class="bible-avatar style-tile" style="background:${grad}">
+            ${s.palette?.length >= 1 ? '' : '🎨'}
+          </div>
           <div style="flex:1;min-width:0">
-            <h3 class="bible-name">${escapeHTML(s.name)}</h3>
-            <div class="bible-role">${SoavizStyles.SCOPE_LABEL[s.scope]} · ${SoavizStyles.LIGHTING_LABEL[s.lightingMood] || s.lightingMood}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              <h3 class="bible-name" style="margin:0">${escapeHTML(s.name)}</h3>
+              <span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px;background:${scopeColor}22;color:${scopeColor};letter-spacing:0.04em;white-space:nowrap;flex-shrink:0">${scopeLabel}</span>
+            </div>
+            <div class="bible-role">${lightLabel || '—'}</div>
           </div>
         </div>
         ${s.palette?.length ? `
-          <div class="bible-palette-row">
-            ${s.palette.map(c => `<div class="bible-palette-swatch" style="background:${c}"></div>`).join('')}
+          <div class="bible-palette-row" style="gap:4px">
+            ${s.palette.map(c => `<div class="bible-palette-swatch" title="${c}" style="background:${c};flex:1;height:10px;border-radius:3px"></div>`).join('')}
           </div>
         ` : ''}
-        ${(s.promptFragment || s.cameraStyle) ? `<div class="bible-fragment">${escapeHTML(s.promptFragment || s.cameraStyle)}</div>` : ''}
+        ${(s.promptFragment || s.cameraStyle) ? `<div class="bible-fragment">${escapeHTML((s.promptFragment || s.cameraStyle).slice(0, 140))}</div>` : ''}
+        ${tags.length ? `
+          <div class="bible-tags">
+            ${tags.map(t => `<span class="bible-tag">${escapeHTML(t)}</span>`).join('')}
+          </div>
+        ` : ''}
         <div class="bible-meta">
-          ${s.scoreMood ? `<span>🎵 ${escapeHTML(s.scoreMood.slice(0, 20))}</span>` : ''}
-          <span style="margin-left:auto">${formatRelTime(s.updatedAt)}</span>
+          ${s.colorPaletteName ? `<span style="color:var(--accent-2)">◑ ${escapeHTML(s.colorPaletteName.slice(0,20))}</span>` : ''}
+          <span style="margin-left:auto;color:var(--text-faint)">${formatRelTime(s.updatedAt)}</span>
         </div>
       </article>
     `;
-  }).join('') + `<article class="bible-card add-new" id="st-add-card">＋ 새 스타일 추가</article>`;
+  }).join('') + `<article class="bible-card add-new" id="st-add-card">
+    <svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;margin-bottom:8px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    새 스타일 추가
+  </article>`;
 
   grid.querySelectorAll('[data-st-id]').forEach(el => el.addEventListener('click', () => openStyleEditor(el.dataset.stId)));
   $('#st-add-card')?.addEventListener('click', () => openStyleEditor(null));
