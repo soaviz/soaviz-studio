@@ -58,8 +58,14 @@
       })(),
       sentryDsn: '',
       googleClientId: '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com',
-      // Stripe Payment Link 또는 Lemon Squeezy URL을 여기에 설정하세요.
+      // ── Stripe Payment Links (플랜별 URL 설정) ──────────────────
+      // Stripe Dashboard → Payment Links → URL 복사 후 아래에 붙여넣기
       // 예: 'https://buy.stripe.com/xxxxxxxx'
+      stripeUrls: {
+        standard: null,   // ← Standard 플랜 결제 링크
+        pro:      null,   // ← Pro 플랜 결제 링크
+      },
+      // 레거시 — 하위 호환용 (사용 안 함)
       checkoutUrl: null,
     };
   </script>
@@ -25433,7 +25439,7 @@
             <li class="dim">✗ 4K 내보내기</li>
             <li class="dim">✗ 팀 공유</li>
           </ul>
-          <button class="credits-plan-cta" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">업그레이드</button>
+          <button class="credits-plan-cta" onclick="openUpgradeCheckout('standard')">업그레이드</button>
         </div>
 
         <!-- PRO -->
@@ -25454,7 +25460,7 @@
             <li>✓ 4K 내보내기</li>
             <li class="dim">✗ 팀 공유</li>
           </ul>
-          <button class="credits-plan-cta primary" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">업그레이드</button>
+          <button class="credits-plan-cta primary" onclick="openUpgradeCheckout('pro')">업그레이드</button>
         </div>
 
         <!-- TEAM -->
@@ -25474,14 +25480,14 @@
             <li>✓ 4K 내보내기</li>
             <li>✓ 팀원 5명 공유</li>
           </ul>
-          <button class="credits-plan-cta" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">문의하기</button>
+          <button class="credits-plan-cta" onclick="openUpgradeCheckout('team')">문의하기</button>
         </div>
 
       </div>
 
       <div class="credits-notice">
-        <p>💡 현재 베타 운영 중입니다. 유료 플랜은 곧 오픈될 예정입니다.</p>
-        <p>문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
+        <p>💡 현재 오픈 베타 운영 중입니다. 유료 플랜 결제는 곧 오픈될 예정입니다.</p>
+        <p>Team 플랜 도입 문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
       </div>
 
     </section>
@@ -57465,6 +57471,61 @@ setInterval(checkR2Health, 30000);
   document.getElementById('top-pro-btn')?.addEventListener('click', () => {
     showPage('credits');
   });
+})();
+
+/* ════════════════════════════════════════════════════════════
+   P2-06: Stripe 결제 인프라
+   ──────────────────────────────────────────────────────────
+   URL 없으면 "곧 오픈" 토스트, URL 있으면 확인 모달 → Stripe 이동
+   사용법:
+     openUpgradeCheckout('standard')
+     openUpgradeCheckout('pro')
+     openUpgradeCheckout('team')   // → mailto
+   URL 설정: window.__SOAVIZ_CONFIG__.stripeUrls.standard = 'https://buy.stripe.com/...'
+   ════════════════════════════════════════════════════════════ */
+(function initStripeCheckout() {
+
+  function openUpgradeCheckout(plan) {
+    // Team → 이메일 문의
+    if (plan === 'team') {
+      window.open('mailto:ai@soaviz.com?subject=SOAVIZ%20STUDIO%20Team%20플랜%20문의', '_self');
+      return;
+    }
+
+    const cfg  = window.__SOAVIZ_CONFIG__ || {};
+    const urls = cfg.stripeUrls || {};
+    const url  = urls[plan] || cfg.checkoutUrl || null;
+
+    if (!url) {
+      showToast?.(`${plan.toUpperCase()} 플랜 결제 페이지가 곧 오픈됩니다! 🎉`, 'info');
+      return;
+    }
+
+    // 확인 모달
+    const planLabel = { standard: 'Standard ₩19,900/월', pro: 'Pro ₩49,900/월' }[plan] || plan;
+    const modal = document.createElement('div');
+    modal.className = 'vault-modal-backdrop';
+    modal.innerHTML = `
+      <div class="vault-modal" style="max-width:400px;text-align:center">
+        <div style="font-size:36px;margin-bottom:8px">💳</div>
+        <h3 style="margin-bottom:6px">${planLabel} 업그레이드</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px">
+          Stripe 결제 페이지로 이동합니다.<br>안전한 결제 환경에서 진행됩니다.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="vault-btn" id="_stripe-cancel">취소</button>
+          <button class="vault-btn primary" id="_stripe-confirm">결제 페이지로 이동 →</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const close = () => { try { document.body.removeChild(modal); } catch {} };
+    modal.querySelector('#_stripe-cancel').onclick  = close;
+    modal.querySelector('#_stripe-confirm').onclick = () => { close(); window.open(url, '_blank', 'noopener'); };
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  }
+
+  window.openUpgradeCheckout = openUpgradeCheckout;
 })();
 
 /* ════════════════════════════════════════════════════════════
