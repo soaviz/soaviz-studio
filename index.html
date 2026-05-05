@@ -21650,14 +21650,6 @@
       </svg>
       Voice
     </a>
-    <a class="nav-item" data-page="voices" title="Voices · Voice Library">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
-        <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-      </svg>
-      Voices
-    </a>
     <a class="nav-item" data-page="music-studio" title="Music · AI Music">
       <svg class="icon" viewBox="0 0 24 24">
         <path d="M9 18V5l12-2v13"/>
@@ -21763,6 +21755,12 @@
       <div class="page-head">
         <h1>오디오 에셋 라이브러리</h1>
         <p>① 파일 업로드 &nbsp;→&nbsp; ② 에셋으로 저장 &nbsp;→&nbsp; ③ 영상 제작·TTS에 <strong>바로 연결</strong></p>
+      </div>
+
+      <!-- ─ 탭 스트립 (오디오 에셋 ↔ Voice Isolator) ─ -->
+      <div style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:22px;gap:0">
+        <button onclick="showPage('extract')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;background:var(--bg-1);color:var(--text);border:none;cursor:pointer">📁 오디오 에셋</button>
+        <button onclick="showPage('clean')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:500;background:none;color:var(--text-dim);border:none;cursor:pointer">🔇 Voice Isolator</button>
       </div>
 
       <!-- STATE A: DROP -->
@@ -22050,6 +22048,12 @@
         <h1>보이스 라이브러리</h1>
         <p>① 보이스 탐색·시청 &nbsp;→&nbsp; ② 페르소나에 지정 &nbsp;→&nbsp; ③ TTS 스튜디오에서 <strong>바로 사용</strong></p>
         </div>
+      </div>
+
+      <!-- ─ 탭 스트립 (Voices Library ↔ TTS Studio) ─ -->
+      <div style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:22px;gap:0">
+        <button onclick="showPage('studio')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:500;background:none;color:var(--text-dim);border:none;cursor:pointer">🎙 TTS 스튜디오</button>
+        <button onclick="showPage('voices')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;background:var(--bg-1);color:var(--text);border:none;cursor:pointer">🗣 보이스 라이브러리</button>
       </div>
 
       <div class="voices-layout">
@@ -22489,6 +22493,12 @@
       <div class="page-head">
         <h1>TTS 스튜디오</h1>
         <p>① 텍스트 입력 &nbsp;→&nbsp; ② 페르소나 보이스 선택 &nbsp;→&nbsp; ③ 감정·속도 조절 &nbsp;→&nbsp; ④ <strong>오디오 저장·연결</strong></p>
+      </div>
+
+      <!-- ─ 탭 스트립 (Voice Studio ↔ Voices Library) ─ -->
+      <div style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:22px;gap:0">
+        <button onclick="showPage('studio')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;background:var(--bg-1);color:var(--text);border:none;cursor:pointer">🎙 TTS 스튜디오</button>
+        <button onclick="showPage('voices')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:500;background:none;color:var(--text-dim);border:none;cursor:pointer">🗣 보이스 라이브러리</button>
       </div>
 
       <div class="persona-card">
@@ -25086,6 +25096,12 @@
         <p>① 파일 업로드 또는 URL 입력 &nbsp;→&nbsp; ② AI 노이즈·음악 제거 &nbsp;→&nbsp; ③ 깨끗한 보컬 <strong>다운로드</strong></p>
       </div>
 
+      <!-- ─ 탭 스트립 (Voice Isolator ↔ 오디오 에셋) ─ -->
+      <div style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:22px;gap:0">
+        <button onclick="showPage('extract')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:500;background:none;color:var(--text-dim);border:none;cursor:pointer">📁 오디오 에셋</button>
+        <button onclick="showPage('clean')" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;background:var(--bg-1);color:var(--text);border:none;cursor:pointer">🔇 Voice Isolator</button>
+      </div>
+
       <!-- 모드 토글 -->
       <div style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:24px;gap:0">
         <button class="clean-mode-btn active" data-cmode="file" style="padding:7px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text)">파일 업로드</button>
@@ -26107,6 +26123,12 @@ function showPage(name) {
     };
     $$('.nav-item[data-page]').forEach(n => n.classList.toggle('active', isMatch(n)));
     $$('.bn-item[data-page]').forEach(n => n.classList.toggle('active', isMatch(n)));
+    // voices/clean → 부모 nav-item 하이라이트 (사이드바에서 제거된 standalone 페이지)
+    const _tabParentNav = { voices: 'voice-studio', clean: 'transcript' };
+    if (_tabParentNav[name]) {
+      $$('.nav-item[data-page="' + _tabParentNav[name] + '"]').forEach(n => n.classList.add('active'));
+      $$('.bn-item[data-page="' + _tabParentNav[name] + '"]').forEach(n => n.classList.add('active'));
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   // 플로팅 프롬프트는 Sound Effects 페이지에서만 표시
@@ -31188,7 +31210,7 @@ const NAV_MAP = {
   'production':      { page: 'history', label: 'Production Log' },
 
   // ═══ 기존 라우트 호환 (직접 page id 호출 시) ═══
-  voices:   { page: 'voices',   label: 'Voices' },
+  voices:   { page: 'voices',   label: 'Voice' },   // 탭 흡수됨 — voice-studio 하위
   personas: { page: 'personas', label: 'Story' },
   studio:   { page: 'studio',   label: 'TTS 스튜디오' },
   extract:  { page: 'extract',  label: 'Voice, Captions & Summary' },
