@@ -24580,6 +24580,39 @@
         </div>
       </div>
 
+      <!-- ═══ Today Widget ═══ -->
+      <div id="mg-today-widget" style="background:linear-gradient(135deg,rgba(16,185,129,0.08),var(--bg-card));border:1px solid rgba(16,185,129,0.25);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🌱</span>
+            <h3 style="font-size:13px;font-weight:700;color:var(--text);margin:0">오늘의 메모리 활동</h3>
+            <span id="mg-today-date" style="font-size:11px;color:var(--text-faint)"></span>
+          </div>
+          <button onclick="showPage('today')" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">Today 전체 보기 →</button>
+        </div>
+        <!-- 오늘 수치 요약 -->
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
+          <div style="text-align:center">
+            <div id="mg-today-indexed" style="font-size:22px;font-weight:800;color:var(--text);line-height:1">—</div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:3px;letter-spacing:0.04em">오늘 인덱싱</div>
+          </div>
+          <div style="text-align:center">
+            <div id="mg-today-approved" style="font-size:22px;font-weight:800;color:var(--green);line-height:1">—</div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:3px;letter-spacing:0.04em">오늘 채택</div>
+          </div>
+          <div style="text-align:center">
+            <div id="mg-today-acts" style="font-size:22px;font-weight:800;color:var(--accent);line-height:1">—</div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:3px;letter-spacing:0.04em">활동 기록</div>
+          </div>
+          <div style="text-align:center">
+            <div id="mg-today-session" style="font-size:22px;font-weight:800;color:var(--info, #4cc9f0);line-height:1">—</div>
+            <div style="font-size:10px;color:var(--text-faint);margin-top:3px;letter-spacing:0.04em">세션 시간</div>
+          </div>
+        </div>
+        <!-- 최근 활동 피드 (최대 3개) -->
+        <div id="mg-today-feed" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+
       <!-- 액션 패널 -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px" class="mg-actions-grid">
         <div style="padding:20px 22px;background:linear-gradient(135deg,rgba(167,139,250,0.10),var(--bg-card));border:1px solid var(--accent-strong, rgba(167,139,250,0.30));border-radius:var(--r-lg)">
@@ -36158,6 +36191,77 @@ async function renderMemoryGraph() {
       txt.innerHTML = `⚪ 아직 임베딩 호출 없음 (첫 샷 생성 시 자동 시작)`;
     }
   }
+
+  // ─── Today Widget ───
+  try {
+    const todayEl = document.getElementById('mg-today-widget');
+    if (todayEl) {
+      // 날짜 표시
+      const dateEl = document.getElementById('mg-today-date');
+      if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+      }
+
+      // 오늘 인덱싱된 샷 수 (SoavizMemory index에서 오늘 createdAt 기준)
+      const todayCut = getStartOfToday().getTime();
+      const idxEntries = Object.values(SoavizMemory.getAllIndex());
+      const todayIndexed = idxEntries.filter(e => (e.createdAt || 0) >= todayCut).length;
+      const todayApprovedCount = idxEntries.filter(e => (e.createdAt || 0) >= todayCut && e.hasApproved).length;
+
+      document.getElementById('mg-today-indexed').textContent = todayIndexed;
+      document.getElementById('mg-today-approved').textContent = todayApprovedCount;
+
+      // 오늘 활동 기록 (production log)
+      const todayActs = (typeof getTodayActivities === 'function') ? getTodayActivities() : [];
+      document.getElementById('mg-today-acts').textContent = todayActs.length;
+
+      // 세션 시간: 첫 활동 ~ 마지막 활동 차이
+      const sessionEl = document.getElementById('mg-today-session');
+      if (todayActs.length >= 2) {
+        const timestamps = todayActs.map(a => new Date(a.timestamp || a.ts).getTime()).filter(Boolean).sort((a,b) => a - b);
+        const diffMs = timestamps[timestamps.length - 1] - timestamps[0];
+        const diffMin = Math.round(diffMs / 60000);
+        sessionEl.textContent = diffMin >= 60
+          ? `${Math.floor(diffMin / 60)}h ${diffMin % 60}m`
+          : `${diffMin}m`;
+      } else if (todayActs.length === 1) {
+        sessionEl.textContent = '< 1m';
+      } else {
+        sessionEl.textContent = '—';
+      }
+
+      // 최근 활동 피드 (최대 3개)
+      const feed = document.getElementById('mg-today-feed');
+      if (feed) {
+        const ACT_LABEL = {
+          prompt_created: '생성', prompt_approved: '채택', prompt_used: '사용',
+          prompt_copied: '복사', asset_saved: '저장', asset_updated: '수정',
+          prompt_finalized: '확정', prompt_variant_created: '변형',
+        };
+        const ACT_COLOR = {
+          prompt_approved: 'var(--green)', prompt_finalized: 'var(--green)',
+          prompt_created: 'var(--accent)', prompt_variant_created: 'var(--accent)',
+          asset_saved: 'var(--info, #4cc9f0)',
+        };
+        const recentFeed = todayActs.slice(0, 3);
+        if (recentFeed.length) {
+          feed.innerHTML = recentFeed.map(a => {
+            const time = new Date(a.timestamp || a.ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            const lbl = ACT_LABEL[a.activityType || a.action] || (a.activityType || a.action || '?');
+            const col = ACT_COLOR[a.activityType || a.action] || 'var(--text-faint)';
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--r-md)">
+              <span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:10px;background:${col}22;color:${col};white-space:nowrap;flex-shrink:0">${escapeHTML(lbl)}</span>
+              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text)">${escapeHTML(a.title || '(untitled)')}</span>
+              ${a.projectName ? `<span style="font-size:10px;color:var(--text-faint);flex-shrink:0">${escapeHTML(a.projectName)}</span>` : ''}
+              <span style="font-size:10px;color:var(--text-faint);flex-shrink:0">${time}</span>
+            </div>`;
+          }).join('');
+        } else {
+          feed.innerHTML = `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:8px 0">오늘 아직 기록된 활동이 없습니다</div>`;
+        }
+      }
+    }
+  } catch (e) { console.warn('[mg-today]', e); }
 
   // Force Graph 시각화 (비동기)
   try { renderMemoryGraphViz(); } catch (e) { console.warn('[mg-viz]', e); }
