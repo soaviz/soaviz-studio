@@ -12,6 +12,7 @@
   <meta name="description" content="상위 1% 크리에이터를 위한 AI 영화 제작 OS — Pipeline · Compare · Bible · Cinema. 한 줄 아이디어를 시리즈까지." />
   <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     :root {
       --bg: #08080C;
@@ -752,6 +753,59 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    /* ══════════════════════════════════════════════════════
+       Supabase 클라이언트 초기화 (anon key — 공개 안전)
+       ══════════════════════════════════════════════════════ */
+    const _SUPA_URL = 'https://yfzhvuyrdabpzowprupa.supabase.co';
+    const _SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmemh2dXlyZGFicHpvd3BydXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTk3NTcsImV4cCI6MjA5Mjg5NTc1N30.b2rFHl5axZfy4v1_onrJeMQp7c6nEyUIvOI8ScT9doM';
+    const _sb = (() => {
+      try { return supabase.createClient(_SUPA_URL, _SUPA_KEY); }
+      catch (e) { console.warn('Supabase init failed', e); return null; }
+    })();
+
+    /* Supabase OAuth 콜백 처리 — 페이지 로드 시 세션 감지 */
+    if (_sb) {
+      _sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const user = session.user;
+          const meta = user.user_metadata || {};
+          const profile = {
+            name:         meta.full_name || meta.name || (user.email || '').split('@')[0] || 'User',
+            email:        user.email || '',
+            picture:      meta.avatar_url || meta.picture || null,
+            photoUrl:     meta.avatar_url || meta.picture || null,
+            authProvider: user.app_metadata?.provider || 'google',
+            providerSub:  user.id,
+            supabaseId:   user.id,
+            plan:         'pro',   // 베타 기간: 로그인 = Pro 전체 액세스
+            createdAt:    Date.now(),
+            lastLogin:    Date.now(),
+            updatedAt:    Date.now(),
+            version:      'v3',
+          };
+          // 이미 처리됐으면 중복 실행 방지
+          if (window._sbAuthHandled) return;
+          window._sbAuthHandled = true;
+          finishAuth(profile, `✓ Google 로그인 — ${profile.name}`);
+        }
+      });
+    }
+
+    /* Supabase Google OAuth 시작 */
+    async function startSupabaseGoogleLogin() {
+      if (!_sb) { showToast?.('Supabase 초기화 오류', 'error'); return; }
+      const redirectTo = (() => {
+        const u = new URL(location.href);
+        u.hash = ''; u.search = '';
+        return u.href;   // 현재 signup 페이지로 콜백
+      })();
+      const { error } = await _sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo, queryParams: { prompt: 'select_account' } },
+      });
+      if (error) showToast?.('Google 로그인 오류: ' + error.message, 'error');
+    }
+
     /* ───────────── Helpers ───────────── */
     const PROFILE_KEY = 'soaviz.profile.v1';
     const GOOGLE_CID_KEY = 'soaviz.google.client_id';
@@ -802,7 +856,21 @@
       return u.href;
     }
     function finishAuth(profile, message) {
-      saveProfile(profile);
+      const betaProfile = {
+        ...profile,
+        betaAccess: 'app',
+        betaAccessGrantedAt: profile?.betaAccessGrantedAt || Date.now(),
+      };
+      saveProfile(betaProfile);
+      try {
+        const wasBetaFullAccess = localStorage.getItem('soaviz.beta.fullAccess.v1') === '1';
+        if (wasBetaFullAccess && localStorage.getItem('soaviz.user.plan') === 'pro') {
+          localStorage.setItem('soaviz.user.plan', 'free');
+        }
+        if (!localStorage.getItem('soaviz.user.plan')) localStorage.setItem('soaviz.user.plan', 'free');
+        localStorage.setItem('soaviz.beta.appAccess.v1', '1');
+        localStorage.removeItem('soaviz.beta.fullAccess.v1');
+      } catch {}
       try { sessionStorage.removeItem('soaviz.signup.bypass'); } catch {}
       showToast(message || '✓ 로그인 완료', 'ok');
       if (notifyParentAuthSuccess()) return;
@@ -1125,6 +1193,18 @@
       const fbLabel = $('#gsi-fb-label');
       const fbBadge = $('#gsi-fb-badge');
       const cid = getGoogleClientId();
+
+      // ── Supabase 우선: GIS 대신 Supabase OAuth 사용 ──
+      if (_sb) {
+        wrap.style.display = 'none';
+        fallback.style.display = '';
+        if (fbLabel) fbLabel.textContent = MODE === 'login' ? 'Google로 로그인' : 'Google로 계속하기';
+        if (fbBadge) { fbBadge.textContent = '활성'; fbBadge.className = 'badge ok'; }
+        fallback.onclick = (e) => { e.preventDefault(); startSupabaseGoogleLogin(); };
+        hideGsiHelper();
+        setGsiStatus('');
+        return;
+      }
 
       // ── 진단 1: file:// 프로토콜 체크 ──
       if (location.protocol === 'file:') {
