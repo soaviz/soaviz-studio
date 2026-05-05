@@ -1,8 +1,23 @@
+# soaviz studio — robots.txt
+# https://soaviz.studio
+
 User-agent: *
 Allow: /
+Allow: /app
+Allow: /signup
+Allow: /login
 Allow: /docs/
+Allow: /sitemap.xml
+
 Disallow: /api/
-Disallow: /admin/
+Disallow: /admin
+Disallow: /roadmap
 Disallow: /*.json$
+Disallow: /tmp/
+Disallow: /outputs/
+Disallow: /supabase/
+
+# 크롤링 속도 제한 (친화적)
+Crawl-delay: 2
 
 Sitemap: https://soaviz.studio/sitemap.xml
