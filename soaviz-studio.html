@@ -24357,16 +24357,26 @@
         </main>
       </div>
 
-      <!-- 동기 재생 컨트롤 바 (2개 이상 done일 때만 표시) -->
-      <div id="cmp-sync-bar" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-top:12px">
-        <span style="font-size:12px;font-weight:600;color:var(--text)">🎬 동기 재생</span>
-        <button id="cmp-sync-play" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">▶ 전체 재생</button>
-        <button id="cmp-sync-pause" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">⏸ 전체 정지</button>
-        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:5px;cursor:pointer">
-          <input type="checkbox" id="cmp-sync-toggle" checked style="accent-color:var(--accent)" />
-          seek 동기화
-        </label>
-        <span id="cmp-sync-pos" style="font-size:11px;color:var(--text-faint);margin-left:auto">00:00</span>
+      <!-- 동기 재생 컨트롤 바 (2개 이상 done일 때만 표시) — Day 8 고도화 -->
+      <div id="cmp-sync-bar" style="display:none;flex-direction:column;gap:8px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-top:12px">
+        <!-- Row 1: 버튼 + 볼륨 + 시간 -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">🎬 동기 재생</span>
+          <button id="cmp-sync-play" style="padding:4px 13px;border-radius:var(--r-pill);background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">▶ 재생</button>
+          <button id="cmp-sync-pause" style="padding:4px 13px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">⏸ 정지</button>
+          <button id="cmp-sync-loop" title="반복 재생" style="padding:4px 10px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">↩ 반복</button>
+          <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" id="cmp-sync-toggle" checked style="accent-color:var(--accent)" />
+            seek 동기
+          </label>
+          <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:5px;margin-left:auto">
+            🔊 <input type="range" id="cmp-sync-vol" min="0" max="1" step="0.02" value="1" style="width:66px;accent-color:var(--accent);cursor:pointer" title="마스터 볼륨">
+          </label>
+          <span id="cmp-sync-pos" style="font-size:11px;color:var(--text-faint);font-variant-numeric:tabular-nums;min-width:84px;text-align:right">00:00 / 00:00</span>
+        </div>
+        <!-- Row 2: 타임라인 스크러버 -->
+        <input type="range" id="cmp-sync-scrub" min="0" max="100" value="0" step="0.1"
+               style="width:100%;accent-color:var(--accent);cursor:pointer;height:4px" title="타임라인">
       </div>
 
       <!-- 과거 세션 목록 -->
@@ -52875,6 +52885,7 @@ async function renderCompareSession() {
     }, 1000);
   } else {
     clearInterval(window._cmpElapsedTimer);
+    clearInterval(window._syncDriftTimer); // drift 보정 타이머 정리
   }
 }
 
@@ -52882,46 +52893,122 @@ function bindCompareSync() {
   const syncBar = $('#cmp-sync-bar');
   const videos = [...(document.querySelectorAll('#cmp-results video[data-sync]') || [])];
   if (videos.length < 2) { if (syncBar) syncBar.style.display = 'none'; return; }
-  if (syncBar) syncBar.style.display = 'flex';
+  if (syncBar) { syncBar.style.display = 'flex'; syncBar.style.flexDirection = 'column'; }
 
   let _syncing = false;
+  let _looping = false;
+  let _scrubbing = false;
+
+  /* ── 포맷 헬퍼 ── */
+  const fmt = s => {
+    const t = isNaN(s) ? 0 : Math.max(0, s);
+    return `${Math.floor(t / 60).toString().padStart(2, '0')}:${Math.floor(t % 60).toString().padStart(2, '0')}`;
+  };
+
+  /* ── UI 갱신 ── */
+  const updateSyncUI = (v) => {
+    if (_scrubbing) return;
+    const pos    = $('#cmp-sync-pos');
+    const scrub  = $('#cmp-sync-scrub');
+    const dur    = v.duration || 0;
+    const cur    = v.currentTime || 0;
+    if (pos)   pos.textContent = `${fmt(cur)} / ${fmt(dur)}`;
+    if (scrub && dur > 0) scrub.value = ((cur / dur) * 100).toFixed(2);
+  };
+
+  /* ── play/pause/seek 동기 ── */
   const doSync = (src, event) => {
     if (_syncing) return;
     _syncing = true;
-    const seekSync = $('#cmp-sync-toggle')?.checked !== false;
+    const seekOn = $('#cmp-sync-toggle')?.checked !== false;
     videos.forEach(v => {
       if (v === src) return;
-      if (event === 'play') v.play().catch(() => {});
-      else if (event === 'pause') v.pause();
-      else if (event === 'seeked' && seekSync) v.currentTime = src.currentTime;
+      if (event === 'play')              v.play().catch(() => {});
+      else if (event === 'pause')        v.pause();
+      else if (event === 'seeked' && seekOn) v.currentTime = src.currentTime;
     });
     _syncing = false;
   };
+
+  /* ── 이벤트 리스너 — 누적 방지: 키 이름으로 remove 후 add ── */
   videos.forEach(v => {
-    v.removeEventListener('play',   v._syncPlay   || (() => {}));
-    v.removeEventListener('pause',  v._syncPause  || (() => {}));
-    v.removeEventListener('seeked', v._syncSeeked || (() => {}));
-    v._syncPlay   = () => { doSync(v, 'play');   updateSyncPos(v); };
-    v._syncPause  = () => { doSync(v, 'pause');  updateSyncPos(v); };
-    v._syncSeeked = () => { doSync(v, 'seeked'); updateSyncPos(v); };
-    v.addEventListener('play',   v._syncPlay);
-    v.addEventListener('pause',  v._syncPause);
-    v.addEventListener('seeked', v._syncSeeked);
-    v.addEventListener('timeupdate', () => updateSyncPos(v));
+    ['play','pause','seeked','timeupdate','ended'].forEach(ev => {
+      if (v[`_sync_${ev}`]) { v.removeEventListener(ev, v[`_sync_${ev}`]); delete v[`_sync_${ev}`]; }
+    });
+    v._sync_play       = () => { doSync(v, 'play');   updateSyncUI(v); };
+    v._sync_pause      = () => { doSync(v, 'pause');  updateSyncUI(v); };
+    v._sync_seeked     = () => { doSync(v, 'seeked'); updateSyncUI(v); };
+    v._sync_timeupdate = () => updateSyncUI(v);
+    v._sync_ended      = () => {
+      if (_looping) {
+        _syncing = true;
+        videos.forEach(x => { x.currentTime = 0; x.play().catch(() => {}); });
+        _syncing = false;
+      }
+    };
+    v.addEventListener('play',       v._sync_play);
+    v.addEventListener('pause',      v._sync_pause);
+    v.addEventListener('seeked',     v._sync_seeked);
+    v.addEventListener('timeupdate', v._sync_timeupdate);
+    v.addEventListener('ended',      v._sync_ended);
   });
 
-  const updateSyncPos = (v) => {
-    const pos = $('#cmp-sync-pos');
-    if (!pos) return;
-    const t = v.currentTime || 0;
-    const m = Math.floor(t / 60).toString().padStart(2, '0');
-    const s2 = Math.floor(t % 60).toString().padStart(2, '0');
-    pos.textContent = `${m}:${s2}`;
+  /* ── Drift 자동 보정 (2초마다 마스터와 0.5s 이상 벌어지면 snap) ── */
+  clearInterval(window._syncDriftTimer);
+  window._syncDriftTimer = setInterval(() => {
+    if (_syncing) return;
+    const master = videos.find(v => !v.paused && !v.ended);
+    if (!master) return;
+    _syncing = true;
+    videos.forEach(v => {
+      if (v === master) return;
+      if (Math.abs(v.currentTime - master.currentTime) > 0.5) v.currentTime = master.currentTime;
+    });
+    _syncing = false;
+  }, 2000);
+
+  /* ── 버튼 바인딩 — onclick 으로 누적 방지 ── */
+  const playBtn  = $('#cmp-sync-play');
+  const pauseBtn = $('#cmp-sync-pause');
+  const loopBtn  = $('#cmp-sync-loop');
+  const volSldr  = $('#cmp-sync-vol');
+  const scrub    = $('#cmp-sync-scrub');
+
+  if (playBtn)  playBtn.onclick  = () => videos.forEach(v => v.play().catch(() => {}));
+  if (pauseBtn) pauseBtn.onclick = () => videos.forEach(v => v.pause());
+
+  if (loopBtn) loopBtn.onclick = () => {
+    _looping = !_looping;
+    loopBtn.style.background   = _looping ? 'var(--accent)' : 'var(--bg-1)';
+    loopBtn.style.color        = _looping ? '#fff'           : 'var(--text)';
+    loopBtn.style.borderColor  = _looping ? 'var(--accent)'  : 'var(--border)';
+    loopBtn.title = _looping ? '반복 ON' : '반복 재생';
   };
 
-  // 전체 재생/정지 버튼
-  $('#cmp-sync-play')?.addEventListener('click', () => videos.forEach(v => v.play().catch(() => {})));
-  $('#cmp-sync-pause')?.addEventListener('click', () => videos.forEach(v => v.pause()));
+  if (volSldr) volSldr.oninput = () => {
+    const vol = parseFloat(volSldr.value);
+    videos.forEach(v => { v.volume = vol; });
+  };
+
+  /* ── 스크러버 ── */
+  if (scrub) {
+    const seekTo = (pct) => {
+      const target = videos.find(v => v.duration > 0) || videos[0];
+      if (!target || !target.duration) return;
+      const t = (pct / 100) * target.duration;
+      _syncing = true;
+      videos.forEach(v => { if (v.duration > 0) v.currentTime = t; });
+      _syncing = false;
+      updateSyncUI(target);
+    };
+    scrub.addEventListener('mousedown', () => {
+      _scrubbing = true;
+      videos.forEach(v => v.pause());
+    });
+    scrub.addEventListener('input', () => { if (_scrubbing) seekTo(parseFloat(scrub.value)); });
+    scrub.addEventListener('mouseup',  () => { _scrubbing = false; seekTo(parseFloat(scrub.value)); });
+    scrub.addEventListener('touchend', () => { _scrubbing = false; seekTo(parseFloat(scrub.value)); });
+  }
 }
 
 function bindComparePage() {
@@ -52951,6 +53038,7 @@ function bindComparePage() {
     _CMP_STATE.sessionId = null;
     $('#cmp-sync-bar').style.display = 'none';
     clearInterval(window._cmpElapsedTimer);
+    clearInterval(window._syncDriftTimer);
     renderCompareSession();
   });
   $('#cmp-run-btn')?.addEventListener('click', async () => {
