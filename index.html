@@ -21631,7 +21631,7 @@
       </svg>
       Generate
     </a>
-    <a class="nav-item" data-page="video-editor" title="Edit · Video Editor">
+    <a class="nav-item" data-page="video-editor" title="Editor · Project Workspace">
       <svg class="icon" viewBox="0 0 24 24">
         <path d="M4 6h16"/>
         <path d="M4 18h16"/>
@@ -57064,6 +57064,16 @@ window.svErrorBoundary = function (renderFn, containerId) {
       }
       if (event.target.closest('[data-aive-export]')) {
         handleExportRender();
+        return;
+      }
+      // ProjectProgressPanel "다음 단계" 버튼
+      if (event.target.closest('[data-aive-next]')) {
+        // 현재 단계(AI 편집)에서 다음 단계(결과 확인)로 → export 흐름 트리거
+        if (typeof handleExportRender === 'function') {
+          handleExportRender();
+        } else {
+          showToast?.('현재 편집을 완료하고 결과를 확인하세요.', 'info');
+        }
         return;
       }
     });
