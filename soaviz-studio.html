@@ -54023,9 +54023,34 @@ if ('MutationObserver' in window) {
   window.SoavizOnboarding = { shouldShow, show, markDone, isDone };
 
   // 페이지 로드 후 1.5초 대기 (DB 준비 + 첫 화면 안정화) → 신규 사용자라면 노출
+  // Landing 페이지가 활성 상태이면 억제 (Landing 자체에 CTA 있어서 이중 노출 불필요)
   setTimeout(async () => {
+    const activePage = document.querySelector('.page.active, .page[style*="display:flex"], .page[style*="display: flex"]');
+    const activeId = activePage?.id || '';
+    if (activeId === 'page-landing') return;   // Landing → 억제
     if (await shouldShow()) show();
   }, 1500);
+
+  // Landing → 앱 첫 진입 시 온보딩 표시 (showPage 후킹)
+  // Landing에서 다른 페이지로 처음 이동할 때 딱 한 번만 실행
+  (function hookFirstAppEntry() {
+    const _origShowPage = window.showPage;
+    if (typeof _origShowPage !== 'function') return;
+    let _hooked = false;
+    window.showPage = function(name, ...args) {
+      const result = _origShowPage.call(this, name, ...args);
+      if (!_hooked && name !== 'landing') {
+        _hooked = true;
+        // 첫 앱 진입 → 신규 사용자면 온보딩 노출 (300ms 대기로 페이지 전환 완료 후)
+        setTimeout(async () => {
+          if (await window.SoavizOnboarding?.shouldShow?.()) {
+            window.SoavizOnboarding.show();
+          }
+        }, 300);
+      }
+      return result;
+    };
+  })();
 })();
 
 /* ── Production Health에 Pipeline 완성도 가산 ─────────── */
