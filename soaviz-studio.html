@@ -23467,7 +23467,7 @@
             </p>
             <div class="landing-actions">
               <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
-              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="샘플로 체험하기" onclick="startLandingSample()">샘플로 체험하기</button>
+              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="Pipeline 살펴보기" onclick="startLandingSample()">Pipeline 살펴보기</button>
             </div>
             <p class="landing-note">얼리 액세스 · 완전 무료 · 설치 없음</p>
           </div>
@@ -31284,19 +31284,14 @@ function openLandingVideoOnboarding(options = {}) {
   requestAnimationFrame(trigger);
 }
 function startLandingOnboarding() {
+  // A안(Pro 단독): Landing → Personas(Story)로 직접 진입
   try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
-  openLandingVideoOnboarding({ sample: false });
+  if (typeof showPage === 'function') showPage('personas');
 }
 function startLandingSample() {
-  try { localStorage.setItem('soaviz_sample_started_from_landing', 'true'); } catch (_) {}
-  openLandingVideoOnboarding({ sample: true });
-  setTimeout(() => {
-    const sampleButton =
-      document.querySelector('[data-track-label="샘플로 시작"]') ||
-      document.querySelector('[data-track-label="샘플로 바로 체험"]') ||
-      document.querySelector('[data-onboarding-sample]');
-    sampleButton?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 300);
+  // A안(Pro 단독): 샘플 버튼도 Pipeline으로 안내
+  try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
+  if (typeof showPage === 'function') showPage('pipeline');
 }
 window.startLandingOnboarding = startLandingOnboarding;
 window.startLandingSample = startLandingSample;
@@ -31305,7 +31300,12 @@ document.addEventListener('click', (event) => {
   if (!action) return;
   event.preventDefault();
   if (action.hasAttribute('onclick')) return;
-  openLandingVideoOnboarding({ sample: action.dataset.landingAction === 'sample' });
+  // A안(Pro 단독): sample → pipeline, 나머지 → personas
+  if (action.dataset.landingAction === 'sample') {
+    if (typeof showPage === 'function') showPage('pipeline');
+  } else {
+    if (typeof showPage === 'function') showPage('personas');
+  }
 });
 $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
   n.addEventListener('click', e => {
