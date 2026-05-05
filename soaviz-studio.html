@@ -21366,6 +21366,50 @@
     .page-head h1 { font-size: 22px !important; }
     .btn-generate  { height: 44px !important; font-size: 13.5px !important; }
   }
+
+  /* ── Day 5B · Script Editor ─────────────────────────────────────── */
+  .script-editor-wrap { display:grid; grid-template-columns:200px 1fr; gap:0; border:1px solid var(--border); border-radius:var(--r-xl); overflow:hidden; min-height:600px; }
+  .script-nav { background:var(--bg-card); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+  .script-nav-head { padding:14px 14px 10px; border-bottom:1px solid var(--border); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); font-weight:700; flex-shrink:0; }
+  .script-nav-ep { padding:8px 10px 3px; font-size:10px; font-weight:700; color:var(--accent); letter-spacing:.05em; text-transform:uppercase; }
+  .script-nav-item { padding:6px 14px; font-size:12px; color:var(--text-dim); cursor:pointer; border-left:3px solid transparent; transition:background .1s,color .1s; display:flex; align-items:center; gap:7px; line-height:1.35; }
+  .script-nav-item:hover { background:var(--bg-elev); color:var(--text); }
+  .script-nav-item.active { border-left-color:var(--accent); color:var(--accent); background:var(--accent-soft); font-weight:600; }
+  .script-nav-num { font-weight:700; min-width:26px; font-size:11px; }
+  .script-nav-shots { margin-left:auto; padding:2px 6px; background:var(--bg-elev); border-radius:999px; font-size:10px; color:var(--text-faint); white-space:nowrap; }
+  .script-body { background:var(--bg-1); overflow-y:auto; padding:28px 36px; display:flex; flex-direction:column; gap:32px; }
+  .script-scene-block { display:flex; flex-direction:column; gap:10px; scroll-margin-top:20px; }
+  .script-scene-heading-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .script-scene-num { font-size:10px; font-weight:800; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; min-width:36px; }
+  .script-scene-heading { flex:1; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text); padding:4px 0; outline:none; min-width:160px; }
+  .script-scene-heading:focus { border-bottom-color:var(--accent); }
+  .script-scene-heading::placeholder { color:var(--text-faint); font-weight:400; text-transform:none; }
+  .script-shot-badge { padding:3px 9px; background:var(--bg-card); border:1px solid var(--border); border-radius:999px; font-size:11px; color:var(--text-faint); white-space:nowrap; }
+  .script-beat-line { font-size:11px; color:var(--accent); font-style:italic; padding:0 0 0 48px; opacity:.75; }
+  .script-content-area { font-family:'Courier New',Courier,monospace; font-size:13px; line-height:1.85; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 20px; color:var(--text); resize:none; outline:none; width:100%; box-sizing:border-box; min-height:100px; transition:border-color .15s; overflow:hidden; }
+  .script-content-area:focus { border-color:var(--accent); }
+  .script-content-area::placeholder { color:var(--text-faint); font-family:inherit; }
+  .script-scene-foot { display:flex; align-items:center; gap:8px; padding:0 0 0 2px; }
+  .script-add-shot-btn { padding:5px 12px; font-size:11px; background:transparent; border:1px dashed var(--border-strong); border-radius:var(--r-md); color:var(--accent); cursor:pointer; transition:background .15s; }
+  .script-add-shot-btn:hover { background:var(--accent-soft); }
+  .script-save-indicator { font-size:11px; color:var(--text-faint); margin-left:auto; opacity:0; transition:opacity .3s; }
+  .script-save-indicator.visible { opacity:1; }
+  .script-empty { padding:80px 20px; text-align:center; color:var(--text-faint); font-size:13px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  /* Shot workspace CTA 버튼 (5A) */
+  .pl-shot-cta-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .pl-shot-cta { flex:1; min-width:82px; padding:9px 10px; border-radius:var(--r-md); font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px; transition:opacity .15s,transform .1s; border:1px solid transparent; }
+  .pl-shot-cta:active { transform:scale(.97); }
+  .pl-shot-cta.cta-image { background:rgba(139,92,246,.15); border-color:rgba(139,92,246,.35); color:#a78bfa; }
+  .pl-shot-cta.cta-video { background:rgba(236,72,153,.12); border-color:rgba(236,72,153,.30); color:#f472b6; }
+  .pl-shot-cta.cta-voice { background:rgba(34,197,94,.10);  border-color:rgba(34,197,94,.28);  color:#4ade80; }
+  .pl-shot-cta.cta-image:hover { background:rgba(139,92,246,.25); }
+  .pl-shot-cta.cta-video:hover { background:rgba(236,72,153,.22); }
+  .pl-shot-cta.cta-voice:hover { background:rgba(34,197,94,.20); }
+  @media (max-width:768px) {
+    .script-editor-wrap { grid-template-columns:1fr; }
+    .script-nav { display:none; }
+    .script-body { padding:16px 14px; }
+  }
   </style>
 </head>
 <body>
@@ -23800,6 +23844,10 @@
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
           워크플로우
         </button>
+        <button class="pipeline-tab" data-pltab="script" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          스크립트
+        </button>
       </div>
 
       <!-- ── 탭 1: 샷리스트 생성기 ── -->
@@ -24103,6 +24151,38 @@
           <div style="padding:60px 20px;text-align:center;color:var(--text-faint);font-size:13px">워크플로우 불러오는 중…</div>
         </div>
       </div><!-- /탭2 -->
+
+      <!-- ── 탭 4: 스크립트 에디터 ── -->
+      <div id="pl-tab-script" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h2 style="margin:0 0 4px;font-family:var(--font-display);font-size:20px;font-weight:700">스크립트 에디터</h2>
+            <p style="margin:0;font-size:13px;color:var(--text-faint)">씬별 대본을 작성하세요. 자동 저장 · <kbd style="padding:2px 5px;background:var(--bg-elev);border:1px solid var(--border);border-radius:4px;font-size:10px">Ctrl+↑↓</kbd>로 씬 이동</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="script-save-status" style="font-size:11px;color:var(--text-faint)"></span>
+            <button id="script-add-scene-btn" class="vault-btn" style="padding:7px 14px;font-size:12px;display:inline-flex;gap:6px;align-items:center">
+              <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              씬 추가
+            </button>
+          </div>
+        </div>
+        <div class="script-editor-wrap">
+          <nav class="script-nav" id="script-nav-panel">
+            <div class="script-nav-head">씬 목차</div>
+            <div id="script-nav-list" style="padding:6px 0">
+              <div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">프로젝트를 먼저 선택하세요</div>
+            </div>
+          </nav>
+          <div class="script-body" id="script-body-panel">
+            <div class="script-empty" id="script-empty-state">
+              <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:var(--accent);fill:none;stroke-width:1.5;opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div>파이프라인에서 프로젝트를 선택하면<br>씬 목록이 여기에 표시됩니다.</div>
+              <button onclick="switchPipelineTab('board')" style="padding:8px 18px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer">Pipeline Board에서 씬 만들기 →</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /탭4 스크립트 -->
 
       <!-- ── 탭 3: Pipeline Board ── -->
       <div id="pl-tab-board" style="display:none">
@@ -43490,7 +43570,7 @@ defaultDuration은 분 단위. autoStart는 이전 단계 끝나면 자동 시�
 
 /* ── Pipeline 탭 전환 ───────────────────────────────────── */
 function switchPipelineTab(tab) {
-  const tabs = ['shotlist', 'board', 'workflow'];
+  const tabs = ['shotlist', 'board', 'workflow', 'script'];
   tabs.forEach(t => {
     const panel = $(`#pl-tab-${t}`);
     const btn   = document.querySelector(`.pipeline-tab[data-pltab="${t}"]`);
@@ -43509,6 +43589,9 @@ function switchPipelineTab(tab) {
   }
   if (tab === 'board') {
     renderPipelinePage?.();
+  }
+  if (tab === 'script') {
+    renderPipelineScript?.();
   }
 }
 
@@ -45954,15 +46037,58 @@ async function renderPipelineDetail() {
           </div>
         `;
       })()}
+      <div class="pl-section" style="padding-top:4px">
+        <h4 style="margin-bottom:6px">에셋 생성</h4>
+        <div class="pl-shot-cta-row">
+          <button class="pl-shot-cta cta-image" id="pl-sh-cta-image">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            이미지 생성
+          </button>
+          <button class="pl-shot-cta cta-video" id="pl-sh-cta-video">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            영상 생성
+          </button>
+          <button class="pl-shot-cta cta-voice" id="pl-sh-cta-voice">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            보이스
+          </button>
+        </div>
+      </div>
       <div class="pl-actions">
         <button class="pl-btn primary" id="pl-sh-save">저장</button>
-        <button class="pl-btn" id="pl-sh-generate" title="이 샷의 프롬프트로 생성 (M3에서 활성화)">⚡ Generate (Compare는 M3)</button>
-        <button class="pl-btn" id="pl-sh-logbook" title="감독의 회고 페이지 — 결정·생성·메모를 시간순으로">📖 Open as Logbook</button>
+        <button class="pl-btn" id="pl-sh-logbook" title="감독의 회고 페이지 — 결정·생성·메모를 시간순으로">📖 Logbook</button>
         <button class="pl-btn danger" id="pl-sh-delete">삭제</button>
       </div>
     `;
     $('#pl-sh-logbook')?.addEventListener('click', () => {
       try { openShotLogbook(sh.id); } catch (e) { console.warn(e); }
+    });
+    // ── Shot CTA 버튼 (5A) ──
+    async function _shotCTAPrefill(mode) {
+      const desc = $('#pl-sh-desc')?.value || sh.description || '';
+      if (!desc.trim()) { showToast?.('먼저 샷 설명을 입력하세요', 'warn'); return false; }
+      let resolved = desc;
+      try { resolved = await resolvePromptForShot(sh.id, desc); } catch (_) {}
+      const _cmp = _tdzGet(() => _CMP_STATE);
+      if (_cmp) _cmp.prefill = { prompt: resolved, shotId: sh.id, duration: sh.durationSec || 5, mode };
+      return true;
+    }
+    $('#pl-sh-cta-image')?.addEventListener('click', async () => {
+      if (await _shotCTAPrefill('image')) showPage('compare');
+    });
+    $('#pl-sh-cta-video')?.addEventListener('click', async () => {
+      if (await _shotCTAPrefill('video')) { showPage('sync'); }
+    });
+    $('#pl-sh-cta-voice')?.addEventListener('click', () => {
+      const dialogue = $('#pl-sh-dialogue')?.value || sh.dialogue || '';
+      try {
+        if (dialogue.trim()) {
+          const el = document.getElementById('tts-text');
+          if (el) { el.value = dialogue.trim(); el.dispatchEvent(new Event('input')); }
+        }
+      } catch (_) {}
+      showPage('studio');
+      if (dialogue.trim()) showToast?.('대사를 TTS 스튜디오에 붙여넣었습니다.');
     });
     $('#pl-cand-add')?.addEventListener('click', () => openShotCandidateModal(sh));
     $('#pl-cand-compare')?.addEventListener('click', async () => {
@@ -46369,6 +46495,224 @@ async function renderPipelineDetail() {
     });
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Day 5B · Script Editor — 씬별 screenplay editor
+   renderPipelineScript() → called by switchPipelineTab('script')
+   ══════════════════════════════════════════════════════════════ */
+let _scriptSaveTimer = null;
+let _scriptActiveSceneId = null;
+
+async function renderPipelineScript() {
+  const navList  = $('#script-nav-list');
+  const bodyPanel = $('#script-body-panel');
+  if (!navList || !bodyPanel) return;
+
+  const db = SoavizDB?.db;
+  const projectId = SoavizPipeline?.state?.projectId;
+
+  if (!db || !projectId) {
+    navList.innerHTML  = '<div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">프로젝트를 먼저 선택하세요</div>';
+    bodyPanel.innerHTML = `<div class="script-empty" id="script-empty-state">
+      <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:var(--accent);fill:none;stroke-width:1.5;opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div>Pipeline Board에서 프로젝트를 선택하면<br>씬 목록이 여기에 표시됩니다.</div>
+      <button onclick="switchPipelineTab('board')" style="padding:8px 18px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer">Pipeline Board →</button>
+    </div>`;
+    return;
+  }
+
+  // 프로젝트 정보
+  const proj = await db.projects.get(projectId).catch(() => null);
+
+  // Episode → Scene → Shot 수집
+  const episodes = await SoavizPipeline.listEpisodes(projectId);
+  const allScenes = [];
+  for (const ep of episodes) {
+    const scenes = await SoavizPipeline.listScenes(ep.id);
+    for (const sc of scenes) {
+      const shots = await SoavizPipeline.listShots(sc.id);
+      allScenes.push({ ep, sc, shotCount: shots.length });
+    }
+  }
+
+  if (allScenes.length === 0) {
+    navList.innerHTML = '<div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">씬이 없습니다. Pipeline Board에서 씬을 추가하세요.</div>';
+    bodyPanel.innerHTML = `<div class="script-empty">
+      <svg viewBox="0 0 24 24" style="width:36px;height:36px;stroke:var(--text-faint);fill:none;stroke-width:1.5;opacity:.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="color:var(--text-faint)">씬이 없습니다.<br>Pipeline Board에서 Episode → Scene을 먼저 생성하세요.</div>
+    </div>`;
+    return;
+  }
+
+  // ── Nav 렌더 ──
+  let navHTML = '';
+  let lastEpId = null;
+  allScenes.forEach(({ ep, sc, shotCount }) => {
+    if (ep.id !== lastEpId) {
+      navHTML += `<div class="script-nav-ep">E${String(ep.number).padStart(2,'0')} · ${escapeHTML(ep.title || '에피소드')}</div>`;
+      lastEpId = ep.id;
+    }
+    navHTML += `<div class="script-nav-item" data-script-nav="${escapeHTML(sc.id)}">
+      <span class="script-nav-num">S${String(sc.number).padStart(2,'0')}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${escapeHTML(sc.heading || '(제목 없음)')}</span>
+      <span class="script-nav-shots">${shotCount}샷</span>
+    </div>`;
+  });
+  navList.innerHTML = navHTML;
+
+  // ── Body 렌더 ──
+  let bodyHTML = '';
+  let lastBodyEpId = null;
+  allScenes.forEach(({ ep, sc, shotCount }) => {
+    if (ep.id !== lastBodyEpId) {
+      bodyHTML += `<div style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;padding:0 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        E${String(ep.number).padStart(2,'0')} · ${escapeHTML(ep.title || '에피소드')}
+      </div>`;
+      lastBodyEpId = ep.id;
+    }
+    const scNum = `S${String(sc.number).padStart(2,'0')}`;
+    bodyHTML += `
+    <div class="script-scene-block" id="script-block-${escapeHTML(sc.id)}" data-scene-id="${escapeHTML(sc.id)}">
+      <div class="script-scene-heading-row">
+        <span class="script-scene-num">${scNum}</span>
+        <input class="script-scene-heading" data-sh-heading="${escapeHTML(sc.id)}"
+          value="${escapeHTML(sc.heading || '')}"
+          placeholder="INT. 장소 — 시간대"
+          title="씬 헤딩 (INT./EXT. 형식 권장)"
+        />
+        <span class="script-shot-badge">${shotCount}샷</span>
+      </div>
+      ${sc.beat ? `<div class="script-beat-line">BEAT: ${escapeHTML(sc.beat)}</div>` : ''}
+      <textarea class="script-content-area" data-sh-content="${escapeHTML(sc.id)}"
+        placeholder="액션 라인, 대사, 연출 메모를 자유롭게 작성하세요.\n\n예:\n이루나가 복도를 천천히 걷는다. 형광등이 깜빡인다.\n\n이루나\n(낮게) 여기가... 맞나?"
+        rows="5"
+      >${escapeHTML(sc.scriptContent || '')}</textarea>
+      <div class="script-scene-foot">
+        <button class="script-add-shot-btn" data-scene-gen-shots="${escapeHTML(sc.id)}" title="이 씬의 내용으로 AI 샷리스트 생성">
+          ⚡ 이 씬 샷리스트 생성
+        </button>
+        <span class="script-save-indicator" id="script-si-${escapeHTML(sc.id)}">저장됨 ✓</span>
+      </div>
+    </div>`;
+  });
+  bodyPanel.innerHTML = bodyHTML;
+
+  // ── 첫 씬 활성화 ──
+  const firstId = allScenes[0]?.sc.id;
+  if (firstId) _scriptSetActive(firstId);
+
+  // ── 이벤트: 헤딩 편집 ──
+  bodyPanel.querySelectorAll('[data-sh-heading]').forEach(inp => {
+    const scId = inp.dataset.shHeading;
+    inp.addEventListener('input', () => {
+      // 실시간 uppercase 힌트 (옵션)
+    });
+    inp.addEventListener('blur', () => _scriptSaveHeading(scId, inp.value));
+    inp.addEventListener('focus', () => _scriptSetActive(scId));
+  });
+
+  // ── 이벤트: 내용 편집 + 자동 높이 ──
+  bodyPanel.querySelectorAll('[data-sh-content]').forEach(ta => {
+    const scId = ta.dataset.shContent;
+    _scriptAutoResize(ta);
+    ta.addEventListener('input', () => {
+      _scriptAutoResize(ta);
+      _scriptSetActive(scId);
+      clearTimeout(_scriptSaveTimer);
+      _scriptSaveTimer = setTimeout(() => _scriptSaveContent(scId, ta.value), 800);
+    });
+    ta.addEventListener('focus', () => _scriptSetActive(scId));
+    ta.addEventListener('keydown', (e) => _scriptHandleKey(e, scId, allScenes));
+  });
+
+  // ── 이벤트: Nav 클릭 ──
+  navList.querySelectorAll('[data-script-nav]').forEach(item => {
+    item.addEventListener('click', () => {
+      const scId = item.dataset.scriptNav;
+      _scriptSetActive(scId);
+      const block = bodyPanel.querySelector(`#script-block-${scId}`);
+      block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ── 이벤트: 씬 샷리스트 생성 버튼 ──
+  bodyPanel.querySelectorAll('[data-scene-gen-shots]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const scId = btn.dataset.sceneGenShots;
+      const sc = allScenes.find(x => x.sc.id === scId)?.sc;
+      if (!sc) return;
+      const content = bodyPanel.querySelector(`[data-sh-content="${scId}"]`)?.value || '';
+      const synopsis = (content || sc.heading || '').slice(0, 500);
+      const synEl = $('#pl-sl-synopsis');
+      if (synEl) { synEl.value = synopsis; synEl.dispatchEvent(new Event('input')); }
+      switchPipelineTab('shotlist');
+      showToast?.(`씬 "${sc.heading}" 내용을 샷리스트 생성기에 붙여넣었습니다.`);
+    });
+  });
+
+  // ── "씬 추가" 버튼 ──
+  $('#script-add-scene-btn')?.addEventListener('click', async () => {
+    const ep = episodes[0];
+    if (!ep) { showToast?.('먼저 에피소드를 추가하세요', 'warn'); return; }
+    const scenes = await SoavizPipeline.listScenes(ep.id);
+    const newSc = await SoavizPipeline.createScene(ep.id, {
+      heading: `INT. 새 씬 — 낮`,
+      number: scenes.length + 1,
+    });
+    showToast?.('✓ 씬 추가됨');
+    await renderPipelineScript();
+    const block = bodyPanel.querySelector(`#script-block-${newSc.id}`);
+    block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    block?.querySelector('[data-sh-heading]')?.focus();
+  });
+}
+
+function _scriptAutoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
+
+function _scriptSetActive(scId) {
+  _scriptActiveSceneId = scId;
+  document.querySelectorAll('.script-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.scriptNav === scId);
+  });
+}
+
+async function _scriptSaveContent(scId, value) {
+  try {
+    await SoavizDB.db.scenes.update(scId, { scriptContent: value, updatedAt: Date.now() });
+    const si = $(`#script-si-${scId}`);
+    if (si) { si.classList.add('visible'); setTimeout(() => si.classList.remove('visible'), 2000); }
+    const statusEl = $('#script-save-status');
+    if (statusEl) { statusEl.textContent = '저장됨 ✓'; setTimeout(() => { statusEl.textContent = ''; }, 2500); }
+  } catch (err) { console.warn('[Script] save error', err); }
+}
+
+async function _scriptSaveHeading(scId, value) {
+  try {
+    await SoavizPipeline.updateScene(scId, { heading: value });
+    // nav item 텍스트도 동기화
+    const navItem = document.querySelector(`[data-script-nav="${scId}"] span:nth-child(2)`);
+    if (navItem) navItem.textContent = value || '(제목 없음)';
+  } catch (err) { console.warn('[Script] heading save error', err); }
+}
+
+function _scriptHandleKey(e, scId, allScenes) {
+  if (!e.ctrlKey) return;
+  const idx = allScenes.findIndex(x => x.sc.id === scId);
+  let target = null;
+  if (e.key === 'ArrowUp' && idx > 0) target = allScenes[idx - 1].sc.id;
+  if (e.key === 'ArrowDown' && idx < allScenes.length - 1) target = allScenes[idx + 1].sc.id;
+  if (!target) return;
+  e.preventDefault();
+  _scriptSetActive(target);
+  const block = document.querySelector(`#script-block-${target}`);
+  block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => block?.querySelector('[data-sh-content]')?.focus(), 150);
+}
+
+window.renderPipelineScript = renderPipelineScript;
 
 function bindPipelinePage() {
   if (!$('#page-pipeline')) return;

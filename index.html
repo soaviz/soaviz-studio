@@ -12483,50 +12483,60 @@
       background: rgba(255,255,255,0.025);
       font-variant-numeric: tabular-nums;
     }
+    /* ── Projects 카드 그리드 (P1-01 업그레이드) ──────────────── */
     .projects-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
     }
     .project-card {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      min-height: 260px;
-      padding: 16px;
-      background: linear-gradient(145deg, rgba(255,255,255,0.035), var(--bg-card));
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+      transition: transform 160ms ease, box-shadow 160ms ease;
     }
-    .project-card.archived {
-      opacity: 0.78;
-      border-style: dashed;
+    .project-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(0,0,0,0.24);
     }
-    .project-card-head {
-      display: grid;
-      grid-template-columns: 42px 1fr auto;
-      gap: 12px;
-      align-items: start;
+    .project-card.archived { opacity: 0.72; }
+    .project-card.archived .project-card-banner {
+      filter: saturate(0.5) brightness(0.8);
+    }
+    /* 컬러 배너 */
+    .project-card-banner {
+      height: 56px;
+      background: linear-gradient(130deg, var(--project-color, #A78BFA) 0%, rgba(0,0,0,0.6) 120%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      position: relative;
+      flex-shrink: 0;
     }
     .project-mark {
-      width: 42px;
-      height: 42px;
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
       display: grid;
       place-items: center;
       color: white;
       font-weight: 900;
-      font-size: 22px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
-      background: linear-gradient(135deg, var(--project-color, #a78bfa), rgba(99,102,241,0.9));
+      font-size: 20px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
       cursor: pointer;
-      transition: transform 200ms, box-shadow 200ms;
+      transition: transform 200ms, background 200ms;
       position: relative;
+      flex-shrink: 0;
     }
     .project-mark:hover {
-      transform: scale(1.08);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 6px 16px -6px rgba(167,139,250,0.55);
+      transform: scale(1.1);
+      background: rgba(255,255,255,0.28);
     }
     .project-mark::after {
       content: '✏';
@@ -12534,15 +12544,155 @@
       top: -4px; right: -4px;
       width: 16px; height: 16px;
       border-radius: 50%;
-      background: var(--accent, #A78BFA);
+      background: rgba(0,0,0,0.55);
       color: #fff;
       font-size: 9px;
       display: grid; place-items: center;
       opacity: 0;
       transition: opacity 200ms;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
     .project-mark:hover::after { opacity: 1; }
+    .project-banner-title {
+      flex: 1;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.96);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .project-banner-status {
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    /* 카드 본문 */
+    .project-card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      padding: 14px;
+    }
+    .project-card-head { display: none; } /* 배너로 대체됨 */
+    .project-title { display: none; }
+    .project-status { display: none; }
+    .project-meta {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .project-logline {
+      color: var(--text-dim);
+      font-size: 12.5px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 38px;
+    }
+    /* 샷 진행률 바 */
+    .project-progress-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .project-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-faint);
+    }
+    .project-progress-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .project-progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--project-color, #A78BFA), rgba(255,255,255,0.6));
+      min-width: 4px;
+      transition: width 600ms ease;
+    }
+    /* 스탯 pill 행 */
+    .project-stat-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .project-stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 10.5px;
+      color: var(--text-faint);
+      white-space: nowrap;
+    }
+    .project-stat-pill strong {
+      color: var(--text);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    /* 액션 버튼 행 */
+    .project-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: auto;
+      position: relative;
+    }
+    /* 오버플로우 드롭다운 */
+    .project-overflow-menu {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      background: var(--bg-elev, #18181f);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      min-width: 160px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.50);
+      z-index: 60;
+      animation: pipFade 150ms ease;
+    }
+    .project-overflow-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: var(--text);
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      transition: background 120ms;
+    }
+    .project-overflow-item:hover { background: rgba(255,255,255,0.07); }
+    .project-overflow-item.danger { color: #f87171; }
+    .project-overflow-item.danger:hover { background: rgba(248,113,113,0.10); }
+    /* 구 stat-grid — 숨김 */
+    .project-stat-grid { display: none; }
+    .project-stat { display: none; }
 
     /* 이모지 선택 팝오버 — 아이폰 스타일 (블랙 배경 / 5x5 그리드 / 스크롤) */
     .project-icon-pop {
@@ -21216,6 +21366,50 @@
     .page-head h1 { font-size: 22px !important; }
     .btn-generate  { height: 44px !important; font-size: 13.5px !important; }
   }
+
+  /* ── Day 5B · Script Editor ─────────────────────────────────────── */
+  .script-editor-wrap { display:grid; grid-template-columns:200px 1fr; gap:0; border:1px solid var(--border); border-radius:var(--r-xl); overflow:hidden; min-height:600px; }
+  .script-nav { background:var(--bg-card); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+  .script-nav-head { padding:14px 14px 10px; border-bottom:1px solid var(--border); font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--text-faint); font-weight:700; flex-shrink:0; }
+  .script-nav-ep { padding:8px 10px 3px; font-size:10px; font-weight:700; color:var(--accent); letter-spacing:.05em; text-transform:uppercase; }
+  .script-nav-item { padding:6px 14px; font-size:12px; color:var(--text-dim); cursor:pointer; border-left:3px solid transparent; transition:background .1s,color .1s; display:flex; align-items:center; gap:7px; line-height:1.35; }
+  .script-nav-item:hover { background:var(--bg-elev); color:var(--text); }
+  .script-nav-item.active { border-left-color:var(--accent); color:var(--accent); background:var(--accent-soft); font-weight:600; }
+  .script-nav-num { font-weight:700; min-width:26px; font-size:11px; }
+  .script-nav-shots { margin-left:auto; padding:2px 6px; background:var(--bg-elev); border-radius:999px; font-size:10px; color:var(--text-faint); white-space:nowrap; }
+  .script-body { background:var(--bg-1); overflow-y:auto; padding:28px 36px; display:flex; flex-direction:column; gap:32px; }
+  .script-scene-block { display:flex; flex-direction:column; gap:10px; scroll-margin-top:20px; }
+  .script-scene-heading-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .script-scene-num { font-size:10px; font-weight:800; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; min-width:36px; }
+  .script-scene-heading { flex:1; font-family:'Courier New',Courier,monospace; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text); padding:4px 0; outline:none; min-width:160px; }
+  .script-scene-heading:focus { border-bottom-color:var(--accent); }
+  .script-scene-heading::placeholder { color:var(--text-faint); font-weight:400; text-transform:none; }
+  .script-shot-badge { padding:3px 9px; background:var(--bg-card); border:1px solid var(--border); border-radius:999px; font-size:11px; color:var(--text-faint); white-space:nowrap; }
+  .script-beat-line { font-size:11px; color:var(--accent); font-style:italic; padding:0 0 0 48px; opacity:.75; }
+  .script-content-area { font-family:'Courier New',Courier,monospace; font-size:13px; line-height:1.85; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--r-md); padding:16px 20px; color:var(--text); resize:none; outline:none; width:100%; box-sizing:border-box; min-height:100px; transition:border-color .15s; overflow:hidden; }
+  .script-content-area:focus { border-color:var(--accent); }
+  .script-content-area::placeholder { color:var(--text-faint); font-family:inherit; }
+  .script-scene-foot { display:flex; align-items:center; gap:8px; padding:0 0 0 2px; }
+  .script-add-shot-btn { padding:5px 12px; font-size:11px; background:transparent; border:1px dashed var(--border-strong); border-radius:var(--r-md); color:var(--accent); cursor:pointer; transition:background .15s; }
+  .script-add-shot-btn:hover { background:var(--accent-soft); }
+  .script-save-indicator { font-size:11px; color:var(--text-faint); margin-left:auto; opacity:0; transition:opacity .3s; }
+  .script-save-indicator.visible { opacity:1; }
+  .script-empty { padding:80px 20px; text-align:center; color:var(--text-faint); font-size:13px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  /* Shot workspace CTA 버튼 (5A) */
+  .pl-shot-cta-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .pl-shot-cta { flex:1; min-width:82px; padding:9px 10px; border-radius:var(--r-md); font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px; transition:opacity .15s,transform .1s; border:1px solid transparent; }
+  .pl-shot-cta:active { transform:scale(.97); }
+  .pl-shot-cta.cta-image { background:rgba(139,92,246,.15); border-color:rgba(139,92,246,.35); color:#a78bfa; }
+  .pl-shot-cta.cta-video { background:rgba(236,72,153,.12); border-color:rgba(236,72,153,.30); color:#f472b6; }
+  .pl-shot-cta.cta-voice { background:rgba(34,197,94,.10);  border-color:rgba(34,197,94,.28);  color:#4ade80; }
+  .pl-shot-cta.cta-image:hover { background:rgba(139,92,246,.25); }
+  .pl-shot-cta.cta-video:hover { background:rgba(236,72,153,.22); }
+  .pl-shot-cta.cta-voice:hover { background:rgba(34,197,94,.20); }
+  @media (max-width:768px) {
+    .script-editor-wrap { grid-template-columns:1fr; }
+    .script-nav { display:none; }
+    .script-body { padding:16px 14px; }
+  }
   </style>
 </head>
 <body>
@@ -21486,15 +21680,6 @@
       </svg>
       Library
     </a>
-    <a class="nav-item" data-page="project-archive" title="Exports · Final Outputs">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="4" rx="1"/>
-        <path d="M5 7v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"/>
-        <line x1="10" y1="12" x2="14" y2="12"/>
-      </svg>
-      Exports
-      <span id="nav-archive-count" class="nav-pill" style="display:none;margin-left:auto;font-size:10px;padding:1px 6px;background:rgba(167,139,250,0.20);color:var(--accent);border-radius:8px;font-weight:700">0</span>
-    </a>
     <!-- ═══ SYSTEM ═══ -->
     <div class="nav-section-label">SYSTEM</div>
     <a class="nav-item" href="docs/index.html" id="sidebar-docs-btn" title="사용자 가이드">
@@ -21511,7 +21696,7 @@
       </svg>
       Settings
     </a>
-    <a class="nav-item" data-page="admin" title="Admin">
+    <a class="nav-item js-dev-only" data-page="admin" title="Admin">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -23659,6 +23844,10 @@
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
           워크플로우
         </button>
+        <button class="pipeline-tab" data-pltab="script" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
+          <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          스크립트
+        </button>
       </div>
 
       <!-- ── 탭 1: 샷리스트 생성기 ── -->
@@ -23962,6 +24151,38 @@
           <div style="padding:60px 20px;text-align:center;color:var(--text-faint);font-size:13px">워크플로우 불러오는 중…</div>
         </div>
       </div><!-- /탭2 -->
+
+      <!-- ── 탭 4: 스크립트 에디터 ── -->
+      <div id="pl-tab-script" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h2 style="margin:0 0 4px;font-family:var(--font-display);font-size:20px;font-weight:700">스크립트 에디터</h2>
+            <p style="margin:0;font-size:13px;color:var(--text-faint)">씬별 대본을 작성하세요. 자동 저장 · <kbd style="padding:2px 5px;background:var(--bg-elev);border:1px solid var(--border);border-radius:4px;font-size:10px">Ctrl+↑↓</kbd>로 씬 이동</p>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="script-save-status" style="font-size:11px;color:var(--text-faint)"></span>
+            <button id="script-add-scene-btn" class="vault-btn" style="padding:7px 14px;font-size:12px;display:inline-flex;gap:6px;align-items:center">
+              <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              씬 추가
+            </button>
+          </div>
+        </div>
+        <div class="script-editor-wrap">
+          <nav class="script-nav" id="script-nav-panel">
+            <div class="script-nav-head">씬 목차</div>
+            <div id="script-nav-list" style="padding:6px 0">
+              <div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">프로젝트를 먼저 선택하세요</div>
+            </div>
+          </nav>
+          <div class="script-body" id="script-body-panel">
+            <div class="script-empty" id="script-empty-state">
+              <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:var(--accent);fill:none;stroke-width:1.5;opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div>파이프라인에서 프로젝트를 선택하면<br>씬 목록이 여기에 표시됩니다.</div>
+              <button onclick="switchPipelineTab('board')" style="padding:8px 18px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer">Pipeline Board에서 씬 만들기 →</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /탭4 스크립트 -->
 
       <!-- ── 탭 3: Pipeline Board ── -->
       <div id="pl-tab-board" style="display:none">
@@ -29586,41 +29807,81 @@ async function renderProjectsPage() {
       const meta = [
         p.format || goal?.projectType || 'series',
         deadline ? `마감 ${deadline}` : '',
-        updated ? `업데이트 ${updated}` : '',
+        updated ? `${updated}` : '',
       ].filter(Boolean).join(' · ');
       const logline = p.logline || goal?.memo || '세계관, 씬, 프롬프트, 결과물을 이 프로젝트 아래에 묶어 제작 흐름을 시작하세요.';
       const _projMark = p.icon ? p.icon : escapeHTML(initials);
+      const projColor = _projectPageColor(p.color);
+
+      // 진행률: assets / max(shots*1,1) — 샷당 에셋 비율
+      const shotTotal = s.shots;
+      const assetCount = s.assets;
+      const pct = shotTotal > 0 ? Math.min(100, Math.round(assetCount / shotTotal * 100)) : 0;
+      const progressLabel = shotTotal > 0
+        ? `에셋 ${assetCount} / 샷 ${shotTotal} (${pct}%)`
+        : '샷 없음';
+
+      // stat pills (0이면 희미하게)
+      const pill = (val, label) => val > 0
+        ? `<span class="project-stat-pill"><strong>${val}</strong>${label}</span>`
+        : `<span class="project-stat-pill" style="opacity:.4"><strong>0</strong>${label}</span>`;
+
+      // 오버플로우 메뉴 HTML
+      const overflowItems = p.archived ? `
+        <button class="project-overflow-item" data-project-action="characters" data-project-id="${escapeHTML(p.id)}">👤 캐릭터</button>
+        <button class="project-overflow-item" data-project-action="styles" data-project-id="${escapeHTML(p.id)}">🎨 스타일</button>
+        <button class="project-overflow-item" data-project-action="prompts" data-project-id="${escapeHTML(p.id)}">✨ 프롬프트</button>
+        <button class="project-overflow-item" data-project-action="export" data-project-id="${escapeHTML(p.id)}">📦 Export</button>
+        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
+        <button class="project-overflow-item danger" data-project-action="delete" data-project-id="${escapeHTML(p.id)}">🗑 영구 삭제</button>
+      ` : `
+        <button class="project-overflow-item" data-project-action="characters" data-project-id="${escapeHTML(p.id)}">👤 캐릭터</button>
+        <button class="project-overflow-item" data-project-action="styles" data-project-id="${escapeHTML(p.id)}">🎨 스타일</button>
+        <button class="project-overflow-item" data-project-action="prompts" data-project-id="${escapeHTML(p.id)}">✨ 프롬프트</button>
+        <button class="project-overflow-item" data-project-action="export" data-project-id="${escapeHTML(p.id)}">📦 Export</button>
+        <hr style="border:none;border-top:1px solid var(--border);margin:4px 0">
+        <button class="project-overflow-item" data-project-action="archive" data-project-id="${escapeHTML(p.id)}">📁 보관</button>
+      `;
+
       return `
-        <article class="project-card ${p.archived ? 'archived' : ''}" data-project-id="${escapeHTML(p.id)}" style="--project-color:${_projectPageColor(p.color)}">
-          <div class="project-card-head">
-            <div class="project-mark" data-project-action="pick-icon" data-project-id="${escapeHTML(p.id)}" title="아이콘 변경 — 클릭">${_projMark}</div>
-            <div>
-              <h3 class="project-title">${escapeHTML(p.title || '프로젝트')}</h3>
-              <div class="project-meta">${escapeHTML(meta || '작품 프로젝트')}</div>
+        <article class="project-card ${p.archived ? 'archived' : ''}" data-project-id="${escapeHTML(p.id)}" style="--project-color:${projColor}">
+          <!-- 컬러 배너 -->
+          <div class="project-card-banner">
+            <div class="project-mark" data-project-action="pick-icon" data-project-id="${escapeHTML(p.id)}" title="아이콘 변경">${_projMark}</div>
+            <span class="project-banner-title">${escapeHTML(p.title || '프로젝트')}</span>
+            <span class="project-banner-status">${p.archived ? 'Archived' : 'Active'}</span>
+          </div>
+          <!-- 본문 -->
+          <div class="project-card-body">
+            <div class="project-meta">${escapeHTML(meta || '작품 프로젝트')}</div>
+            <div class="project-logline">${escapeHTML(logline)}</div>
+            <!-- 진행률 바 -->
+            <div class="project-progress-wrap">
+              <div class="project-progress-label">
+                <span>제작 진행률</span>
+                <span>${escapeHTML(progressLabel)}</span>
+              </div>
+              <div class="project-progress-bar">
+                <div class="project-progress-fill" style="width:${pct}%"></div>
+              </div>
             </div>
-            <span class="project-status">${p.archived ? 'Archived' : 'Active'}</span>
-          </div>
-          <div class="project-logline">${escapeHTML(logline)}</div>
-          <div class="project-stat-grid">
-            <div class="project-stat"><strong>${s.episodes}</strong>Episode</div>
-            <div class="project-stat"><strong>${s.scenes}</strong>Scene</div>
-            <div class="project-stat"><strong>${s.shots}</strong>Shot</div>
-            <div class="project-stat"><strong>${s.characters}</strong>Characters</div>
-            <div class="project-stat"><strong>${s.prompts}</strong>Prompts</div>
-            <div class="project-stat"><strong>${s.assets}</strong>Assets</div>
-          </div>
-          <div class="project-actions">
-            ${p.archived
-              ? `<button class="project-btn primary" data-project-action="restore">복원</button>`
-              : `<button class="project-btn primary" data-project-action="open">Pipeline 열기</button>`}
-            <button class="project-btn" data-project-action="edit">편집</button>
-            <button class="project-btn" data-project-action="characters">캐릭터</button>
-            <button class="project-btn" data-project-action="styles">스타일</button>
-            <button class="project-btn" data-project-action="prompts">프롬프트</button>
-            <button class="project-btn" data-project-action="export">Export</button>
-            ${p.archived
-              ? `<button class="project-btn danger" data-project-action="delete">영구 삭제</button>`
-              : `<button class="project-btn ghost" data-project-action="archive">보관</button>`}
+            <!-- 스탯 pill 행 -->
+            <div class="project-stat-row">
+              ${pill(s.episodes,'Ep')}
+              ${pill(s.scenes,'Scene')}
+              ${pill(s.shots,'Shot')}
+              ${pill(s.characters,'Character')}
+              ${pill(s.assets,'Asset')}
+            </div>
+            <!-- 액션 버튼 -->
+            <div class="project-actions">
+              ${p.archived
+                ? `<button class="project-btn primary" data-project-action="restore" data-project-id="${escapeHTML(p.id)}">복원</button>`
+                : `<button class="project-btn primary" data-project-action="open" data-project-id="${escapeHTML(p.id)}">Pipeline 열기</button>`}
+              <button class="project-btn" data-project-action="edit" data-project-id="${escapeHTML(p.id)}">편집</button>
+              <button class="project-btn" data-project-action="overflow" data-project-id="${escapeHTML(p.id)}" style="margin-left:auto;padding:0 10px;font-size:18px;letter-spacing:2px" title="더 보기">⋯</button>
+              <div class="project-overflow-menu" style="display:none">${overflowItems}</div>
+            </div>
           </div>
         </article>
       `;
@@ -29870,6 +30131,10 @@ function bindProjectsPage() {
     const card = btn.closest('[data-project-id]');
     const projectId = card?.dataset.projectId;
     if (!projectId) return;
+    // 오버플로우가 아닌 액션이면 열린 메뉴 모두 닫기
+    if (action !== 'overflow') {
+      document.querySelectorAll('.project-overflow-menu').forEach(m => { m.style.display = 'none'; });
+    }
     await SoavizDB?.ready;
     const project = (await SoavizDB.db.projects.get(projectId)) || { id: projectId, ..._projectPageGoal(projectId) };
     if (action === 'open') _projectPageOpen('pipeline', project);
@@ -29885,7 +30150,20 @@ function bindProjectsPage() {
       e.stopPropagation();
       _openProjectIconPopover(btn, projectId, project.icon || '');
     }
+    else if (action === 'overflow') {
+      e.stopPropagation();
+      const menu = card.querySelector('.project-overflow-menu');
+      if (!menu) return;
+      document.querySelectorAll('.project-overflow-menu').forEach(m => {
+        if (m !== menu) m.style.display = 'none';
+      });
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
   });
+  // 오버플로우 메뉴 — 외부 클릭 시 닫기 (capture phase)
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.project-overflow-menu').forEach(m => { m.style.display = 'none'; });
+  }, true);
   renderProjectsPage();
 }
 
@@ -43292,7 +43570,7 @@ defaultDuration은 분 단위. autoStart는 이전 단계 끝나면 자동 시�
 
 /* ── Pipeline 탭 전환 ───────────────────────────────────── */
 function switchPipelineTab(tab) {
-  const tabs = ['shotlist', 'board', 'workflow'];
+  const tabs = ['shotlist', 'board', 'workflow', 'script'];
   tabs.forEach(t => {
     const panel = $(`#pl-tab-${t}`);
     const btn   = document.querySelector(`.pipeline-tab[data-pltab="${t}"]`);
@@ -43311,6 +43589,9 @@ function switchPipelineTab(tab) {
   }
   if (tab === 'board') {
     renderPipelinePage?.();
+  }
+  if (tab === 'script') {
+    renderPipelineScript?.();
   }
 }
 
@@ -45756,15 +46037,58 @@ async function renderPipelineDetail() {
           </div>
         `;
       })()}
+      <div class="pl-section" style="padding-top:4px">
+        <h4 style="margin-bottom:6px">에셋 생성</h4>
+        <div class="pl-shot-cta-row">
+          <button class="pl-shot-cta cta-image" id="pl-sh-cta-image">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            이미지 생성
+          </button>
+          <button class="pl-shot-cta cta-video" id="pl-sh-cta-video">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            영상 생성
+          </button>
+          <button class="pl-shot-cta cta-voice" id="pl-sh-cta-voice">
+            <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            보이스
+          </button>
+        </div>
+      </div>
       <div class="pl-actions">
         <button class="pl-btn primary" id="pl-sh-save">저장</button>
-        <button class="pl-btn" id="pl-sh-generate" title="이 샷의 프롬프트로 생성 (M3에서 활성화)">⚡ Generate (Compare는 M3)</button>
-        <button class="pl-btn" id="pl-sh-logbook" title="감독의 회고 페이지 — 결정·생성·메모를 시간순으로">📖 Open as Logbook</button>
+        <button class="pl-btn" id="pl-sh-logbook" title="감독의 회고 페이지 — 결정·생성·메모를 시간순으로">📖 Logbook</button>
         <button class="pl-btn danger" id="pl-sh-delete">삭제</button>
       </div>
     `;
     $('#pl-sh-logbook')?.addEventListener('click', () => {
       try { openShotLogbook(sh.id); } catch (e) { console.warn(e); }
+    });
+    // ── Shot CTA 버튼 (5A) ──
+    async function _shotCTAPrefill(mode) {
+      const desc = $('#pl-sh-desc')?.value || sh.description || '';
+      if (!desc.trim()) { showToast?.('먼저 샷 설명을 입력하세요', 'warn'); return false; }
+      let resolved = desc;
+      try { resolved = await resolvePromptForShot(sh.id, desc); } catch (_) {}
+      const _cmp = _tdzGet(() => _CMP_STATE);
+      if (_cmp) _cmp.prefill = { prompt: resolved, shotId: sh.id, duration: sh.durationSec || 5, mode };
+      return true;
+    }
+    $('#pl-sh-cta-image')?.addEventListener('click', async () => {
+      if (await _shotCTAPrefill('image')) showPage('compare');
+    });
+    $('#pl-sh-cta-video')?.addEventListener('click', async () => {
+      if (await _shotCTAPrefill('video')) { showPage('sync'); }
+    });
+    $('#pl-sh-cta-voice')?.addEventListener('click', () => {
+      const dialogue = $('#pl-sh-dialogue')?.value || sh.dialogue || '';
+      try {
+        if (dialogue.trim()) {
+          const el = document.getElementById('tts-text');
+          if (el) { el.value = dialogue.trim(); el.dispatchEvent(new Event('input')); }
+        }
+      } catch (_) {}
+      showPage('studio');
+      if (dialogue.trim()) showToast?.('대사를 TTS 스튜디오에 붙여넣었습니다.');
     });
     $('#pl-cand-add')?.addEventListener('click', () => openShotCandidateModal(sh));
     $('#pl-cand-compare')?.addEventListener('click', async () => {
@@ -46171,6 +46495,224 @@ async function renderPipelineDetail() {
     });
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Day 5B · Script Editor — 씬별 screenplay editor
+   renderPipelineScript() → called by switchPipelineTab('script')
+   ══════════════════════════════════════════════════════════════ */
+let _scriptSaveTimer = null;
+let _scriptActiveSceneId = null;
+
+async function renderPipelineScript() {
+  const navList  = $('#script-nav-list');
+  const bodyPanel = $('#script-body-panel');
+  if (!navList || !bodyPanel) return;
+
+  const db = SoavizDB?.db;
+  const projectId = SoavizPipeline?.state?.projectId;
+
+  if (!db || !projectId) {
+    navList.innerHTML  = '<div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">프로젝트를 먼저 선택하세요</div>';
+    bodyPanel.innerHTML = `<div class="script-empty" id="script-empty-state">
+      <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:var(--accent);fill:none;stroke-width:1.5;opacity:.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div>Pipeline Board에서 프로젝트를 선택하면<br>씬 목록이 여기에 표시됩니다.</div>
+      <button onclick="switchPipelineTab('board')" style="padding:8px 18px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer">Pipeline Board →</button>
+    </div>`;
+    return;
+  }
+
+  // 프로젝트 정보
+  const proj = await db.projects.get(projectId).catch(() => null);
+
+  // Episode → Scene → Shot 수집
+  const episodes = await SoavizPipeline.listEpisodes(projectId);
+  const allScenes = [];
+  for (const ep of episodes) {
+    const scenes = await SoavizPipeline.listScenes(ep.id);
+    for (const sc of scenes) {
+      const shots = await SoavizPipeline.listShots(sc.id);
+      allScenes.push({ ep, sc, shotCount: shots.length });
+    }
+  }
+
+  if (allScenes.length === 0) {
+    navList.innerHTML = '<div style="padding:20px 14px;font-size:12px;color:var(--text-faint)">씬이 없습니다. Pipeline Board에서 씬을 추가하세요.</div>';
+    bodyPanel.innerHTML = `<div class="script-empty">
+      <svg viewBox="0 0 24 24" style="width:36px;height:36px;stroke:var(--text-faint);fill:none;stroke-width:1.5;opacity:.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <div style="color:var(--text-faint)">씬이 없습니다.<br>Pipeline Board에서 Episode → Scene을 먼저 생성하세요.</div>
+    </div>`;
+    return;
+  }
+
+  // ── Nav 렌더 ──
+  let navHTML = '';
+  let lastEpId = null;
+  allScenes.forEach(({ ep, sc, shotCount }) => {
+    if (ep.id !== lastEpId) {
+      navHTML += `<div class="script-nav-ep">E${String(ep.number).padStart(2,'0')} · ${escapeHTML(ep.title || '에피소드')}</div>`;
+      lastEpId = ep.id;
+    }
+    navHTML += `<div class="script-nav-item" data-script-nav="${escapeHTML(sc.id)}">
+      <span class="script-nav-num">S${String(sc.number).padStart(2,'0')}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${escapeHTML(sc.heading || '(제목 없음)')}</span>
+      <span class="script-nav-shots">${shotCount}샷</span>
+    </div>`;
+  });
+  navList.innerHTML = navHTML;
+
+  // ── Body 렌더 ──
+  let bodyHTML = '';
+  let lastBodyEpId = null;
+  allScenes.forEach(({ ep, sc, shotCount }) => {
+    if (ep.id !== lastBodyEpId) {
+      bodyHTML += `<div style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;padding:0 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        E${String(ep.number).padStart(2,'0')} · ${escapeHTML(ep.title || '에피소드')}
+      </div>`;
+      lastBodyEpId = ep.id;
+    }
+    const scNum = `S${String(sc.number).padStart(2,'0')}`;
+    bodyHTML += `
+    <div class="script-scene-block" id="script-block-${escapeHTML(sc.id)}" data-scene-id="${escapeHTML(sc.id)}">
+      <div class="script-scene-heading-row">
+        <span class="script-scene-num">${scNum}</span>
+        <input class="script-scene-heading" data-sh-heading="${escapeHTML(sc.id)}"
+          value="${escapeHTML(sc.heading || '')}"
+          placeholder="INT. 장소 — 시간대"
+          title="씬 헤딩 (INT./EXT. 형식 권장)"
+        />
+        <span class="script-shot-badge">${shotCount}샷</span>
+      </div>
+      ${sc.beat ? `<div class="script-beat-line">BEAT: ${escapeHTML(sc.beat)}</div>` : ''}
+      <textarea class="script-content-area" data-sh-content="${escapeHTML(sc.id)}"
+        placeholder="액션 라인, 대사, 연출 메모를 자유롭게 작성하세요.\n\n예:\n이루나가 복도를 천천히 걷는다. 형광등이 깜빡인다.\n\n이루나\n(낮게) 여기가... 맞나?"
+        rows="5"
+      >${escapeHTML(sc.scriptContent || '')}</textarea>
+      <div class="script-scene-foot">
+        <button class="script-add-shot-btn" data-scene-gen-shots="${escapeHTML(sc.id)}" title="이 씬의 내용으로 AI 샷리스트 생성">
+          ⚡ 이 씬 샷리스트 생성
+        </button>
+        <span class="script-save-indicator" id="script-si-${escapeHTML(sc.id)}">저장됨 ✓</span>
+      </div>
+    </div>`;
+  });
+  bodyPanel.innerHTML = bodyHTML;
+
+  // ── 첫 씬 활성화 ──
+  const firstId = allScenes[0]?.sc.id;
+  if (firstId) _scriptSetActive(firstId);
+
+  // ── 이벤트: 헤딩 편집 ──
+  bodyPanel.querySelectorAll('[data-sh-heading]').forEach(inp => {
+    const scId = inp.dataset.shHeading;
+    inp.addEventListener('input', () => {
+      // 실시간 uppercase 힌트 (옵션)
+    });
+    inp.addEventListener('blur', () => _scriptSaveHeading(scId, inp.value));
+    inp.addEventListener('focus', () => _scriptSetActive(scId));
+  });
+
+  // ── 이벤트: 내용 편집 + 자동 높이 ──
+  bodyPanel.querySelectorAll('[data-sh-content]').forEach(ta => {
+    const scId = ta.dataset.shContent;
+    _scriptAutoResize(ta);
+    ta.addEventListener('input', () => {
+      _scriptAutoResize(ta);
+      _scriptSetActive(scId);
+      clearTimeout(_scriptSaveTimer);
+      _scriptSaveTimer = setTimeout(() => _scriptSaveContent(scId, ta.value), 800);
+    });
+    ta.addEventListener('focus', () => _scriptSetActive(scId));
+    ta.addEventListener('keydown', (e) => _scriptHandleKey(e, scId, allScenes));
+  });
+
+  // ── 이벤트: Nav 클릭 ──
+  navList.querySelectorAll('[data-script-nav]').forEach(item => {
+    item.addEventListener('click', () => {
+      const scId = item.dataset.scriptNav;
+      _scriptSetActive(scId);
+      const block = bodyPanel.querySelector(`#script-block-${scId}`);
+      block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ── 이벤트: 씬 샷리스트 생성 버튼 ──
+  bodyPanel.querySelectorAll('[data-scene-gen-shots]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const scId = btn.dataset.sceneGenShots;
+      const sc = allScenes.find(x => x.sc.id === scId)?.sc;
+      if (!sc) return;
+      const content = bodyPanel.querySelector(`[data-sh-content="${scId}"]`)?.value || '';
+      const synopsis = (content || sc.heading || '').slice(0, 500);
+      const synEl = $('#pl-sl-synopsis');
+      if (synEl) { synEl.value = synopsis; synEl.dispatchEvent(new Event('input')); }
+      switchPipelineTab('shotlist');
+      showToast?.(`씬 "${sc.heading}" 내용을 샷리스트 생성기에 붙여넣었습니다.`);
+    });
+  });
+
+  // ── "씬 추가" 버튼 ──
+  $('#script-add-scene-btn')?.addEventListener('click', async () => {
+    const ep = episodes[0];
+    if (!ep) { showToast?.('먼저 에피소드를 추가하세요', 'warn'); return; }
+    const scenes = await SoavizPipeline.listScenes(ep.id);
+    const newSc = await SoavizPipeline.createScene(ep.id, {
+      heading: `INT. 새 씬 — 낮`,
+      number: scenes.length + 1,
+    });
+    showToast?.('✓ 씬 추가됨');
+    await renderPipelineScript();
+    const block = bodyPanel.querySelector(`#script-block-${newSc.id}`);
+    block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    block?.querySelector('[data-sh-heading]')?.focus();
+  });
+}
+
+function _scriptAutoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
+
+function _scriptSetActive(scId) {
+  _scriptActiveSceneId = scId;
+  document.querySelectorAll('.script-nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.scriptNav === scId);
+  });
+}
+
+async function _scriptSaveContent(scId, value) {
+  try {
+    await SoavizDB.db.scenes.update(scId, { scriptContent: value, updatedAt: Date.now() });
+    const si = $(`#script-si-${scId}`);
+    if (si) { si.classList.add('visible'); setTimeout(() => si.classList.remove('visible'), 2000); }
+    const statusEl = $('#script-save-status');
+    if (statusEl) { statusEl.textContent = '저장됨 ✓'; setTimeout(() => { statusEl.textContent = ''; }, 2500); }
+  } catch (err) { console.warn('[Script] save error', err); }
+}
+
+async function _scriptSaveHeading(scId, value) {
+  try {
+    await SoavizPipeline.updateScene(scId, { heading: value });
+    // nav item 텍스트도 동기화
+    const navItem = document.querySelector(`[data-script-nav="${scId}"] span:nth-child(2)`);
+    if (navItem) navItem.textContent = value || '(제목 없음)';
+  } catch (err) { console.warn('[Script] heading save error', err); }
+}
+
+function _scriptHandleKey(e, scId, allScenes) {
+  if (!e.ctrlKey) return;
+  const idx = allScenes.findIndex(x => x.sc.id === scId);
+  let target = null;
+  if (e.key === 'ArrowUp' && idx > 0) target = allScenes[idx - 1].sc.id;
+  if (e.key === 'ArrowDown' && idx < allScenes.length - 1) target = allScenes[idx + 1].sc.id;
+  if (!target) return;
+  e.preventDefault();
+  _scriptSetActive(target);
+  const block = document.querySelector(`#script-block-${target}`);
+  block?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => block?.querySelector('[data-sh-content]')?.focus(), 150);
+}
+
+window.renderPipelineScript = renderPipelineScript;
 
 function bindPipelinePage() {
   if (!$('#page-pipeline')) return;
@@ -61234,5 +61776,698 @@ window.handleMobileReviewShareUrl = handleMobileReviewShareUrl;
 })();
 </script>
 <script src="js/heatmap.js"></script>
+<script>
+/* P0-05: admin dev-only guard */
+(function() {
+  const isDev = new URLSearchParams(location.search).has('dev');
+  if (!isDev) {
+    document.querySelectorAll('.js-dev-only').forEach(el => {
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden', 'true');
+    });
+  }
+})();
+</script>
+<script>
+/* P1-04: styles seed auto-import */
+(async function() {
+  const STYLES_SEED = [
+  {
+    "id": "style_obangsaek_cheong",
+    "name": "청 (靑) — Eastern Dawn",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "cyan-blue tonality, fresh dawn light, eastern direction, wood element, spring atmosphere, soft mist, jade and turquoise accents, traditional Korean color theory 동방 청색",
+    "tags": [
+      "오방색",
+      "청",
+      "동방",
+      "봄",
+      "목"
+    ],
+    "lighting": "soft-dawn",
+    "camera": "wide-establishing",
+    "mood": "fresh-awakening",
+    "colorPalette": [
+      "#3a85d4",
+      "#5fa8d6",
+      "#8cc5e8",
+      "#b8dde9"
+    ],
+    "reference": "조선 청자, 고려 청자, 동양화 청록산수도",
+    "notes": "동쪽·봄·목(木)·새벽을 상징. 신선하고 깨끗한 시작 분위기에 적합. ORA-MU 새벽 씬 권장.",
+    "archived": false
+  },
+  {
+    "id": "style_obangsaek_jeok",
+    "name": "적 (赤) — Southern Vermillion",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "vermillion red dominant, intense passionate atmosphere, southern direction, fire element, summer heat, golden hour shadows, dramatic high contrast, traditional Korean palace red 단청",
+    "tags": [
+      "오방색",
+      "적",
+      "남방",
+      "여름",
+      "화"
+    ],
+    "lighting": "golden-hour",
+    "camera": "medium-dramatic",
+    "mood": "passionate-intense",
+    "colorPalette": [
+      "#c53030",
+      "#e53e3e",
+      "#fc8181",
+      "#feb2b2"
+    ],
+    "reference": "단청, 경복궁 근정전, 민화 호랑이",
+    "notes": "남쪽·여름·화(火)·정오를 상징. 강렬하고 정열적인 장면. 클라이맥스나 갈등 씬에 적합.",
+    "archived": false
+  },
+  {
+    "id": "style_obangsaek_hwang",
+    "name": "황 (黃) — Central Gold",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "regal golden tones, sun-warmed earth palette, central composition, earth element, transitional season, soft ambient warmth, ochre and amber, traditional Korean royal yellow 황금색",
+    "tags": [
+      "오방색",
+      "황",
+      "중앙",
+      "토"
+    ],
+    "lighting": "ambient-warm",
+    "camera": "centered-symmetric",
+    "mood": "regal-balanced",
+    "colorPalette": [
+      "#d4a73a",
+      "#e8c963",
+      "#f4d97a",
+      "#fce8a8"
+    ],
+    "reference": "조선 왕조 곤룡포, 사찰 단청 황색, 민화 책가도",
+    "notes": "중앙·토(土)·왕권을 상징. 안정감과 권위. 인물 중심 정면 샷에 적합.",
+    "archived": false
+  },
+  {
+    "id": "style_obangsaek_baek",
+    "name": "백 (白) — Western Pearl",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "pure pearl white tones, autumn clarity, western direction, metal element, crisp clean atmosphere, soft diffused light, ivory and cream accents, traditional Korean white porcelain 백자",
+    "tags": [
+      "오방색",
+      "백",
+      "서방",
+      "가을",
+      "금"
+    ],
+    "lighting": "diffused-soft",
+    "camera": "minimal-clean",
+    "mood": "pure-contemplative",
+    "colorPalette": [
+      "#f5f5f0",
+      "#ffffff",
+      "#ebe9e0",
+      "#d8d4c5"
+    ],
+    "reference": "조선 백자, 한지, 동양화 여백",
+    "notes": "서쪽·가을·금(金)·황혼을 상징. 정적이고 명상적. 캐릭터 내면 씬, 회상 장면에 적합.",
+    "archived": false
+  },
+  {
+    "id": "style_obangsaek_heuk",
+    "name": "흑 (黑) — Northern Ink",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "deep ink black tones, mystical northern night, water element, winter darkness, low-key dramatic lighting, sumi-e brushstroke aesthetic, navy and charcoal, traditional Korean ink wash 수묵화",
+    "tags": [
+      "오방색",
+      "흑",
+      "북방",
+      "겨울",
+      "수"
+    ],
+    "lighting": "low-key-dramatic",
+    "camera": "shadow-heavy",
+    "mood": "mystic-mysterious",
+    "colorPalette": [
+      "#1a1a2e",
+      "#2d2d44",
+      "#4a4a5e",
+      "#6b6b7e"
+    ],
+    "reference": "수묵화, 정선 인왕제색도, 민화 까치호랑이 배경",
+    "notes": "북쪽·겨울·수(水)·자정을 상징. 신비롭고 미스터리한 분위기. ORA-MU 디스토피아 야간 씬 권장.",
+    "archived": false
+  },
+  {
+    "id": "style_minhwa_folk",
+    "name": "민화 (民畵) — Folk Narrative",
+    "scope": "project",
+    "projectId": null,
+    "fragment": "Korean folk art aesthetic, multi-color narrative composition, ornate decorative patterns, flat perspective, symbolic motifs (peony, magpie, tiger, scholar's books), bright joyful palette, traditional 민화 style with modern reinterpretation",
+    "tags": [
+      "민화",
+      "전통",
+      "장식적",
+      "내러티브"
+    ],
+    "lighting": "even-flat",
+    "camera": "frontal-symbolic",
+    "mood": "joyful-narrative",
+    "colorPalette": [
+      "#c53030",
+      "#3a85d4",
+      "#d4a73a",
+      "#2d6a4f",
+      "#f5f5f0"
+    ],
+    "reference": "책가도, 모란도, 까치호랑이, 문자도, 화조도",
+    "notes": "조선 민중의 그림. 평면적 원근, 상징적 모티프, 다채로운 색. VenuX 캐릭터 씬에 한국적 정체성 부여 시 권장. 은교 본인 작품 세계관과 가장 정합.",
+    "archived": false
+  }
+];
+
+  // SoavizDB 준비될 때까지 대기
+  let retry = 0;
+  while ((typeof db === 'undefined' || !db.styles) && retry < 50) {
+    await new Promise(r => setTimeout(r, 200));
+    retry++;
+  }
+  if (typeof db === 'undefined' || !db.styles) {
+    console.warn('[P1-04] SoavizDB 준비 안 됨, 시드 import 생략');
+    return;
+  }
+
+  // 멱등성 확인
+  let existingCount = 0;
+  try {
+    existingCount = await db.styles
+      .where('id').startsWith('style_obangsaek')
+      .count();
+    const folk = await db.styles.get('style_minhwa_folk');
+    if (folk) existingCount++;
+  } catch(e) {}
+
+  if (existingCount > 0) {
+    console.log('[P1-04] 이미 ' + existingCount + '개 시드 존재, 추가 import 생략');
+    return;
+  }
+
+  // 일괄 등록
+  const now = Date.now();
+  const records = STYLES_SEED.map(s => ({...s, createdAt: now, updatedAt: now}));
+
+  try {
+    await db.styles.bulkAdd(records);
+    console.log('[P1-04] ✅ ' + records.length + '개 styles 시드 import 완료');
+    if (typeof renderStylesPage === 'function') renderStylesPage();
+  } catch (e) {
+    console.error('[P1-04] 시드 import 실패:', e);
+  }
+})();
+</script>
+<script>
+/* P1-02: characters venux seed auto-import */
+(async function() {
+  const CHARACTERS_SEED = [
+  {
+    "id": "char_venux_ara_462",
+    "name": "이루나 (Lee Luna)",
+    "code": "ARA-462",
+    "projectId": "proj_venux_aleka",
+    "role": "lead",
+    "age": 25,
+    "gender": "female",
+    "element": "fire",
+    "domain": "beauty",
+    "mbti": "ENFP",
+    "appearance": "긴 적갈색 웨이브 헤어, 화염 같은 붉은 눈동자, 따뜻한 톤의 피부, 173cm, 도시적이면서도 강렬한 비주얼",
+    "personality": "정열적이고 감정 표현이 풍부함. 트렌드에 민감하고 새로운 시도를 두려워하지 않음. 카리스마 있는 리더 기질. 진정성 있는 관계를 중시.",
+    "voice_style": "따뜻하고 풍부한 음색, 자신감 있는 톤, 적당히 빠른 말 속도",
+    "occupation": "K-beauty 인플루언서 / VenuX 리더",
+    "signature_items": "백색 Selkirk Rex 고양이 'Luna' (반려묘), 빈티지 향수 컬렉션, 빨간 립스틱",
+    "fragment": "young Korean woman, 25 years old, long auburn wavy hair, fiery red eyes, warm-toned skin, fire element aesthetic, beauty influencer, charismatic leader vibe, owns white Selkirk Rex cat named Luna, ENFP personality, vermillion and warm tones",
+    "tags": [
+      "VenuX",
+      "리더",
+      "fire",
+      "beauty",
+      "ARA-462",
+      "Lee Luna"
+    ],
+    "relationships": [
+      {
+        "to": "char_venux_lux_299",
+        "type": "절친",
+        "note": "패션·뷰티 시너지 파트너"
+      },
+      {
+        "to": "char_venux_atp_x1",
+        "type": "멘토",
+        "note": "막내를 챙기는 언니"
+      }
+    ],
+    "notes": "VenuX의 리더이자 메인 비주얼. 화(火) 속성. 모든 캠페인의 중심 캐릭터. ORA-MU 사이드 프로젝트에서도 핵심 인물.",
+    "archived": false
+  },
+  {
+    "id": "char_venux_lux_299",
+    "name": "박리라",
+    "code": "LUX-299",
+    "projectId": "proj_venux_aleka",
+    "role": "lead",
+    "age": 24,
+    "gender": "female",
+    "element": "light",
+    "domain": "fashion",
+    "mbti": "ESFJ",
+    "appearance": "플래티넘 블론드 단발, 빛이 반사되는 듯한 은빛 눈동자, 도자기 같은 피부, 170cm, 미니멀하고 세련된 실루엣",
+    "personality": "감각적이고 디테일에 강함. 사람들의 시선을 자연스럽게 사로잡음. 사교적이며 트렌드 큐레이터 역할. 외향적이지만 내면은 섬세.",
+    "voice_style": "맑고 세련된 음색, 부드러운 톤, 중간 속도",
+    "occupation": "패션 에디터 / 스타일리스트",
+    "signature_items": "빈티지 디자이너 가방 컬렉션, 펄 액세서리, 화이트 트렌치코트",
+    "fragment": "young Korean woman, 24 years old, platinum blonde bob cut, silver reflective eyes, porcelain skin, light element aesthetic, fashion editor stylist, sophisticated minimal style, ESFJ personality, pearl and ivory tones",
+    "tags": [
+      "VenuX",
+      "패션",
+      "light",
+      "LUX-299",
+      "Park Lira"
+    ],
+    "relationships": [
+      {
+        "to": "char_venux_ara_462",
+        "type": "절친",
+        "note": "패션·뷰티 시너지 파트너"
+      },
+      {
+        "to": "char_venux_eur_0k",
+        "type": "동료",
+        "note": "스타일과 테크의 컬래버레이션"
+      }
+    ],
+    "notes": "VenuX의 패션 라인 담당. 빛(光) 속성. 룩북·캠페인 화보의 비주얼 디렉터. 쇼룸 콘텐츠의 메인.",
+    "archived": false
+  },
+  {
+    "id": "char_venux_eur_0k",
+    "name": "신지우",
+    "code": "EUR-0K",
+    "projectId": "proj_venux_aleka",
+    "role": "lead",
+    "age": 23,
+    "gender": "female",
+    "element": "water",
+    "domain": "tech",
+    "mbti": "INTJ",
+    "appearance": "짙은 흑발 긴 생머리, 깊은 푸른빛 눈동자, 차가운 톤의 피부, 168cm, 모던 테크웨어 스타일",
+    "personality": "분석적이고 논리적임. 말수는 적지만 한 번 말하면 정확. 미래지향적 사고와 깊은 통찰력. 내성적이지만 신뢰감을 주는 존재.",
+    "voice_style": "낮고 차분한 음색, 정확한 발음, 약간 느린 말 속도",
+    "occupation": "AI 엔지니어 / 테크 콘텐츠 크리에이터",
+    "signature_items": "MacBook Pro, 미니멀 블랙 워치, 사이버펑크 헤드폰",
+    "fragment": "young Korean woman, 23 years old, long jet black straight hair, deep blue eyes, cool-toned skin, water element aesthetic, AI engineer techwear style, INTJ personality, navy and silver tones, cyberpunk influence",
+    "tags": [
+      "VenuX",
+      "테크",
+      "water",
+      "EUR-0K",
+      "Shin Jiwoo"
+    ],
+    "relationships": [
+      {
+        "to": "char_venux_lux_299",
+        "type": "동료",
+        "note": "스타일과 테크의 컬래버레이션"
+      },
+      {
+        "to": "char_venux_kin_360",
+        "type": "친구",
+        "note": "디지털 노마드 동지"
+      }
+    ],
+    "notes": "VenuX의 테크 콘텐츠 담당. 수(水) 속성. AI/디지털 트렌드 분석. ORA-MU 세계관과 가장 가까운 캐릭터.",
+    "archived": false
+  },
+  {
+    "id": "char_venux_kin_360",
+    "name": "최노아",
+    "code": "KIN-360",
+    "projectId": "proj_venux_aleka",
+    "role": "lead",
+    "age": 22,
+    "gender": "female",
+    "element": "wind",
+    "domain": "travel",
+    "mbti": "ENTP",
+    "appearance": "햇볕에 그을린 갈색 헤어, 호박색 눈동자, 자연스러운 건강한 피부, 165cm, 자유로운 캐주얼 룩",
+    "personality": "호기심 많고 모험적임. 어디든 떠날 수 있는 자유로운 영혼. 사교적이고 적응력이 빠름. 즉흥적이지만 깊은 통찰을 가짐.",
+    "voice_style": "활기차고 밝은 음색, 표현력 풍부, 빠른 말 속도",
+    "occupation": "트래블 인플루언서 / 다큐멘터리 디렉터",
+    "signature_items": "빈티지 카메라, 가죽 백팩, 손목 밴드 컬렉션",
+    "fragment": "young Korean woman, 22 years old, sun-kissed brown hair, amber eyes, healthy natural skin, wind element aesthetic, travel influencer documentary style, ENTP personality, earth and gold tones, free-spirited adventurer",
+    "tags": [
+      "VenuX",
+      "여행",
+      "wind",
+      "KIN-360",
+      "Choi Noah"
+    ],
+    "relationships": [
+      {
+        "to": "char_venux_eur_0k",
+        "type": "친구",
+        "note": "디지털 노마드 동지"
+      },
+      {
+        "to": "char_venux_atp_x1",
+        "type": "베스트프렌드",
+        "note": "여행과 자연 공유"
+      }
+    ],
+    "notes": "VenuX의 여행 콘텐츠 담당. 풍(風) 속성. 브이로그·로드무비 형식. 천상유람 프로젝트의 이상적 캐스팅.",
+    "archived": false
+  },
+  {
+    "id": "char_venux_atp_x1",
+    "name": "정아온",
+    "code": "ATP-X1",
+    "projectId": "proj_venux_aleka",
+    "role": "lead",
+    "age": 21,
+    "gender": "female",
+    "element": "nature",
+    "domain": "wellness",
+    "mbti": "ISFP",
+    "appearance": "부드러운 다크 브라운 헤어 미디엄 길이, 따뜻한 헤이즐 눈동자, 자연스러운 피부, 162cm, 어스 톤 친환경 패션",
+    "personality": "조용하고 차분함. 자연과 동물을 사랑함. 감수성이 풍부하고 예술적. 내성적이지만 따뜻한 마음. 막내지만 멤버들의 정서적 안식처.",
+    "voice_style": "부드럽고 따뜻한 음색, 차분한 톤, 느린 말 속도",
+    "occupation": "웰니스 크리에이터 / 비건 라이프스타일",
+    "signature_items": "유칼립투스 식물 컬렉션, 수제 액세서리, 캔버스 토트백",
+    "fragment": "young Korean woman, 21 years old, soft dark brown medium hair, warm hazel eyes, natural skin, nature element aesthetic, wellness lifestyle creator, vegan friendly, ISFP personality, earth and sage tones, gentle gentle aura",
+    "tags": [
+      "VenuX",
+      "웰니스",
+      "nature",
+      "ATP-X1",
+      "Jeong Aon",
+      "막내"
+    ],
+    "relationships": [
+      {
+        "to": "char_venux_kin_360",
+        "type": "베스트프렌드",
+        "note": "여행과 자연 공유"
+      },
+      {
+        "to": "char_venux_ara_462",
+        "type": "리더-막내",
+        "note": "언니의 보살핌을 받는 막내"
+      }
+    ],
+    "notes": "VenuX의 웰니스 라인 담당. 자연(自然) 속성. 그룹의 막내이자 정서적 중심. 명상·요가·가드닝 콘텐츠.",
+    "archived": false
+  }
+];
+  
+  let retry = 0;
+  while ((typeof db === 'undefined' || !db.characters) && retry < 50) {
+    await new Promise(r => setTimeout(r, 200));
+    retry++;
+  }
+  if (typeof db === 'undefined' || !db.characters) {
+    console.warn('[P1-02] SoavizDB 준비 안 됨, 시드 import 생략');
+    return;
+  }
+  
+  const existingCount = await db.characters
+    .where('id').startsWith('char_venux_')
+    .count();
+  
+  if (existingCount > 0) {
+    console.log('[P1-02] 이미 ' + existingCount + '명 VenuX 시드 존재, 추가 import 생략');
+    return;
+  }
+  
+  const now = Date.now();
+  const records = CHARACTERS_SEED.map(c => ({
+    ...c,
+    createdAt: now,
+    updatedAt: now,
+  }));
+  
+  try {
+    await db.characters.bulkAdd(records);
+    console.log('[P1-02] ✅ ' + records.length + '명 VenuX 캐릭터 시드 import 완료');
+    if (typeof renderCharactersPage === 'function') {
+      renderCharactersPage();
+    } else if (typeof bindCharactersPage === 'function') {
+      bindCharactersPage();
+    }
+  } catch (e) {
+    console.error('[P1-02] 시드 import 실패:', e);
+  }
+})();
+</script>
+
+<script>
+/* P1-01: projects seed auto-import */
+(async function() {
+  const KEY = 'soaviz-db-projects-seed-v1';
+  if (localStorage.getItem(KEY)) {
+    console.log('[P1-01] 프로젝트 시드 이미 등록됨 — skip');
+    return;
+  }
+
+  const SEED = [
+    {
+      id: 'proj_oramu_main',
+      title: 'ORA-MU: 빈 페이지의 빛',
+      logline: "AI 시대 2050년, 한 영상 감독이 '완벽한 코드와 불완전한 감정' 사이에서 자신의 작품 세계를 재정의하는 디스토피아 SF",
+      format: '단편영화',
+      genre: 'SF / 드라마',
+      deadline: '2026-09-30',
+      tags: ['sci-fi', 'dystopia', 'AI', 'korean-aesthetic', 'ORA-MU'],
+      color: '#9e7bff',
+      icon: '🎬',
+      description: 'Hongik University AI Museum 전시작 + WAIFF Seoul 2026 출품 예정. 은교 본인이 감독·제작.',
+      scope: 'main',
+      archived: false,
+    },
+    {
+      id: 'proj_cheonsangyuram',
+      title: '천상유람 (天上遊覽)',
+      logline: '한국 전통 풍경화의 시선으로 그려낸 디지털 시대의 산수 — AI Film Showcase 2026 출품작',
+      format: '뮤직비디오',
+      genre: '음악 / 동양화',
+      deadline: '2026-06-15',
+      tags: ['minhwa', 'music-video', 'korean-traditional', 'AI-Film-Showcase-2026'],
+      color: '#4cc9f0',
+      icon: '🎵',
+      description: '전통 풍경화 + AI 영상의 융합. SOAVIZ AI STUDIO 대표작.',
+      scope: 'main',
+      archived: false,
+    },
+    {
+      id: 'proj_venux_aleka',
+      title: 'VenuX (ALEKA 시스템)',
+      logline: '5명의 AI 가상 인플루언서가 fire/light/water/wind/nature 5속성으로 K-beauty/패션/테크/여행/웰니스 콘텐츠를 만드는 그룹',
+      format: '가상 인플루언서 그룹',
+      genre: '콘텐츠 IP / 마케팅',
+      deadline: '2026-12-31',
+      tags: ['VenuX', 'ALEKA', 'virtual-influencer', 'K-beauty', '5-elements'],
+      color: '#f43f5e',
+      icon: '✨',
+      description: 'ARA-462(이루나)/LUX-299(박리라)/EUR-0K(신지우)/KIN-360(최노아)/ATP-X1(정아온) 5인 시스템. BEAUTYVERSE 플랫폼 핵심 IP.',
+      scope: 'main',
+      archived: false,
+    },
+  ];
+
+  // db 준비 대기
+  let retries = 0;
+  while (typeof db === 'undefined' || !db.projects) {
+    if (retries++ > 20) { console.error('[P1-01] db 초기화 타임아웃'); return; }
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  // 멱등성: 이미 존재하는 id 제외
+  const now = new Date().toISOString();
+  const toAdd = [];
+  for (const item of SEED) {
+    const exists = await db.projects.get(item.id);
+    if (!exists) {
+      toAdd.push({ ...item, createdAt: now, updatedAt: now, status: 'active' });
+    }
+  }
+
+  if (toAdd.length === 0) {
+    console.log('[P1-01] 모든 프로젝트 이미 존재 — skip');
+    localStorage.setItem(KEY, '1');
+    return;
+  }
+
+  try {
+    await db.projects.bulkAdd(toAdd);
+    console.log('[P1-01] ✅ ' + toAdd.length + '개 프로젝트 시드 import 완료');
+    localStorage.setItem(KEY, '1');
+    if (typeof renderProjectsPage === 'function') renderProjectsPage();
+  } catch (e) {
+    console.error('[P1-01] 프로젝트 시드 import 실패:', e);
+  }
+})();
+</script>
+
+<script>
+/* P1-05: shot-detail memory seed auto-import */
+(async function() {
+  const KEY = 'soaviz-db-shot-memory-seed-v1';
+  if (localStorage.getItem(KEY)) {
+    console.log('[P1-05] 샷 메모리 시드 이미 등록됨 — skip');
+    return;
+  }
+
+  const SHOTS   = [
+  {
+    "id": "shot_p1-05_demo_oramu_001",
+    "projectId": "proj_oramu_main",
+    "parentId": null,
+    "number": "001",
+    "title": "오프닝: 감독의 빈 페이지",
+    "intent": "AI가 모든 것을 만들 수 있는 시대, 인간 감독이 빈 페이지를 마주한 첫 순간 — 이 영화의 모든 것이 시작되는 정적인 침묵의 순간",
+    "status": "in_progress",
+    "duration": 8,
+    "format": "wide",
+    "tags": [
+      "ORA-MU",
+      "opening",
+      "establish",
+      "P1-05-demo"
+    ],
+    "archived": false
+  },
+  {
+    "id": "shot_p1-05_demo_venux_001",
+    "projectId": "proj_venux_aleka",
+    "parentId": null,
+    "number": "001",
+    "title": "ARA-462 키 비주얼: 화염의 시선",
+    "intent": "VenuX 리더 이루나의 정체성을 한 컷에 담는 키 비주얼 — fire 속성, 카리스마, 빈티지 향수와 흰 셀커크렉스 Luna가 함께",
+    "status": "in_progress",
+    "duration": 5,
+    "format": "portrait",
+    "tags": [
+      "VenuX",
+      "ARA-462",
+      "key-visual",
+      "P1-05-demo"
+    ],
+    "archived": false
+  }
+];
+  const PROMPTS = [
+  {
+    "id": "prompt_p1-05_demo_001",
+    "projectId": "proj_oramu_main",
+    "shotId": "shot_p1-05_demo_oramu_001",
+    "promptType": "intent",
+    "content": "한 영상 감독이 빈 노트북 화면을 응시한다. 새벽 4시, 청(靑) 톤의 차가운 빛이 그의 얼굴에 비친다. 손은 키보드 위에 떠있지만 움직이지 않는다.",
+    "status": "active",
+    "tags": [
+      "intent",
+      "ORA-MU"
+    ],
+    "archived": false
+  },
+  {
+    "id": "prompt_p1-05_demo_002",
+    "projectId": "proj_oramu_main",
+    "shotId": "shot_p1-05_demo_oramu_001",
+    "promptType": "note",
+    "content": "참고: 정선 〈인왕제색도〉의 정적인 시선. 인물보다 빈 공간이 더 중요한 구도.",
+    "status": "active",
+    "tags": [
+      "note",
+      "reference"
+    ],
+    "archived": false
+  },
+  {
+    "id": "prompt_p1-05_demo_003",
+    "projectId": "proj_oramu_main",
+    "shotId": "shot_p1-05_demo_oramu_001",
+    "promptType": "decision",
+    "content": "결정: 오방색의 청(靑) Eastern Dawn 스타일 채택. 빛은 모니터에서만 나오는 단일 광원으로.",
+    "status": "active",
+    "tags": [
+      "decision",
+      "style-locked"
+    ],
+    "archived": false
+  },
+  {
+    "id": "prompt_p1-05_demo_004",
+    "projectId": "proj_venux_aleka",
+    "shotId": "shot_p1-05_demo_venux_001",
+    "promptType": "intent",
+    "content": "이루나가 빈티지 향수병을 들고 거울을 응시한다. 흰 셀커크렉스 'Luna'가 옆에 앉아있다. 단청 빨강 + 황금 액센트.",
+    "status": "active",
+    "tags": [
+      "intent",
+      "VenuX"
+    ],
+    "archived": false
+  },
+  {
+    "id": "prompt_p1-05_demo_005",
+    "projectId": "proj_venux_aleka",
+    "shotId": "shot_p1-05_demo_venux_001",
+    "promptType": "generation",
+    "content": "생성 시도 #1 — Midjourney v7, 오방색의 적(赤) 스타일 적용. 시드: 1234567",
+    "status": "active",
+    "tags": [
+      "generation",
+      "v1"
+    ],
+    "archived": false
+  }
+];
+
+  let retries = 0;
+  while (typeof db === 'undefined' || !db.shots || !db.prompts) {
+    if (retries++ > 30) { console.error('[P1-05] db 초기화 타임아웃'); return; }
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  const now = new Date().toISOString();
+
+  // 멱등성: demo 샷 존재 여부 확인
+  const existingCount = await db.shots
+    .where('id').startsWith('shot_p1-05_demo_')
+    .count().catch(() => 0);
+
+  if (existingCount > 0) {
+    console.log('[P1-05] 데모 샷 이미 존재 — skip');
+    localStorage.setItem(KEY, '1');
+    return;
+  }
+
+  try {
+    const shotRecords   = SHOTS.map(s   => ({ ...s,   createdAt: now, updatedAt: now }));
+    const promptRecords = PROMPTS.map(p => ({ ...p,   createdAt: now, updatedAt: now }));
+
+    await db.shots.bulkAdd(shotRecords);
+    await db.prompts.bulkAdd(promptRecords);
+
+    console.log('[P1-05] ✅ ' + shotRecords.length + '개 샷 + ' + promptRecords.length + '개 메모리 시드 import 완료');
+    localStorage.setItem(KEY, '1');
+
+    if (typeof renderShotLogbook === 'function') renderShotLogbook();
+  } catch (e) {
+    console.error('[P1-05] 시드 import 실패:', e);
+  }
+})();
+</script>
 </body>
 </html>
