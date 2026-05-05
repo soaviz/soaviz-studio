@@ -11191,6 +11191,116 @@
       background: rgba(167,139,250,0.18);
     }
 
+    /* ═══ P2-07 Team Management Modal ═══════════════════════════ */
+    .team-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      z-index: 9100; display: none; place-items: center;
+    }
+    .team-modal-overlay.open { display: grid; }
+    .team-modal {
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      border-radius: var(--r-xl); width: min(560px, 95vw);
+      max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .team-modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+    }
+    .team-modal-head h2 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin: 0; }
+    .team-modal-close {
+      background: none; border: none; color: var(--text-faint);
+      font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm);
+    }
+    .team-modal-close:hover { background: var(--bg-1); color: var(--text); }
+    .team-modal-tabs {
+      display: flex; gap: 2px; padding: 10px 20px 0;
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+    }
+    .team-modal-tab {
+      padding: 8px 14px; font-size: 12px; font-weight: 500;
+      color: var(--text-dim); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .team-modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .team-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .team-tab-panel { display: none; }
+    .team-tab-panel.active { display: block; }
+    /* Member list */
+    .team-member-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .team-member-row {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: var(--bg-1); border-radius: var(--r-md); border: 1px solid var(--border);
+    }
+    .team-member-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent);
+      font-size: 12px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0;
+    }
+    .team-member-info { flex: 1; min-width: 0; }
+    .team-member-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .team-member-email { font-size: 11px; color: var(--text-faint); }
+    .team-role-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; padding: 3px 7px; border-radius: 99px; flex-shrink: 0;
+    }
+    .team-role-badge.owner  { background: rgba(167,139,250,.18); color: #a78bfa; }
+    .team-role-badge.editor { background: rgba(34,211,238,.12); color: #22d3ee; }
+    .team-role-badge.viewer { background: rgba(100,116,139,.15); color: #94a3b8; }
+    .team-status-pill { font-size: 10px; padding: 2px 6px; border-radius: 99px; flex-shrink: 0; }
+    .team-status-pill.active  { background: rgba(52,211,153,.12); color: #34d399; }
+    .team-status-pill.pending { background: rgba(251,191,36,.12); color: #fbbf24; }
+    .team-member-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .team-member-btn {
+      font-size: 11px; padding: 3px 7px; border-radius: var(--r-sm);
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-dim); cursor: pointer;
+    }
+    .team-member-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .team-member-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+    /* Invite form */
+    .team-invite-form { display: flex; flex-direction: column; gap: 14px; }
+    .team-invite-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+    .team-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+    .team-field label { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+    .team-field input, .team-field select {
+      padding: 8px 10px; background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text); font-size: 13px;
+    }
+    .team-field input:focus, .team-field select:focus { border-color: var(--accent); outline: none; }
+    .team-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+      background-size: 14px; padding-right: 28px;
+    }
+    .team-invite-btn {
+      padding: 8px 16px; background: var(--accent); color: #fff; border: none;
+      border-radius: var(--r-sm); font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; align-self: flex-end;
+    }
+    .team-invite-btn:hover { filter: brightness(1.1); }
+    /* Permissions table */
+    .team-perm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .team-perm-table th {
+      text-align: left; padding: 8px 10px; color: var(--text-dim);
+      font-weight: 500; border-bottom: 1px solid var(--border);
+    }
+    .team-perm-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .team-perm-table tr:last-child td { border-bottom: none; }
+    .team-perm-check { color: #34d399; font-size: 14px; }
+    .team-perm-cross { color: #475569; font-size: 14px; }
+    /* Plan gate */
+    .team-gate { text-align: center; padding: 32px 20px; }
+    .team-gate .team-gate-icon { font-size: 38px; margin-bottom: 12px; }
+    .team-gate h3 { font-size: 15px; margin: 0 0 8px; color: var(--text); }
+    .team-gate p { font-size: 13px; color: var(--text-faint); margin: 0 0 20px; line-height: 1.6; }
+    .team-gate-btn {
+      padding: 10px 22px; background: var(--accent); color: #fff; border: none;
+      border-radius: var(--r-md); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .team-gate-btn:hover { filter: brightness(1.1); }
+    /* ═══════════════════════════════════════════════════════════ */
+
     /* ════════════════════════════════════════════════════════════
        ▓▓▓ SIDEBAR — Section labels (MAIN/CREATE/MEMORY/SYSTEM)
        ════════════════════════════════════════════════════════════ */
@@ -24934,7 +25044,124 @@
           <p>플랜, 사용량, 결제 내역</p>
           <button class="settings-cta" id="billing-manage-btn">관리</button>
         </article>
+
+        <!-- Team Card — P2-07 -->
+        <article class="settings-card" id="settings-team-card">
+          <div class="settings-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3>Team</h3>
+          <p id="team-card-summary">팀원 초대 · 역할 관리 · 협업 권한 설정</p>
+          <button class="settings-cta" id="team-manage-btn">관리</button>
+        </article>
       </div>
+
+      <!-- P2-07 Team Management Modal ══════════════════════════════ -->
+      <div class="team-modal-overlay" id="team-modal-overlay"
+           role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+        <div class="team-modal">
+          <!-- Header -->
+          <div class="team-modal-head">
+            <h2 id="team-modal-title">👥 팀 관리</h2>
+            <button class="team-modal-close" id="team-modal-close" aria-label="닫기">✕</button>
+          </div>
+          <!-- Tabs -->
+          <div class="team-modal-tabs" id="team-modal-tabs">
+            <button class="team-modal-tab active" data-team-tab="members">팀원 목록</button>
+            <button class="team-modal-tab" data-team-tab="invite">초대</button>
+            <button class="team-modal-tab" data-team-tab="permissions">권한 안내</button>
+          </div>
+          <!-- Body -->
+          <div class="team-modal-body">
+            <!-- ① Members -->
+            <div class="team-tab-panel active" id="team-panel-members">
+              <div class="team-member-list" id="team-member-list"></div>
+              <p style="font-size:12px;color:var(--text-faint);margin:0">
+                * Team 플랜 사용자만 팀원을 초대·관리할 수 있습니다.
+              </p>
+            </div>
+
+            <!-- ② Invite -->
+            <div class="team-tab-panel" id="team-panel-invite">
+              <div class="team-invite-form">
+                <div class="team-invite-row">
+                  <div class="team-field" style="flex:2">
+                    <label>이메일 주소</label>
+                    <input type="email" id="team-invite-email" placeholder="colleague@example.com" />
+                  </div>
+                  <div class="team-field" style="flex:1">
+                    <label>역할</label>
+                    <select id="team-invite-role">
+                      <option value="editor">Editor</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                  </div>
+                  <button class="team-invite-btn" id="team-invite-send">초대 보내기</button>
+                </div>
+                <p style="font-size:12px;color:var(--text-faint);margin:0;line-height:1.6">
+                  초대 이메일이 발송되며, 수락 시 팀원으로 추가됩니다.<br>
+                  Team 플랜 기본 시트: 최대 <strong>5명</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- ③ Permissions -->
+            <div class="team-tab-panel" id="team-panel-permissions">
+              <table class="team-perm-table">
+                <thead>
+                  <tr>
+                    <th>기능</th>
+                    <th>Owner</th>
+                    <th>Editor</th>
+                    <th>Viewer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>프로젝트 열람</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td></tr>
+                  <tr><td>프로젝트 편집</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>프로젝트 삭제</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>팀원 초대</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>역할 변경</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>결제 관리</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>Export 다운로드</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td></tr>
+                  <tr><td>API 키 관리</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div><!-- /body -->
+        </div><!-- /team-modal -->
+      </div><!-- /overlay -->
+      <!-- /P2-07 ══════════════════════════════════════════════════ -->
+
     </section>
 
     <!-- ================ PAGE: ADMIN (관리자 — 인증 보호) ================ -->
@@ -57527,6 +57754,254 @@ setInterval(checkR2Health, 30000);
 
   window.openUpgradeCheckout = openUpgradeCheckout;
 })();
+
+/* ════════════════════════════════════════════════════════════
+   P2-07 Team Management — 팀 초대 · 역할 관리 · 협업 권한
+   openTeamPanel() / closeTeamPanel() 전역 노출
+   localStorage key: soaviz.team.members
+   ════════════════════════════════════════════════════════════ */
+(function initTeamManagement() {
+  const LS_KEY     = 'soaviz.team.members';
+  const MAX_SEATS  = 5;   // Team 플랜 기본 시트
+
+  /* ── Data ── */
+  function getMembers() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+    catch (_) { return []; }
+  }
+  function saveMembers(arr) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+    catch (_) {}
+  }
+  function ensureOwner() {
+    if (getMembers().length > 0) return;
+    saveMembers([{
+      id: 'owner_' + Date.now(),
+      name: '은교',
+      email: 'ai@soaviz.com',
+      role: 'owner',
+      status: 'active',
+      joinedAt: new Date().toISOString(),
+      isMe: true
+    }]);
+  }
+
+  /* ── Helpers ── */
+  function initials(name) {
+    return (name || '?').trim().replace(/\s+/g, '').slice(0, 2).toUpperCase();
+  }
+  function isTeamPlan() {
+    return (typeof getCurrentPlan === 'function' ? getCurrentPlan() : 'free') === 'team';
+  }
+
+  /* ── Render: member list ── */
+  function renderMembers() {
+    const el = document.getElementById('team-member-list');
+    if (!el) return;
+
+    if (!isTeamPlan()) {
+      const cur = typeof getCurrentPlan === 'function' ? getCurrentPlan().toUpperCase() : 'FREE';
+      el.innerHTML = `
+        <div class="team-gate">
+          <div class="team-gate-icon">👥</div>
+          <h3>Team 플랜 전용 기능</h3>
+          <p>팀원을 초대하고 역할을 관리하려면 Team 플랜이 필요합니다.<br>
+             현재 플랜: <strong>${cur}</strong></p>
+          <button class="team-gate-btn"
+                  onclick="if(typeof openUpgradeCheckout==='function')openUpgradeCheckout('team');closeTeamPanel()">
+            Team 플랜 문의하기
+          </button>
+        </div>`;
+      return;
+    }
+
+    const members = getMembers();
+    if (!members.length) {
+      el.innerHTML = `<p style="color:var(--text-faint);font-size:13px;text-align:center;padding:24px 0">
+        팀원이 없습니다. [초대] 탭에서 팀원을 초대하세요.</p>`;
+      return;
+    }
+
+    el.innerHTML = members.map(m => `
+      <div class="team-member-row" data-member-id="${m.id}">
+        <div class="team-member-avatar">${initials(m.name)}</div>
+        <div class="team-member-info">
+          <div class="team-member-name">${m.name || ''}${m.isMe
+            ? ' <span style="font-size:10px;color:var(--text-faint)">(나)</span>' : ''}</div>
+          <div class="team-member-email">${m.email}</div>
+        </div>
+        <span class="team-role-badge ${m.role}">${m.role.toUpperCase()}</span>
+        <span class="team-status-pill ${m.status}">${m.status === 'pending' ? '대기 중' : '활성'}</span>
+        ${!m.isMe ? `<div class="team-member-actions">
+          <button class="team-member-btn" onclick="window._teamChangeRole('${m.id}')">역할 변경</button>
+          <button class="team-member-btn danger" onclick="window._teamRemove('${m.id}')">제거</button>
+        </div>` : ''}
+      </div>`).join('');
+  }
+
+  /* ── Render: invite tab (plan gate) ── */
+  function renderInviteTab() {
+    const el = document.getElementById('team-panel-invite');
+    if (!el) return;
+    if (!isTeamPlan()) {
+      el.innerHTML = `
+        <div class="team-gate">
+          <div class="team-gate-icon">✉️</div>
+          <h3>초대 기능은 Team 플랜 전용입니다</h3>
+          <p>Team 플랜으로 업그레이드하면 최대 ${MAX_SEATS}명의 팀원을 초대할 수 있습니다.</p>
+          <button class="team-gate-btn"
+                  onclick="if(typeof openUpgradeCheckout==='function')openUpgradeCheckout('team');closeTeamPanel()">
+            Team 플랜 문의하기
+          </button>
+        </div>`;
+    }
+    // team plan: HTML already in DOM; just reset input
+    else {
+      const emailEl = document.getElementById('team-invite-email');
+      if (emailEl) emailEl.value = '';
+    }
+  }
+
+  /* ── Card summary ── */
+  function updateCardSummary() {
+    const el = document.getElementById('team-card-summary');
+    if (!el) return;
+    if (!isTeamPlan()) {
+      el.textContent = '팀원 초대 · 역할 관리 · 협업 권한 설정';
+      return;
+    }
+    const members = getMembers();
+    const active  = members.filter(m => m.status === 'active').length;
+    const pending = members.filter(m => m.status === 'pending').length;
+    el.textContent = `${active}명 활성${pending ? ` · ${pending}명 초대 중` : ''} · 최대 ${MAX_SEATS}명`;
+  }
+
+  /* ── Open / Close ── */
+  function openTeamPanel() {
+    ensureOwner();
+    const overlay = document.getElementById('team-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    activateTab('members');
+    renderMembers();
+    renderInviteTab();
+  }
+  function closeTeamPanel() {
+    const overlay = document.getElementById('team-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.openTeamPanel  = openTeamPanel;
+  window.closeTeamPanel = closeTeamPanel;
+
+  /* ── Tab helper ── */
+  function activateTab(name) {
+    document.querySelectorAll('.team-modal-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.teamTab === name);
+    });
+    document.querySelectorAll('.team-tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === `team-panel-${name}`);
+    });
+  }
+
+  /* ── Member actions ── */
+  window._teamRemove = function(id) {
+    if (!confirm('이 팀원을 제거할까요?')) return;
+    saveMembers(getMembers().filter(m => m.id !== id));
+    renderMembers();
+    updateCardSummary();
+    if (typeof showToast === 'function') showToast('팀원이 제거됐습니다.', 'info');
+  };
+  window._teamChangeRole = function(id) {
+    const cycle   = ['editor', 'viewer'];
+    const members = getMembers();
+    const m       = members.find(x => x.id === id);
+    if (!m) return;
+    m.role = cycle[(cycle.indexOf(m.role) + 1) % cycle.length];
+    saveMembers(members);
+    renderMembers();
+    if (typeof showToast === 'function') showToast(`역할이 ${m.role.toUpperCase()}로 변경됐습니다.`, 'info');
+  };
+
+  /* ── Event binding ── */
+  function bindEvents() {
+    /* Open button */
+    document.getElementById('team-manage-btn')?.addEventListener('click', openTeamPanel);
+
+    /* Close */
+    document.getElementById('team-modal-close')?.addEventListener('click', closeTeamPanel);
+    document.getElementById('team-modal-overlay')?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeTeamPanel();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const ov = document.getElementById('team-modal-overlay');
+        if (ov?.classList.contains('open')) closeTeamPanel();
+      }
+    });
+
+    /* Tab switching */
+    document.getElementById('team-modal-tabs')?.addEventListener('click', e => {
+      const btn = e.target.closest('.team-modal-tab');
+      if (!btn) return;
+      const name = btn.dataset.teamTab;
+      activateTab(name);
+      if (name === 'members') renderMembers();
+      if (name === 'invite')  renderInviteTab();
+    });
+
+    /* Invite send */
+    document.getElementById('team-invite-send')?.addEventListener('click', () => {
+      const emailEl = document.getElementById('team-invite-email');
+      const roleEl  = document.getElementById('team-invite-role');
+      const email   = (emailEl?.value || '').trim();
+      const role    = roleEl?.value || 'editor';
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (typeof showToast === 'function') showToast('올바른 이메일 주소를 입력해주세요.', 'warn');
+        return;
+      }
+      const members = getMembers();
+      if (members.find(m => m.email === email)) {
+        if (typeof showToast === 'function') showToast('이미 팀원으로 등록된 이메일입니다.', 'warn');
+        return;
+      }
+      const guests = members.filter(m => !m.isMe);
+      if (guests.length >= MAX_SEATS - 1) {
+        if (typeof showToast === 'function') showToast(`최대 ${MAX_SEATS}명까지 초대할 수 있습니다.`, 'warn');
+        return;
+      }
+      members.push({
+        id: 'mbr_' + Date.now().toString(36),
+        name: email.split('@')[0],
+        email,
+        role,
+        status: 'pending',
+        joinedAt: new Date().toISOString(),
+        isMe: false
+      });
+      saveMembers(members);
+      if (emailEl) emailEl.value = '';
+      updateCardSummary();
+      if (typeof showToast === 'function')
+        showToast(`${email}에게 초대를 발송했습니다. (이메일 서버 연결 후 실제 발송)`, 'info');
+      activateTab('members');
+      renderMembers();
+    });
+
+    /* Init card summary */
+    updateCardSummary();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindEvents);
+  } else {
+    bindEvents();
+  }
+})();
+/* ═════════════════════════════════════════════════════════════ */
 
 /* ════════════════════════════════════════════════════════════
    MOBILE APP SHELL — 768px 이하 전용 라우터 + 렌더 시스템
