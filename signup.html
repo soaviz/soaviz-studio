@@ -355,6 +355,30 @@
       transform: translateY(-1px);
       box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
     }
+    .auth-btn:active:not(:disabled) {
+      transform: scale(0.97);
+      transition: transform 0.08s;
+    }
+    @media (hover: none) {
+      /* 터치 디바이스: hover 상태 제거, active만 사용 */
+      .auth-btn:hover:not(:disabled) {
+        transform: none;
+        box-shadow: none;
+      }
+      .auth-btn:active:not(:disabled) {
+        transform: scale(0.96);
+        background: rgba(255,255,255,0.07);
+      }
+      .auth-btn.google-btn:active:not(:disabled) {
+        background: rgba(66,133,244,0.08);
+      }
+      .auth-btn.ms-btn:active:not(:disabled) {
+        background: rgba(0,120,212,0.08);
+      }
+      /* 모바일에서 버튼 좀 더 크게 */
+      .auth-btn { padding: 14px 18px; }
+      .auth-tabs .auth-tab { padding: 11px 14px; }
+    }
     .auth-btn.google-btn:hover:not(:disabled) {
       border-color: rgba(66,133,244,0.40);
       background: rgba(66,133,244,0.06);
@@ -831,12 +855,14 @@
         if (event === 'SIGNED_IN' && session?.user) {
           const user = session.user;
           const meta = user.user_metadata || {};
+          const rawProvider = user.app_metadata?.provider || 'google';
+          const providerLabel = { google: 'Google', azure: 'Microsoft', github: 'GitHub', email: '이메일' }[rawProvider] || rawProvider;
           const profile = {
             name:         meta.full_name || meta.name || (user.email || '').split('@')[0] || 'User',
             email:        user.email || '',
             picture:      meta.avatar_url || meta.picture || null,
             photoUrl:     meta.avatar_url || meta.picture || null,
-            authProvider: user.app_metadata?.provider || 'google',
+            authProvider: rawProvider,
             providerSub:  user.id,
             supabaseId:   user.id,
             plan:         'pro',   // 베타 기간: 로그인 = Pro 전체 액세스
@@ -848,7 +874,7 @@
           // 이미 처리됐으면 중복 실행 방지
           if (window._sbAuthHandled) return;
           window._sbAuthHandled = true;
-          finishAuth(profile, `✓ Google 로그인 — ${profile.name}`);
+          finishAuth(profile, `✓ ${providerLabel} 로그인 — ${profile.name}`);
         }
       });
     }
