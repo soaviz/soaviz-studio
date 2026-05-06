@@ -10543,6 +10543,136 @@
       border-radius: 6px;
     }
 
+    /* ═══ Flow Guide (A안: Today 동적 허브) ═══ */
+    #td-flow-guide {
+      margin-bottom: 20px;
+      padding: 18px 20px 16px;
+      border-radius: var(--r-xl);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .fg-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .fg-project-tag {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+      border-radius: 999px;
+      padding: 2px 10px;
+    }
+    .fg-project-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+    }
+    /* progress row */
+    .fg-progress {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .fg-progress::-webkit-scrollbar { display: none; }
+    .fg-dot {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; min-width: 52px; position: relative;
+    }
+    .fg-dot-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 15px;
+      border: 2px solid var(--border);
+      background: var(--bg-1);
+      transition: all 0.2s;
+    }
+    .fg-dot--done .fg-dot-icon {
+      background: color-mix(in srgb, #6ee7b7 15%, transparent);
+      border-color: #6ee7b7;
+    }
+    .fg-dot--current .fg-dot-icon {
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+    .fg-dot--pending .fg-dot-icon {
+      opacity: 0.38;
+    }
+    .fg-dot-label {
+      font-size: 9.5px; color: var(--text-faint); text-align: center;
+      white-space: nowrap; letter-spacing: 0.03em;
+    }
+    .fg-dot--done .fg-dot-label { color: #6ee7b7; }
+    .fg-dot--current .fg-dot-label { color: var(--accent); font-weight: 700; }
+    .fg-dot-arrow {
+      font-size: 9px; color: var(--accent);
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    }
+    .fg-dot-connector {
+      flex: 1; height: 2px;
+      background: var(--border);
+      min-width: 12px; max-width: 28px;
+      margin-bottom: 14px;
+    }
+    /* CTA card */
+    .fg-cta {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 16px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      background: var(--bg-1);
+    }
+    .fg-cta--next {
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+    .fg-cta--done {
+      border-color: color-mix(in srgb, #6ee7b7 35%, transparent);
+      background: color-mix(in srgb, #6ee7b7 6%, transparent);
+    }
+    .fg-cta--start {
+      border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
+    .fg-cta-icon { font-size: 22px; flex-shrink: 0; }
+    .fg-cta-text {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .fg-cta-text strong {
+      font-size: 13px; font-weight: 700; color: var(--text);
+    }
+    .fg-cta-text span {
+      font-size: 11px; color: var(--text-faint);
+    }
+    .fg-cta-btn {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: var(--bg-elev);
+      color: var(--text);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .fg-cta-btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent); }
+    .fg-cta-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0d0d14;
+    }
+    .fg-cta-btn.primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    @media (max-width: 600px) {
+      .fg-cta { flex-wrap: wrap; }
+      .fg-cta-btn { width: 100%; text-align: center; }
+      .fg-dot { min-width: 40px; }
+      .fg-dot-icon { width: 28px; height: 28px; font-size: 13px; }
+    }
+
     /* ═══ Production Signature Cards ═══ */
     .td-sig-card {
       padding: 18px 20px;
@@ -24211,6 +24341,9 @@
         </button>
       </div>
 
+      <!-- A안: 동적 제작 흐름 가이드 -->
+      <div id="td-flow-guide" aria-label="제작 흐름 가이드"></div>
+
       <!-- Hero: Last Work (좌, 프로젝트 투두) + Calendar (우) — 2-컬럼 -->
       <div class="td-hero-grid">
         <!-- LAST WORK = 현재 프로젝트 투두 리스트 -->
@@ -27533,6 +27666,7 @@ function renderTodayPage() {
     try { renderStuckPoints(); } catch (_) {}
     try { renderQuickResume(); } catch (_) {}
     try { renderResumeMessage(); } catch (_) {}
+    try { renderFlowGuide(); } catch (_) {}
 
     // Today's recent activity
     const recent = $('#today-recent');
@@ -27561,6 +27695,183 @@ function renderTodayPage() {
     try { bindTodayPage?.(); } catch (_) {}
   }).catch(e => console.error('[renderTodayPage]', e));
 }
+
+/* ─── renderFlowGuide: A안 — 제작 흐름 동적 가이드 ─── */
+async function renderFlowGuide() {
+  const wrap = document.getElementById('td-flow-guide');
+  if (!wrap) return;
+
+  /* 1. 활성 프로젝트 이름 */
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  let projectName = null;
+  if (activeId) {
+    try {
+      const projs = JSON.parse(localStorage.getItem('soaviz_projects') || '[]');
+      const p = projs.find(x => String(x.id) === String(activeId));
+      if (p) projectName = p.title || p.name || null;
+    } catch (_) {}
+    if (!projectName && typeof SoavizDB !== 'undefined' && SoavizDB.db) {
+      try {
+        const p = await SoavizDB.db.projects.get(Number(activeId));
+        if (p) projectName = p.title || p.name || null;
+      } catch (_) {}
+    }
+  }
+
+  /* 2. 각 단계 완료 여부 감지 */
+
+  // Story
+  let hasStory = false;
+  try {
+    const sc = JSON.parse(localStorage.getItem('soaviz.story.cache.v1') || 'null');
+    hasStory = !!(sc && (sc.synopsis || sc.concept || sc.world || (Array.isArray(sc.characters) && sc.characters.length)));
+  } catch (_) {}
+
+  // 캐릭터
+  let hasCharacters = false;
+  try {
+    if (typeof SoavizDB !== 'undefined' && SoavizDB.db) {
+      const cnt = await SoavizDB.db.assets.where('type').equals('character').count();
+      hasCharacters = cnt > 0;
+    }
+  } catch (_) {}
+  if (!hasCharacters) {
+    try {
+      const la = JSON.parse(localStorage.getItem('soaviz.library.assets.v1') || '[]');
+      hasCharacters = la.some(a => (a.type || a.assetType || '') === 'character');
+    } catch (_) {}
+  }
+
+  // 샷 리스트
+  let hasShots = false;
+  try {
+    const sl = JSON.parse(localStorage.getItem('soaviz_sl_saved') || 'null');
+    if (sl) hasShots = Array.isArray(sl) ? sl.length > 0 : Object.keys(sl).length > 0;
+  } catch (_) {}
+
+  // 이미지 생성
+  let hasImages = false;
+  try {
+    const imgs = JSON.parse(localStorage.getItem('soaviz_sl_images') || '[]');
+    hasImages = Array.isArray(imgs) && imgs.length > 0;
+  } catch (_) {}
+
+  // 영상
+  let hasVideos = false;
+  try {
+    if (typeof SoavizDB !== 'undefined' && SoavizDB.db) {
+      const cnt = await SoavizDB.db.assets.where('type').equals('video').count();
+      hasVideos = cnt > 0;
+    }
+  } catch (_) {}
+  if (!hasVideos) {
+    try {
+      const la = JSON.parse(localStorage.getItem('soaviz.library.assets.v1') || '[]');
+      hasVideos = la.some(a => ['video','clip'].includes(a.type || a.assetType || ''));
+    } catch (_) {}
+  }
+
+  // 보이스
+  let hasVoice = false;
+  try {
+    if (typeof SoavizDB !== 'undefined' && SoavizDB.db) {
+      const cnt = await SoavizDB.db.assets.where('type').anyOf(['voice','audio','tts']).count();
+      hasVoice = cnt > 0;
+    }
+  } catch (_) {}
+  if (!hasVoice) {
+    try {
+      const la = JSON.parse(localStorage.getItem('soaviz.library.assets.v1') || '[]');
+      hasVoice = la.some(a => ['voice','audio','tts'].includes(a.type || a.assetType || ''));
+    } catch (_) {}
+  }
+
+  /* 3. 단계 정의 */
+  const STAGES = [
+    { id:'story',  icon:'📝', label:'스토리',   done:hasStory,      ctaLabel:'시나리오 만들기 →',  ctaPage:'personas',     ctaFn:null },
+    { id:'char',   icon:'🎭', label:'캐릭터',   done:hasCharacters, ctaLabel:'캐릭터 만들기 →',   ctaPage:'characters',   ctaFn:null },
+    { id:'shots',  icon:'🎬', label:'샷 리스트', done:hasShots,      ctaLabel:'샷 리스트 작성 →',  ctaPage:'pipeline',     ctaFn:null },
+    { id:'images', icon:'🖼️', label:'이미지',   done:hasImages,     ctaLabel:'이미지 생성하기 →', ctaPage:'pipeline',     ctaFn:"switchPipelineTab&&switchPipelineTab('imagegen')" },
+    { id:'video',  icon:'🎥', label:'영상',     done:hasVideos,     ctaLabel:'영상 제작하기 →',   ctaPage:'sync',         ctaFn:null },
+    { id:'voice',  icon:'🔊', label:'보이스',   done:hasVoice,      ctaLabel:'보이스 만들기 →',   ctaPage:'voice-studio', ctaFn:null },
+  ];
+
+  const firstIncompleteIdx = STAGES.findIndex(s => !s.done);
+  const allDone = firstIncompleteIdx === -1;
+  const currentStage = allDone ? null : STAGES[firstIncompleteIdx];
+  const completedCount = STAGES.filter(s => s.done).length;
+
+  /* 4. 진행 바 HTML */
+  const dotsHtml = STAGES.map((s, i) => {
+    const state = s.done ? 'done' : (i === firstIncompleteIdx ? 'current' : 'pending');
+    return `<div class="fg-dot fg-dot--${state}" title="${s.label}">
+      ${state === 'current' ? '<span class="fg-dot-arrow">▼</span>' : ''}
+      <span class="fg-dot-icon">${s.icon}</span>
+      <span class="fg-dot-label">${s.label}</span>
+    </div>${i < STAGES.length - 1 ? '<div class="fg-dot-connector"></div>' : ''}`;
+  }).join('');
+
+  /* 5. CTA 카드 HTML */
+  let ctaHtml = '';
+  if (allDone) {
+    ctaHtml = `<div class="fg-cta fg-cta--done">
+      <span class="fg-cta-icon">🎉</span>
+      <div class="fg-cta-text">
+        <strong>모든 단계 완료!</strong>
+        <span>라이브러리에서 최종 결과물을 확인하고 공유하세요.</span>
+      </div>
+      <button class="fg-cta-btn primary" onclick="showPage('library')">라이브러리 열기 →</button>
+    </div>`;
+  } else if (firstIncompleteIdx === 0) {
+    ctaHtml = `<div class="fg-cta fg-cta--start">
+      <span class="fg-cta-icon">✨</span>
+      <div class="fg-cta-text">
+        <strong>새 작품을 시작하세요</strong>
+        <span>시나리오와 세계관 설정부터 — 단계별로 안내해드릴게요.</span>
+      </div>
+      <button class="fg-cta-btn primary" onclick="showPage('personas')">시나리오 만들기 →</button>
+    </div>`;
+  } else {
+    const prevStage = STAGES[firstIncompleteIdx - 1];
+    const ctaOnclick = currentStage.ctaFn
+      ? `showPage('${currentStage.ctaPage}');setTimeout(()=>{try{${currentStage.ctaFn}}catch(_){}},200)`
+      : `showPage('${currentStage.ctaPage}')`;
+    ctaHtml = `<div class="fg-cta fg-cta--next">
+      <span class="fg-cta-icon">${currentStage.icon}</span>
+      <div class="fg-cta-text">
+        <strong>다음 단계: ${currentStage.label}</strong>
+        <span>${prevStage.label} 완료 &rarr; ${completedCount}/${STAGES.length} 진행 중</span>
+      </div>
+      <button class="fg-cta-btn primary" onclick="${ctaOnclick}">${currentStage.ctaLabel}</button>
+    </div>`;
+  }
+
+  /* 6. td-start-recommendation 동적 업데이트 */
+  const rec = document.getElementById('td-start-recommendation');
+  if (rec) {
+    if (allDone) {
+      rec.textContent = '모든 제작 단계 완료! 라이브러리에서 결과물을 확인하세요.';
+    } else if (currentStage) {
+      rec.textContent = `다음 단계: ${currentStage.label} — ${currentStage.ctaLabel}`;
+    }
+  }
+
+  /* 7. 프로젝트 태그 */
+  const projHtml = projectName
+    ? `<div class="fg-project-tag"><span class="fg-project-dot"></span>${typeof escapeHTML === 'function' ? escapeHTML(projectName) : projectName}</div>`
+    : '';
+
+  /* 8. 최종 렌더 */
+  wrap.innerHTML = `
+    <div class="fg-header">
+      <span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:700">🗺&nbsp;제작 흐름 가이드</span>
+      ${projHtml}
+    </div>
+    <div class="fg-progress">${dotsHtml}</div>
+    ${ctaHtml}
+  `;
+}
+window.renderFlowGuide = renderFlowGuide;
 
 function bindTodayPage() {
   document.querySelectorAll('[data-today-page]').forEach(btn => {
