@@ -17738,6 +17738,43 @@
   .ctx-proj-name { max-width: 120px; }
 }
 /* ============ /CONTEXT STRIP (P2) ============ */
+
+/* ============ AUTO ORGANIZER (P3) ============ */
+.wb-org-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.wb-org-btn:hover { border-color: var(--accent); color: var(--accent); }
+.wb-org-btn.running { opacity: .6; cursor: wait; }
+
+.wb-org-report {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 300px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  z-index: 200;
+  box-shadow: 0 8px 32px rgba(0,0,0,.45);
+  animation: wb-org-in .2s ease;
+}
+@keyframes wb-org-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.wb-org-report-title { font-size: 13px; font-weight: 700; margin: 0 0 10px; }
+.wb-org-report-item  { font-size: 12px; color: var(--text-faint); padding: 4px 0; display: flex; gap: 8px; align-items: center; }
+.wb-org-report-item span:first-child { flex: 0 0 auto; font-size: 14px; }
+.wb-org-report-num   { font-weight: 700; color: var(--accent); }
+.wb-org-close        { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 16px; padding: 2px 6px; }
+/* ============ /AUTO ORGANIZER (P3) ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -25298,6 +25335,9 @@
         <div class="wb-panel">
           <p class="wb-panel-title">프로젝트 현황</p>
           <div class="wb-stat-row" id="wb-stats"></div>
+          <button class="wb-org-btn" id="wb-org-btn" onclick="_wbRunOrganizer()" style="margin-top:10px;width:100%;justify-content:center;">
+            🗂 자동 정리 실행
+          </button>
         </div>
         <div class="wb-panel">
           <p class="wb-panel-title">최근 활동</p>
@@ -47081,6 +47121,144 @@ async function renderWorkbenchPage() {
 
 // SoavizProductionOS에 workbench 모듈 등록
 window.SoavizProductionOS.register('workbench', { render: renderWorkbenchPage, stages: WB_STAGES });
+
+// ══════════════════════════════════════════════════════════════
+//  P3: Auto Organizer
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * SoavizProductionOS.autoOrganize(projectId)
+ * 비파괴적 스캔 → 자동 수정 → 리포트 반환
+ * 수정 항목:
+ *   1. 제목 없는 샷 → "Shot N" 자동명명
+ *   2. status 없는 assets → 'draft' 설정
+ *   3. status 없는 shots → 'draft' 설정
+ *   4. 고아 scenes (parentId가 존재하지 않는 episode) → 탐지만
+ * Returns: { fixed: Number, orphans: Number, details: [...] }
+ */
+window.SoavizProductionOS.register('autoOrganize', async function(projectId) {
+  if (!projectId) return { fixed: 0, orphans: 0, details: [] };
+
+  const details = [];
+  let fixed = 0, orphans = 0;
+
+  try {
+    // 1. 제목 없는 샷 자동명명
+    const allShots = await db.shots.where('projectId').equals(projectId).toArray().catch(()=>[]);
+    let shotIdx = 1;
+    for (const shot of allShots) {
+      if (!shot.title || !shot.title.trim()) {
+        await db.shots.update(shot.id, { title: `Shot ${shotIdx}`, updatedAt: Date.now() }).catch(()=>{});
+        fixed++;
+      }
+      shotIdx++;
+    }
+    if (fixed > 0) details.push({ icon: '🎬', text: `제목 없는 샷 ${fixed}개 이름 부여` });
+
+    // 2. status 없는 assets → draft
+    const allAssets = await db.assets.where('projectId').equals(projectId).toArray().catch(()=>[]);
+    let assetFixed = 0;
+    for (const a of allAssets) {
+      if (!a.status) {
+        await db.assets.update(a.id, { status: 'draft', updatedAt: Date.now() }).catch(()=>{});
+        assetFixed++;
+      }
+    }
+    if (assetFixed > 0) {
+      fixed += assetFixed;
+      details.push({ icon: '🖼', text: `상태 없는 이미지 ${assetFixed}개 → draft` });
+    }
+
+    // 3. status 없는 shots → draft
+    let shotStatusFixed = 0;
+    for (const shot of allShots) {
+      if (!shot.status) {
+        await db.shots.update(shot.id, { status: 'draft' }).catch(()=>{});
+        shotStatusFixed++;
+      }
+    }
+    if (shotStatusFixed > 0) {
+      fixed += shotStatusFixed;
+      details.push({ icon: '✦', text: `상태 없는 샷 ${shotStatusFixed}개 → draft` });
+    }
+
+    // 4. 고아 scenes 탐지 (수정 없이 카운트만)
+    const allEpIds = new Set((await db.episodes.where('projectId').equals(projectId).toArray().catch(()=>[])).map(e => e.id));
+    const allScenes = await db.scenes.where('projectId').equals(projectId).toArray().catch(()=>[]);
+    const orphanScenes = allScenes.filter(s => s.parentId && !allEpIds.has(s.parentId));
+    if (orphanScenes.length) {
+      orphans += orphanScenes.length;
+      details.push({ icon: '⚠️', text: `고아 씬 ${orphanScenes.length}개 발견 (수동 확인 필요)` });
+    }
+
+    // 5. 중복 캐릭터 탐지 (이름 동일)
+    const allChars = await db.characters.where('projectId').equals(projectId).toArray().catch(()=>[]);
+    const charNames = allChars.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean);
+    const dupNames = charNames.filter((n, i) => charNames.indexOf(n) !== i);
+    if (dupNames.length) {
+      orphans += dupNames.length;
+      details.push({ icon: '🧑', text: `중복 캐릭터 이름 ${[...new Set(dupNames)].length}건 발견` });
+    }
+
+    if (details.length === 0) {
+      details.push({ icon: '✅', text: '정리할 항목이 없어요. 프로젝트가 깔끔합니다!' });
+    }
+
+  } catch (e) {
+    details.push({ icon: '❌', text: `오류: ${e.message?.slice(0,50) || '알 수 없음'}` });
+  }
+
+  return { fixed, orphans, details };
+});
+
+/** 워크벤치 페이지에서 호출 */
+async function _wbRunOrganizer() {
+  const btn = document.getElementById('wb-org-btn');
+  if (btn) { btn.classList.add('running'); btn.textContent = '🔄 분석 중...'; }
+
+  // 기존 리포트 제거
+  document.getElementById('wb-org-report-el')?.remove();
+
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) {
+    if (btn) { btn.classList.remove('running'); btn.innerHTML = '🗂 자동 정리 실행'; }
+    showToast?.('활성 프로젝트를 먼저 선택하세요', 'warn');
+    return;
+  }
+
+  try {
+    const result = await window.SoavizProductionOS.get('autoOrganize')(activeId);
+    if (btn) { btn.classList.remove('running'); btn.innerHTML = '🗂 자동 정리 실행'; }
+
+    // 결과 리포트 표시
+    const report = document.createElement('div');
+    report.className = 'wb-org-report';
+    report.id = 'wb-org-report-el';
+    report.innerHTML = `
+      <button class="wb-org-close" onclick="this.parentElement.remove()">×</button>
+      <p class="wb-org-report-title">🗂 자동 정리 결과</p>
+      ${result.details.map(d => `
+        <div class="wb-org-report-item">
+          <span>${d.icon}</span>
+          <span>${d.text}</span>
+        </div>`).join('')}
+      ${result.fixed > 0 ? `<div style="margin-top:10px;font-size:11px;color:var(--text-faint)"><span class="wb-org-report-num">${result.fixed}</span>개 항목이 수정됐습니다</div>` : ''}
+    `;
+    document.body.appendChild(report);
+
+    // 5초 후 자동 제거
+    setTimeout(() => report?.remove(), 6000);
+
+    // 워크벤치 새로고침
+    if (result.fixed > 0) renderWorkbenchPage?.();
+
+  } catch (e) {
+    if (btn) { btn.classList.remove('running'); btn.innerHTML = '🗂 자동 정리 실행'; }
+    showToast?.('정리 중 오류가 발생했습니다', 'error');
+  }
+}
+
+
 
 async function renderPipelinePage() {
   if (typeof SoavizPipeline === 'undefined') return;
