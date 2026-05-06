@@ -30,6 +30,59 @@
   <link rel="icon" type="image/png" href="assets/brand/favicon.png" />
   <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png" />
 
+  <!-- JSON-LD Structured Data — P2-08 SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "soaviz studio",
+    "alternateName": "soaviz",
+    "url": "https://soaviz.studio",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web",
+    "description": "AI로 영상 만드는 가장 쉬운 방법. 스토리·캐릭터·룩북·보이스·음악·영상까지 한 화면에서.",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free",
+        "price": "0",
+        "priceCurrency": "KRW",
+        "description": "무료 플랜 — 핵심 도구 4종, 크레딧 200"
+      },
+      {
+        "@type": "Offer",
+        "name": "Standard",
+        "price": "19000",
+        "priceCurrency": "KRW",
+        "description": "Standard 플랜 — 도구 7종, 크레딧 5K/월"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro",
+        "price": "49000",
+        "priceCurrency": "KRW",
+        "description": "Pro 플랜 — 모든 도구, 크레딧 50K/월"
+      }
+    ],
+    "author": {
+      "@type": "Organization",
+      "name": "soaviz",
+      "url": "https://soaviz.studio"
+    },
+    "inLanguage": "ko-KR",
+    "screenshot": "https://soaviz.studio/assets/brand/og-image.png",
+    "featureList": [
+      "AI 영상 스토리보드 생성",
+      "캐릭터 바이블 관리",
+      "보이스 클로닝 & 생성",
+      "음악 AI 생성",
+      "영상 컷 비교 (Compare)",
+      "Pipeline 프로젝트 관리",
+      "팀 협업 지원"
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,6 +90,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&display=swap" />
   <!-- v3 M0.1: Dexie (IndexedDB wrapper) -->
   <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
+  <!-- Supabase Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <!-- PWA / 모바일 홈 화면 추가 지원 -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#A78BFA" />
@@ -58,8 +113,14 @@
       })(),
       sentryDsn: '',
       googleClientId: '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com',
-      // Stripe Payment Link 또는 Lemon Squeezy URL을 여기에 설정하세요.
+      // ── Stripe Payment Links (플랜별 URL 설정) ──────────────────
+      // Stripe Dashboard → Payment Links → URL 복사 후 아래에 붙여넣기
       // 예: 'https://buy.stripe.com/xxxxxxxx'
+      stripeUrls: {
+        standard: null,   // ← Standard 플랜 결제 링크
+        pro:      null,   // ← Pro 플랜 결제 링크
+      },
+      // 레거시 — 하위 호환용 (사용 안 함)
       checkoutUrl: null,
     };
   </script>
@@ -11185,6 +11246,116 @@
       background: rgba(167,139,250,0.18);
     }
 
+    /* ═══ P2-07 Team Management Modal ═══════════════════════════ */
+    .team-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      z-index: 9100; display: none; place-items: center;
+    }
+    .team-modal-overlay.open { display: grid; }
+    .team-modal {
+      background: var(--bg-card); border: 1px solid var(--border-strong);
+      border-radius: var(--r-xl); width: min(560px, 95vw);
+      max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .team-modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+    }
+    .team-modal-head h2 { font-family: var(--font-display); font-size: 17px; font-weight: 600; margin: 0; }
+    .team-modal-close {
+      background: none; border: none; color: var(--text-faint);
+      font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm);
+    }
+    .team-modal-close:hover { background: var(--bg-1); color: var(--text); }
+    .team-modal-tabs {
+      display: flex; gap: 2px; padding: 10px 20px 0;
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+    }
+    .team-modal-tab {
+      padding: 8px 14px; font-size: 12px; font-weight: 500;
+      color: var(--text-dim); background: none; border: none; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .team-modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .team-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .team-tab-panel { display: none; }
+    .team-tab-panel.active { display: block; }
+    /* Member list */
+    .team-member-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .team-member-row {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: var(--bg-1); border-radius: var(--r-md); border: 1px solid var(--border);
+    }
+    .team-member-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent);
+      font-size: 12px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0;
+    }
+    .team-member-info { flex: 1; min-width: 0; }
+    .team-member-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .team-member-email { font-size: 11px; color: var(--text-faint); }
+    .team-role-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; padding: 3px 7px; border-radius: 99px; flex-shrink: 0;
+    }
+    .team-role-badge.owner  { background: rgba(167,139,250,.18); color: #a78bfa; }
+    .team-role-badge.editor { background: rgba(34,211,238,.12); color: #22d3ee; }
+    .team-role-badge.viewer { background: rgba(100,116,139,.15); color: #94a3b8; }
+    .team-status-pill { font-size: 10px; padding: 2px 6px; border-radius: 99px; flex-shrink: 0; }
+    .team-status-pill.active  { background: rgba(52,211,153,.12); color: #34d399; }
+    .team-status-pill.pending { background: rgba(251,191,36,.12); color: #fbbf24; }
+    .team-member-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .team-member-btn {
+      font-size: 11px; padding: 3px 7px; border-radius: var(--r-sm);
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-dim); cursor: pointer;
+    }
+    .team-member-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .team-member-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+    /* Invite form */
+    .team-invite-form { display: flex; flex-direction: column; gap: 14px; }
+    .team-invite-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+    .team-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 120px; }
+    .team-field label { font-size: 11px; color: var(--text-dim); font-weight: 500; }
+    .team-field input, .team-field select {
+      padding: 8px 10px; background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text); font-size: 13px;
+    }
+    .team-field input:focus, .team-field select:focus { border-color: var(--accent); outline: none; }
+    .team-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+      background-size: 14px; padding-right: 28px;
+    }
+    .team-invite-btn {
+      padding: 8px 16px; background: var(--accent); color: #fff; border: none;
+      border-radius: var(--r-sm); font-size: 13px; font-weight: 600;
+      cursor: pointer; white-space: nowrap; align-self: flex-end;
+    }
+    .team-invite-btn:hover { filter: brightness(1.1); }
+    /* Permissions table */
+    .team-perm-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .team-perm-table th {
+      text-align: left; padding: 8px 10px; color: var(--text-dim);
+      font-weight: 500; border-bottom: 1px solid var(--border);
+    }
+    .team-perm-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .team-perm-table tr:last-child td { border-bottom: none; }
+    .team-perm-check { color: #34d399; font-size: 14px; }
+    .team-perm-cross { color: #475569; font-size: 14px; }
+    /* Plan gate */
+    .team-gate { text-align: center; padding: 32px 20px; }
+    .team-gate .team-gate-icon { font-size: 38px; margin-bottom: 12px; }
+    .team-gate h3 { font-size: 15px; margin: 0 0 8px; color: var(--text); }
+    .team-gate p { font-size: 13px; color: var(--text-faint); margin: 0 0 20px; line-height: 1.6; }
+    .team-gate-btn {
+      padding: 10px 22px; background: var(--accent); color: #fff; border: none;
+      border-radius: var(--r-md); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .team-gate-btn:hover { filter: brightness(1.1); }
+    /* ═══════════════════════════════════════════════════════════ */
+
     /* ════════════════════════════════════════════════════════════
        ▓▓▓ SIDEBAR — Section labels (MAIN/CREATE/MEMORY/SYSTEM)
        ════════════════════════════════════════════════════════════ */
@@ -14946,6 +15117,221 @@
     .cf-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
     .cf-tab-pane { display: none; }
     .cf-tab-pane.active { display: flex; flex-direction: column; gap: 14px; }
+    .cf-flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 12px 22px;
+      background: rgba(255,255,255,0.025);
+      border-bottom: 1px solid var(--border);
+    }
+    .cf-flow-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.025);
+      color: var(--text-faint);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .cf-flow-step-index {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      background: var(--bg-elev);
+      color: var(--text-dim);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cf-flow-step.active {
+      color: var(--accent);
+      border-color: rgba(167,139,250,0.45);
+      background: rgba(167,139,250,0.08);
+    }
+    .cf-flow-step.active .cf-flow-step-index {
+      color: white;
+      background: var(--accent);
+    }
+    .cf-flow-step.done {
+      color: var(--green, #34D399);
+      border-color: rgba(52,211,153,0.30);
+      background: rgba(52,211,153,0.055);
+    }
+    .cf-flow-card {
+      border: 1px solid rgba(167,139,250,0.22);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(255,255,255,0.025));
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .cf-flow-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .cf-flow-card-title {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .cf-flow-card-sub {
+      margin-top: 3px;
+      color: var(--text-faint);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .cf-prompt-preview {
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-1);
+      color: var(--text-dim);
+      font-family: var(--font-mono, Consolas, monospace);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .cf-flow-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .cf-flow-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .cf-flow-next.secondary {
+      background: var(--bg-elev);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .cf-keyimage-flow-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+      gap: 14px;
+      min-height: 360px;
+    }
+    .cf-flow-preview-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .cf-flow-thumb {
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: radial-gradient(circle at 50% 0%, rgba(167,139,250,0.10), transparent 60%), var(--bg-1);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--text-faint);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .cf-flow-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cf-review-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.15fr);
+      gap: 14px;
+    }
+    .cf-review-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      padding: 14px;
+      min-width: 0;
+    }
+    .cf-review-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .cf-review-row {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.055);
+      font-size: 12px;
+    }
+    .cf-review-row:last-child { border-bottom: 0; }
+    .cf-review-row span:first-child { color: var(--text-faint); }
+    .cf-review-row span:last-child { color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+    .cf-review-media {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+    }
+    .cf-review-media-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-1);
+    }
+    .cf-review-media-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+    .cf-review-media-item div {
+      padding: 7px 8px;
+      font-size: 10px;
+      color: var(--text-faint);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cf-review-empty {
+      border: 1px dashed var(--border-strong);
+      border-radius: 8px;
+      padding: 18px;
+      color: var(--text-faint);
+      font-size: 12px;
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+    }
+    @media (max-width: 860px) {
+      .cf-flow-steps { grid-template-columns: repeat(2, 1fr); }
+      .cf-keyimage-flow-grid,
+      .cf-review-grid { grid-template-columns: 1fr; }
+    }
 
     /* ── 캐릭터 시트 레이아웃 ── */
     .csheet-layout {
@@ -21491,7 +21877,7 @@
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
       </svg>
     </button>
-    <button class="pro-upgrade-btn" id="top-pro-btn" aria-label="Pro로 업그레이드" title="Pro로 업그레이드 — 30개 프로젝트, 50GB, 4K 내보내기">
+    <button class="pro-upgrade-btn" id="top-pro-btn" aria-label="베타 앱 액세스" title="로그인하면 베타 앱에 접근할 수 있습니다. 제작 토큰은 크레딧 또는 BYOK가 필요합니다">
       <span class="pro-shine"></span>
       <svg class="pro-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <!-- 다이아몬드: 위·옆·아래 라인 -->
@@ -21499,7 +21885,7 @@
         <path d="M11 3 8 9l4 12 4-12-3-6"/>
         <path d="M2 9h20"/>
       </svg>
-      <span class="pro-label">PRO</span>
+      <span class="pro-label">BETA</span>
     </button>
     <button class="icon-btn" id="top-settings-btn" aria-label="설정" title="Settings">
       <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -21512,7 +21898,7 @@
       </svg>
       <span>로그아웃</span>
     </button>
-    <button class="top-signin-btn" id="top-signin-btn" type="button" aria-label="Sign In" title="Sign In" style="display:none">Sign In</button>
+    <button class="top-signin-btn" id="top-signin-btn" type="button" aria-label="베타 로그인" title="베타 로그인" style="display:none">베타 로그인</button>
     <div class="avatar" id="user-avatar" title="프로필"></div>
   </div>
 </header>
@@ -23467,7 +23853,7 @@
             </p>
             <div class="landing-actions">
               <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
-              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="샘플로 체험하기" onclick="startLandingSample()">샘플로 체험하기</button>
+              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="Pipeline 살펴보기" onclick="startLandingSample()">Pipeline 살펴보기</button>
             </div>
             <p class="landing-note">얼리 액세스 · 완전 무료 · 설치 없음</p>
           </div>
@@ -24357,16 +24743,26 @@
         </main>
       </div>
 
-      <!-- 동기 재생 컨트롤 바 (2개 이상 done일 때만 표시) -->
-      <div id="cmp-sync-bar" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-top:12px">
-        <span style="font-size:12px;font-weight:600;color:var(--text)">🎬 동기 재생</span>
-        <button id="cmp-sync-play" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">▶ 전체 재생</button>
-        <button id="cmp-sync-pause" style="padding:5px 14px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">⏸ 전체 정지</button>
-        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:5px;cursor:pointer">
-          <input type="checkbox" id="cmp-sync-toggle" checked style="accent-color:var(--accent)" />
-          seek 동기화
-        </label>
-        <span id="cmp-sync-pos" style="font-size:11px;color:var(--text-faint);margin-left:auto">00:00</span>
+      <!-- 동기 재생 컨트롤 바 (2개 이상 done일 때만 표시) — Day 8 고도화 -->
+      <div id="cmp-sync-bar" style="display:none;flex-direction:column;gap:8px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-top:12px">
+        <!-- Row 1: 버튼 + 볼륨 + 시간 -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">🎬 동기 재생</span>
+          <button id="cmp-sync-play" style="padding:4px 13px;border-radius:var(--r-pill);background:var(--accent);color:#fff;font-size:12px;font-weight:600;border:none;cursor:pointer">▶ 재생</button>
+          <button id="cmp-sync-pause" style="padding:4px 13px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">⏸ 정지</button>
+          <button id="cmp-sync-loop" title="반복 재생" style="padding:4px 10px;border-radius:var(--r-pill);background:var(--bg-1);border:1px solid var(--border);color:var(--text);font-size:12px;cursor:pointer">↩ 반복</button>
+          <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" id="cmp-sync-toggle" checked style="accent-color:var(--accent)" />
+            seek 동기
+          </label>
+          <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:5px;margin-left:auto">
+            🔊 <input type="range" id="cmp-sync-vol" min="0" max="1" step="0.02" value="1" style="width:66px;accent-color:var(--accent);cursor:pointer" title="마스터 볼륨">
+          </label>
+          <span id="cmp-sync-pos" style="font-size:11px;color:var(--text-faint);font-variant-numeric:tabular-nums;min-width:84px;text-align:right">00:00 / 00:00</span>
+        </div>
+        <!-- Row 2: 타임라인 스크러버 -->
+        <input type="range" id="cmp-sync-scrub" min="0" max="100" value="0" step="0.1"
+               style="width:100%;accent-color:var(--accent);cursor:pointer;height:4px" title="타임라인">
       </div>
 
       <!-- 과거 세션 목록 -->
@@ -24464,10 +24860,6 @@
           <button class="ch-action-btn" id="ch-relmap-btn">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8" y1="11" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="18"/></svg>
             관계 맵
-          </button>
-          <button class="ch-action-btn ch-imagegen-header" id="ch-imagegen-btn">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L9.6 9.6 2 12l7.6 2.4L12 22l2.4-7.6L22 12l-7.6-2.4z"/></svg>
-            이미지 생성
           </button>
         </div>
       </div>
@@ -24918,7 +25310,124 @@
           <p>플랜, 사용량, 결제 내역</p>
           <button class="settings-cta" id="billing-manage-btn">관리</button>
         </article>
+
+        <!-- Team Card — P2-07 -->
+        <article class="settings-card" id="settings-team-card">
+          <div class="settings-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3>Team</h3>
+          <p id="team-card-summary">팀원 초대 · 역할 관리 · 협업 권한 설정</p>
+          <button class="settings-cta" id="team-manage-btn">관리</button>
+        </article>
       </div>
+
+      <!-- P2-07 Team Management Modal ══════════════════════════════ -->
+      <div class="team-modal-overlay" id="team-modal-overlay"
+           role="dialog" aria-modal="true" aria-labelledby="team-modal-title">
+        <div class="team-modal">
+          <!-- Header -->
+          <div class="team-modal-head">
+            <h2 id="team-modal-title">👥 팀 관리</h2>
+            <button class="team-modal-close" id="team-modal-close" aria-label="닫기">✕</button>
+          </div>
+          <!-- Tabs -->
+          <div class="team-modal-tabs" id="team-modal-tabs">
+            <button class="team-modal-tab active" data-team-tab="members">팀원 목록</button>
+            <button class="team-modal-tab" data-team-tab="invite">초대</button>
+            <button class="team-modal-tab" data-team-tab="permissions">권한 안내</button>
+          </div>
+          <!-- Body -->
+          <div class="team-modal-body">
+            <!-- ① Members -->
+            <div class="team-tab-panel active" id="team-panel-members">
+              <div class="team-member-list" id="team-member-list"></div>
+              <p style="font-size:12px;color:var(--text-faint);margin:0">
+                * Team 플랜 사용자만 팀원을 초대·관리할 수 있습니다.
+              </p>
+            </div>
+
+            <!-- ② Invite -->
+            <div class="team-tab-panel" id="team-panel-invite">
+              <div class="team-invite-form">
+                <div class="team-invite-row">
+                  <div class="team-field" style="flex:2">
+                    <label>이메일 주소</label>
+                    <input type="email" id="team-invite-email" placeholder="colleague@example.com" />
+                  </div>
+                  <div class="team-field" style="flex:1">
+                    <label>역할</label>
+                    <select id="team-invite-role">
+                      <option value="editor">Editor</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                  </div>
+                  <button class="team-invite-btn" id="team-invite-send">초대 보내기</button>
+                </div>
+                <p style="font-size:12px;color:var(--text-faint);margin:0;line-height:1.6">
+                  초대 이메일이 발송되며, 수락 시 팀원으로 추가됩니다.<br>
+                  Team 플랜 기본 시트: 최대 <strong>5명</strong>
+                </p>
+              </div>
+            </div>
+
+            <!-- ③ Permissions -->
+            <div class="team-tab-panel" id="team-panel-permissions">
+              <table class="team-perm-table">
+                <thead>
+                  <tr>
+                    <th>기능</th>
+                    <th>Owner</th>
+                    <th>Editor</th>
+                    <th>Viewer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>프로젝트 열람</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td></tr>
+                  <tr><td>프로젝트 편집</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>프로젝트 삭제</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>팀원 초대</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>역할 변경</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>결제 관리</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                  <tr><td>Export 다운로드</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-check">✓</span></td></tr>
+                  <tr><td>API 키 관리</td>
+                    <td><span class="team-perm-check">✓</span></td>
+                    <td><span class="team-perm-cross">—</span></td>
+                    <td><span class="team-perm-cross">—</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div><!-- /body -->
+        </div><!-- /team-modal -->
+      </div><!-- /overlay -->
+      <!-- /P2-07 ══════════════════════════════════════════════════ -->
+
     </section>
 
     <!-- ================ PAGE: ADMIN (관리자 — 인증 보호) ================ -->
@@ -25423,7 +25932,7 @@
             <li class="dim">✗ 4K 내보내기</li>
             <li class="dim">✗ 팀 공유</li>
           </ul>
-          <button class="credits-plan-cta" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">업그레이드</button>
+          <button class="credits-plan-cta" onclick="openUpgradeCheckout('standard')">업그레이드</button>
         </div>
 
         <!-- PRO -->
@@ -25444,7 +25953,7 @@
             <li>✓ 4K 내보내기</li>
             <li class="dim">✗ 팀 공유</li>
           </ul>
-          <button class="credits-plan-cta primary" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">업그레이드</button>
+          <button class="credits-plan-cta primary" onclick="openUpgradeCheckout('pro')">업그레이드</button>
         </div>
 
         <!-- TEAM -->
@@ -25464,14 +25973,14 @@
             <li>✓ 4K 내보내기</li>
             <li>✓ 팀원 5명 공유</li>
           </ul>
-          <button class="credits-plan-cta" onclick="showToast?.('준비 중입니다. 곧 오픈됩니다!','info')">문의하기</button>
+          <button class="credits-plan-cta" onclick="openUpgradeCheckout('team')">문의하기</button>
         </div>
 
       </div>
 
       <div class="credits-notice">
-        <p>💡 현재 베타 운영 중입니다. 유료 플랜은 곧 오픈될 예정입니다.</p>
-        <p>문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
+        <p>💡 현재 오픈 베타 운영 중입니다. 유료 플랜 결제는 곧 오픈될 예정입니다.</p>
+        <p>Team 플랜 도입 문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
       </div>
 
     </section>
@@ -25759,9 +26268,51 @@ function _tdzHas(getter) {
 window._tdzGet = _tdzGet;
 window._tdzHas = _tdzHas;
 
-/* ── v3 게스트 모드 게이트 ── */
-/* 프로필이 없으면 자동 redirect 없이 guest 모드로 둘러보기 가능.
-   저장/생성 시도할 때만 로그인 모달이 뜸 (requireAuth). */
+/* ── Supabase 세션 동기화 ──
+   signup.html에서 Google OAuth 로그인 완료 → localStorage에 soaviz.profile.v1 저장.
+   soaviz-studio.html 로드 시 Supabase 세션도 확인해 두 군데 동기화. */
+window._soavizSb = (() => {
+  try {
+    const _SUPA_URL = 'https://yfzhvuyrdabpzowprupa.supabase.co';
+    const _SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmemh2dXlyZGFicHpvd3BydXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTk3NTcsImV4cCI6MjA5Mjg5NTc1N30.b2rFHl5axZfy4v1_onrJeMQp7c6nEyUIvOI8ScT9doM';
+    if (typeof supabase === 'undefined') return null;
+    const sb = supabase.createClient(_SUPA_URL, _SUPA_KEY);
+
+    // Supabase 세션 → localStorage 프로필 동기화
+    sb.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+        const existing = (() => { try { return JSON.parse(localStorage.getItem('soaviz.profile.v1') || 'null'); } catch { return null; } })();
+        if (existing) return; // 이미 프로필 있으면 재처리 불필요
+        const user = session.user;
+        const meta = user.user_metadata || {};
+        const profile = {
+          name: meta.full_name || meta.name || (user.email || '').split('@')[0] || 'User',
+          email: user.email || '',
+          picture: meta.avatar_url || meta.picture || null,
+          photoUrl: meta.avatar_url || meta.picture || null,
+          authProvider: user.app_metadata?.provider || 'google',
+          providerSub: user.id,
+          supabaseId: user.id,
+          plan: 'pro',
+          createdAt: Date.now(),
+          lastLogin: Date.now(),
+          updatedAt: Date.now(),
+          version: 'v3',
+        };
+        try { localStorage.setItem('soaviz.profile.v1', JSON.stringify(profile)); } catch {}
+      }
+      if (event === 'SIGNED_OUT') {
+        // Supabase 로그아웃 → localStorage도 정리 (logout()이 이미 처리하지만 안전망)
+      }
+    });
+
+    return sb;
+  } catch (e) { console.warn('[soaviz] Supabase init skip:', e.message); return null; }
+})();
+
+/* ── v3 베타 액세스 게이트 ── */
+/* Landing은 공개, 앱 진입은 로그인 필수.
+   AI 생성/렌더처럼 토큰이 드는 제작 실행은 결제 크레딧 또는 BYOK로 별도 보호한다. */
 window.SoavizAuth = (() => {
   function isGuest() {
     try { return !localStorage.getItem('soaviz.profile.v1'); } catch { return true; }
@@ -25769,14 +26320,46 @@ window.SoavizAuth = (() => {
   function getProfile() {
     try { return JSON.parse(localStorage.getItem('soaviz.profile.v1') || 'null'); } catch { return null; }
   }
-  // 로그인 모달 (인라인) — 게스트 모드일 때 데이터 변경 시도 시 표시
+  function isBetaLoginRequired() {
+    return Boolean(window.SOAVIZ_BETA_LOGIN_REQUIRED || window.SOAVIZ_COMMERCIAL_LOCK);
+  }
+  function grantBetaAccessIfNeeded(profile = getProfile()) {
+    if (!profile) return;
+    try { localStorage.setItem('soaviz.beta.appAccess.v1', '1'); } catch {}
+    try {
+      const wasBetaFullAccess = localStorage.getItem('soaviz.beta.fullAccess.v1') === '1';
+      if (window.SOAVIZ_BETA_FULL_ACCESS_PLAN) {
+        localStorage.setItem('soaviz.user.plan', window.SOAVIZ_BETA_FULL_ACCESS_PLAN);
+        localStorage.setItem('soaviz.beta.fullAccess.v1', '1');
+        return;
+      }
+      if (wasBetaFullAccess && localStorage.getItem('soaviz.user.plan') === 'pro') {
+        localStorage.setItem('soaviz.user.plan', 'free');
+      }
+      localStorage.removeItem('soaviz.beta.fullAccess.v1');
+      if (!localStorage.getItem('soaviz.user.plan')) localStorage.setItem('soaviz.user.plan', 'free');
+    } catch {}
+  }
+  function setPostLoginPage(pageName) {
+    if (!pageName || pageName === 'landing') return;
+    try { localStorage.setItem('soaviz.auth.redirectAfterLogin.v1', pageName); } catch {}
+  }
+  function takePostLoginPage(fallback = '') {
+    try {
+      const page = localStorage.getItem('soaviz.auth.redirectAfterLogin.v1') || fallback;
+      localStorage.removeItem('soaviz.auth.redirectAfterLogin.v1');
+      return page;
+    } catch { return fallback; }
+  }
+  // 로그인 모달 (인라인) — 베타 기간에는 앱 진입 전에 표시
   function require(actionLabel = '이 기능') {
     if (!isGuest()) return true;
     openAuthModal(actionLabel);
     return false;
   }
-  function openAuthModal(actionLabel) {
+  function openAuthModal(actionLabel, options = {}) {
     if (document.getElementById('sv-auth-modal')) return;
+    setPostLoginPage(options.redirectPage);
     const root = document.createElement('div');
     root.id = 'sv-auth-modal';
     root.className = 'vault-modal-backdrop';
@@ -25786,7 +26369,7 @@ window.SoavizAuth = (() => {
           <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#6366F1);display:grid;place-items:center;color:white;font-size:22px;font-weight:800">🔒</div>
           <div>
             <h3 style="margin:0">로그인이 필요해요</h3>
-            <div style="font-size:11px;color:var(--text-faint);margin-top:2px">${escapeHTML(actionLabel)} · 게스트 모드</div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:2px">${escapeHTML(actionLabel)} · 베타 로그인 필요</div>
           </div>
         </div>
         <p>지금은 둘러보는 중입니다. <strong>저장 · 생성 · 동기화</strong>를 사용하려면 30초만에 무료 계정을 만드세요.</p>
@@ -25804,14 +26387,29 @@ window.SoavizAuth = (() => {
       </div>
     `;
     document.body.appendChild(root);
+    if (isBetaLoginRequired()) {
+      const p = root.querySelector('p');
+      if (p) p.innerHTML = 'SOAVIZ 베타는 로그인 후 <strong>앱 전체 화면</strong>에 접근할 수 있습니다. 단, AI 생성·렌더·음성·음악처럼 토큰 비용이 드는 제작 실행은 크레딧 결제 또는 Settings의 BYOK API 키가 필요합니다.';
+      root.querySelector('#sv-auth-keep')?.remove();
+    }
     const close = () => { try { document.body.removeChild(root); } catch {} };
     root.addEventListener('click', e => { if (e.target === root) close(); });
-    root.querySelector('#sv-auth-keep').onclick = close;
-    root.querySelector('#sv-auth-signup').onclick = () => { close(); openSignupWindow('signup'); };
-    root.querySelector('#sv-auth-login').onclick = () => { close(); openSignupWindow('login'); };
+    root.querySelector('#sv-auth-keep')?.addEventListener('click', close);
+    root.querySelector('#sv-auth-signup')?.addEventListener('click', () => { close(); openSignupWindow('signup', { redirectPage: options.redirectPage }); });
+    root.querySelector('#sv-auth-login')?.addEventListener('click', () => { close(); openSignupWindow('login', { redirectPage: options.redirectPage }); });
   }
-  function openSignupWindow(mode = 'signup') {
-    const url = location.origin + '/signup' + (mode === 'login' ? '#login' : '');
+  function openSignupWindow(mode = 'signup', options = {}) {
+    setPostLoginPage(options.redirectPage);
+    let url;
+    if (location.protocol === 'file:') {
+      const u = new URL(location.href);
+      u.pathname = u.pathname.replace(/\/[^/]*$/, '/signup.html');
+      u.search = '';
+      u.hash = mode === 'login' ? '#login' : '';
+      url = u.href;
+    } else {
+      url = location.origin + '/signup' + (mode === 'login' ? '#login' : '');
+    }
     const w = 540, h = 760;
     const left = window.screenX + (window.outerWidth - w) / 2;
     const top  = window.screenY + (window.outerHeight - h) / 2;
@@ -25824,6 +26422,7 @@ window.SoavizAuth = (() => {
     // 자식 창에서 인증 완료 신호 수신 → 새로고침
     function onMsg(e) {
       if (e?.data === 'soaviz:auth-success') {
+        grantBetaAccessIfNeeded();
         try { popup.close(); } catch {}
         window.removeEventListener('message', onMsg);
         location.reload();
@@ -25833,6 +26432,7 @@ window.SoavizAuth = (() => {
     // 폴링: localStorage 변경 감지 (BroadcastChannel 폴백)
     const poll = setInterval(() => {
       if (!isGuest()) {
+        grantBetaAccessIfNeeded();
         clearInterval(poll);
         try { popup.close(); } catch {}
         window.removeEventListener('message', onMsg);
@@ -25850,9 +26450,14 @@ window.SoavizAuth = (() => {
     if (confirmFirst && !window.confirm('로그아웃할까요?\n저장된 프로젝트와 작업 기록은 삭제되지 않습니다.')) return false;
     try { localStorage.removeItem('soaviz.profile.v1'); } catch {}
     try { localStorage.removeItem('soaviz.user.plan'); } catch {}
+    try { localStorage.removeItem('soaviz.beta.appAccess.v1'); } catch {}
+    try { localStorage.removeItem('soaviz.beta.fullAccess.v1'); } catch {}
+    try { localStorage.removeItem('soaviz.auth.redirectAfterLogin.v1'); } catch {}
     try { sessionStorage.removeItem('soaviz.signup.bypass'); } catch {}
     try { window.SoavizAuth?.hideGuestBanner?.(); } catch {}
     try { showToast?.('로그아웃되었습니다'); } catch {}
+    // Supabase 세션도 종료
+    try { window._soavizSb?.auth?.signOut?.(); } catch {}
     const url = new URL(location.href);
     if (/signup\.html$/.test(url.pathname)) {
       url.pathname = url.pathname.replace(/signup\.html$/, 'soaviz-studio.html');
@@ -25862,7 +26467,7 @@ window.SoavizAuth = (() => {
     location.href = url.toString();
     return true;
   }
-  return { isGuest, getProfile, require, openAuthModal, openSignupWindow, logout };
+  return { isGuest, getProfile, grantBetaAccessIfNeeded, takePostLoginPage, require, openAuthModal, openSignupWindow, logout };
 })();
 
 const MAX_BYTES = 500 * 1024 * 1024;
@@ -26020,7 +26625,11 @@ function resolvePageName(name) {
 window._pageHistory = window._pageHistory || ['landing'];
 window._isBackNav = false;
 window.currentPage = window.currentPage || 'landing';
-window.SOAVIZ_COMMERCIAL_LOCK = false;
+window.SOAVIZ_BETA_LOGIN_REQUIRED = true;
+window.SOAVIZ_BETA_FULL_ACCESS_PLAN = 'pro'; // 베타: 로그인 = Pro 전체 액세스
+window.SOAVIZ_BETA_FREE_TOKEN_ACTIONS = false;
+window.SOAVIZ_BETA_BYOK_TOKEN_ACCESS = true;
+window.SOAVIZ_COMMERCIAL_LOCK = window.SOAVIZ_BETA_LOGIN_REQUIRED;
 
 function isCommercialGuestLocked(pageName) {
   return Boolean(window.SOAVIZ_COMMERCIAL_LOCK && window.SoavizAuth?.isGuest?.() && pageName !== 'landing');
@@ -26032,7 +26641,7 @@ function syncGuestLockedNavigation() {
     const page = resolvePageName(item.dataset.page);
     item.classList.toggle('guest-locked', locked && page !== 'landing');
     item.setAttribute('aria-disabled', locked && page !== 'landing' ? 'true' : 'false');
-    if (locked && page !== 'landing') item.title = `${item.title || item.textContent.trim()} · 상용화 오픈 예정`;
+    if (locked && page !== 'landing') item.title = `${item.title || item.textContent.trim()} · 로그인 후 베타 앱 액세스`;
   });
 }
 
@@ -26079,7 +26688,8 @@ function showPage(name) {
   name = resolvePageName(name);
   if (isCommercialGuestLocked(name)) {
     syncGuestLockedNavigation();
-    showToast?.('상용화 오픈 전까지 랜딩 페이지만 공개됩니다.', 'warn');
+    window.SoavizAuth?.openAuthModal?.('SOAVIZ 베타 전체 액세스', { redirectPage: name });
+    showToast?.('SOAVIZ 베타는 로그인 후 앱 화면에 접근할 수 있습니다. 제작 실행은 크레딧 또는 BYOK가 필요합니다.', 'warn');
     name = 'landing';
   }
   window.currentPage = name === 'landing' ? 'landing' : name;
@@ -26879,12 +27489,12 @@ const PLAN_FEATURES = {
     tools: 'all',
     chars: 3,                                  // 캐릭터 한도 — 무료 3명
     storyMaxLen: 'medium',
-    pipelineShots: 10,                         // 쇼트리스트 10개/월
-    ttsCharsPerMonth: 5000,
+    pipelineShots: 0,                          // 토큰 비용 작업은 무료 베타에서 차단
+    ttsCharsPerMonth: 0,
     musicPerMonth: 0,
     sfxPerMonth: 0,
     videoPerMonth: 0,
-    transcriptMinPerMonth: 10,
+    transcriptMinPerMonth: 0,
     compareMode: false,
     memoryGraph: false,
     styleBible: false,
@@ -26899,7 +27509,7 @@ const PLAN_FEATURES = {
     teamSharing: false,                        // 팀 공유 없음
     // 비즈니스 모델 — 모든 플랜 통합 크레딧 모델
     billing: 'credits',
-    creditsPerMonth: 200,                      // 체험용
+    creditsPerMonth: 0,
   },
   standard: {
     label: 'Standard',
@@ -27267,6 +27877,10 @@ window.getCreditBalance = getCreditBalance;
 /** 크레딧 차감 — 생성 후 호출. amount: 차감량(정수), label: 활동명(로깅용) */
 function consumeCredits(amount, label = '') {
   if (!amount || amount <= 0) return getCreditBalance();
+  if ((typeof getCurrentPlan === 'function' ? getCurrentPlan() : 'free') === 'free' && hasBetaByokTokenAccess()) {
+    document.querySelectorAll('.credit-pill').forEach(p => _renderCreditPill(p));
+    return getCreditBalance();
+  }
   _maybeResetCredits();
   try {
     let used = parseInt(localStorage.getItem(CREDIT_USED_KEY) || '0', 10) || 0;
@@ -27289,6 +27903,21 @@ function planRank(plan = getCurrentPlan()) {
 function planMeets(minPlan = 'free') {
   return planRank() >= planRank(minPlan);
 }
+
+function hasBetaByokTokenAccess() {
+  try {
+    return Boolean(
+      window.SOAVIZ_BETA_BYOK_TOKEN_ACCESS
+      && !window.SoavizAuth?.isGuest?.()
+      && typeof SoavizVault !== 'undefined'
+      && typeof SoavizVault.isUnlocked === 'function'
+      && SoavizVault.isUnlocked()
+    );
+  } catch (_) {
+    return false;
+  }
+}
+window.hasBetaByokTokenAccess = hasBetaByokTokenAccess;
 
 function openMonetizationGate({
   title = '업그레이드가 필요해요',
@@ -27315,11 +27944,11 @@ function openMonetizationGate({
 window.openMonetizationGate = openMonetizationGate;
 
 function canUseApiRouter({ silent = false } = {}) {
-  const ok = !!getCurrentFeatures().apiRouter;
+  const ok = !!getCurrentFeatures().apiRouter || hasBetaByokTokenAccess();
   if (!ok && !silent) {
     openMonetizationGate({
       title: 'API Router는 Pro 기능입니다',
-      message: 'OpenAI, Anthropic, ElevenLabs, Replicate 키를 직접 연결하고 모델별 비용 로그를 보려면 Pro가 필요합니다.',
+      message: 'OpenAI, Anthropic, ElevenLabs, Replicate 키를 직접 연결하려면 Pro 플랜이 필요합니다. 베타 사용자는 Settings에서 본인 API 키를 저장하고 Vault를 해제한 경우에만 제작 API를 실행할 수 있습니다.',
       recommendedPlan: 'pro',
       reason: '외부 API 키, BYOK, 모델 라우팅은 고급 제작/상업 워크플로우에 해당합니다.',
     });
@@ -27355,6 +27984,9 @@ function canRunMonetizedAction({
   modelLabel = '',
   apiMode = false,
 } = {}) {
+  const tokenCost = Math.max(0, Number(cost) || 0);
+  const currentPlan = (typeof getCurrentPlan === 'function') ? getCurrentPlan() : 'free';
+  const byokTokenMode = tokenCost > 0 && currentPlan === 'free' && hasBetaByokTokenAccess();
   if (!planMeets(minPlan)) {
     openMonetizationGate({
       title: `${label}은(는) ${PLAN_FEATURES[minPlan]?.label || minPlan} 이상에서 사용할 수 있습니다`,
@@ -27366,11 +27998,25 @@ function canRunMonetizedAction({
   }
   if (apiMode && !canUseApiRouter()) return false;
   if (!canUseModelTier(modelTier, { modelLabel })) return false;
+  if (
+    tokenCost > 0
+    && currentPlan === 'free'
+    && window.SOAVIZ_BETA_FREE_TOKEN_ACTIONS !== true
+    && !byokTokenMode
+  ) {
+    openMonetizationGate({
+      title: '제작 토큰은 무료 베타에서 실행할 수 없습니다',
+      message: `${label}은 실제 API/렌더 비용이 발생합니다. 크레딧 결제 플랜으로 전환하거나 Settings에서 본인 API 키를 저장한 뒤 Vault를 해제해 주세요.`,
+      recommendedPlan: 'standard',
+      reason: 'token-cost-protection',
+    });
+    return false;
+  }
   const b = getCreditBalance();
-  if (cost > 0 && b.remaining < cost) {
+  if (!byokTokenMode && tokenCost > 0 && b.remaining < tokenCost) {
     openMonetizationGate({
       title: '크레딧이 부족합니다',
-      message: `${label}에는 ${Number(cost).toLocaleString()} 크레딧이 필요하고, 현재 잔여 크레딧은 ${b.remaining.toLocaleString()}입니다.`,
+      message: `${label}에는 ${Number(tokenCost).toLocaleString()} 크레딧이 필요하고, 현재 잔여 크레딧은 ${b.remaining.toLocaleString()}입니다.`,
       recommendedPlan: b.plan === 'free' ? 'standard' : 'pro',
       reason: '생성형 작업은 실행 성공 시 크레딧을 차감합니다.',
     });
@@ -27483,7 +28129,20 @@ const PROJECT_MAX_VISIBLE = 5;    // LAST WORK 표시 한도 (모든 플랜 공�
 
 /** 현재 로그인 사용자의 플랜 — localStorage 기반 (결제 시스템 연결 전 placeholder) */
 function getCurrentPlan() {
-  try { return localStorage.getItem('soaviz.user.plan') || 'free'; }
+  try {
+    if (window.SOAVIZ_BETA_FULL_ACCESS_PLAN && !window.SoavizAuth?.isGuest?.()) {
+      window.SoavizAuth?.grantBetaAccessIfNeeded?.();
+      return window.SOAVIZ_BETA_FULL_ACCESS_PLAN;
+    }
+    const stored = localStorage.getItem('soaviz.user.plan') || 'free';
+    const staleBetaFullAccess = localStorage.getItem('soaviz.beta.fullAccess.v1') === '1';
+    if (!window.SOAVIZ_BETA_FULL_ACCESS_PLAN && staleBetaFullAccess && stored === 'pro') {
+      localStorage.setItem('soaviz.user.plan', 'free');
+      localStorage.removeItem('soaviz.beta.fullAccess.v1');
+      return 'free';
+    }
+    return stored;
+  }
   catch (_) { return 'free'; }
 }
 function getProjectMaxTotal() {
@@ -31241,7 +31900,8 @@ const NAV_MAP = {
 function openLandingVideoOnboarding(options = {}) {
   if (isCommercialGuestLocked('video-editor')) {
     syncGuestLockedNavigation();
-    showToast?.('영상 생성은 상용화 오픈 시 공개됩니다.', 'warn');
+    window.SoavizAuth?.openAuthModal?.('샘플 영상 온보딩', { redirectPage: 'video-editor' });
+    showToast?.('로그인하면 베타 앱에 진입할 수 있습니다. 렌더/생성 실행은 크레딧 또는 BYOK가 필요합니다.', 'warn');
     return;
   }
   const sample = Boolean(options.sample);
@@ -31284,19 +31944,22 @@ function openLandingVideoOnboarding(options = {}) {
   requestAnimationFrame(trigger);
 }
 function startLandingOnboarding() {
+  // A안(Pro 단독): Landing → Personas(Story)로 직접 진입
   try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
-  openLandingVideoOnboarding({ sample: false });
+  if (isCommercialGuestLocked('personas')) {
+    window.SoavizAuth?.openAuthModal?.('베타 무료 시작', { redirectPage: 'personas' });
+    return;
+  }
+  if (typeof showPage === 'function') showPage('personas');
 }
 function startLandingSample() {
-  try { localStorage.setItem('soaviz_sample_started_from_landing', 'true'); } catch (_) {}
-  openLandingVideoOnboarding({ sample: true });
-  setTimeout(() => {
-    const sampleButton =
-      document.querySelector('[data-track-label="샘플로 시작"]') ||
-      document.querySelector('[data-track-label="샘플로 바로 체험"]') ||
-      document.querySelector('[data-onboarding-sample]');
-    sampleButton?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 300);
+  // A안(Pro 단독): 샘플 버튼도 Pipeline으로 안내
+  try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
+  if (isCommercialGuestLocked('pipeline')) {
+    window.SoavizAuth?.openAuthModal?.('Pipeline 살펴보기', { redirectPage: 'pipeline' });
+    return;
+  }
+  if (typeof showPage === 'function') showPage('pipeline');
 }
 window.startLandingOnboarding = startLandingOnboarding;
 window.startLandingSample = startLandingSample;
@@ -31305,7 +31968,12 @@ document.addEventListener('click', (event) => {
   if (!action) return;
   event.preventDefault();
   if (action.hasAttribute('onclick')) return;
-  openLandingVideoOnboarding({ sample: action.dataset.landingAction === 'sample' });
+  // A안(Pro 단독): sample → pipeline, 나머지 → personas
+  if (action.dataset.landingAction === 'sample') {
+    if (typeof showPage === 'function') showPage('pipeline');
+  } else {
+    if (typeof showPage === 'function') showPage('personas');
+  }
 });
 $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
   n.addEventListener('click', e => {
@@ -31314,7 +31982,8 @@ $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
     const map = NAV_MAP[p];
     if (isCommercialGuestLocked(map?.page || p)) {
       syncGuestLockedNavigation();
-      showToast?.('상용화 오픈 전까지 랜딩 페이지만 공개됩니다.', 'warn');
+      window.SoavizAuth?.openAuthModal?.('SOAVIZ 베타 전체 액세스', { redirectPage: map?.page || p });
+      showToast?.('로그인하면 베타 앱 화면에 접근할 수 있습니다. 제작 실행은 크레딧 또는 BYOK가 필요합니다.', 'warn');
       showPage('landing');
       return;
     }
@@ -47254,6 +47923,8 @@ function bindPipelinePage() {
       role: data.role || 'supporting',
       age: data.age || null,
       gender: data.gender || '',
+      mbti: data.mbti || '',
+      occupation: data.occupation || '',
       appearance: data.appearance || '',
       personality: data.personality || '',
       faceRefAssetIds: data.faceRefAssetIds || [],
@@ -47262,7 +47933,9 @@ function bindPipelinePage() {
       voiceSampleAssetId: null,
       ttsSettings: data.ttsSettings || { stability: 0.5, similarity: 0.8, style: 0.0 },
       promptFragment: data.promptFragment || '',
+      keyImagePromptDraft: data.keyImagePromptDraft || '',
       tags: data.tags || [],
+      sheetImages: Array.isArray(data.sheetImages) ? data.sheetImages : [],
       relations: Array.isArray(data.relations) ? data.relations : [],
       createdAt: _now(), updatedAt: _now(), archived: false,
     };
@@ -48284,6 +48957,9 @@ async function approveCKImage(characterId, imageId) {
   if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'error'); return false; }
   if (!img.imageUrl && !img.url) { showToast?.('mock 이미지는 대표 이미지로 지정할 수 없습니다', 'warn'); return false; }
   await persistCKGeneratedImage(characterId, { ...img, status: 'approved' }, { saveAsGenerated: true, saveAsReference: true, saveAsKeyImage: true, setAsAvatar: true, saveToAssets: true });
+  if (typeof sendCKImageToCharacterSheet === 'function') {
+    try { await sendCKImageToCharacterSheet(characterId, imageId); } catch (_) {}
+  }
   window.CharacterKeyImageStudio.selectedImageId = imageId;
   // Identity Lock: auto-update defaultReferenceId/Url on approval (Task #85)
   if (typeof updateCharacterIdentityLock === 'function') {
@@ -48295,7 +48971,7 @@ async function approveCKImage(characterId, imageId) {
       }).catch(() => {});
     }
   }
-  showToast?.('대표 키이미지로 지정했습니다');
+  showToast?.('대표 키이미지로 지정했습니다. 캐릭터 시트 소스로도 연결됐어요');
   await renderKeyImageStudioPage();
   return true;
 }
@@ -48394,21 +49070,20 @@ function bindCKStudioEvents(character) {
   }));
 
   /* ── send-key-to-sheet: 캐릭터 시트에 추가 ── */
-  root.querySelectorAll('[data-send-key-to-sheet]').forEach(btn => btn.addEventListener('click', async () => {
+  root.querySelectorAll('[data-send-key-to-sheet]').forEach(btn => btn.addEventListener('click', async (event) => {
+    event?.stopImmediatePropagation?.();
     const s = window.CharacterKeyImageStudio;
     const img = s.generatedImages.find(x => x.id === btn.dataset.sendKeyToSheet);
     if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'warn'); return; }
     const url = img.imageUrl || img.url || null;
     if (!url) { showToast?.('Mock 이미지는 시트에 추가할 수 없습니다', 'warn'); return; }
-    try {
-      await SoavizDB?.ready;
-      const c = await SoavizDB.db.characters.get(s.characterId);
-      if (!c) { showToast?.('캐릭터를 찾을 수 없습니다', 'warn'); return; }
-      const sheetImages = Array.isArray(c.sheetImages) ? [...c.sheetImages] : [];
-      if (!sheetImages.includes(url)) sheetImages.push(url);
-      await SoavizDB.db.characters.update(s.characterId, { sheetImages });
-      showToast?.('캐릭터 시트에 추가됨 ✓');
-    } catch(e) { showToast?.('시트 추가 실패: ' + e.message, 'error'); }
+    const ok = typeof sendCKImageToCharacterSheet === 'function'
+      ? await sendCKImageToCharacterSheet(character.id, btn.dataset.sendKeyToSheet)
+      : false;
+    if (ok) {
+      showToast?.('캐릭터 시트 탭으로 이동합니다');
+      setTimeout(() => openCharacterEditor(character.id, null, 'sheet'), 120);
+    }
   }));
 
   /* ── use-key-as-base: Variation 기준 이미지로 설정 ── */
@@ -49258,7 +49933,7 @@ async function renderKeyImageStudioPage() {
 
   resetCharacterKeyImageStudioState(c.id);
   const s = window.CharacterKeyImageStudio;
-  if (!s.promptText) s.promptText = buildCharacterKeyImagePrompt(c);
+  if (!s.promptText) s.promptText = c.keyImagePromptDraft || buildCharacterKeyImagePrompt(c);
   if (!s.negativePrompt) s.negativePrompt = buildCharacterKeyImageNegativePrompt();
   if (!s.purposeTab) s.purposeTab = 'portrait';
 
@@ -49397,23 +50072,27 @@ async function renderKeyImageStudioPage() {
   const _outputCnt = Number(s.outputCount || 4);
   const _estCredits = _outputCnt <= 1 ? 1 : _outputCnt <= 2 ? 1 : 2;
   const _extraCredits = _outputCnt * 1;
-  // 선택된 이미지 여부
+  // 선택된 이미지 여부 — action bar 항상 표시 (선택 여부에 따라 메시지 변경)
   const _selectedImg = images.find(img => img.status === 'approved');
-  const _actionBar = _selectedImg ? `
+  const _actionBar = `
     <div class="ck3-action-bar">
-      <div class="ck3-action-check">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="ck3-action-check" style="${_selectedImg ? '' : 'background:var(--border-strong);'}">
+        ${_selectedImg
+          ? `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`
+          : `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+        }
       </div>
       <div class="ck3-action-text">
-        <strong>대표 이미지가 선택되었습니다.</strong>
-        <span>이제 캐릭터 시트를 만들어 다양한 각도를 확장하세요.</span>
+        ${_selectedImg
+          ? `<strong>대표 이미지 선택 완료</strong><span>이제 캐릭터 시트로 다양한 각도를 만들어보세요.</span>`
+          : `<strong>키이미지를 생성하고 대표로 지정하세요</strong><span>대표 이미지가 캐릭터 카드와 Shot 생성에 자동 적용됩니다.</span>`
+        }
       </div>
-      <button class="ck3-action-cta" id="ck-goto-sheet">
-        캐릭터 시트 만들기
+      <button class="ck3-action-cta" id="ck-goto-sheet" style="${_selectedImg ? '' : 'background:var(--bg-elev);color:var(--text-dim);border:1px solid var(--border-strong);'}">
+        ③ 캐릭터 시트 만들기
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <span class="ck3-action-cost">⚡ 추가 차감: ${_extraCredits} 크레딧</span>
-    </div>` : '';
+    </div>`;
 
   mount.innerHTML = `
     <div class="ck-studio ck2-studio" id="ch-keyimage-shell" style="min-height:100%;display:flex;flex-direction:column;">
@@ -49604,14 +50283,24 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   root.innerHTML = `
     <div class="bible-modal-card">
       <div class="bible-modal-head">
-        <h3>${isNew ? '＋ 새 캐릭터' : '캐릭터 편집'}</h3>
-        ${isNew ? '<button class="vault-btn" id="cf-dice" title="모든 필드를 랜덤으로 채우기" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent">🎲 랜덤 주사위</button>' : ''}
+        <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+          <h3 style="margin:0">${isNew ? '＋ 새 캐릭터' : '캐릭터 편집'}</h3>
+          ${isNew ? '<span style="font-size:12px;color:var(--text-faint);font-weight:400">만들고 싶은 캐릭터의 페르소나를 직접 부여해보세요</span>' : ''}
+        </div>
+        ${isNew ? '<button class="vault-btn" id="cf-dice" title="모든 필드를 랜덤으로 채우기" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent">🎲 랜덤</button>' : ''}
         <button class="vault-btn" id="ch-close">닫기</button>
       </div>
+      <div class="cf-flow-steps" id="cf-flow-steps">
+        <div class="cf-flow-step active" data-flow-step="info"><span class="cf-flow-step-index">1</span><span>기본 정보</span></div>
+        <div class="cf-flow-step" data-flow-step="keyimage"><span class="cf-flow-step-index">2</span><span>키이미지</span></div>
+        <div class="cf-flow-step" data-flow-step="sheet"><span class="cf-flow-step-index">3</span><span>캐릭터 시트</span></div>
+        <div class="cf-flow-step" data-flow-step="review"><span class="cf-flow-step-index">4</span><span>저장 확인</span></div>
+      </div>
       <div class="cf-tabs">
-        <button class="cf-tab-btn active" data-tab="info">기본 정보</button>
-        <button class="cf-tab-btn" data-tab="keyimage">키이미지 만들기</button>
-        <button class="cf-tab-btn" data-tab="sheet">캐릭터 시트 만들기</button>
+        <button class="cf-tab-btn active" data-tab="info">① 기본 정보</button>
+        <button class="cf-tab-btn" data-tab="keyimage">② 키이미지</button>
+        <button class="cf-tab-btn" data-tab="sheet">③ 캐릭터 시트</button>
+        <button class="cf-tab-btn" data-tab="review">④ 저장 확인</button>
       </div>
       <div class="bible-modal-body">
         <div class="cf-tab-pane active" id="cf-pane-info">
@@ -49845,29 +50534,60 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
           <textarea id="cf-fragment" placeholder="자동: 외형 + 성격 합쳐서 생성">${escapeHTML(c.promptFragment || '')}</textarea>
           <button class="vault-btn" id="cf-fragment-build" style="align-self:flex-start;margin-top:4px;font-size:11px;padding:4px 10px">📝 외형·성격에서 fragment 생성</button>
         </div>
+        <div class="cf-flow-card" id="cf-info-flow-card">
+          <div class="cf-flow-card-head">
+            <div>
+              <div class="cf-flow-card-title">키이미지 프롬프트 자동 연결</div>
+              <div class="cf-flow-card-sub">기본 정보가 바뀌면 아래 프롬프트 초안이 같이 갱신됩니다. 이 초안은 키이미지 스튜디오에 그대로 이어집니다.</div>
+            </div>
+            <button class="cf-flow-next secondary" id="cf-refresh-keyimage-prompt" type="button">프롬프트 갱신</button>
+          </div>
+          <textarea class="cf-prompt-preview" id="cf-info-keyimage-prompt-preview" readonly></textarea>
+          <div class="cf-flow-actions">
+            <button class="cf-flow-next" id="cf-info-to-keyimage" type="button">
+              키이미지 탭으로 이동
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
         </div><!-- /cf-pane-info -->
 
         <!-- ── 키이미지 만들기 탭 페인 ── -->
         <div class="cf-tab-pane" id="cf-pane-keyimage">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;gap:24px;padding:40px 20px;text-align:center;">
-            <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent-soft),rgba(129,140,248,0.12));border:1px solid var(--accent-strong,rgba(167,139,250,0.3));display:flex;align-items:center;justify-content:center;">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em">캐릭터 키이미지 스튜디오</div>
-              <div style="font-size:13px;color:var(--text-dim);line-height:1.65;max-width:320px">
-                대표 이미지 · 전신 · 표정 · 변형을 AI로 생성합니다.<br>
-                목적 탭과 퀵 액션으로 빠르게 완성하세요.
+          <div class="cf-keyimage-flow-grid">
+            <div class="cf-flow-preview-box">
+              <div class="cf-flow-card-head">
+                <div>
+                  <div class="cf-flow-card-title">② 키이미지 생성 준비</div>
+                  <div class="cf-flow-card-sub">기본 정보에서 만든 프롬프트와 참조 사진을 키이미지 스튜디오로 넘깁니다. 대표 키이미지를 지정하면 캐릭터 시트 소스로 자동 저장됩니다.</div>
+                </div>
+                <span id="cf-keyimage-status" style="font-size:11px;color:var(--text-faint);font-weight:700">프롬프트 준비</span>
+              </div>
+              <textarea class="cf-prompt-preview" id="cf-keyimage-prompt-live"></textarea>
+              <div class="cf-flow-actions">
+                <button class="cf-flow-next secondary" id="cf-keyimage-back-info" type="button">기본 정보 수정</button>
+                <button id="cf-open-keyimage-studio" class="cf-flow-next" type="button">
+                  키이미지 스튜디오 열기
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
               </div>
             </div>
-            <button id="cf-open-keyimage-studio" style="padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;cursor:pointer;transition:all 120ms;letter-spacing:-0.01em" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
-              키이미지 스튜디오 열기 →
-            </button>
-            <div style="font-size:11px;color:var(--text-faint)">편집 내용을 저장 후 스튜디오로 이동합니다</div>
+            <div class="cf-flow-preview-box">
+              <div class="cf-flow-card-title">대표 키이미지</div>
+              <div class="cf-flow-thumb" id="cf-keyimage-thumb">
+                <div>
+                  아직 대표 키이미지가 없습니다<br>
+                  <span style="color:var(--text-faint)">스튜디오에서 생성 후 대표로 지정하세요</span>
+                </div>
+              </div>
+              <div class="cf-flow-card-sub">대표 이미지가 있으면 시트 생성의 참조 이미지로 자동 연결됩니다.</div>
+              <div class="cf-flow-actions">
+                <button class="cf-flow-next" id="cf-keyimage-to-sheet" type="button">
+                  캐릭터 시트로 이동
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div><!-- /cf-pane-keyimage -->
 
@@ -49935,7 +50655,10 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
             <div class="csheet-right">
               <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
                 <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)">생성 결과</span>
-                <span id="cf-sheet-result-count" style="font-size:11px;color:var(--text-faint)">0장</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span id="cf-sheet-result-count" style="font-size:11px;color:var(--text-faint)">0장</span>
+                  <button class="vault-btn" id="cf-open-review-from-sheet" type="button" style="padding:5px 9px;font-size:10px">저장 확인</button>
+                </div>
               </div>
               <div class="csheet-result-grid" id="cf-sheet-result-grid">
                 <div class="csheet-result-empty">
@@ -49946,11 +50669,30 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
             </div>
           </div>
         </div><!-- /cf-pane-sheet -->
+        <div class="cf-tab-pane" id="cf-pane-review">
+          <div class="cf-flow-card">
+            <div class="cf-flow-card-head">
+              <div>
+                <div class="cf-flow-card-title">④ 저장 확인</div>
+                <div class="cf-flow-card-sub">캐릭터 정보, 대표 키이미지, 캐릭터 시트가 한 캐릭터 레코드에 잘 연결됐는지 마지막으로 확인합니다.</div>
+              </div>
+              <button class="cf-flow-next secondary" id="cf-review-refresh" type="button">새로고침</button>
+            </div>
+          </div>
+          <div id="cf-review-content"></div>
+        </div><!-- /cf-pane-review -->
       </div>
       <div class="bible-modal-foot">
         ${!isNew ? '<button class="vault-btn danger" id="cf-delete" style="margin-right:auto">삭제</button>' : ''}
         <button class="vault-btn" id="cf-cancel">취소</button>
-        <button class="vault-btn primary" id="cf-save">${isNew ? '추가' : '저장'}</button>
+        ${isNew
+          ? `<button class="vault-btn" id="cf-save-only" style="font-size:11px;color:var(--text-faint)">저장만</button>
+             <button class="vault-btn primary" id="cf-save" style="gap:6px">
+               저장 후 키이미지
+               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+             </button>`
+          : `<button class="vault-btn primary" id="cf-save">저장</button>`
+        }
       </div>
     </div>
   `;
@@ -50206,7 +50948,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   _populateVoiceSelect();
 
   function gather() {
-    return {
+    const data = {
       name: root.querySelector('#cf-name').value.trim(),
       role: root.querySelector('#cf-role').value,
       gender: root.querySelector('#cf-gender').value.trim(),
@@ -50219,6 +50961,181 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       promptFragment: root.querySelector('#cf-fragment').value,
       photos: _photos.slice(),
     };
+    if (!String(data.promptFragment || '').trim()) {
+      data.promptFragment = SoavizCharacters.autoFragment(data);
+    }
+    data.keyImagePromptDraft = _buildKeyImagePromptFromData(data);
+    return data;
+  }
+
+  function _buildKeyImagePromptFromData(data = gather()) {
+    const draft = {
+      ...(c || {}),
+      ...data,
+      id: c?.id || 'draft-character',
+      promptFragment: data.promptFragment || SoavizCharacters.autoFragment(data),
+    };
+    try {
+      if (typeof buildCharacterKeyImagePrompt === 'function') return buildCharacterKeyImagePrompt(draft);
+    } catch (_) {}
+    return [
+      'high quality character key image',
+      'single character only',
+      data.name ? `character name: ${data.name}` : '',
+      data.role ? `role: ${data.role}` : '',
+      data.gender ? `gender: ${data.gender}` : '',
+      data.age ? `age: ${data.age}` : '',
+      data.occupation ? `occupation: ${data.occupation}` : '',
+      data.mbti ? `personality type: ${data.mbti}` : '',
+      data.appearance ? `appearance: ${data.appearance}` : '',
+      data.personality ? `personality: ${data.personality}` : '',
+      data.promptFragment ? `existing prompt: ${data.promptFragment}` : '',
+      'production-ready character reference',
+      'clean composition, sharp focus, no text, no watermark',
+    ].filter(Boolean).join(', ');
+  }
+
+  function _getKeyImageUrlFromCharacter(char = c) {
+    if (!char) return '';
+    try {
+      if (typeof getCharacterPrimaryReferenceUrl === 'function') return getCharacterPrimaryReferenceUrl(char) || '';
+    } catch (_) {}
+    return char.keyImageUrl
+      || char.mainImageUrl
+      || char.avatarUrl
+      || (Array.isArray(char.keyImages) ? (char.keyImages.find(x => x?.imageUrl || x?.url)?.imageUrl || char.keyImages.find(x => x?.imageUrl || x?.url)?.url || '') : '')
+      || '';
+  }
+
+  function _normalizeSheetImageItem(item, index = 0) {
+    if (!item) return null;
+    if (typeof item === 'string') {
+      return {
+        id: `sheet_legacy_${index}`,
+        imageUrl: item,
+        url: item,
+        angle: index === 0 ? 'front' : '',
+        model: 'imported',
+        source: 'legacy-sheet-url',
+        createdAt: Date.now(),
+      };
+    }
+    return item;
+  }
+
+  async function _getLatestCharacter() {
+    try {
+      await SoavizDB?.ready;
+      const charId = c?.id || id;
+      if (charId) return await SoavizDB.db.characters.get(charId);
+    } catch (_) {}
+    return c;
+  }
+
+  function _syncCharacterFlowPrompt() {
+    const data = gather();
+    const prompt = data.keyImagePromptDraft || _buildKeyImagePromptFromData(data);
+    const infoPreview = root.querySelector('#cf-info-keyimage-prompt-preview');
+    const keyPreview = root.querySelector('#cf-keyimage-prompt-live');
+    if (infoPreview) infoPreview.value = prompt;
+    if (keyPreview && keyPreview !== document.activeElement) keyPreview.value = prompt;
+    const status = root.querySelector('#cf-keyimage-status');
+    if (status) status.textContent = prompt.length > 80 ? '프롬프트 준비 완료' : '기본 정보 입력 필요';
+  }
+
+  async function _renderKeyImageFlowPreview() {
+    const latest = await _getLatestCharacter();
+    const url = _getKeyImageUrlFromCharacter(latest);
+    const thumb = root.querySelector('#cf-keyimage-thumb');
+    if (!thumb) return;
+    if (url) {
+      thumb.innerHTML = `<img src="${escapeHTML(url)}" alt="대표 키이미지" loading="lazy">`;
+    } else {
+      thumb.innerHTML = `<div>아직 대표 키이미지가 없습니다<br><span style="color:var(--text-faint)">스튜디오에서 생성 후 대표로 지정하세요</span></div>`;
+    }
+  }
+
+  function _setCharacterFlowStep(tab = 'info') {
+    const order = ['info', 'keyimage', 'sheet', 'review'];
+    const idx = Math.max(0, order.indexOf(tab));
+    root.querySelectorAll('.cf-flow-step').forEach(step => {
+      const sidx = order.indexOf(step.dataset.flowStep);
+      step.classList.toggle('active', sidx === idx);
+      step.classList.toggle('done', sidx >= 0 && sidx < idx);
+    });
+  }
+
+  async function _renderFlowReview() {
+    const mount = root.querySelector('#cf-review-content');
+    if (!mount) return;
+    const data = gather();
+    const latest = await _getLatestCharacter();
+    const merged = { ...(latest || {}), ...data };
+    const roleLabel = SoavizCharacters.ROLE_LABEL?.[merged.role] || merged.role || '—';
+    const keyUrl = _getKeyImageUrlFromCharacter(latest || merged);
+    const sheetImages = [
+      ...((Array.isArray(latest?.sheetImages) ? latest.sheetImages : []).map(_normalizeSheetImageItem).filter(Boolean)),
+      ...(_sheetResults || []).map(_normalizeSheetImageItem).filter(Boolean),
+    ];
+    const uniqueSheets = [];
+    const seen = new Set();
+    sheetImages.forEach(item => {
+      const url = item?.imageUrl || item?.url || '';
+      const key = item?.id || url;
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      uniqueSheets.push(item);
+    });
+    const prompt = merged.keyImagePromptDraft || _buildKeyImagePromptFromData(merged);
+    mount.innerHTML = `
+      <div class="cf-review-grid">
+        <div class="cf-review-card">
+          <div class="cf-review-title">캐릭터 정보</div>
+          <div class="cf-review-row"><span>이름</span><span>${escapeHTML(merged.name || '—')}</span></div>
+          <div class="cf-review-row"><span>역할</span><span>${escapeHTML(roleLabel)}</span></div>
+          <div class="cf-review-row"><span>프로필</span><span>${escapeHTML([merged.gender, merged.age ? `${merged.age}세` : '', merged.mbti, merged.occupation].filter(Boolean).join(' · ') || '—')}</span></div>
+          <div class="cf-review-row"><span>외형</span><span>${escapeHTML(merged.appearance || '—')}</span></div>
+          <div class="cf-review-row"><span>성격</span><span>${escapeHTML(merged.personality || '—')}</span></div>
+        </div>
+        <div class="cf-review-card">
+          <div class="cf-review-title">키이미지 프롬프트</div>
+          <textarea class="cf-prompt-preview" readonly style="min-height:156px">${escapeHTML(prompt)}</textarea>
+        </div>
+      </div>
+      <div class="cf-review-grid" style="margin-top:14px">
+        <div class="cf-review-card">
+          <div class="cf-review-title">대표 키이미지</div>
+          ${keyUrl
+            ? `<div class="cf-review-media"><div class="cf-review-media-item"><img src="${escapeHTML(keyUrl)}" alt="대표 키이미지" loading="lazy"><div>Key Image Ready</div></div></div>`
+            : `<div class="cf-review-empty">대표 키이미지가 아직 없습니다. 키이미지 탭에서 생성 후 대표로 지정하세요.</div>`}
+        </div>
+        <div class="cf-review-card">
+          <div class="cf-review-title">캐릭터 시트</div>
+          ${uniqueSheets.length
+            ? `<div class="cf-review-media">${uniqueSheets.slice(0, 8).map((item, i) => {
+                const url = item.imageUrl || item.url || '';
+                return `<div class="cf-review-media-item">${url ? `<img src="${escapeHTML(url)}" alt="캐릭터 시트 ${i + 1}" loading="lazy">` : ''}<div>${escapeHTML(item.angle || item.model || `Sheet ${i + 1}`)}</div></div>`;
+              }).join('')}</div>`
+            : `<div class="cf-review-empty">캐릭터 시트 이미지가 아직 없습니다. 캐릭터 시트 탭에서 생성하거나 키이미지를 소스로 가져오세요.</div>`}
+        </div>
+      </div>
+      <div class="cf-flow-actions" style="margin-top:14px">
+        <button class="cf-flow-next secondary" id="cf-review-back-sheet" type="button">시트로 돌아가기</button>
+        <button class="cf-flow-next" id="cf-review-save-finish" type="button">저장 완료</button>
+      </div>
+    `;
+    mount.querySelector('#cf-review-back-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('sheet'));
+    mount.querySelector('#cf-review-save-finish')?.addEventListener('click', () => _saveCharacterFromEditor({ closeAfter: true }));
+  }
+
+  function _switchCharacterFlowTab(tab = 'info') {
+    root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
+    root.querySelector('#cf-pane-' + tab)?.classList.add('active');
+    _setCharacterFlowStep(tab);
+    if (tab === 'info' || tab === 'keyimage') _syncCharacterFlowPrompt();
+    if (tab === 'keyimage') _renderKeyImageFlowPreview();
+    if (tab === 'review') _renderFlowReview();
   }
 
   // 역할/성격/톤 select → 성격 textarea에 #태그 자동 추가
@@ -50272,6 +51189,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
     }
     const frag = SoavizCharacters.autoFragment(data);
     root.querySelector('#cf-fragment').value = frag;
+    _syncCharacterFlowPrompt();
     showToast?.('✓ Fragment 생성됨');
   });
 
@@ -50324,6 +51242,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       root.querySelector('#cf-appearance').value = r.appearance;
       root.querySelector('#cf-personality').value = r.personality;
       root.querySelector('#cf-fragment').value = SoavizCharacters.autoFragment(r);
+      _syncCharacterFlowPrompt();
 
       // ── 3) 버튼 원상복구 ──
       diceBtn.classList.remove('rolling');
@@ -50359,8 +51278,8 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   let _sheetSelectedAngles = new Set(['front']);
   let _sheetSelectedModels = new Set(['flash']);
   let _sheetRatio = '1:1';
-  let _sheetRefImage = c.keyImageUrl || null;
-  let _sheetResults = Array.isArray(c.sheetImages) ? [...c.sheetImages] : [];
+  let _sheetRefImage = _getKeyImageUrlFromCharacter(c) || null;
+  let _sheetResults = Array.isArray(c.sheetImages) ? c.sheetImages.map(_normalizeSheetImageItem).filter(Boolean) : [];
 
   // ── 키이미지 자동 참조 설정
   if (_sheetRefImage) {
@@ -50382,73 +51301,50 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
 
   // ── 탭 전환
   root.querySelectorAll('.cf-tab-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      // 키이미지 만들기 탭: 기존 캐릭터면 바로 스튜디오로 이동
-      if (btn.dataset.tab === 'keyimage') {
-        const saveBtn = root.querySelector('#cf-save');
-        let targetId = c.id;
-        if (!targetId) {
-          // 신규 캐릭터 — 저장 먼저
-          if (saveBtn) saveBtn.click();
-          await new Promise(r => setTimeout(r, 400));
-          const all = await SoavizDB?.db?.characters?.orderBy('createdAt').reverse().limit(1).toArray().catch(() => []);
-          targetId = all?.[0]?.id || null;
-        } else {
-          // 기존 캐릭터 — 변경사항 저장
-          if (saveBtn) saveBtn.click();
-          await new Promise(r => setTimeout(r, 200));
-        }
-        root.remove();
-        document.body.style.overflow = '';
-        if (targetId) {
-          openCharacterKeyImageStudio(targetId);
-        } else {
-          showToast?.('캐릭터를 먼저 저장해 주세요', 'warn');
-        }
-        return;
-      }
-      root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.remove('active'));
-      root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      root.querySelector('#cf-pane-' + btn.dataset.tab)?.classList.add('active');
-    });
+    btn.addEventListener('click', () => _switchCharacterFlowTab(btn.dataset.tab));
   });
 
   // ── 키이미지 스튜디오 열기 버튼
   root.querySelector('#cf-open-keyimage-studio')?.addEventListener('click', async () => {
-    // 저장 먼저 실행 (신규 캐릭터는 저장 후 id 확보)
-    const saveBtn = root.querySelector('#cf-save');
-    let targetId = c.id;
-    if (!targetId) {
-      // 신규 캐릭터 — 저장 트리거
-      if (saveBtn) saveBtn.click();
-      // 저장 완료 대기 (최대 1.5초)
-      await new Promise(r => setTimeout(r, 400));
-      // 최신 캐릭터 목록에서 방금 저장된 캐릭터 id 탐색
-      const all = await SoavizDB?.db?.characters?.orderBy('createdAt').reverse().limit(1).toArray();
-      targetId = all?.[0]?.id || null;
-    } else {
-      // 기존 캐릭터 — 저장 후 이동
-      if (saveBtn) saveBtn.click();
-      await new Promise(r => setTimeout(r, 200));
-    }
-    // 모달 닫기
-    root.remove();
-    document.body.style.overflow = '';
-    // 키이미지 스튜디오 열기
-    if (targetId) {
-      openCharacterKeyImageStudio(targetId);
-    } else {
-      showToast?.('캐릭터를 먼저 저장해 주세요', 'warn');
-    }
+    await _saveCharacterFromEditor({ openKeyImage: true });
+  });
+  root.querySelector('#cf-info-to-keyimage')?.addEventListener('click', () => _switchCharacterFlowTab('keyimage'));
+  root.querySelector('#cf-keyimage-back-info')?.addEventListener('click', () => _switchCharacterFlowTab('info'));
+  root.querySelector('#cf-keyimage-to-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('sheet'));
+  root.querySelector('#cf-open-review-from-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('review'));
+  root.querySelector('#cf-review-refresh')?.addEventListener('click', () => _renderFlowReview());
+  root.querySelector('#cf-refresh-keyimage-prompt')?.addEventListener('click', () => {
+    const fragEl = root.querySelector('#cf-fragment');
+    const data = {
+      name: root.querySelector('#cf-name')?.value?.trim() || '',
+      role: root.querySelector('#cf-role')?.value || '',
+      gender: root.querySelector('#cf-gender')?.value?.trim() || '',
+      age: parseInt(root.querySelector('#cf-age')?.value || '0', 10) || null,
+      mbti: (root.querySelector('#cf-mbti')?.value || '').trim(),
+      occupation: (root.querySelector('#cf-occupation')?.value || '').trim(),
+      appearance: root.querySelector('#cf-appearance')?.value || '',
+      personality: root.querySelector('#cf-personality')?.value || '',
+    };
+    if (fragEl) fragEl.value = SoavizCharacters.autoFragment(data);
+    _syncCharacterFlowPrompt();
+    showToast?.('키이미지 프롬프트를 갱신했습니다');
+  });
+  ['input', 'change'].forEach(evt => {
+    root.querySelector('#cf-pane-info')?.addEventListener(evt, e => {
+      if (e.target?.closest?.('#cf-info-keyimage-prompt-preview')) return;
+      _syncCharacterFlowPrompt();
+    });
+  });
+  root.querySelector('#cf-keyimage-prompt-live')?.addEventListener('input', e => {
+    const val = e.target.value;
+    const infoPreview = root.querySelector('#cf-info-keyimage-prompt-preview');
+    if (infoPreview) infoPreview.value = val;
   });
   // defaultTab 파라미터로 초기 탭 지정
   if (defaultTab) {
-    root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.remove('active'));
-    root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
-    root.querySelector(`.cf-tab-btn[data-tab="${defaultTab}"]`)?.classList.add('active');
-    root.querySelector(`#cf-pane-${defaultTab}`)?.classList.add('active');
+    _switchCharacterFlowTab(defaultTab);
   }
+  _syncCharacterFlowPrompt();
 
   // ── 모델 렌더링
   function _renderSheetModels() {
@@ -50719,10 +51615,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       _setSlot(slotType, photo);
       _renderPhotos();
       // 기본 정보 탭으로 자동 전환
-      root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.remove('active'));
-      root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
-      root.querySelector('.cf-tab-btn[data-tab="info"]')?.classList.add('active');
-      root.querySelector('#cf-pane-info')?.classList.add('active');
+      _switchCharacterFlowTab('info');
       const SLOT_NAME = { front:'정면', side:'측면', back:'후면', full:'전신' };
       showToast?.(`✓ ${SLOT_NAME[slotType]||slotType} 슬롯에 등록됨`);
     }
@@ -50752,31 +51645,70 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   _updateSheetGenerateBtn();
   _renderSheetResults();
 
-  root.querySelector('#cf-save')?.addEventListener('click', async () => {
+  // ── 자동 태그 생성 헬퍼
+  function _autoTags(data) {
+    const tags = [];
+    const roleMap = { protagonist: '주인공', antagonist: '악당', supporting: '조연', extra: '엑스트라' };
+    if (roleMap[data.role]) tags.push(roleMap[data.role]);
+    if (data.gender) tags.push(data.gender);
+    if (data.age) tags.push(`${Math.floor(Number(data.age) / 10) * 10}대`);
+    const kwList = ['단발','롱헤어','숏컷','웨이브','스트레이트','안경','수염','타투','후드','코트','자켓'];
+    kwList.forEach(kw => { if ((data.appearance + ' ' + data.personality).includes(kw)) tags.push(kw); });
+    return [...new Set(tags)].slice(0, 6);
+  }
+
+  // ── 공통 save 로직 (저장만 / 키이미지 이동 / 최종 확인)
+  async function _saveCharacterFromEditor({ closeAfter = false, openKeyImage = false } = {}) {
     const data = gather();
-    if (!data.name) { showToast?.('이름을 입력하세요'); return; }
+    if (!data.name) { showToast?.('이름을 입력하세요'); return false; }
     if (!data.promptFragment) data.promptFragment = SoavizCharacters.autoFragment(data);
+    data.keyImagePromptDraft = root.querySelector('#cf-keyimage-prompt-live')?.value?.trim()
+      || root.querySelector('#cf-info-keyimage-prompt-preview')?.value?.trim()
+      || _buildKeyImagePromptFromData(data);
+    data.sheetImages = (_sheetResults || [])
+      .map(_normalizeSheetImageItem)
+      .filter(item => item && !item.error && (item.imageUrl || item.url));
+    if (!data.tags || !data.tags.length) data.tags = _autoTags(data);
+    let rec = null;
     if (isNew) {
       data.projectId = c.projectId;
       if (window.SoavizAuth?.isGuest?.()) {
-        try {
-          localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
-        } catch (_) {}
+        try { localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() })); } catch (_) {}
         showToast?.('초안을 임시 보관했습니다. 가입/로그인 후 자동 저장됩니다.');
         window.SoavizAuth.require('캐릭터 생성');
-        return;
+        return false;
       }
-      const rec = await SoavizCharacters.create(data);
-      if (!rec) return;
+      rec = await SoavizCharacters.create(data);
+      if (!rec) return false;
+      c = { ...c, ...rec };
       showToast?.(`✓ ${data.name} 추가`);
     } else {
-      const rec = await SoavizCharacters.update(c.id, data);
-      if (!rec) return;
+      rec = await SoavizCharacters.update(c.id, data);
+      if (!rec) return false;
+      c = { ...c, ...rec };
       showToast?.(`✓ ${data.name} 저장`);
     }
-    close();
     renderCharactersPage();
+    if (openKeyImage) {
+      close();
+      setTimeout(() => openCharacterKeyImageStudio(rec.id), 80);
+    } else if (closeAfter) {
+      close();
+    } else {
+      await _renderKeyImageFlowPreview();
+      if (root.querySelector('#cf-pane-review')?.classList.contains('active')) await _renderFlowReview();
+    }
+    return rec;
+  }
+
+  // ── "저장 후 키이미지 →" (신규 캐릭터 메인 CTA)
+  root.querySelector('#cf-save')?.addEventListener('click', async () => {
+    if (!isNew) { await _saveCharacterFromEditor({ closeAfter: true }); return; }
+    await _saveCharacterFromEditor({ openKeyImage: true });
   });
+
+  // ── "저장만" (신규 캐릭터 보조 버튼)
+  root.querySelector('#cf-save-only')?.addEventListener('click', () => _saveCharacterFromEditor({ closeAfter: true }));
 
   root.querySelector('#cf-delete')?.addEventListener('click', async () => {
     if (!confirm(`${c.name}을(를) 보관할까요?`)) return;
@@ -51315,11 +52247,6 @@ function bindCharactersPage() {
   $('#ch-random-btn')?.addEventListener('click', () => createRandomCharacterQuick());
   $('#ch-pack-btn')?.addEventListener('click', () => copyCharacterPromptPack());
   $('#ch-relmap-btn')?.addEventListener('click', () => openCharacterRelationMap());
-  $('#ch-imagegen-btn')?.addEventListener('click', () => {
-    const ids = [...CHARACTER_PAGE_STATE.selected];
-    if (ids.length > 0) openCharacterEditor(ids[0], null, 'sheet');
-    else openCharacterEditor(null, null, 'sheet');
-  });
   $('#ch-grid')?.addEventListener('click', async e => {
     const btn = e.target.closest('[data-ch-action]');
     if (!btn) return;
@@ -52875,6 +53802,7 @@ async function renderCompareSession() {
     }, 1000);
   } else {
     clearInterval(window._cmpElapsedTimer);
+    clearInterval(window._syncDriftTimer); // drift 보정 타이머 정리
   }
 }
 
@@ -52882,46 +53810,122 @@ function bindCompareSync() {
   const syncBar = $('#cmp-sync-bar');
   const videos = [...(document.querySelectorAll('#cmp-results video[data-sync]') || [])];
   if (videos.length < 2) { if (syncBar) syncBar.style.display = 'none'; return; }
-  if (syncBar) syncBar.style.display = 'flex';
+  if (syncBar) { syncBar.style.display = 'flex'; syncBar.style.flexDirection = 'column'; }
 
   let _syncing = false;
+  let _looping = false;
+  let _scrubbing = false;
+
+  /* ── 포맷 헬퍼 ── */
+  const fmt = s => {
+    const t = isNaN(s) ? 0 : Math.max(0, s);
+    return `${Math.floor(t / 60).toString().padStart(2, '0')}:${Math.floor(t % 60).toString().padStart(2, '0')}`;
+  };
+
+  /* ── UI 갱신 ── */
+  const updateSyncUI = (v) => {
+    if (_scrubbing) return;
+    const pos    = $('#cmp-sync-pos');
+    const scrub  = $('#cmp-sync-scrub');
+    const dur    = v.duration || 0;
+    const cur    = v.currentTime || 0;
+    if (pos)   pos.textContent = `${fmt(cur)} / ${fmt(dur)}`;
+    if (scrub && dur > 0) scrub.value = ((cur / dur) * 100).toFixed(2);
+  };
+
+  /* ── play/pause/seek 동기 ── */
   const doSync = (src, event) => {
     if (_syncing) return;
     _syncing = true;
-    const seekSync = $('#cmp-sync-toggle')?.checked !== false;
+    const seekOn = $('#cmp-sync-toggle')?.checked !== false;
     videos.forEach(v => {
       if (v === src) return;
-      if (event === 'play') v.play().catch(() => {});
-      else if (event === 'pause') v.pause();
-      else if (event === 'seeked' && seekSync) v.currentTime = src.currentTime;
+      if (event === 'play')              v.play().catch(() => {});
+      else if (event === 'pause')        v.pause();
+      else if (event === 'seeked' && seekOn) v.currentTime = src.currentTime;
     });
     _syncing = false;
   };
+
+  /* ── 이벤트 리스너 — 누적 방지: 키 이름으로 remove 후 add ── */
   videos.forEach(v => {
-    v.removeEventListener('play',   v._syncPlay   || (() => {}));
-    v.removeEventListener('pause',  v._syncPause  || (() => {}));
-    v.removeEventListener('seeked', v._syncSeeked || (() => {}));
-    v._syncPlay   = () => { doSync(v, 'play');   updateSyncPos(v); };
-    v._syncPause  = () => { doSync(v, 'pause');  updateSyncPos(v); };
-    v._syncSeeked = () => { doSync(v, 'seeked'); updateSyncPos(v); };
-    v.addEventListener('play',   v._syncPlay);
-    v.addEventListener('pause',  v._syncPause);
-    v.addEventListener('seeked', v._syncSeeked);
-    v.addEventListener('timeupdate', () => updateSyncPos(v));
+    ['play','pause','seeked','timeupdate','ended'].forEach(ev => {
+      if (v[`_sync_${ev}`]) { v.removeEventListener(ev, v[`_sync_${ev}`]); delete v[`_sync_${ev}`]; }
+    });
+    v._sync_play       = () => { doSync(v, 'play');   updateSyncUI(v); };
+    v._sync_pause      = () => { doSync(v, 'pause');  updateSyncUI(v); };
+    v._sync_seeked     = () => { doSync(v, 'seeked'); updateSyncUI(v); };
+    v._sync_timeupdate = () => updateSyncUI(v);
+    v._sync_ended      = () => {
+      if (_looping) {
+        _syncing = true;
+        videos.forEach(x => { x.currentTime = 0; x.play().catch(() => {}); });
+        _syncing = false;
+      }
+    };
+    v.addEventListener('play',       v._sync_play);
+    v.addEventListener('pause',      v._sync_pause);
+    v.addEventListener('seeked',     v._sync_seeked);
+    v.addEventListener('timeupdate', v._sync_timeupdate);
+    v.addEventListener('ended',      v._sync_ended);
   });
 
-  const updateSyncPos = (v) => {
-    const pos = $('#cmp-sync-pos');
-    if (!pos) return;
-    const t = v.currentTime || 0;
-    const m = Math.floor(t / 60).toString().padStart(2, '0');
-    const s2 = Math.floor(t % 60).toString().padStart(2, '0');
-    pos.textContent = `${m}:${s2}`;
+  /* ── Drift 자동 보정 (2초마다 마스터와 0.5s 이상 벌어지면 snap) ── */
+  clearInterval(window._syncDriftTimer);
+  window._syncDriftTimer = setInterval(() => {
+    if (_syncing) return;
+    const master = videos.find(v => !v.paused && !v.ended);
+    if (!master) return;
+    _syncing = true;
+    videos.forEach(v => {
+      if (v === master) return;
+      if (Math.abs(v.currentTime - master.currentTime) > 0.5) v.currentTime = master.currentTime;
+    });
+    _syncing = false;
+  }, 2000);
+
+  /* ── 버튼 바인딩 — onclick 으로 누적 방지 ── */
+  const playBtn  = $('#cmp-sync-play');
+  const pauseBtn = $('#cmp-sync-pause');
+  const loopBtn  = $('#cmp-sync-loop');
+  const volSldr  = $('#cmp-sync-vol');
+  const scrub    = $('#cmp-sync-scrub');
+
+  if (playBtn)  playBtn.onclick  = () => videos.forEach(v => v.play().catch(() => {}));
+  if (pauseBtn) pauseBtn.onclick = () => videos.forEach(v => v.pause());
+
+  if (loopBtn) loopBtn.onclick = () => {
+    _looping = !_looping;
+    loopBtn.style.background   = _looping ? 'var(--accent)' : 'var(--bg-1)';
+    loopBtn.style.color        = _looping ? '#fff'           : 'var(--text)';
+    loopBtn.style.borderColor  = _looping ? 'var(--accent)'  : 'var(--border)';
+    loopBtn.title = _looping ? '반복 ON' : '반복 재생';
   };
 
-  // 전체 재생/정지 버튼
-  $('#cmp-sync-play')?.addEventListener('click', () => videos.forEach(v => v.play().catch(() => {})));
-  $('#cmp-sync-pause')?.addEventListener('click', () => videos.forEach(v => v.pause()));
+  if (volSldr) volSldr.oninput = () => {
+    const vol = parseFloat(volSldr.value);
+    videos.forEach(v => { v.volume = vol; });
+  };
+
+  /* ── 스크러버 ── */
+  if (scrub) {
+    const seekTo = (pct) => {
+      const target = videos.find(v => v.duration > 0) || videos[0];
+      if (!target || !target.duration) return;
+      const t = (pct / 100) * target.duration;
+      _syncing = true;
+      videos.forEach(v => { if (v.duration > 0) v.currentTime = t; });
+      _syncing = false;
+      updateSyncUI(target);
+    };
+    scrub.addEventListener('mousedown', () => {
+      _scrubbing = true;
+      videos.forEach(v => v.pause());
+    });
+    scrub.addEventListener('input', () => { if (_scrubbing) seekTo(parseFloat(scrub.value)); });
+    scrub.addEventListener('mouseup',  () => { _scrubbing = false; seekTo(parseFloat(scrub.value)); });
+    scrub.addEventListener('touchend', () => { _scrubbing = false; seekTo(parseFloat(scrub.value)); });
+  }
 }
 
 function bindComparePage() {
@@ -52951,6 +53955,7 @@ function bindComparePage() {
     _CMP_STATE.sessionId = null;
     $('#cmp-sync-bar').style.display = 'none';
     clearInterval(window._cmpElapsedTimer);
+    clearInterval(window._syncDriftTimer);
     renderCompareSession();
   });
   $('#cmp-run-btn')?.addEventListener('click', async () => {
@@ -53649,9 +54654,34 @@ if ('MutationObserver' in window) {
   window.SoavizOnboarding = { shouldShow, show, markDone, isDone };
 
   // 페이지 로드 후 1.5초 대기 (DB 준비 + 첫 화면 안정화) → 신규 사용자라면 노출
+  // Landing 페이지가 활성 상태이면 억제 (Landing 자체에 CTA 있어서 이중 노출 불필요)
   setTimeout(async () => {
+    const activePage = document.querySelector('.page.active, .page[style*="display:flex"], .page[style*="display: flex"]');
+    const activeId = activePage?.id || '';
+    if (activeId === 'page-landing') return;   // Landing → 억제
     if (await shouldShow()) show();
   }, 1500);
+
+  // Landing → 앱 첫 진입 시 온보딩 표시 (showPage 후킹)
+  // Landing에서 다른 페이지로 처음 이동할 때 딱 한 번만 실행
+  (function hookFirstAppEntry() {
+    const _origShowPage = window.showPage;
+    if (typeof _origShowPage !== 'function') return;
+    let _hooked = false;
+    window.showPage = function(name, ...args) {
+      const result = _origShowPage.call(this, name, ...args);
+      if (!_hooked && name !== 'landing') {
+        _hooked = true;
+        // 첫 앱 진입 → 신규 사용자면 온보딩 노출 (300ms 대기로 페이지 전환 완료 후)
+        setTimeout(async () => {
+          if (await window.SoavizOnboarding?.shouldShow?.()) {
+            window.SoavizOnboarding.show();
+          }
+        }, 300);
+      }
+      return result;
+    };
+  })();
 })();
 
 /* ── Production Health에 Pipeline 완성도 가산 ─────────── */
@@ -54081,6 +55111,20 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
     }
     if (signinBtn) {
       signinBtn.style.display = p ? 'none' : '';
+      signinBtn.textContent = '베타 로그인';
+      signinBtn.setAttribute('aria-label', '베타 로그인');
+      signinBtn.title = '로그인하면 베타 앱에 접근할 수 있습니다. 제작 실행은 크레딧 또는 BYOK가 필요합니다';
+    }
+    const proBtn = document.getElementById('top-pro-btn');
+    if (proBtn) {
+      const hasBetaAccess = Boolean(p && window.SOAVIZ_BETA_LOGIN_REQUIRED);
+      proBtn.classList.toggle('is-pro', hasBetaAccess);
+      proBtn.setAttribute('aria-label', hasBetaAccess ? '베타 앱 액세스 활성화됨' : '베타 앱 액세스');
+      proBtn.title = hasBetaAccess
+        ? '베타 앱 액세스 활성화됨 · 제작 실행은 크레딧 또는 BYOK 필요'
+        : '로그인하면 베타 앱에 접근할 수 있습니다. 제작 실행은 크레딧 또는 BYOK가 필요합니다';
+      const label = proBtn.querySelector('.pro-label');
+      if (label) label.textContent = 'BETA';
     }
     if (!av) return;
     av.style.display = p ? '' : 'none';
@@ -54096,7 +55140,8 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
     // 플랜별 테두리 — CSS의 [data-plan] 분기 활용
     const plan = (typeof getCurrentPlan === 'function') ? getCurrentPlan() : 'free';
     av.dataset.plan = plan;
-    av.title = `${name}${p?.email ? ' · ' + p.email : ''} · ${plan === 'pro' ? 'Pro 멤버' : plan === 'team' ? 'Team' : '무료 플랜'}\n클릭 → 프로필`;
+    const betaLabel = p?.betaAccess ? ' · Beta 앱 액세스' : '';
+    av.title = `${name}${p?.email ? ' · ' + p.email : ''}${betaLabel} · ${plan === 'pro' ? 'Pro 멤버' : plan === 'team' ? 'Team' : '무료 플랜'}\n클릭 → 프로필`;
   }
   function showProfileMenu() {
     const p = getProfile();
@@ -54137,22 +55182,86 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
   if (window._byokFetchPatched) return;
   window._byokFetchPatched = true;
   const _origFetch = window.fetch.bind(window);
+  const TOKEN_BACKEND_PATHS = [
+    '/api/text/generate',
+    '/api/image/generate',
+    '/api/generate-image',
+    '/api/generate-video',
+    '/api/video/generate',
+    '/api/video/lipsync',
+    '/api/video/upscale',
+    '/api/music',
+    '/api/tts',
+    '/api/sfx',
+    '/api/summarize',
+    '/api/embeddings',
+    '/api/transcribe-blob',
+    '/api/extract',
+    '/api/extract-file',
+    '/api/analyze-video',
+    '/api/render-video',
+    '/api/character-sheet/generate',
+  ];
+  function _backendPath(url) {
+    try { return new URL(url, location.href).pathname; }
+    catch (_) { return String(url || ''); }
+  }
+  function _isTokenBackendPath(path) {
+    return TOKEN_BACKEND_PATHS.some(p => path === p || path.startsWith(`${p}/`));
+  }
+  function _requiredByokHeaders(path) {
+    if (/\/api\/(?:tts|sfx|music)\b/.test(path)) return ['X-User-Key-Elevenlabs'];
+    if (/\/api\/(?:video|generate-video|render-video)\b/.test(path)) return ['X-User-Key-Replicate'];
+    if (/\/api\/(?:text|summarize|embeddings|image|generate-image|transcribe|extract|analyze-video|character-sheet)\b/.test(path)) {
+      return ['X-User-Key-Openai', 'X-User-Key-Anthropic'];
+    }
+    return [];
+  }
+  function _hasRequiredByok(path, headers = {}) {
+    const required = _requiredByokHeaders(path);
+    const keys = Object.keys(headers || {});
+    if (!required.length) return keys.length > 0;
+    return required.some(h => headers[h]);
+  }
   window.fetch = async function (input, init) {
     try {
       const url = (typeof input === 'string') ? input : (input?.url || '');
       // BACKEND_URL 또는 같은 origin의 /api/* 만 BYOK 헤더 주입
       const isBackend = (((b => b && url.startsWith(b))(_tdzGet(() => BACKEND_URL)))) ||
                         (url.startsWith('/api/'));
-      if (isBackend
-          && (typeof canUseApiRouter !== 'function' || canUseApiRouter({ silent: true }))
-          && typeof SoavizVault !== 'undefined'
-          && SoavizVault.isUnlocked
-          && SoavizVault.isUnlocked()) {
-        const byok = await SoavizVault.byokHeaders();
-        init = init || {};
-        init.headers = { ...(init.headers || {}), ...byok };
+      const path = _backendPath(url);
+      const tokenProtected = isBackend && _isTokenBackendPath(path);
+      const freeTokenBlocked = tokenProtected
+        && window.SOAVIZ_BETA_FREE_TOKEN_ACTIONS !== true
+        && (typeof getCurrentPlan !== 'function' || getCurrentPlan() === 'free');
+      let byok = {};
+      const vaultReady = Boolean(
+        typeof SoavizVault !== 'undefined'
+        && SoavizVault.isUnlocked
+        && SoavizVault.isUnlocked()
+        && (!window.SoavizAuth?.isGuest?.())
+      );
+      const canInjectByok = isBackend
+        && vaultReady
+        && (
+          typeof canUseApiRouter !== 'function'
+          || canUseApiRouter({ silent: true })
+          || window.SOAVIZ_BETA_BYOK_TOKEN_ACCESS
+        );
+      if (canInjectByok) byok = await SoavizVault.byokHeaders();
+      if (freeTokenBlocked && !_hasRequiredByok(path, byok)) {
+        showToast?.('이 제작 기능은 토큰 비용이 발생해 무료 베타에서는 실행할 수 없습니다. Credits 또는 해당 provider BYOK 키가 필요합니다.', 'warn');
+        throw new Error('SOAVIZ_TOKEN_ACTION_REQUIRES_CREDITS_OR_BYOK');
       }
-    } catch {}
+      if (Object.keys(byok).length) {
+        init = init || {};
+        const merged = new Headers(init.headers || (typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined));
+        Object.entries(byok).forEach(([k, v]) => merged.set(k, v));
+        init.headers = merged;
+      }
+    } catch (err) {
+      if (err?.message === 'SOAVIZ_TOKEN_ACTION_REQUIRES_CREDITS_OR_BYOK') throw err;
+    }
     return _origFetch(input, init);
   };
 })();
@@ -56339,6 +57448,13 @@ window.svErrorBoundary = function (renderFn, containerId) {
 
   async function handleOnboardingAnalyze(file) {
     if (!file) return;
+    const analyzeCost = 80;
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'video-editor-analyze',
+      label: '샘플 영상 자동 분석',
+      cost: analyzeCost,
+      modelTier: 'basic',
+    })) return;
     updateOnboardingState({ step: 'processing', error: null });
     setVideoEditAction('analyze_started', { fileName: file.name, source: 'onboarding' });
     logOnboardingEvent('analyze_started', { fileName: file.name });
@@ -56358,6 +57474,7 @@ window.svErrorBoundary = function (renderFn, containerId) {
       state.editVersions = onboardingState.editVersions;
       state.selectedVersion = onboardingState.selectedVersionId || state.selectedVersion;
       if (state.media) state.media.duration = data.duration || state.media.duration;
+      try { if (typeof consumeCredits === 'function') consumeCredits(analyzeCost, 'Video Analyze'); } catch (_) {}
       setVideoEditAction('analyze_completed', {
         sceneCount: state.scenes.length,
         versionCount: state.editVersions?.length || 0,
@@ -56421,6 +57538,13 @@ window.svErrorBoundary = function (renderFn, containerId) {
       updateOnboardingState({ error: '선택한 편집안을 찾지 못했습니다.' });
       return;
     }
+    const renderCost = 180;
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'video-editor-render',
+      label: '샘플 영상 렌더/Export',
+      cost: renderCost,
+      modelTier: 'basic',
+    })) return;
     clearOnboardingAutoRender();
     state.rendering = true;
     onboardingState.step = 'rendering';
@@ -56463,6 +57587,7 @@ window.svErrorBoundary = function (renderFn, containerId) {
         selectedVersionId: data.selectedVersionId || selectedId,
         cutCount: data.cutCount,
       };
+      try { if (typeof consumeCredits === 'function') consumeCredits(renderCost, 'Video Render'); } catch (_) {}
       _stopRenderMsgTicker();
       state.rendering = false;
       setVideoEditAction('render_completed', {
@@ -56656,6 +57781,13 @@ window.svErrorBoundary = function (renderFn, containerId) {
 
   async function runAnalyzeVideo(file, url, key) {
     if (!file || state.rendering) return;
+    const analyzeCost = 80;
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'video-editor-analyze',
+      label: '영상 자동 분석',
+      cost: analyzeCost,
+      modelTier: 'basic',
+    })) return;
     if (analyzeAbortController) analyzeAbortController.abort();
     analyzeAbortController = new AbortController();
     state.analyzing = true;
@@ -56675,6 +57807,7 @@ window.svErrorBoundary = function (renderFn, containerId) {
       if (!data.success || !Array.isArray(data.scenes) || !data.scenes.length) {
         throw new Error(data.error || '분석 결과가 비어 있습니다');
       }
+      try { if (typeof consumeCredits === 'function') consumeCredits(analyzeCost, 'Video Analyze'); } catch (_) {}
 
       state.scenes = data.scenes;
       if (Array.isArray(data.editVersions) && data.editVersions.length) {
@@ -56812,6 +57945,13 @@ window.svErrorBoundary = function (renderFn, containerId) {
     }
 
     const selected = state.editVersions?.find(v => v.id === state.selectedVersion) || versions.find(v => v.id === state.selectedVersion) || versions[0];
+    const renderCost = 180;
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'video-editor-render',
+      label: 'Video Editor 렌더/Export',
+      cost: renderCost,
+      modelTier: 'basic',
+    })) return;
     showToast?.(`${selected.title} 렌더링 시작...`);
 
     state.rendering    = true;
@@ -56892,6 +58032,7 @@ window.svErrorBoundary = function (renderFn, containerId) {
           renderMode: data.renderMode,
           selectedVersionId: data.selectedVersionId || state.selectedVersion,
         });
+        try { if (typeof consumeCredits === 'function') consumeCredits(renderCost, 'Video Render'); } catch (_) {}
         showToast?.(`✅ ${modeLabel}`);
       } else {
         state.renderError = '영상 처리 중 오류가 발생했어요. 다시 시도해 주세요.';
@@ -57178,7 +58319,10 @@ syncGuestLockedNavigation();
 try {
   const _rawRoute = new URLSearchParams(location.search || '').get('page') || (location.hash || '').replace(/^#/, '');
   const _blockedAsHome = new Set(['voice', 'voices', 'transcript', 'audio', 'extract', 'studio', 'landing', '']);
-  const initialRoute = (_rawRoute && !_blockedAsHome.has(_rawRoute)) ? _rawRoute : 'today';
+  const _postLoginRoute = !window.SoavizAuth?.isGuest?.() ? window.SoavizAuth?.takePostLoginPage?.('') : '';
+  const _guestBetaLocked = Boolean(window.SOAVIZ_BETA_LOGIN_REQUIRED && window.SoavizAuth?.isGuest?.());
+  const initialRoute = _postLoginRoute
+    || (_guestBetaLocked && !_rawRoute ? 'landing' : ((_rawRoute && !_blockedAsHome.has(_rawRoute)) ? _rawRoute : 'today'));
   showPage(initialRoute);
 } catch (_) {
   try { showPage('today'); } catch (_) {}
@@ -57305,6 +58449,9 @@ setInterval(checkR2Health, 30000);
           <span class="sub">· 사용자 가이드</span>
         </div>
         <div class="sv-docs-actions">
+          <button class="sv-docs-btn" id="sv-docs-newtab" title="새 탭에서 열기" aria-label="새 탭에서 열기">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
           <button class="sv-docs-btn" id="sv-docs-reload" title="새로고침" aria-label="새로고침">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           </button>
@@ -57313,18 +58460,65 @@ setInterval(checkR2Health, 30000);
           </button>
         </div>
       </div>
+      <div id="sv-docs-fallback" style="display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:40px;text-align:center;background:var(--bg)">
+        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--text-faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <div style="color:var(--text-dim);font-size:15px;font-weight:600">사용자 가이드를 불러오지 못했습니다</div>
+        <div style="color:var(--text-faint);font-size:13px;max-width:320px;line-height:1.6">브라우저 보안 정책으로 인해 인앱 뷰어가 차단됐습니다.<br>새 탭에서 확인해주세요.</div>
+        <button id="sv-docs-fallback-btn" style="margin-top:4px;padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          새 탭에서 열기
+        </button>
+      </div>
       <iframe class="sv-docs-iframe" id="sv-docs-iframe" title="soaviz studio Documentation"></iframe>
     </div>
   `;
   document.body.appendChild(modal);
 
   const iframe = document.getElementById('sv-docs-iframe');
+  const fallback = document.getElementById('sv-docs-fallback');
   // docs/index.html로 명시 — Vercel cleanUrls + 쿼리스트링 조합에서도 안정적
   const DOCS_URL = 'docs/index.html';
+  let _currentDocsUrl = DOCS_URL + '?embed=1';
+
+  function _showIframe() {
+    iframe.style.display = '';
+    if (fallback) fallback.style.display = 'none';
+  }
+  function _showFallback() {
+    iframe.style.display = 'none';
+    if (fallback) fallback.style.display = 'flex';
+  }
+
+  // iframe 로드 실패 감지 (CSP block 등)
+  iframe.addEventListener('error', _showFallback);
+  iframe.addEventListener('load', () => {
+    // about:blank나 빈 src는 무시
+    if (!iframe.src || iframe.src === 'about:blank' || iframe.src === location.href) return;
+    // contentDocument 접근 실패 → cross-origin block이 아닌 CSP block은 load 이벤트가 안 오거나
+    // contentDocument.body가 비어있는 경우가 있어 타임아웃으로 감지
+    try {
+      const doc = iframe.contentDocument;
+      if (doc && (doc.body === null || doc.body.innerHTML === '')) {
+        setTimeout(() => {
+          try {
+            const d = iframe.contentDocument;
+            if (!d || !d.body || d.body.innerHTML === '') _showFallback();
+            else _showIframe();
+          } catch (_) { _showFallback(); }
+        }, 800);
+      } else {
+        _showIframe();
+      }
+    } catch (_) {
+      // cross-origin: 보통 정상 로드 성공
+      _showIframe();
+    }
+  });
 
   function openDocs(hash) {
-    const url = DOCS_URL + '?embed=1' + (hash ? '#' + hash : '');
-    iframe.src = url;
+    _currentDocsUrl = DOCS_URL + '?embed=1' + (hash ? '#' + hash : '');
+    _showIframe();
+    iframe.src = _currentDocsUrl;
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -57355,8 +58549,13 @@ setInterval(checkR2Health, 30000);
   });
   // 새로고침
   document.getElementById('sv-docs-reload')?.addEventListener('click', () => {
-    iframe.src = iframe.src;
+    _showIframe();
+    iframe.src = _currentDocsUrl;
   });
+  // 새 탭에서 열기
+  const _openInNewTab = () => window.open(_currentDocsUrl.replace('?embed=1', ''), '_blank', 'noopener');
+  document.getElementById('sv-docs-newtab')?.addEventListener('click', _openInNewTab);
+  document.getElementById('sv-docs-fallback-btn')?.addEventListener('click', _openInNewTab);
 
   // D 키로 빠르게 열기 (입력 중이 아닐 때만)
   document.addEventListener('keydown', (e) => {
@@ -57373,11 +58572,318 @@ setInterval(checkR2Health, 30000);
   window.openDocsModal = openDocs;
   window.closeDocsModal = closeDocs;
 
-  // Pro 업그레이드 버튼 → 요금 안내 페이지 (page-credits)
+  // 베타 액세스 버튼 → 게스트는 로그인, 로그인 사용자는 요금/크레딧 안내
   document.getElementById('top-pro-btn')?.addEventListener('click', () => {
+    if (window.SOAVIZ_BETA_LOGIN_REQUIRED && window.SoavizAuth?.isGuest?.()) {
+      window.SoavizAuth?.openAuthModal?.('베타 앱 액세스', { redirectPage: 'today' });
+      return;
+    }
     showPage('credits');
   });
 })();
+
+/* ════════════════════════════════════════════════════════════
+   P2-06: Stripe 결제 인프라
+   ──────────────────────────────────────────────────────────
+   URL 없으면 "곧 오픈" 토스트, URL 있으면 확인 모달 → Stripe 이동
+   사용법:
+     openUpgradeCheckout('standard')
+     openUpgradeCheckout('pro')
+     openUpgradeCheckout('team')   // → mailto
+   URL 설정: window.__SOAVIZ_CONFIG__.stripeUrls.standard = 'https://buy.stripe.com/...'
+   ════════════════════════════════════════════════════════════ */
+(function initStripeCheckout() {
+
+  function openUpgradeCheckout(plan) {
+    // Team → 이메일 문의
+    if (plan === 'team') {
+      window.open('mailto:ai@soaviz.com?subject=SOAVIZ%20STUDIO%20Team%20플랜%20문의', '_self');
+      return;
+    }
+
+    const cfg  = window.__SOAVIZ_CONFIG__ || {};
+    const urls = cfg.stripeUrls || {};
+    const url  = urls[plan] || cfg.checkoutUrl || null;
+
+    if (!url) {
+      showToast?.(`${plan.toUpperCase()} 플랜 결제 페이지가 곧 오픈됩니다! 🎉`, 'info');
+      return;
+    }
+
+    // 확인 모달
+    const planLabel = { standard: 'Standard ₩19,900/월', pro: 'Pro ₩49,900/월' }[plan] || plan;
+    const modal = document.createElement('div');
+    modal.className = 'vault-modal-backdrop';
+    modal.innerHTML = `
+      <div class="vault-modal" style="max-width:400px;text-align:center">
+        <div style="font-size:36px;margin-bottom:8px">💳</div>
+        <h3 style="margin-bottom:6px">${planLabel} 업그레이드</h3>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:20px">
+          Stripe 결제 페이지로 이동합니다.<br>안전한 결제 환경에서 진행됩니다.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button class="vault-btn" id="_stripe-cancel">취소</button>
+          <button class="vault-btn primary" id="_stripe-confirm">결제 페이지로 이동 →</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const close = () => { try { document.body.removeChild(modal); } catch {} };
+    modal.querySelector('#_stripe-cancel').onclick  = close;
+    modal.querySelector('#_stripe-confirm').onclick = () => { close(); window.open(url, '_blank', 'noopener'); };
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  }
+
+  window.openUpgradeCheckout = openUpgradeCheckout;
+})();
+
+/* ════════════════════════════════════════════════════════════
+   P2-07 Team Management — 팀 초대 · 역할 관리 · 협업 권한
+   openTeamPanel() / closeTeamPanel() 전역 노출
+   localStorage key: soaviz.team.members
+   ════════════════════════════════════════════════════════════ */
+(function initTeamManagement() {
+  const LS_KEY     = 'soaviz.team.members';
+  const MAX_SEATS  = 5;   // Team 플랜 기본 시트
+
+  /* ── Data ── */
+  function getMembers() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+    catch (_) { return []; }
+  }
+  function saveMembers(arr) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+    catch (_) {}
+  }
+  function ensureOwner() {
+    if (getMembers().length > 0) return;
+    saveMembers([{
+      id: 'owner_' + Date.now(),
+      name: '은교',
+      email: 'ai@soaviz.com',
+      role: 'owner',
+      status: 'active',
+      joinedAt: new Date().toISOString(),
+      isMe: true
+    }]);
+  }
+
+  /* ── Helpers ── */
+  function initials(name) {
+    return (name || '?').trim().replace(/\s+/g, '').slice(0, 2).toUpperCase();
+  }
+  function isTeamPlan() {
+    return (typeof getCurrentPlan === 'function' ? getCurrentPlan() : 'free') === 'team';
+  }
+
+  /* ── Render: member list ── */
+  function renderMembers() {
+    const el = document.getElementById('team-member-list');
+    if (!el) return;
+
+    if (!isTeamPlan()) {
+      const cur = typeof getCurrentPlan === 'function' ? getCurrentPlan().toUpperCase() : 'FREE';
+      el.innerHTML = `
+        <div class="team-gate">
+          <div class="team-gate-icon">👥</div>
+          <h3>Team 플랜 전용 기능</h3>
+          <p>팀원을 초대하고 역할을 관리하려면 Team 플랜이 필요합니다.<br>
+             현재 플랜: <strong>${cur}</strong></p>
+          <button class="team-gate-btn"
+                  onclick="if(typeof openUpgradeCheckout==='function')openUpgradeCheckout('team');closeTeamPanel()">
+            Team 플랜 문의하기
+          </button>
+        </div>`;
+      return;
+    }
+
+    const members = getMembers();
+    if (!members.length) {
+      el.innerHTML = `<p style="color:var(--text-faint);font-size:13px;text-align:center;padding:24px 0">
+        팀원이 없습니다. [초대] 탭에서 팀원을 초대하세요.</p>`;
+      return;
+    }
+
+    el.innerHTML = members.map(m => `
+      <div class="team-member-row" data-member-id="${m.id}">
+        <div class="team-member-avatar">${initials(m.name)}</div>
+        <div class="team-member-info">
+          <div class="team-member-name">${m.name || ''}${m.isMe
+            ? ' <span style="font-size:10px;color:var(--text-faint)">(나)</span>' : ''}</div>
+          <div class="team-member-email">${m.email}</div>
+        </div>
+        <span class="team-role-badge ${m.role}">${m.role.toUpperCase()}</span>
+        <span class="team-status-pill ${m.status}">${m.status === 'pending' ? '대기 중' : '활성'}</span>
+        ${!m.isMe ? `<div class="team-member-actions">
+          <button class="team-member-btn" onclick="window._teamChangeRole('${m.id}')">역할 변경</button>
+          <button class="team-member-btn danger" onclick="window._teamRemove('${m.id}')">제거</button>
+        </div>` : ''}
+      </div>`).join('');
+  }
+
+  /* ── Render: invite tab (plan gate) ── */
+  function renderInviteTab() {
+    const el = document.getElementById('team-panel-invite');
+    if (!el) return;
+    if (!isTeamPlan()) {
+      el.innerHTML = `
+        <div class="team-gate">
+          <div class="team-gate-icon">✉️</div>
+          <h3>초대 기능은 Team 플랜 전용입니다</h3>
+          <p>Team 플랜으로 업그레이드하면 최대 ${MAX_SEATS}명의 팀원을 초대할 수 있습니다.</p>
+          <button class="team-gate-btn"
+                  onclick="if(typeof openUpgradeCheckout==='function')openUpgradeCheckout('team');closeTeamPanel()">
+            Team 플랜 문의하기
+          </button>
+        </div>`;
+    }
+    // team plan: HTML already in DOM; just reset input
+    else {
+      const emailEl = document.getElementById('team-invite-email');
+      if (emailEl) emailEl.value = '';
+    }
+  }
+
+  /* ── Card summary ── */
+  function updateCardSummary() {
+    const el = document.getElementById('team-card-summary');
+    if (!el) return;
+    if (!isTeamPlan()) {
+      el.textContent = '팀원 초대 · 역할 관리 · 협업 권한 설정';
+      return;
+    }
+    const members = getMembers();
+    const active  = members.filter(m => m.status === 'active').length;
+    const pending = members.filter(m => m.status === 'pending').length;
+    el.textContent = `${active}명 활성${pending ? ` · ${pending}명 초대 중` : ''} · 최대 ${MAX_SEATS}명`;
+  }
+
+  /* ── Open / Close ── */
+  function openTeamPanel() {
+    ensureOwner();
+    const overlay = document.getElementById('team-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    activateTab('members');
+    renderMembers();
+    renderInviteTab();
+  }
+  function closeTeamPanel() {
+    const overlay = document.getElementById('team-modal-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  window.openTeamPanel  = openTeamPanel;
+  window.closeTeamPanel = closeTeamPanel;
+
+  /* ── Tab helper ── */
+  function activateTab(name) {
+    document.querySelectorAll('.team-modal-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.teamTab === name);
+    });
+    document.querySelectorAll('.team-tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === `team-panel-${name}`);
+    });
+  }
+
+  /* ── Member actions ── */
+  window._teamRemove = function(id) {
+    if (!confirm('이 팀원을 제거할까요?')) return;
+    saveMembers(getMembers().filter(m => m.id !== id));
+    renderMembers();
+    updateCardSummary();
+    if (typeof showToast === 'function') showToast('팀원이 제거됐습니다.', 'info');
+  };
+  window._teamChangeRole = function(id) {
+    const cycle   = ['editor', 'viewer'];
+    const members = getMembers();
+    const m       = members.find(x => x.id === id);
+    if (!m) return;
+    m.role = cycle[(cycle.indexOf(m.role) + 1) % cycle.length];
+    saveMembers(members);
+    renderMembers();
+    if (typeof showToast === 'function') showToast(`역할이 ${m.role.toUpperCase()}로 변경됐습니다.`, 'info');
+  };
+
+  /* ── Event binding ── */
+  function bindEvents() {
+    /* Open button */
+    document.getElementById('team-manage-btn')?.addEventListener('click', openTeamPanel);
+
+    /* Close */
+    document.getElementById('team-modal-close')?.addEventListener('click', closeTeamPanel);
+    document.getElementById('team-modal-overlay')?.addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeTeamPanel();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const ov = document.getElementById('team-modal-overlay');
+        if (ov?.classList.contains('open')) closeTeamPanel();
+      }
+    });
+
+    /* Tab switching */
+    document.getElementById('team-modal-tabs')?.addEventListener('click', e => {
+      const btn = e.target.closest('.team-modal-tab');
+      if (!btn) return;
+      const name = btn.dataset.teamTab;
+      activateTab(name);
+      if (name === 'members') renderMembers();
+      if (name === 'invite')  renderInviteTab();
+    });
+
+    /* Invite send */
+    document.getElementById('team-invite-send')?.addEventListener('click', () => {
+      const emailEl = document.getElementById('team-invite-email');
+      const roleEl  = document.getElementById('team-invite-role');
+      const email   = (emailEl?.value || '').trim();
+      const role    = roleEl?.value || 'editor';
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (typeof showToast === 'function') showToast('올바른 이메일 주소를 입력해주세요.', 'warn');
+        return;
+      }
+      const members = getMembers();
+      if (members.find(m => m.email === email)) {
+        if (typeof showToast === 'function') showToast('이미 팀원으로 등록된 이메일입니다.', 'warn');
+        return;
+      }
+      const guests = members.filter(m => !m.isMe);
+      if (guests.length >= MAX_SEATS - 1) {
+        if (typeof showToast === 'function') showToast(`최대 ${MAX_SEATS}명까지 초대할 수 있습니다.`, 'warn');
+        return;
+      }
+      members.push({
+        id: 'mbr_' + Date.now().toString(36),
+        name: email.split('@')[0],
+        email,
+        role,
+        status: 'pending',
+        joinedAt: new Date().toISOString(),
+        isMe: false
+      });
+      saveMembers(members);
+      if (emailEl) emailEl.value = '';
+      updateCardSummary();
+      if (typeof showToast === 'function')
+        showToast(`${email}에게 초대를 발송했습니다. (이메일 서버 연결 후 실제 발송)`, 'info');
+      activateTab('members');
+      renderMembers();
+    });
+
+    /* Init card summary */
+    updateCardSummary();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindEvents);
+  } else {
+    bindEvents();
+  }
+})();
+/* ═════════════════════════════════════════════════════════════ */
 
 /* ════════════════════════════════════════════════════════════
    MOBILE APP SHELL — 768px 이하 전용 라우터 + 렌더 시스템
