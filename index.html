@@ -17775,6 +17775,28 @@
 .wb-org-report-num   { font-weight: 700; color: var(--accent); }
 .wb-org-close        { position: absolute; top: 10px; right: 12px; background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 16px; padding: 2px 6px; }
 /* ============ /AUTO ORGANIZER (P3) ============ */
+
+/* ============ NEXT ACTION ENGINE (P4) ============ */
+.wb-next-row {
+  display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.wb-next-secondary {
+  flex: 1; min-width: 130px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.wb-next-secondary:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.wb-next-secondary .wbs-icon { font-size: 16px; }
+.wb-next-secondary .wbs-tag  { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); }
+.wb-next-secondary .wbs-text { font-size: 12px; font-weight: 600; color: var(--text-main); line-height: 1.3; }
+.wb-next-secondary.warn { border-color: color-mix(in srgb, #f59e0b 35%, transparent); }
+.wb-next-secondary.warn .wbs-tag { color: #f59e0b; }
+/* ============ /NEXT ACTION ENGINE (P4) ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -46907,15 +46929,50 @@ const WB_STAGES = [
 ];
 
 /** 다음 액션 결정 로직 */
+/** 단일 메인 액션 (하위 호환 유지) */
 function _wbNextAction(counts) {
-  if (!counts.episodes)   return { icon:'📖', tag:'STEP 1', text:'에피소드를 작성하세요', desc:'스토리 기획으로 제작을 시작합니다', page:'pipeline' };
-  if (!counts.characters) return { icon:'🧑', tag:'STEP 2', text:'캐릭터를 추가하세요', desc:'주인공과 조연의 외모·성격을 설정하세요', page:'characters' };
-  if (!counts.styles)     return { icon:'🎨', tag:'STEP 3', text:'스타일을 설정하세요', desc:'영상의 비주얼 톤을 정의합니다', page:'styles' };
-  if (!counts.shots)      return { icon:'🎬', tag:'STEP 4', text:'샷리스트를 만드세요', desc:'각 씬의 구도와 순서를 기획합니다', page:'pipeline' };
-  if (!counts.prompts)    return { icon:'✍️', tag:'STEP 5', text:'이미지 프롬프트를 작성하세요', desc:'샷을 AI 이미지로 변환할 지시어입니다', page:'studio' };
-  if (!counts.assets)     return { icon:'⚡', tag:'STEP 6', text:'이미지를 생성하세요', desc:'프롬프트로 첫 비주얼을 만들어보세요', page:'studio' };
-  return { icon:'🏁', tag:'ALL DONE', text:'결과물을 정리하고 내보내세요', desc:'Library에서 Final 자산을 Export 하세요', page:'library' };
+  return _wbNextActions(counts)[0];
 }
+
+/** P4: 다중 액션 엔진 — 우선순위 순으로 배열 반환 */
+function _wbNextActions(counts, meta) {
+  meta = meta || {};
+  const actions = [];
+  const STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7일
+
+  // ── 블로킹 액션 (필수 단계 미완) ──
+  if (!counts.episodes)   actions.push({ icon:'📖', tag:'STEP 1', text:'에피소드를 작성하세요', desc:'스토리 기획으로 제작을 시작합니다', page:'pipeline', primary: true });
+  if (!counts.characters && counts.episodes) actions.push({ icon:'🧑', tag:'STEP 2', text:'캐릭터를 추가하세요', desc:'주인공과 조연의 외모·성격을 설정하세요', page:'characters', primary: !actions.length });
+  if (!counts.styles && counts.characters)   actions.push({ icon:'🎨', tag:'STEP 3', text:'스타일을 설정하세요', desc:'영상의 비주얼 톤을 정의합니다', page:'styles', primary: !actions.length });
+  if (!counts.shots && counts.styles)        actions.push({ icon:'🎬', tag:'STEP 4', text:'샷리스트를 만드세요', desc:'각 씬의 구도와 순서를 기획합니다', page:'pipeline', primary: !actions.length });
+  if (!counts.prompts && counts.shots)       actions.push({ icon:'✍️', tag:'STEP 5', text:'이미지 프롬프트를 작성하세요', desc:'샷을 AI 이미지로 변환할 지시어입니다', page:'studio', primary: !actions.length });
+  if (!counts.assets && counts.prompts)      actions.push({ icon:'⚡', tag:'STEP 6', text:'이미지를 생성하세요', desc:'프롬프트로 첫 비주얼을 만들어보세요', page:'studio', primary: !actions.length });
+
+  // ── 개선 액션 (현재 단계 고도화) ──
+  if (counts.shots > 0 && counts.prompts === 0)
+    actions.push({ icon:'✍️', tag:'IMPROVE', text:'샷 프롬프트 작성', desc:`${counts.shots}개 샷에 프롬프트가 없습니다`, page:'studio', warn: false });
+
+  if (counts.assets > 0 && !meta.hasFinalAsset)
+    actions.push({ icon:'★', tag:'REVIEW', text:'최고 이미지를 Final로', desc:'Library에서 검토하고 확정하세요', page:'library', warn: false });
+
+  if (meta.draftAssets > 3)
+    actions.push({ icon:'📋', tag:'TRIAGE', text:`Draft ${meta.draftAssets}개 검토 필요`, desc:'생성된 이미지를 승인/기각하세요', page:'library', warn: true });
+
+  if (meta.staleMs && meta.staleMs > STALE_MS)
+    actions.push({ icon:'⏰', tag:'STALE', text:`${Math.floor(meta.staleMs/86400000)}일째 업데이트 없음`, desc:'제작이 멈춰 있어요. 다시 시작해볼까요?', page:'workbench', warn: true });
+
+  // ── 완료 ──
+  if (!actions.length)
+    actions.push({ icon:'🏁', tag:'ALL DONE', text:'결과물을 정리하고 내보내세요', desc:'Library에서 Final 자산을 Export 하세요', page:'library', primary: true });
+
+  // 첫 번째는 항상 primary
+  if (actions.length > 0) actions[0].primary = true;
+
+  return actions.slice(0, 4); // 최대 4개
+}
+
+// SoavizProductionOS에 등록
+window.SoavizProductionOS.register('nextAction', { getActions: _wbNextActions });
 
 /** 상대 시간 포맷 */
 function _wbRelTime(ts) {
@@ -47063,19 +47120,42 @@ async function renderWorkbenchPage() {
     ).join('');
   }
 
-  // 다음 액션 카드
-  const nxt = _wbNextAction(counts);
+  // 다음 액션 카드 (P4: 다중 액션 엔진)
+  const draftAssets = await db.assets.where('projectId').equals(activeId)
+    .filter(a => a.status === 'draft').count().catch(()=>0);
+  const hasFinalAsset = (await db.assets.where('projectId').equals(activeId)
+    .filter(a => a.status === 'final').count().catch(()=>0)) > 0;
+  const latestAsset = await db.assets.where('projectId').equals(activeId)
+    .reverse().limit(1).toArray().catch(()=>[]);
+  const staleMs = latestAsset[0]?.updatedAt
+    ? Date.now() - latestAsset[0].updatedAt
+    : (proj.updatedAt ? Date.now() - proj.updatedAt : 0);
+
+  const meta = { draftAssets, hasFinalAsset, staleMs };
+  const actions = _wbNextActions(counts, meta);
+  const [primary, ...secondary] = actions;
+
   const nextWrap = document.getElementById('wb-next-action-wrap');
-  if (nextWrap) nextWrap.innerHTML = `
-    <div class="wb-next-action" onclick="showPage('${nxt.page}')">
-      <div class="wb-next-icon">${nxt.icon}</div>
-      <div class="wb-next-body">
-        <div class="wb-next-tag">${nxt.tag}</div>
-        <div class="wb-next-text">${nxt.text}</div>
-        <p class="wb-next-desc">${nxt.desc}</p>
+  if (nextWrap) {
+    const secHtml = secondary.slice(0, 2).map(s => `
+      <div class="wb-next-secondary ${s.warn ? 'warn' : ''}" onclick="showPage('${s.page}')">
+        <span class="wbs-icon">${s.icon}</span>
+        <span class="wbs-tag">${s.tag}</span>
+        <span class="wbs-text">${s.text}</span>
+      </div>`).join('');
+
+    nextWrap.innerHTML = `
+      <div class="wb-next-action" onclick="showPage('${primary.page}')">
+        <div class="wb-next-icon">${primary.icon}</div>
+        <div class="wb-next-body">
+          <div class="wb-next-tag">${primary.tag}</div>
+          <div class="wb-next-text">${primary.text}</div>
+          <p class="wb-next-desc">${primary.desc}</p>
+        </div>
+        <div class="wb-next-arrow">→</div>
       </div>
-      <div class="wb-next-arrow">→</div>
-    </div>`;
+      ${secHtml ? `<div class="wb-next-row">${secHtml}</div>` : ''}`;
+  }
 
   // 8-스테이지 트랙
   const trackEl = document.getElementById('wb-track');
