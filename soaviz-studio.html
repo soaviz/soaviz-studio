@@ -33970,6 +33970,95 @@ function renderRandomMeta(seed) {
   `;
 }
 
+/* ════════════════════════════════════════════════════════════
+   streamText — AI 스트리밍처럼 텍스트를 점진적으로 노출
+   사용법: await streamText(element, '텍스트', { speed: 'normal' })
+   ════════════════════════════════════════════════════════════ */
+window.streamText = (function () {
+  // 커서 CSS 한 번만 주입
+  function _injectCSS() {
+    if (document.getElementById('_sv-stream-css')) return;
+    const s = document.createElement('style');
+    s.id = '_sv-stream-css';
+    s.textContent = `
+      @keyframes _svCaret { 0%,100%{opacity:1} 50%{opacity:0} }
+      ._sv-caret {
+        display:inline-block; width:2px; height:.85em;
+        background:var(--accent, #8b5cf6); opacity:.8;
+        margin-left:2px; vertical-align:text-bottom;
+        animation:_svCaret .55s step-end infinite;
+        border-radius:1px;
+      }
+    `;
+    document.head.appendChild(s);
+  }
+
+  return function streamText(el, text, opts = {}) {
+    if (!el || typeof text !== 'string' || !text) {
+      if (el) el.textContent = text || '';
+      return Promise.resolve();
+    }
+    _injectCSS();
+
+    // 이전 스트림 강제 종료
+    if (typeof el._svStreamStop === 'function') el._svStreamStop();
+
+    // 속도 프리셋 — 한국어 200자/초 기준
+    const len = text.length;
+    let chunk, ms;
+    if (opts.speed === 'slow')            { chunk = 3;  ms = 55; }
+    else if (opts.speed === 'fast' || len > 2000) { chunk = 14; ms = 28; }
+    else if (len > 800)                   { chunk = 9;  ms = 32; }
+    else                                  { chunk = 6;  ms = 40; } // normal (default)
+
+    el.textContent = '';
+    const textNode = document.createTextNode('');
+    el.appendChild(textNode);
+
+    const caret = document.createElement('span');
+    caret.className = '_sv-caret';
+    el.appendChild(caret);
+
+    let pos = 0;
+    let stopped = false;
+    let tid;
+
+    const stop = (instant = false) => {
+      stopped = true;
+      clearTimeout(tid);
+      if (instant) textNode.textContent = text;
+      caret.remove();
+      el._svStreamStop = null;
+    };
+    el._svStreamStop = () => stop(true);
+
+    return new Promise(resolve => {
+      function tick() {
+        if (stopped) { resolve(); return; }
+        if (pos >= text.length) {
+          textNode.textContent = text;
+          // 커서 fade-out
+          caret.style.animation = 'none';
+          caret.style.opacity = '0';
+          caret.style.transition = 'opacity .25s';
+          setTimeout(() => { caret.remove(); el._svStreamStop = null; resolve(); opts.onDone?.(); }, 280);
+          return;
+        }
+        // 자연스러운 버스트 변화 (15% 확률로 2배 속도)
+        const burst = Math.random() < 0.15 ? chunk * 2 : chunk;
+        pos = Math.min(pos + burst, text.length);
+        textNode.textContent = text.slice(0, pos);
+        // 부드러운 스크롤 추적
+        if (opts.scroll !== false) el.scrollIntoView?.({ behavior: 'instant', block: 'nearest' });
+        // 지터(jitter) 추가로 실제 LLM 느낌
+        const jitter = Math.round((Math.random() - 0.5) * 14);
+        tid = setTimeout(tick, ms + jitter);
+      }
+      tick();
+    });
+  };
+})();
+
 async function rollRandom() {
   const includeWorld = $('#random-include-world')?.checked ?? true;
   const includeStory = $('#random-include-story')?.checked ?? true;
@@ -34211,12 +34300,20 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
     // 결과 표시
     $('#random-world-block').style.display = includeWorld ? '' : 'none';
     $('#random-story-block').style.display = includeStory ? '' : 'none';
-    if (includeWorld) $('#random-world-output').textContent = worldText;
-    if (includeStory) $('#random-story-output').textContent = storyText;
     $('#random-result').style.display = '';
     clearInterval(msgRotate);
     status.textContent = `✓ 완성됐어요! · #${seed.seedId}`;
     status.style.color = 'var(--success)';
+
+    // ── 스트리밍 노출 ──
+    if (includeWorld) streamText($('#random-world-output'), worldText);
+    if (includeStory) {
+      // 세계관이 있으면 완료 후 스토리 스트림 (시차감)
+      const startStory = () => streamText($('#random-story-output'), storyText);
+      includeWorld
+        ? setTimeout(startStory, Math.min(worldText.length * 28, 800))
+        : startStory();
+    }
 
     // ── 다음 탭에 결과 미리 채워두기 ──
     if (includeWorld) {
@@ -34229,7 +34326,8 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
         const opt = [...genreSel.options].find(o => o.value === seed.genre || o.textContent === seed.genre);
         if (opt) genreSel.value = opt.value;
       }
-      $('#world-output').textContent = worldText;
+      // 탭 미리채우기는 즉시 (보이지 않는 영역)
+      if ($('#world-output')) $('#world-output').textContent = worldText;
       $('#world-result').style.display = '';
     }
     if (includeStory) {
@@ -34241,9 +34339,9 @@ ${worldText ? `세계관·배경:\n${worldText.slice(0, 800)}\n` : ''}
       }
       const lenSel = $('#story-length');
       if (lenSel) lenSel.value = seed.length;
-      // 빈 worldText로 사용자 입력 덮어쓰지 않기
       if (worldText && $('#story-world')) $('#story-world').value = worldText.slice(0, 800);
-      $('#story-output').textContent = storyText;
+      // 탭 미리채우기는 즉시 (보이지 않는 영역)
+      if ($('#story-output')) $('#story-output').textContent = storyText;
       $('#story-result').style.display = '';
     }
 
@@ -34398,9 +34496,9 @@ function bindRandomMode() {
     if ($('#world-name')) $('#world-name').value = lastRandomSeed.name;
     if ($('#world-tone')) $('#world-tone').value = lastRandomSeed.tone;
     if ($('#world-keywords')) $('#world-keywords').value = lastRandomSeed.keywords.join(', ');
-    // 결과 영역에도 채움
-    $('#world-output').textContent = lastRandomWorld;
+    // 결과 영역에도 채움 (스트리밍)
     $('#world-result').style.display = '';
+    streamText($('#world-output'), lastRandomWorld);
     showToast('세계관 탭으로 옮겼어요');
   });
 }
@@ -34529,8 +34627,8 @@ async function generateWorld() {
   try {
     const d = await callTextGenerate(system, user, { temperature: 0.9, max_tokens: 1800 });
     lastWorldOutput = d.text;
-    $('#world-output').textContent = d.text;
     $('#world-result').style.display = '';
+    streamText($('#world-output'), d.text);
     status.textContent = `✓ 완성됐어요! · ${d.tokens?.completion || 0} tokens`;
     status.style.color = 'var(--success)';
 
@@ -34619,8 +34717,8 @@ ${must ? `필수 요소: ${must}\n` : ''}
     const d = await callTextGenerate(system, user, { temperature: 0.95, max_tokens: lenInfo.max_tokens });
     lastStoryOutput = d.text;
     saveToStoryCache?.(d.text, '스토리텔링', 'story');
-    $('#story-output').textContent = d.text;
     $('#story-result').style.display = '';
+    streamText($('#story-output'), d.text);
     status.textContent = `✓ 완성됐어요! · ${d.tokens?.completion || 0} tokens`;
     status.style.color = 'var(--success)';
 
@@ -38425,7 +38523,25 @@ function openStoryView(payload) {
 function renderStoryView() {
   const d = STORY_DOC;
   $('#sv-title').textContent = d.title || '제목 없음';
-  $('#sv-body-text').innerHTML = (d.body || '').split(/\n{2,}/).map(p => `<p>${escapeHTML(p)}</p>`).join('');
+  // 스트리밍: 스토리 뷰어에서 본문을 AI 생성처럼 한 줄씩 노출
+  const bodyEl = $('#sv-body-text');
+  if (bodyEl) {
+    bodyEl.innerHTML = '';
+    const paragraphs = (d.body || '').split(/\n{2,}/);
+    let delay = 0;
+    paragraphs.forEach((para, i) => {
+      const p = document.createElement('p');
+      p.style.opacity = '0';
+      p.style.transition = 'opacity .35s ease';
+      bodyEl.appendChild(p);
+      setTimeout(() => {
+        p.style.opacity = '1';
+        streamText(p, para.replace(/\n/g, ' '), { speed: 'normal', scroll: false });
+      }, delay);
+      // 단락 길이에 비례한 딜레이 (앞 단락 스트림 끝날 때쯤 다음 시작)
+      delay += Math.min(para.length * 38, 1800) + 200;
+    });
+  }
   $('#sv-body-edit').value = d.body || '';
 
   // 메타 chips
