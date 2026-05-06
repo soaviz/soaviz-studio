@@ -24654,7 +24654,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
           <div>
             <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em">🖼 샷 이미지 생성</div>
-            <div style="font-size:13px;color:var(--text-faint);margin-top:3px">각 샷의 image prompt로 스틸 이미지를 생성하고 스토리보드를 완성합니다</div>
+            <div style="font-size:13px;color:var(--text-faint);margin-top:3px">각 샷의 image prompt로 스틸 이미지를 생성하고 스토리보드를 완성합니다 — 생성 후 <strong style="color:var(--accent)">이 이미지로 영상 만들기 →</strong> 버튼으로 바로 영상 제작 가능</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <select id="pl-ig-sl-select" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--r-sm);font-size:12px;outline:none;max-width:200px">
@@ -42269,6 +42269,42 @@ bindEffectsGenerate();
 /* ============================================================
    VIDEO PAGE — Replicate 멀티 모델 영상 생성
    ============================================================ */
+// B안 fix: Pipeline 이미지 → video-studio 전달 함수
+window.injectImageToVideoStudio = function(imageUrl, motionPrompt, shotLabel) {
+  if (!imageUrl) return;
+  // 1) i2v 모드 전환
+  VIDEO_STATE.feature = 'i2v';
+  VIDEO_STATE.imageUrl = imageUrl;
+  VIDEO_STATE.imageLocalPreview = imageUrl;
+  // 2) 썸네일 UI 업데이트
+  const thumb = document.getElementById('vid-upload-thumb');
+  if (thumb) {
+    thumb.innerHTML = `<img src="${imageUrl}" alt="pipeline shot" style="width:100%;height:100%;object-fit:cover"/>`;
+    thumb.classList.add('has-image');
+  }
+  // 3) 모션 프롬프트 주입 (기존 값 덮어쓰지 않음 — 비어 있을 때만)
+  if (motionPrompt) {
+    const promptEl = document.getElementById('vid-prompt');
+    if (promptEl && !promptEl.value.trim()) promptEl.value = motionPrompt;
+  }
+  // 4) Motion 탭 활성화 (i2v)
+  const motionTab = document.querySelector('#page-sync .vid-tab[data-vtab="motion"]');
+  if (motionTab) {
+    document.querySelectorAll('#page-sync .vid-tab').forEach(t => t.classList.remove('active'));
+    motionTab.classList.add('active');
+    VIDEO_STATE.feature = 'i2v';
+    try { renderVideoFeatureList?.(); } catch(_) {}
+    try { renderVideoModelList?.(); } catch(_) {}
+  }
+  // 5) UI 동기화
+  try { syncVideoFeatureUI?.(); } catch(_) {}
+  try { syncVideoModelDisplay?.(); } catch(_) {}
+  // 6) 페이지 이동 + 토스트
+  showPage('sync');
+  const label = shotLabel ? ` (${shotLabel})` : '';
+  showToast?.(`🎬 이미지${label} → 영상 스튜디오로 전달됨`);
+};
+
 const VIDEO_STATE = {
   models: [],                    // 백엔드에서 받은 모델 목록
   features: [],                  // 백엔드 features
@@ -48530,6 +48566,11 @@ function bindPipelinePage() {
                 style="padding:7px 0;background:${imgUrl?'var(--bg-1)':'var(--accent)'};color:${imgUrl?'var(--text-faint)':'#fff'};border:1px solid ${imgUrl?'var(--border)':'transparent'};border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;width:100%;transition:all .15s">
                 ${imgUrl ? '🔄 재생성' : '✦ 이미지 생성'}
               </button>
+              ${imgUrl ? `<button class="pl-ig-to-vid-btn" data-url="${imgUrl}" data-prompt="${(prompt).replace(/"/g,'&quot;')}" data-shot="${shotId}"
+                style="padding:6px 0;background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(236,72,153,0.12));color:var(--accent);border:1px solid rgba(167,139,250,0.3);border-radius:var(--r-md);font-size:11px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s" onmouseover="this.style.background='rgba(167,139,250,0.3)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(167,139,250,0.2),rgba(236,72,153,0.12))'">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                이 이미지로 영상 만들기 →
+              </button>` : ''}
             </div>`;
           grid.appendChild(card);
         });
@@ -48592,8 +48633,32 @@ function bindPipelinePage() {
       }
     }
 
+    // 카드 클릭 시 선택 하이라이트
+    grid.addEventListener('click', e => {
+      const card = e.target.closest('[data-img-key]');
+      if (card && !e.target.closest('button')) {
+        grid.querySelectorAll('.pl-ig-selected').forEach(c => {
+          c.classList.remove('pl-ig-selected');
+          c.style.outline = '';
+        });
+        card.classList.add('pl-ig-selected');
+        card.style.outline = '2px solid var(--accent)';
+      }
+    });
+
     // 개별 생성 버튼 이벤트 (delegation)
     grid.addEventListener('click', async e => {
+      // B안: 영상으로 보내기 버튼
+      const vidBtn = e.target.closest('.pl-ig-to-vid-btn');
+      if (vidBtn) {
+        const url = vidBtn.dataset.url;
+        const motionPrompt = vidBtn.dataset.prompt || '';
+        const shotId = vidBtn.dataset.shot || '';
+        if (url && typeof window.injectImageToVideoStudio === 'function') {
+          window.injectImageToVideoStudio(url, motionPrompt, shotId);
+        }
+        return;
+      }
       const btn = e.target.closest('.pl-ig-shot-btn');
       if (!btn) return;
       const key = btn.dataset.key;
@@ -48623,10 +48688,34 @@ function bindPipelinePage() {
     // 샷리스트 변경 시 재렌더
     sel.addEventListener('change', () => _renderGrid(sel.value));
 
-    // 영상 제작으로 →
+    // 영상 제작으로 → (B안: 이미지 자동 전달)
     $('#pl-ig-to-video')?.addEventListener('click', () => {
-      showPage('sync');
-      showToast?.('영상 제작 페이지로 이동했어요');
+      // 현재 샷리스트에서 첫 번째 생성된 이미지 찾기
+      let firstUrl = null, firstPrompt = '', firstLabel = '';
+      // 선택된 카드 우선
+      const selectedCard = grid.querySelector('.pl-ig-selected');
+      if (selectedCard) {
+        firstUrl = selectedCard.querySelector('.pl-ig-to-vid-btn')?.dataset?.url || null;
+        firstPrompt = selectedCard.querySelector('.pl-ig-to-vid-btn')?.dataset?.prompt || '';
+        firstLabel = selectedCard.querySelector('.pl-ig-to-vid-btn')?.dataset?.shot || '';
+      }
+      // fallback: 스토어에서 첫 번째 생성된 이미지
+      if (!firstUrl && _plImgStore.size > 0) {
+        const firstEntry = _plImgStore.entries().next().value;
+        if (firstEntry) {
+          firstUrl = firstEntry[1];
+          // 카드에서 prompt 찾기
+          const card = grid.querySelector(`[data-img-key="${firstEntry[0]}"]`);
+          firstPrompt = card?.querySelector('.pl-ig-to-vid-btn')?.dataset?.prompt || '';
+          firstLabel = card?.querySelector('.pl-ig-to-vid-btn')?.dataset?.shot || '';
+        }
+      }
+      if (firstUrl && typeof window.injectImageToVideoStudio === 'function') {
+        window.injectImageToVideoStudio(firstUrl, firstPrompt, firstLabel);
+      } else {
+        showPage('sync');
+        showToast?.('영상 제작 페이지로 이동했어요');
+      }
     });
 
     // 초기 렌더
