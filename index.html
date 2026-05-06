@@ -833,6 +833,16 @@
       background: linear-gradient(180deg, #c4b5fd, #a78bfa);
       box-shadow: 0 0 8px rgba(167,139,250,0.5);
     }
+    .nav-item.flow-primary {
+      background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(96,165,250,0.08));
+      border: 1px solid rgba(167,139,250,0.24);
+      color: var(--text-dim);
+    }
+    .nav-item.flow-primary.active {
+      color: var(--accent);
+      border-color: rgba(167,139,250,0.52);
+      box-shadow: inset 2px 0 0 var(--accent), 0 12px 28px -22px rgba(167,139,250,0.8);
+    }
     .nav-spacer { flex: 1; min-height: 12px; }
     .nav-upgrade {
       margin: 8px 4px 0;
@@ -17593,7 +17603,58 @@
       .qj-backdrop { padding-top: 16px !important; }
       .vault-modal-backdrop, .pl-wf-modal, .bible-modal { padding-top: 8px !important; }
     }
-  </style>
+  
+/* ============ WORKBENCH PAGE (P1) ============ */
+.wb-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.wb-project-name { margin:0 0 5px; font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.02em; }
+.wb-project-sub  { margin:0; font-size:13px; color:var(--text-faint); }
+
+.wb-track-wrap   { margin-bottom:28px; }
+.wb-track-label  { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px; }
+.wb-track        { display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; }
+.wb-track::-webkit-scrollbar { display:none; }
+.wb-stage        { flex:0 0 auto; min-width:90px; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--surface-2); cursor:pointer; transition:border-color .15s, background .15s; text-align:center; }
+.wb-stage.done   { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); }
+.wb-stage.active { border-color:var(--accent); background:color-mix(in srgb, var(--accent) 18%, transparent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+.wb-stage.locked { opacity:.4; cursor:default; }
+.wb-stage-icon   { font-size:18px; margin-bottom:4px; }
+.wb-stage-name   { font-size:10px; font-weight:600; color:var(--text-faint); letter-spacing:.04em; text-transform:uppercase; }
+.wb-stage-pct    { font-size:11px; font-weight:700; color:var(--text-main); margin-top:2px; }
+
+.wb-grid         { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
+@media (max-width:520px){ .wb-grid { grid-template-columns:1fr; } }
+
+.wb-panel        { background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.wb-panel-title  { font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin:0 0 12px; }
+
+.wb-next-action  { background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 5%, transparent));
+                   border:1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
+                   border-radius:14px; padding:18px 20px; margin-bottom:20px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:opacity .15s; }
+.wb-next-action:hover { opacity:.85; }
+.wb-next-icon    { font-size:28px; flex:0 0 auto; }
+.wb-next-body    { flex:1; min-width:0; }
+.wb-next-tag     { font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:4px; }
+.wb-next-text    { font-size:15px; font-weight:700; color:var(--text-main); margin:0 0 3px; line-height:1.3; }
+.wb-next-desc    { font-size:12px; color:var(--text-faint); margin:0; }
+.wb-next-arrow   { font-size:18px; color:var(--accent); flex:0 0 auto; }
+
+.wb-activity-item { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--border); }
+.wb-activity-item:last-child { border-bottom:none; }
+.wb-act-icon     { width:28px; height:28px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:13px; flex:0 0 auto; margin-top:1px; }
+.wb-act-text     { font-size:13px; color:var(--text-main); line-height:1.4; }
+.wb-act-time     { font-size:11px; color:var(--text-faint); margin-top:2px; }
+
+.wb-stat-row     { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.wb-stat         { flex:1; min-width:70px; background:var(--surface-3); border-radius:8px; padding:10px; text-align:center; }
+.wb-stat-num     { font-size:20px; font-weight:800; color:var(--accent); font-family:var(--font-display); }
+.wb-stat-label   { font-size:10px; color:var(--text-faint); margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
+
+.wb-empty        { text-align:center; padding:48px 20px; color:var(--text-faint); }
+.wb-empty-icon   { font-size:40px; margin-bottom:12px; }
+.wb-empty-text   { font-size:15px; font-weight:600; margin-bottom:6px; color:var(--text-main); }
+.wb-empty-sub    { font-size:13px; }
+/* ============ /WORKBENCH PAGE ============ */
+</style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
        DESIGN POLISH LAYER — 상위 1% 시니어 디자인 톤 통일 (기능 X, 시각만)
@@ -21882,6 +21943,104 @@
   .pl-shot-cta.cta-image:hover { background:rgba(139,92,246,.25); }
   .pl-shot-cta.cta-video:hover { background:rgba(236,72,153,.22); }
   .pl-shot-cta.cta-voice:hover { background:rgba(34,197,94,.20); }
+
+  .workbench-flow-card {
+    margin-bottom: 20px;
+    padding: 18px;
+    border: 1px solid rgba(167,139,250,0.24);
+    border-radius: var(--r-xl);
+    background:
+      linear-gradient(135deg, rgba(167,139,250,0.10), rgba(96,165,250,0.05)),
+      var(--bg-card);
+  }
+  .workbench-flow-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .workbench-flow-kicker {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(196,181,253,.9);
+    margin-bottom: 5px;
+  }
+  .workbench-flow-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .workbench-flow-copy {
+    margin: 5px 0 0;
+    color: var(--text-faint);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .workbench-flow-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .workbench-step {
+    min-height: 86px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: rgba(255,255,255,0.025);
+    color: var(--text-dim);
+    text-align: left;
+    cursor: pointer;
+    transition: transform .16s ease, border-color .16s ease, background .16s ease;
+  }
+  .workbench-step:hover {
+    transform: translateY(-1px);
+    border-color: rgba(167,139,250,.42);
+    background: rgba(167,139,250,.08);
+  }
+  .workbench-step-num {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(167,139,250,.16);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .workbench-step strong {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+  .workbench-step span {
+    display: block;
+    color: var(--text-faint);
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  .workbench-step.primary {
+    border-color: rgba(167,139,250,.50);
+    background: rgba(167,139,250,.10);
+  }
+  .workbench-step.primary .workbench-step-num {
+    background: var(--accent);
+    color: #fff;
+  }
+  @media (max-width:900px) {
+    .workbench-flow-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .workbench-flow-head { flex-direction: column; }
+  }
+  @media (max-width:560px) {
+    .workbench-flow-steps { grid-template-columns: 1fr; }
+  }
   @media (max-width:768px) {
     .script-editor-wrap { grid-template-columns:1fr; }
     .script-nav { display:none; }
@@ -22042,26 +22201,8 @@
       </svg>
       Today
     </a>
-    <!-- ═══ 01 PLANNING ═══ -->
-    <div class="nav-section-label">기획</div>
-    <a class="nav-item persona-nav-item" data-page="personas" title="Story · Persona · Concept">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M12 3.5 13.9 8l4.8.4-3.7 3.1 1.1 4.7-4.1-2.5-4.1 2.5 1.1-4.7-3.7-3.1 4.8-.4z"/>
-        <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"/>
-      </svg>
-      Create
-    </a>
-    <a class="nav-item" data-page="projects" title="Projects">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-        <line x1="7" y1="13" x2="17" y2="13"/>
-      </svg>
-      프로젝트
-    </a>
-
-    <!-- ═══ 02 PRE-PRODUCTION ═══ -->
-    <div class="nav-section-label">프리프로덕션</div>
-    <a class="nav-item" data-page="pipeline" title="Pre Production · Character Pack · World Bible · Shotlist">
+    <div class="nav-section-label">FLOW</div>
+    <a class="nav-item flow-primary" data-page="pipeline" title="Project Workbench · 기획부터 Export까지">
       <svg class="icon" viewBox="0 0 24 24">
         <circle cx="6" cy="6" r="2"/>
         <circle cx="18" cy="6" r="2"/>
@@ -22069,88 +22210,17 @@
         <path d="M8 6h8M18 8v8"/>
         <path d="M6 8v6a2 2 0 0 0 2 2h6"/>
       </svg>
-      Pre Production
-      <span class="nav-pill" style="margin-left:auto;font-size:9px;padding:2px 6px;background:#a78bfa;color:#fff;border-radius:8px;font-weight:700">v3</span>
+      Workbench
     </a>
-    <a class="nav-item" data-page="characters" title="Characters · IP Character Vault">
-      <svg class="icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="4"/>
-        <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
-      </svg>
-      Characters
-    </a>
-    <a class="nav-item" data-page="styles" title="Style · Lookbook · Visual Reference">
-      <svg class="icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10"/>
-        <circle cx="8" cy="9" r="1.5"/>
-        <circle cx="16" cy="9" r="1.5"/>
-        <circle cx="8" cy="14" r="1.5"/>
-        <circle cx="16" cy="14" r="1.5"/>
-      </svg>
-      Style
-    </a>
-    <a class="nav-item" data-page="cinema" title="Cinema Library · 참고 영상 → Style Bible">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="2.18"/>
-        <line x1="7" y1="2" x2="7" y2="22"/>
-        <line x1="17" y1="2" x2="17" y2="22"/>
-        <line x1="2" y1="12" x2="22" y2="12"/>
-      </svg>
-      Cinema
-    </a>
-
-    <!-- ═══ 03 VIDEO GENERATION ═══ -->
-    <div class="nav-section-label">영상 생성</div>
-    <a class="nav-item" data-page="video-studio" title="Generate · AI Video">
-      <svg class="icon" viewBox="0 0 24 24">
-        <polygon points="23 7 16 12 23 17 23 7"/>
-        <rect x="1" y="5" width="15" height="14" rx="2"/>
-      </svg>
-      Generate
-    </a>
-    <a class="nav-item" data-page="video-editor" title="Editor · Project Workspace">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M4 6h16"/>
-        <path d="M4 18h16"/>
-        <rect x="6" y="9" width="7" height="6" rx="1"/>
-        <path d="m15 10 4 2-4 2z"/>
-      </svg>
-      Edit
-    </a>
-    <!-- ═══ 04 SOUND ═══ -->
-    <div class="nav-section-label">사운드 제작</div>
-    <a class="nav-item" data-page="voice-studio" title="Voice · Narration · TTS">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/>
-        <path d="M19 10a7 7 0 0 1-14 0"/>
-        <line x1="12" y1="19" x2="12" y2="22"/>
-      </svg>
-      Voice
-    </a>
-    <a class="nav-item" data-page="music-studio" title="Music · AI Music">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M9 18V5l12-2v13"/>
-        <circle cx="6" cy="18" r="3"/>
-        <circle cx="18" cy="16" r="3"/>
-      </svg>
-      Music
-    </a>
-    <a class="nav-item" data-page="sfx-studio" title="SFX · Sound Effects">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="m12 3-1.7 5.1a6 6 0 0 1-4 4L3 14l4.3 1a6 6 0 0 1 4 4l1.7 5 1.7-5a6 6 0 0 1 4-4l4.3-1-4.3-1a6 6 0 0 1-4-4z"/>
-      </svg>
-      SFX
-    </a>
-    <a class="nav-item" data-page="transcript" title="Audio · Assets · Transcript">
+    <div class="nav-section-label">RESOURCES</div>
+    <a class="nav-item" data-page="assets" title="Assets · Voice · Music · SFX · Audio">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
         <path d="M7 14h1l1.5-3 2 6 1.5-4.5.5 1.5H17"/>
       </svg>
-      Audio
+      Assets
     </a>
-    <!-- ═══ 05 FINISH & PACKAGE ═══ -->
-    <div class="nav-section-label">후반/패키징</div>
     <a class="nav-item" data-page="library" title="Library · Saved Results">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
@@ -22160,26 +22230,12 @@
     </a>
     <!-- ═══ SYSTEM ═══ -->
     <div class="nav-section-label">SYSTEM</div>
-    <a class="nav-item" href="docs/index.html" id="sidebar-docs-btn" title="사용자 가이드">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-      </svg>
-      가이드
-    </a>
     <a class="nav-item" data-page="settings" title="Settings">
       <svg class="icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
       </svg>
       Settings
-    </a>
-    <a class="nav-item js-dev-only" data-page="admin" title="Admin">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      Admin
     </a>
 
     <div class="nav-spacer"></div>
@@ -22207,17 +22263,17 @@
       <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Today
     </button>
-    <button class="bn-item" data-page="pipeline" aria-label="Pre Production">
+    <button class="bn-item" data-page="pipeline" aria-label="Project Workbench">
       <svg class="icon" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-      Pre Production
+      Workbench
     </button>
-    <button class="bn-item" data-page="personas" aria-label="Story">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 3.5 13.9 8l4.8.4-3.7 3.1 1.1 4.7-4.1-2.5-4.1 2.5 1.1-4.7-3.7-3.1 4.8-.4z"/><path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
-      Story
+    <button class="bn-item" data-page="assets" aria-label="Assets">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M7 14h1l1.5-3 2 6 1.5-4.5.5 1.5H17"/></svg>
+      Assets
     </button>
-    <button class="bn-item" data-page="voice-studio" aria-label="Voice">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-      Voice
+    <button class="bn-item" data-page="library" aria-label="Library">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+      Library
     </button>
     <button class="bn-item" id="bn-menu-btn" aria-label="전체 메뉴">
       <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -23937,16 +23993,16 @@
               <span class="beta-pill">OPEN BETA</span>
               SOAVIZ STUDIO
             </div>
-            <h1 class="landing-title">AI가 만든다.<br>당신이 <em>완성</em>한다.</h1>
+            <h1 class="landing-title">시작부터 Export까지<br>하나의 <em>제작 흐름</em>.</h1>
             <p class="landing-subtitle">
-              세계관, 캐릭터, 씬, 보이스 — 창작의 모든 단계를 AI와 함께.
-              지금 베타 참여자를 모집합니다.
+              세계관, 캐릭터, 키이미지, 샷리스트, 영상, 사운드, 편집을
+              Project Workbench 안에서 끊기지 않게 이어갑니다.
             </p>
             <div class="landing-actions">
-              <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
-              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="Pipeline 살펴보기" onclick="startLandingSample()">Pipeline 살펴보기</button>
+              <button class="landing-btn primary" type="button" data-landing-action="workbench" data-track="primary_cta" data-track-label="새 프로젝트 시작" onclick="startLandingOnboarding()">새 프로젝트 시작</button>
+              <button class="landing-btn secondary" type="button" data-landing-action="sample" data-track="secondary_cta" data-track-label="워크벤치 살펴보기" onclick="startLandingSample()">워크벤치 살펴보기</button>
             </div>
-            <p class="landing-note">얼리 액세스 · 완전 무료 · 설치 없음</p>
+            <p class="landing-note">로그인 베타 액세스 · 제작 실행은 크레딧 차감 · 설치 없음</p>
           </div>
 
           <!-- Mock UI Card -->
@@ -23959,30 +24015,30 @@
                 <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:rgba(167,139,250,0.6);text-transform:uppercase">BETA</div>
               </div>
               <div class="mock-content">
-                <div class="mock-badge">✦ AI 세계관 빌더</div>
-                <h3>프로젝트 구성</h3>
+                <div class="mock-badge">✦ Project Workbench</div>
+                <h3>제작 흐름</h3>
                 <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin:4px 0 6px">📖 현재 작업 중</div>
                 <div class="mock-version selected">
-                  <span>① 세계관 설정</span>
+                  <span>① 기본 정보</span>
                   <span class="mock-version-tag" style="background:rgba(110,231,183,0.18);color:#6ee7b7">완료</span>
                 </div>
                 <div class="mock-version selected" style="background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.3)">
-                  <span>② 캐릭터 바이블</span>
+                  <span>② 캐릭터 · 키이미지</span>
                   <span class="mock-version-tag">진행중</span>
                 </div>
                 <div class="mock-version">
-                  <span>③ 씬 리스트</span>
+                  <span>③ 샷리스트 · 영상</span>
                   <span class="mock-version-tag">대기</span>
                 </div>
                 <div style="height:1px;background:rgba(255,255,255,0.07);margin:10px 0 8px"></div>
-                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:4px">🎙 보이스 스튜디오</div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.28);text-transform:uppercase;margin-bottom:4px">완성 패키지</div>
                 <div class="mock-version">
-                  <span>나레이션 생성</span>
-                  <span class="mock-version-tag">AI 음성</span>
+                  <span>편집 · 사운드</span>
+                  <span class="mock-version-tag">Assets</span>
                 </div>
                 <div class="mock-version">
-                  <span>키이미지 제작</span>
-                  <span class="mock-version-tag">이미지</span>
+                  <span>Export · Library</span>
+                  <span class="mock-version-tag">저장</span>
                 </div>
               </div>
             </div>
@@ -23994,7 +24050,7 @@
           <div class="beta-notice-icon">🎁</div>
           <div>
             <strong>베타 기간 한정 혜택</strong>
-            <span>정식 출시 전까지 <b style="color:#c4b5fd">50% 할인 요금</b>으로 모든 기능을 사용할 수 있습니다. 지금 무료로 시작하세요.</span>
+            <span>정식 출시 전까지 <b style="color:#c4b5fd">50% 할인 요금</b>으로 사용할 수 있습니다. 생성·렌더·Export는 크레딧 기준으로 실행됩니다.</span>
           </div>
         </div>
 
@@ -24003,17 +24059,17 @@
           <article class="landing-value-card">
             <span class="landing-value-card-icon">🌍</span>
             <h3>세계관부터 씬까지</h3>
-            <p>기획 → 캐릭터 → 스토리보드 → 씬 구성까지 AI와 함께 한 흐름으로 만들어갑니다.</p>
+            <p>기획 → 캐릭터 → 키이미지 → 샷리스트까지 한 프로젝트 상태로 이어집니다.</p>
           </article>
           <article class="landing-value-card">
             <span class="landing-value-card-icon">🎙</span>
             <h3>내 목소리로 말하는 AI</h3>
-            <p>캐릭터별 보이스를 설정하면 나레이션과 대사를 AI가 자동으로 생성합니다.</p>
+            <p>보이스, 음악, 효과음은 독립 메뉴가 아니라 장면 제작 중 필요한 에셋으로 관리합니다.</p>
           </article>
           <article class="landing-value-card">
             <span class="landing-value-card-icon">🖼</span>
             <h3>키이미지 스튜디오</h3>
-            <p>캐릭터 설정에서 바로 AI 이미지 프롬프트를 생성하고 레퍼런스를 관리합니다.</p>
+            <p>캐릭터 정보에서 만든 프롬프트가 키이미지와 캐릭터 시트로 자연스럽게 연결됩니다.</p>
           </article>
         </div>
 
@@ -24029,13 +24085,13 @@
             <div class="beta-feature-chip"><span class="bfc-dot"></span>캐릭터 바이블</div>
             <div class="beta-feature-chip"><span class="bfc-dot"></span>키이미지 스튜디오</div>
             <div class="beta-feature-chip"><span class="bfc-dot"></span>씬/쇼트 리스트</div>
-            <div class="beta-feature-chip"><span class="bfc-dot"></span>Voice 스튜디오</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>Project Workbench</div>
             <div class="beta-feature-chip"><span class="bfc-dot"></span>제작 캘린더</div>
-            <div class="beta-feature-chip"><span class="bfc-dot"></span>Music 스튜디오</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>Assets 패널</div>
             <div class="beta-feature-chip"><span class="bfc-dot"></span>제작 로그</div>
             <div class="beta-feature-chip coming"><span class="bfc-dot"></span>결제 시스템 (출시 예정)</div>
             <div class="beta-feature-chip coming"><span class="bfc-dot"></span>팀 협업 (출시 예정)</div>
-            <div class="beta-feature-chip coming"><span class="bfc-dot"></span>영상 자동 편집 (출시 예정)</div>
+            <div class="beta-feature-chip"><span class="bfc-dot"></span>영상 편집</div>
             <div class="beta-feature-chip coming"><span class="bfc-dot"></span>배포 연동 (출시 예정)</div>
           </div>
         </div>
@@ -24064,8 +24120,8 @@
             <div class="beta-access-card">
               <div class="beta-access-card-icon">🔓</div>
               <div>
-                <h4>모든 기능 무료 사용</h4>
-                <p>베타 기간 동안 추가 비용 없이 모든 기능을 제한 없이 사용합니다.</p>
+                <h4>기능 탐색은 열고, 제작 실행은 크레딧으로</h4>
+                <p>토큰이 드는 생성·렌더·Export는 크레딧 차감 기준으로 운영됩니다.</p>
               </div>
             </div>
             <div class="beta-access-card">
@@ -24087,32 +24143,32 @@
           <div class="landing-steps">
             <span>
               <strong>1</strong>
-              <em>세계관 입력</em>
+              <em>기본 정보</em>
             </span>
             <span>
               <strong>2</strong>
-              <em>캐릭터 생성</em>
+              <em>캐릭터 · 키이미지</em>
             </span>
             <span>
               <strong>3</strong>
-              <em>씬 구성</em>
+              <em>샷리스트</em>
             </span>
             <span>
               <strong>4</strong>
-              <em>보이스 · 이미지</em>
+              <em>영상 · 사운드</em>
             </span>
             <span>
               <strong>5</strong>
-              <em>완성 · 내보내기</em>
+              <em>Export · 저장</em>
             </span>
           </div>
         </div>
 
         <!-- ── FINAL CTA ── -->
         <div class="landing-final-cta">
-          <h2>AI와 함께 만드는<br>첫 번째 프로젝트를 시작하세요.</h2>
-          <button class="landing-btn primary" type="button" data-landing-action="upload" data-track="primary_cta" data-track-label="베타 무료로 시작하기" onclick="startLandingOnboarding()">베타 무료로 시작하기</button>
-          <p class="landing-final-note">설치 없음 · 카드 없음 · 정식 출시 전까지 50% 할인 요금</p>
+          <h2>첫 프로젝트를<br>워크벤치에서 끝까지 이어가세요.</h2>
+          <button class="landing-btn primary" type="button" data-landing-action="workbench" data-track="primary_cta" data-track-label="새 프로젝트 시작" onclick="startLandingOnboarding()">새 프로젝트 시작</button>
+          <p class="landing-final-note">설치 없음 · 로그인 후 앱 진입 · 생성 실행은 크레딧 차감</p>
         </div>
 
       </section>
@@ -24134,13 +24190,13 @@
               <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               이어서 작업
             </button>
-            <button class="td-command-btn" data-today-page="personas">
+            <button class="td-command-btn" data-today-page="pipeline">
               <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              새 작품 시작
+              새 프로젝트 시작
             </button>
             <button class="td-command-btn" data-today-page="pipeline">
               <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h7v6H4z"/><path d="M13 13h7v6h-7z"/><path d="M11 8h3a2 2 0 0 1 2 2v3"/></svg>
-              스토리보드 열기
+              워크벤치 열기
             </button>
             <button class="td-command-btn" data-today-page="production-log">
               <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -24182,25 +24238,25 @@
       </div>
 
       <div class="td-quick-lanes" aria-label="빠른 제작 메뉴">
-        <button class="td-lane-btn" data-today-page="personas">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5H6a2 2 0 0 1-2-1.5z"/><path d="M8 8h6"/><path d="M8 12h8"/></svg>
-          기획/스토리
-          <small>세계관과 대본</small>
-        </button>
         <button class="td-lane-btn" data-today-page="pipeline">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5H6a2 2 0 0 1-2-1.5z"/><path d="M8 8h6"/><path d="M8 12h8"/></svg>
+          Workbench
+          <small>시작부터 Export까지</small>
+        </button>
+        <button class="td-lane-btn" data-today-page="characters">
           <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h6v6H4z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><path d="M10 7h4"/><path d="M7 10v4"/></svg>
-          샷 리스트
-          <small>Episode · Scene · Shot</small>
+          캐릭터
+          <small>정보 · 키이미지 · 시트</small>
         </button>
-        <button class="td-lane-btn" data-today-page="voice-studio">
+        <button class="td-lane-btn" data-today-page="assets">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"/><path d="M19 10a7 7 0 0 1-14 0"/><path d="M12 17v5"/></svg>
-          Voice
-          <small>나레이션 생성</small>
+          Assets
+          <small>Voice · Music · SFX</small>
         </button>
-        <button class="td-lane-btn" data-today-page="music-studio">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          Music
-          <small>장면 분위기</small>
+        <button class="td-lane-btn" data-today-page="video-editor">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 18h16"/><rect x="6" y="9" width="7" height="6" rx="1"/><path d="m15 10 4 2-4 2z"/></svg>
+          Edit
+          <small>편집 · 렌더</small>
         </button>
         <button class="td-lane-btn" data-today-page="library">
           <svg class="icon" viewBox="0 0 24 24"><path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
@@ -24297,9 +24353,9 @@
             <span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:600">Recommended Next</span>
           </div>
           <ul style="list-style:none;padding:0;margin:0;font-size:13px;color:var(--text-dim);line-height:1.85">
-            <li>📝 <a href="javascript:showPage('personas')" style="color:var(--accent)">시나리오 만들기</a> 새 작품 시작</li>
-            <li>🎙 <a href="javascript:showPage('voice-studio')" style="color:var(--accent)">내레이션/TTS</a> 페르소나 보이스 테스트</li>
-            <li>🎲 <a href="javascript:showPage('music-studio')" style="color:var(--accent)">음악 제작</a> 분위기 음악 굴리기</li>
+            <li>① <a href="javascript:showPage('pipeline')" style="color:var(--accent)">Project Workbench</a>에서 새 작품 시작</li>
+            <li>② <a href="javascript:showPage('characters')" style="color:var(--accent)">캐릭터</a>를 만들고 키이미지·시트 연결</li>
+            <li>③ <a href="javascript:showPage('assets')" style="color:var(--accent)">Assets</a>에서 보이스·음악·효과음 정리</li>
           </ul>
         </article>
 
@@ -24319,34 +24375,87 @@
       </div>
     </section>
 
-    <!-- ================ PAGE: PIPELINE (v3 M1) ================ -->
+    <!-- ================ PAGE: PROJECT WORKBENCH ================ -->
     <section id="page-pipeline" class="page">
       <div class="page-head">
-        <h1>Pipeline · 프로젝트</h1>
-        <p>① 프로젝트 생성 &nbsp;→&nbsp; ② 스토리보드 구성 &nbsp;→&nbsp; ③ 생성·렌더링 &nbsp;→&nbsp; ④ 워크플로우 <strong>커스터마이징</strong></p>
+        <h1>Project Workbench</h1>
+        <p>기본 정보 → 캐릭터 → 키이미지 → 샷리스트 → 생성 → 편집 → 사운드 → Export를 한 프로젝트 안에서 이어갑니다.</p>
+      </div>
+
+      <div class="workbench-flow-card" aria-label="창작자 제작 흐름">
+        <div class="workbench-flow-head">
+          <div>
+            <div class="workbench-flow-kicker">Creator Flow</div>
+            <h2 class="workbench-flow-title">창작자가 이탈하지 않는 단일 제작 루프</h2>
+            <p class="workbench-flow-copy">아래 순서만 따라가면 기본 설정, 캐릭터, 키이미지, 샷, 영상, 오디오, 편집, 보관까지 한 번에 연결됩니다.</p>
+          </div>
+          <button class="pl-btn primary" type="button" onclick="document.getElementById('pl-new-project-btn')?.click()">＋ 새 프로젝트</button>
+        </div>
+        <div class="workbench-flow-steps">
+          <button class="workbench-step primary" type="button" onclick="switchPipelineTab('shotlist')">
+            <span class="workbench-step-num">1</span>
+            <strong>기본 정보 · 스토리</strong>
+            <span>아이디어를 시놉시스와 샷리스트로 전환</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="showPage('characters')">
+            <span class="workbench-step-num">2</span>
+            <strong>캐릭터 · 키이미지</strong>
+            <span>정보 입력 후 프롬프트, 키이미지, 시트 연결</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="switchPipelineTab('imagegen')">
+            <span class="workbench-step-num">3</span>
+            <strong>샷 이미지</strong>
+            <span>샷별 이미지 프롬프트와 레퍼런스 생성</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="switchPipelineTab('board')">
+            <span class="workbench-step-num">4</span>
+            <strong>제작 보드</strong>
+            <span>Episode · Scene · Shot 상태 관리</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="showPage('video-studio')">
+            <span class="workbench-step-num">5</span>
+            <strong>영상 생성</strong>
+            <span>채택한 샷과 이미지를 영상으로 제작</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="showPage('video-editor')">
+            <span class="workbench-step-num">6</span>
+            <strong>편집</strong>
+            <span>샘플 분석, 컷 편집, 렌더링</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="showPage('assets')">
+            <span class="workbench-step-num">7</span>
+            <strong>사운드 · 에셋</strong>
+            <span>Voice, Music, SFX, Audio를 한 곳에서 정리</span>
+          </button>
+          <button class="workbench-step" type="button" onclick="showPage('library')">
+            <span class="workbench-step-num">8</span>
+            <strong>Export · Library</strong>
+            <span>완성본과 제작 기록을 저장하고 재사용</span>
+          </button>
+        </div>
       </div>
 
       <!-- ── Pipeline 탭 바 ── -->
       <div id="pipeline-tab-bar" style="display:inline-flex;padding:3px;border-radius:var(--r-pill);background:var(--bg-card);border:1px solid var(--border);margin-bottom:20px;gap:0;flex-wrap:wrap">
         <button class="pipeline-tab active" data-pltab="shotlist" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;background:var(--bg-elev);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,0.3);display:inline-flex;align-items:center;gap:7px">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-          샷리스트 생성기
+          1 기본 정보 · 샷리스트
         </button>
         <button class="pipeline-tab" data-pltab="imagegen" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          이미지 생성
+          2 샷 이미지
         </button>
         <button class="pipeline-tab" data-pltab="board" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Pipeline Board
+          3 제작 보드
         </button>
         <button class="pipeline-tab" data-pltab="workflow" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-          워크플로우
+          4 워크플로우
         </button>
         <button class="pipeline-tab" data-pltab="script" style="padding:8px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:500;color:var(--text-faint);display:inline-flex;align-items:center;gap:7px">
           <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          스크립트
+          5 스크립트
         </button>
       </div>
 
@@ -24840,7 +24949,7 @@
               <p>상단에서 프로젝트를 고르면<br>Episode → Scene → Shot 트리가 나타납니다.</p>
               <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
                 <button class="pl-btn primary" id="pl-detail-new-btn" onclick="document.getElementById('pl-new-project-btn')?.click()">＋ 새 프로젝트 만들기</button>
-                <button class="pl-btn" onclick="showPage('personas')">✨ Personas에서 시작</button>
+                <button class="pl-btn" onclick="switchPipelineTab('shotlist')">기본 정보 입력 →</button>
               </div>
             </div>
           </div>
@@ -25062,6 +25171,45 @@
       <div class="bible-grid" id="st-grid"></div>
     </section>
 
+
+    <!-- ================ PAGE: WORKBENCH (P1) ================ -->
+    <section id="page-workbench" class="page">
+
+      <!-- 헤더 -->
+      <div class="wb-header">
+        <div>
+          <h1 class="wb-project-name" id="wb-proj-name">Project Workbench</h1>
+          <p class="wb-project-sub" id="wb-proj-sub">진행 중인 프로젝트를 선택하거나 새로 만드세요</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-outline" onclick="showPage('projects')" style="font-size:13px;padding:7px 14px;">📁 프로젝트 전환</button>
+          <button class="btn-accent"  id="wb-new-btn" onclick="showPage('pipeline')" style="font-size:13px;padding:7px 14px;">+ 새 프로젝트</button>
+        </div>
+      </div>
+
+      <!-- 다음 액션 카드 -->
+      <div id="wb-next-action-wrap"></div>
+
+      <!-- 8-스테이지 트랙 -->
+      <div class="wb-track-wrap">
+        <div class="wb-track-label">제작 단계</div>
+        <div class="wb-track" id="wb-track"></div>
+      </div>
+
+      <!-- 통계 + 최근 활동 -->
+      <div class="wb-grid">
+        <div class="wb-panel">
+          <p class="wb-panel-title">프로젝트 현황</p>
+          <div class="wb-stat-row" id="wb-stats"></div>
+        </div>
+        <div class="wb-panel">
+          <p class="wb-panel-title">최근 활동</p>
+          <div id="wb-activity"></div>
+        </div>
+      </div>
+
+    </section>
+
     <!-- ================ PAGE: PROJECTS ================ -->
     <section id="page-projects" class="page">
 
@@ -25107,11 +25255,11 @@
         </div>
         <h3 style="margin:0 0 6px;font-family:var(--font-display);font-size:18px;font-weight:600">첫 프로젝트를 만들어보세요</h3>
         <p style="margin:0 0 20px;font-size:13px;color:var(--text-faint);max-width:40ch;margin-left:auto;margin-right:auto;line-height:1.6">
-          Personas에서 스토리를 만들고 샷리스트로 연결하거나,<br>새 프로젝트를 직접 생성해 Pipeline에서 관리하세요.
+          Project Workbench에서 기본 정보를 입력하고,<br>캐릭터 · 샷리스트 · 영상 제작까지 이어가세요.
         </p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button id="projects-empty-new-btn" style="padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-radius:var(--r-md);font-size:13px;font-weight:700">＋ 새 프로젝트</button>
-          <button onclick="showPage('personas')" style="padding:10px 20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--r-md);font-size:13px;font-weight:500">✨ Personas에서 시작</button>
+          <button onclick="showPage('pipeline')" style="padding:10px 20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text);border-radius:var(--r-md);font-size:13px;font-weight:500">Workbench에서 시작</button>
         </div>
       </div>
 
@@ -26956,8 +27104,28 @@ function showPage(name) {
     };
     $$('.nav-item[data-page]').forEach(n => n.classList.toggle('active', isMatch(n)));
     $$('.bn-item[data-page]').forEach(n => n.classList.toggle('active', isMatch(n)));
-    // voices/clean → 부모 nav-item 하이라이트 (사이드바에서 제거된 standalone 페이지)
-    const _tabParentNav = { voices: 'voice-studio', clean: 'transcript' };
+    // 숨긴 기능 페이지는 상위 흐름 nav에 하이라이트를 모아준다.
+    const _tabParentNav = {
+      personas: 'pipeline',
+      projects: 'pipeline',
+      characters: 'pipeline',
+      styles: 'pipeline',
+      cinema: 'pipeline',
+      compare: 'pipeline',
+      sync: 'pipeline',
+      'video-editor': 'pipeline',
+      'keyimage-studio': 'pipeline',
+      'shot-detail': 'pipeline',
+      studio: 'assets',
+      voices: 'assets',
+      music: 'assets',
+      effects: 'assets',
+      extract: 'assets',
+      clean: 'assets',
+      history: 'library',
+      'project-archive': 'library',
+      'memory-graph': 'library'
+    };
     if (_tabParentNav[name]) {
       $$('.nav-item[data-page="' + _tabParentNav[name] + '"]').forEach(n => n.classList.add('active'));
       $$('.bn-item[data-page="' + _tabParentNav[name] + '"]').forEach(n => n.classList.add('active'));
@@ -27004,6 +27172,7 @@ function showPage(name) {
   if (name === 'memory-graph' && typeof renderMemoryGraph === 'function') renderMemoryGraph();
   if (name === 'shot-detail' && typeof renderShotLogbook === 'function') renderShotLogbook();
   if (name === 'pipeline' && typeof renderPipelinePage === 'function') { try { renderPipelinePage(); } catch (_) {} }
+  if (name === 'workbench' && typeof renderWorkbenchPage === 'function') { try { renderWorkbenchPage(); } catch (_) {} }
   if (name === 'compare' && typeof renderComparePage === 'function') { try { renderComparePage(); } catch (_) {} }
   if (name === 'cinema' && typeof renderCinemaPage === 'function') { try { renderCinemaPage(); } catch (_) {} }
   if (name === 'styles' && typeof renderStylesPage === 'function') { try { renderStylesPage(); } catch (_) {} }
@@ -27047,13 +27216,13 @@ function showPage(name) {
 /** activity의 assetType → 적합한 페이지 alias */
 function _activityPageAlias(assetType, promptType) {
   if (assetType === 'prompt') {
-    const map = { tts: 'voice-studio', music: 'music-studio', sfx: 'sfx-studio',
-                  video: 'video-studio', extract: 'transcript', world: 'personas',
-                  story: 'personas', summary: 'transcript' };
+    const map = { tts: 'assets', music: 'assets', sfx: 'assets',
+                  video: 'pipeline', extract: 'assets', world: 'pipeline',
+                  story: 'pipeline', summary: 'assets' };
     return map[promptType] || 'library';
   }
-  const map = { voice: 'voice-studio', music: 'music-studio', tts: 'voice-studio',
-                sfx: 'sfx-studio', video: 'video-studio', transcript: 'transcript' };
+  const map = { voice: 'assets', music: 'assets', tts: 'assets',
+                sfx: 'assets', video: 'pipeline', transcript: 'assets' };
   return map[assetType] || 'library';
 }
 
@@ -27066,7 +27235,7 @@ function _todayRecommendations() {
   const recs = [];
 
   if (todayPrompts.length === 0) {
-    recs.push({ icon: '✦', text: '오늘 첫 프롬프트를 만들어 보세요', page: 'personas' });
+    recs.push({ icon: '✦', text: 'Project Workbench에서 오늘 첫 제작 루프를 시작하세요', page: 'workbench' });
   }
   if (last) {
     if ((last.status === 'generated' || last.status === 'draft') && last.promptType) {
@@ -27082,7 +27251,7 @@ function _todayRecommendations() {
     recs.push({ icon: '★', text: '가장 좋은 결과물을 Final로 표시해 두세요', page: 'library' });
   }
   if (!lastSession && !last) {
-    recs.push({ icon: '→', text: 'Voice Studio 또는 Projects에서 시작하세요', page: 'voice-studio' });
+    recs.push({ icon: '→', text: '새 프로젝트를 만들고 캐릭터와 샷리스트를 이어가세요', page: 'workbench' });
   }
   if (recs.length === 0) {
     recs.push({ icon: '✓', text: '오늘 작업이 정돈됐어요. 다음 단계를 자유롭게 진행하세요', page: 'today' });
@@ -27361,10 +27530,10 @@ window.renderRecentProjectsCard = renderRecentProjectsCard;
 function renderWorkspaceSettingsCard(data) {
   return `<section class="prod-card prod-settings-card">
     <div class="prod-card-head"><h3>워크스페이스</h3></div>
-    <button class="prod-setting-row" onclick="showPage('personas')"><span>기획 · 스토리</span><strong>세계관 & 캐릭터 →</strong></button>
-    <button class="prod-setting-row" onclick="showPage('pipeline')"><span>샷 리스트</span><strong>Pipeline 보기 →</strong></button>
+    <button class="prod-setting-row" onclick="showPage('pipeline')"><span>제작 워크벤치</span><strong>시작부터 Export까지 →</strong></button>
+    <button class="prod-setting-row" onclick="showPage('characters')"><span>캐릭터</span><strong>정보 · 키이미지 · 시트 →</strong></button>
+    <button class="prod-setting-row" onclick="showPage('assets')"><span>사운드 · 에셋</span><strong>Voice · Music · SFX →</strong></button>
     <button class="prod-setting-row" onclick="showPage('library')"><span>라이브러리</span><strong>결과물 보관함 →</strong></button>
-    <button class="prod-setting-row" onclick="showPage('production-log')"><span>제작 로그</span><strong>작업 기록 →</strong></button>
   </section>`;
 }
 window.renderWorkspaceSettingsCard = renderWorkspaceSettingsCard;
@@ -27414,7 +27583,7 @@ function renderProductionTipCard(data) {
   const tip = tips[Math.floor(Date.now() / 86400000) % tips.length];
   return `<section class="prod-tip-card">
     <strong>💡 ${escapeHTML(tip)}</strong>
-    <button class="ghost-link" onclick="showPage('personas')">시작하기 →</button>
+    <button class="ghost-link" onclick="showPage('pipeline')">시작하기 →</button>
   </section>`;
 }
 window.renderProductionTipCard = renderProductionTipCard;
@@ -27589,7 +27758,7 @@ function bindTodayPage() {
       }
       showToast(yLast ? '✨ 어제 작업으로 돌아가기' : '↻ 마지막 작업 이어가기');
     } else {
-      showPage('personas');
+      showPage('pipeline');
     }
   });
   // 캘린더 prev/next
@@ -28359,8 +28528,8 @@ function _renderCreditPill(el) {
 /** 제작/생성 탭에만 pill 노출 — 비-제작 탭은 제외 */
 const _CREDIT_PILL_PAGES = new Set([
   'voice-studio','music-studio','sfx-studio','video-studio','video-editor',
-  'transcript','personas','pipeline','styles','cinema',
-  'compare','memory-graph','clean','effects','voices','studio'
+  'transcript','assets','extract','personas','pipeline','styles','cinema',
+  'compare','memory-graph','clean','effects','voices','studio','keyimage-studio'
 ]);
 
 /** 현재 활성 페이지의 page-head에 pill 주입 (필요 시) */
@@ -28921,7 +29090,7 @@ function _resumeProject(goalId) {
     }
     showToast(`↻ ${g ? g.projectName + ' ' : ''}이어서 작업`);
   } else {
-    showPage('personas');
+    showPage('pipeline');
     showToast('첫 작업을 시작해 보세요');
   }
 }
@@ -29992,7 +30161,7 @@ function renderNextThreeTasks() {
   if (!tasks.length) {
     wrap.innerHTML = headerHtml + `
       <div class="td-sig-empty">
-        오늘은 추천할 작업이 없어요. <a href="javascript:showPage('personas')" style="color:var(--accent)">새 프로젝트 시작 →</a>
+        오늘은 추천할 작업이 없어요. <a href="javascript:showPage('pipeline')" style="color:var(--accent)">새 프로젝트 시작 →</a>
       </div>`;
     return;
   }
@@ -30885,7 +31054,7 @@ async function renderProjectsPage() {
             <div class="project-actions">
               ${p.archived
                 ? `<button class="project-btn primary" data-project-action="restore" data-project-id="${escapeHTML(p.id)}">복원</button>`
-                : `<button class="project-btn primary" data-project-action="open" data-project-id="${escapeHTML(p.id)}">Pipeline 열기</button>`}
+                : `<button class="project-btn primary" data-project-action="open" data-project-id="${escapeHTML(p.id)}">Workbench 열기</button>`}
               <button class="project-btn" data-project-action="edit" data-project-id="${escapeHTML(p.id)}">편집</button>
               <button class="project-btn" data-project-action="overflow" data-project-id="${escapeHTML(p.id)}" style="margin-left:auto;padding:0 10px;font-size:18px;letter-spacing:2px" title="더 보기">⋯</button>
               <div class="project-overflow-menu" style="display:none">${overflowItems}</div>
@@ -32064,7 +32233,7 @@ function openBillingModal() {
         <div class="admin-plan-grid">${plans}</div>
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
           <button class="vault-btn" id="bill-reset-credits">이번 달 사용량 리셋</button>
-          <button class="vault-btn" id="bill-open-admin">Admin 대시보드 열기</button>
+          <button class="vault-btn" id="bill-open-settings">Billing 설정 열기</button>
         </div>
         <div style="font-size:11px;color:var(--text-faint);margin-top:8px;line-height:1.6">
           현재 빌링은 로컬 개발용 플랜/크레딧 시뮬레이터입니다. 실제 결제 연동 전에도 제작 화면의 크레딧 UX를 끝까지 테스트할 수 있습니다.
@@ -32093,12 +32262,12 @@ function openBillingModal() {
     close();
     showToast?.('✓ 크레딧 사용량을 리셋했습니다');
   });
-  root.querySelector('#bill-open-admin')?.addEventListener('click', () => { close(); showPage('admin'); });
+  root.querySelector('#bill-open-settings')?.addEventListener('click', () => { close(); showPage('settings'); });
 }
 
 function bindSettingsPage() {
-  // 우상단 ⚙ 설정 버튼 → 관리자 페이지 (인증 후 플랜 토글 + 대시보드)
-  $('#top-settings-btn')?.addEventListener('click', () => showPage('admin'));
+  // 우상단 설정 버튼 → 창작 흐름을 방해하지 않는 일반 Settings
+  $('#top-settings-btn')?.addEventListener('click', () => showPage('settings'));
   // 좌측 상단 로고 → 랜딩 홈
   $('#brand-home')?.addEventListener('click', () => showPage('landing'));
   $('#brand-home')?.addEventListener('keydown', (e) => {
@@ -32134,11 +32303,14 @@ const NAV_MAP = {
   projects: { page: 'projects', label: 'Projects' },
   settings: { page: 'settings', label: 'Settings' },
   admin:    { page: 'admin',    label: 'Admin' },
-  pipeline: { page: 'pipeline', label: 'Pre Production' },
+  workbench: { page: 'workbench', label: 'Project Workbench' },
+  pipeline: { page: 'pipeline', label: 'Project Workbench' },
+  assets:   { page: 'extract',  label: 'Assets' },
   characters: { page: 'characters', label: 'Characters' },
   styles:     { page: 'styles',     label: 'Style' },
   compare:    { page: 'compare',    label: 'Compare Mode' },
   cinema:     { page: 'cinema',     label: 'Cinema Library' },
+  'keyimage-studio': { page: 'keyimage-studio', label: 'Key Image Studio' },
   'project-archive': { page: 'project-archive', label: 'Exports' },
   'memory-graph':    { page: 'memory-graph',    label: 'Memory Graph' },
   'shot-detail':     { page: 'shot-detail',     label: 'Shot Logbook' },
@@ -32213,19 +32385,19 @@ function openLandingVideoOnboarding(options = {}) {
   requestAnimationFrame(trigger);
 }
 function startLandingOnboarding() {
-  // Landing → Personas(Story)로 직접 진입
-  try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
-  if (isCommercialGuestLocked('personas')) {
-    window.SoavizAuth?.openAuthModal?.('베타 무료 시작', { redirectPage: 'personas' });
-    return;
-  }
-  if (typeof showPage === 'function') showPage('personas');
-}
-function startLandingSample() {
-  // 샘플 버튼은 Pipeline으로 안내
+  // Landing → Project Workbench로 단일 진입
   try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
   if (isCommercialGuestLocked('pipeline')) {
-    window.SoavizAuth?.openAuthModal?.('Pipeline 살펴보기', { redirectPage: 'pipeline' });
+    window.SoavizAuth?.openAuthModal?.('새 프로젝트 시작', { redirectPage: 'pipeline' });
+    return;
+  }
+  if (typeof showPage === 'function') showPage('pipeline');
+}
+function startLandingSample() {
+  // 샘플 버튼도 Workbench 안에서 시작
+  try { localStorage.setItem('soaviz_landing_started', 'true'); } catch (_) {}
+  if (isCommercialGuestLocked('pipeline')) {
+    window.SoavizAuth?.openAuthModal?.('워크벤치 살펴보기', { redirectPage: 'pipeline' });
     return;
   }
   if (typeof showPage === 'function') showPage('pipeline');
@@ -32237,12 +32409,8 @@ document.addEventListener('click', (event) => {
   if (!action) return;
   event.preventDefault();
   if (action.hasAttribute('onclick')) return;
-  // sample → pipeline, 나머지 → personas
-  if (action.dataset.landingAction === 'sample') {
-    if (typeof showPage === 'function') showPage('pipeline');
-  } else {
-    if (typeof showPage === 'function') showPage('personas');
-  }
+  // Landing의 모든 CTA는 Workbench로 단일 진입
+  if (typeof showPage === 'function') showPage('pipeline');
 });
 $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
   n.addEventListener('click', e => {
@@ -41957,8 +42125,7 @@ async function renderKeyImageLibraryPanel() {
     btn.addEventListener('click', () => {
       const charId = btn.dataset.charId;
       if (!charId) return;
-      const navBtn = document.querySelector('[data-page="characters"]');
-      if (navBtn) { navBtn.click(); }
+      if (typeof showPage === 'function') showPage('characters');
       requestAnimationFrame(() => {
         const chProject = document.querySelector('#ch-project-select');
         if (chProject) chProject.dispatchEvent(new Event('change'));
@@ -41990,8 +42157,7 @@ function showKeyImageGuardToast(characterName, characterId) {
     setTimeout(() => {
       const confirmed = window.confirm?.(`${msg}\n\n지금 키이미지 스튜디오를 열까요?`);
       if (confirmed) {
-        const navBtn = document.querySelector('[data-page="characters"]');
-        if (navBtn) navBtn.click();
+        if (typeof showPage === 'function') showPage('characters');
         requestAnimationFrame(() => openCharacterKeyImageStudio(characterId));
       }
     }, 300);
@@ -46579,6 +46745,181 @@ async function syncAllGoalsToProjects() {
   }
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  window.SoavizProductionOS  (P1 — Workbench Hub Lock)
+// ══════════════════════════════════════════════════════════════
+window.SoavizProductionOS = window.SoavizProductionOS || {
+  version: 'P1',
+  modules: {},
+  register(name, mod) { this.modules[name] = mod; },
+  get(name) { return this.modules[name]; },
+};
+
+/** 제작 8단계 정의 */
+const WB_STAGES = [
+  { id: 'concept',    icon: '💡', name: '기획',   keys: ['episodes'] },
+  { id: 'character',  icon: '🧑',  name: '캐릭터', keys: ['characters'] },
+  { id: 'style',      icon: '🎨', name: '스타일', keys: ['styles'] },
+  { id: 'shot',       icon: '🎬', name: '샷리스트', keys: ['shots'] },
+  { id: 'prompt',     icon: '✍️', name: '프롬프트', keys: ['prompts'] },
+  { id: 'generate',   icon: '⚡', name: '생성',   keys: ['assets'] },
+  { id: 'review',     icon: '👁️', name: '리뷰',   keys: [] },
+  { id: 'export',     icon: '📦', name: '내보내기', keys: [] },
+];
+
+/** 다음 액션 결정 로직 */
+function _wbNextAction(counts) {
+  if (!counts.episodes)   return { icon:'📖', tag:'STEP 1', text:'에피소드를 작성하세요', desc:'스토리 기획으로 제작을 시작합니다', page:'pipeline' };
+  if (!counts.characters) return { icon:'🧑', tag:'STEP 2', text:'캐릭터를 추가하세요', desc:'주인공과 조연의 외모·성격을 설정하세요', page:'characters' };
+  if (!counts.styles)     return { icon:'🎨', tag:'STEP 3', text:'스타일을 설정하세요', desc:'영상의 비주얼 톤을 정의합니다', page:'styles' };
+  if (!counts.shots)      return { icon:'🎬', tag:'STEP 4', text:'샷리스트를 만드세요', desc:'각 씬의 구도와 순서를 기획합니다', page:'pipeline' };
+  if (!counts.prompts)    return { icon:'✍️', tag:'STEP 5', text:'이미지 프롬프트를 작성하세요', desc:'샷을 AI 이미지로 변환할 지시어입니다', page:'studio' };
+  if (!counts.assets)     return { icon:'⚡', tag:'STEP 6', text:'이미지를 생성하세요', desc:'프롬프트로 첫 비주얼을 만들어보세요', page:'studio' };
+  return { icon:'🏁', tag:'ALL DONE', text:'결과물을 정리하고 내보내세요', desc:'Library에서 Final 자산을 Export 하세요', page:'library' };
+}
+
+/** 상대 시간 포맷 */
+function _wbRelTime(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  if (diff < 60000)   return '방금 전';
+  if (diff < 3600000) return `${Math.floor(diff/60000)}분 전`;
+  if (diff < 86400000)return `${Math.floor(diff/3600000)}시간 전`;
+  return `${Math.floor(diff/86400000)}일 전`;
+}
+
+async function renderWorkbenchPage() {
+  const wrap = document.getElementById('page-workbench');
+  if (!wrap) return;
+
+  // 활성 프로젝트 로드
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  let proj = null;
+  if (activeId) {
+    try { proj = await db.projects.get(activeId); } catch(_) {}
+  }
+
+  // 프로젝트 없으면 빈 상태
+  const nameEl = document.getElementById('wb-proj-name');
+  const subEl  = document.getElementById('wb-proj-sub');
+  const newBtn = document.getElementById('wb-new-btn');
+
+  if (!proj) {
+    if (nameEl) nameEl.textContent = 'Project Workbench';
+    if (subEl)  subEl.textContent  = '진행 중인 프로젝트를 선택하거나 새로 만드세요';
+    if (newBtn) newBtn.textContent = '+ 새 프로젝트';
+
+    const nextWrap = document.getElementById('wb-next-action-wrap');
+    if (nextWrap) nextWrap.innerHTML = `
+      <div class="wb-empty">
+        <div class="wb-empty-icon">🎬</div>
+        <div class="wb-empty-text">아직 활성 프로젝트가 없어요</div>
+        <div class="wb-empty-sub">프로젝트 목록에서 선택하거나 새로 만드세요</div>
+        <button class="btn-accent" style="margin-top:16px;font-size:14px;" onclick="showPage('projects')">📁 프로젝트 목록 열기</button>
+      </div>`;
+
+    const trackEl = document.getElementById('wb-track');
+    if (trackEl) trackEl.innerHTML = WB_STAGES.map(s =>
+      `<div class="wb-stage locked"><div class="wb-stage-icon">${s.icon}</div><div class="wb-stage-name">${s.name}</div></div>`
+    ).join('');
+
+    const statsEl = document.getElementById('wb-stats');
+    if (statsEl) statsEl.innerHTML = '';
+    const actEl = document.getElementById('wb-activity');
+    if (actEl) actEl.innerHTML = '<div style="color:var(--text-faint);font-size:13px;">활동 없음</div>';
+    return;
+  }
+
+  // 프로젝트 메타
+  if (nameEl) nameEl.textContent = proj.title || '무제 프로젝트';
+  if (subEl)  subEl.textContent  = `마지막 수정: ${_wbRelTime(proj.updatedAt || proj.createdAt)}`;
+  if (newBtn) { newBtn.textContent = '✎ 워크벤치 편집'; newBtn.onclick = () => showPage('pipeline'); }
+
+  // 카운트 조회
+  const [eps, chars, styl, shots, prompts, assets] = await Promise.all([
+    db.episodes.where('projectId').equals(activeId).count().catch(()=>0),
+    db.characters.where('projectId').equals(activeId).count().catch(()=>0),
+    db.styles.where('projectId').equals(activeId).count().catch(()=>0),
+    db.shots.where('projectId').equals(activeId).count().catch(()=>0),
+    db.prompts.where('projectId').equals(activeId).count().catch(()=>0),
+    db.assets.where('projectId').equals(activeId).count().catch(()=>0),
+  ]);
+  const counts = { episodes:eps, characters:chars, styles:styl, shots, prompts, assets };
+
+  // 통계
+  const statsEl = document.getElementById('wb-stats');
+  if (statsEl) {
+    const items = [
+      { num: eps,     label: '에피소드' },
+      { num: chars,   label: '캐릭터' },
+      { num: shots,   label: '샷' },
+      { num: assets,  label: '이미지' },
+    ];
+    statsEl.innerHTML = items.map(i =>
+      `<div class="wb-stat"><div class="wb-stat-num">${i.num}</div><div class="wb-stat-label">${i.label}</div></div>`
+    ).join('');
+  }
+
+  // 다음 액션 카드
+  const nxt = _wbNextAction(counts);
+  const nextWrap = document.getElementById('wb-next-action-wrap');
+  if (nextWrap) nextWrap.innerHTML = `
+    <div class="wb-next-action" onclick="showPage('${nxt.page}')">
+      <div class="wb-next-icon">${nxt.icon}</div>
+      <div class="wb-next-body">
+        <div class="wb-next-tag">${nxt.tag}</div>
+        <div class="wb-next-text">${nxt.text}</div>
+        <p class="wb-next-desc">${nxt.desc}</p>
+      </div>
+      <div class="wb-next-arrow">→</div>
+    </div>`;
+
+  // 8-스테이지 트랙
+  const trackEl = document.getElementById('wb-track');
+  if (trackEl) {
+    const stageHtml = WB_STAGES.map((s, i) => {
+      const filled = s.keys.reduce((acc, k) => acc + (counts[k] || 0), 0);
+      const isDone   = filled > 0;
+      const isActive = !isDone && i === WB_STAGES.findIndex(st => st.keys.every(k => counts[k] === 0) || st.keys.length === 0 ? false : st.keys.some(k => counts[k] === 0));
+      // simpler active: first stage with 0 count
+      const cls = isDone ? 'done' : '';
+      const pct = isDone ? (filled > 0 ? filled : '✓') : '–';
+      return `<div class="wb-stage ${cls}" onclick="showPage('${s.id === 'concept' ? 'pipeline' : s.id === 'generate' ? 'studio' : s.id === 'review' || s.id === 'export' ? 'library' : s.id}')">
+        <div class="wb-stage-icon">${s.icon}</div>
+        <div class="wb-stage-name">${s.name}</div>
+        <div class="wb-stage-pct">${pct}</div>
+      </div>`;
+    }).join('');
+    trackEl.innerHTML = stageHtml;
+  }
+
+  // 최근 활동
+  const actEl = document.getElementById('wb-activity');
+  if (actEl) {
+    let acts = [];
+    try {
+      acts = await db.activities.where('projectId').equals(activeId)
+        .reverse().limit(5).toArray().catch(()=>[]);
+    } catch(_) {}
+    if (!acts.length) {
+      actEl.innerHTML = '<div style="color:var(--text-faint);font-size:13px;">아직 활동 기록이 없어요</div>';
+    } else {
+      actEl.innerHTML = acts.map(a => `
+        <div class="wb-activity-item">
+          <div class="wb-act-icon">${a.icon || '✦'}</div>
+          <div>
+            <div class="wb-act-text">${a.label || a.type || '활동'}</div>
+            <div class="wb-act-time">${_wbRelTime(a.createdAt || a.ts)}</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+}
+
+// SoavizProductionOS에 workbench 모듈 등록
+window.SoavizProductionOS.register('workbench', { render: renderWorkbenchPage, stages: WB_STAGES });
+
 async function renderPipelinePage() {
   if (typeof SoavizPipeline === 'undefined') return;
   await SoavizDB?.ready;
@@ -49035,7 +49376,7 @@ function openCharacterKeyImageStudio(id) {
   }
   try {
     document.querySelectorAll('.nav-item[data-page], .bn-item[data-page]').forEach(el => {
-      el.classList.toggle('active', el.dataset.page === 'characters');
+      el.classList.toggle('active', el.dataset.page === 'pipeline');
     });
     window._pageHistory = window._pageHistory || [];
     if (window._pageHistory[window._pageHistory.length - 1] !== 'keyimage-studio') {
@@ -55594,15 +55935,15 @@ if ('MutationObserver' in window) {
             <span style="font-size:24px">📁</span>
             <div style="flex:1">
               <div style="font-weight:600;color:var(--text)">Step 2 · 첫 프로젝트 만들기</div>
-              <div style="font-size:11px;color:var(--text-faint);margin-top:2px">Pipeline → ＋ 새 프로젝트</div>
+              <div style="font-size:11px;color:var(--text-faint);margin-top:2px">Project Workbench → ＋ 새 프로젝트</div>
             </div>
             <span>→</span>
           </button>
           <button class="vault-btn" id="onb-step3" style="text-align:left;padding:14px;display:flex;gap:12px;align-items:center">
             <span style="font-size:24px">✨</span>
             <div style="flex:1">
-              <div style="font-weight:600;color:var(--text)">Step 3 · 스토리에서 자동 분해</div>
-              <div style="font-size:11px;color:var(--text-faint);margin-top:2px">Personas → 스토리 만들기 → ✨ Pipeline으로 변환</div>
+              <div style="font-weight:600;color:var(--text)">Step 3 · 캐릭터와 키이미지 연결</div>
+              <div style="font-size:11px;color:var(--text-faint);margin-top:2px">캐릭터 → 키이미지 → 캐릭터 시트</div>
             </div>
             <span>→</span>
           </button>
@@ -55616,10 +55957,10 @@ if ('MutationObserver' in window) {
     document.body.appendChild(root);
     const close = () => { try { document.body.removeChild(root); } catch {} };
     root.querySelector('#onb-skip')?.addEventListener('click', () => { markDone(); close(); });
-    root.querySelector('#onb-tour')?.addEventListener('click', () => { markDone(); close(); showPage('pipeline'); showToast?.('Pipeline 페이지에서 시작하세요'); });
+    root.querySelector('#onb-tour')?.addEventListener('click', () => { markDone(); close(); showPage('pipeline'); showToast?.('Project Workbench에서 시작하세요'); });
     root.querySelector('#onb-step1')?.addEventListener('click', () => { close(); showPage('credits'); });
     root.querySelector('#onb-step2')?.addEventListener('click', () => { close(); showPage('pipeline'); setTimeout(() => $('#pl-new-project-btn')?.click(), 300); });
-    root.querySelector('#onb-step3')?.addEventListener('click', () => { close(); showPage('personas'); });
+    root.querySelector('#onb-step3')?.addEventListener('click', () => { close(); showPage('characters'); });
     root.addEventListener('click', e => { if (e.target === root) close(); });
   }
 
@@ -56456,22 +56797,11 @@ window.svErrorBoundary = function (renderFn, containerId) {
   // 정적 페이지 인덱스 — 항상 검색 가능
   const STATIC_PAGES = [
     { id: 'today',      label: 'Today',           keywords: 'today 오늘 home',   icon: '📅', page: 'today' },
-    { id: 'pipeline',   label: 'Pipeline',        keywords: 'pipeline 파이프라인 스토리보드 트리 episode scene shot', icon: '🌳', page: 'pipeline' },
-    { id: 'projects',   label: 'Projects',        keywords: 'projects 프로젝트',  icon: '📁', page: 'projects' },
-    { id: 'personas',   label: 'Personas',        keywords: 'personas 페르소나 세계관 스토리텔링', icon: '✨', page: 'personas' },
-    { id: 'voice',      label: 'Voice Studio',    keywords: 'voice tts 음성',     icon: '🎙', page: 'voice-studio' },
-    { id: 'music',      label: 'Music Studio',    keywords: 'music 음악',         icon: '🎵', page: 'music-studio' },
-    { id: 'sfx',        label: 'SFX Studio',      keywords: 'sfx effects 효과음', icon: '💥', page: 'sfx-studio' },
-    { id: 'video',      label: 'Video Studio',    keywords: 'video 영상 생성',    icon: '🎬', page: 'video-studio' },
-    { id: 'video-editor', label: 'Video Editor',  keywords: 'video editor 영상 편집 타임라인 trim cut ffmpeg', icon: '✂️', page: 'video-editor' },
-    { id: 'compare',    label: 'Compare Mode',    keywords: 'compare 비교',       icon: '⚖️', page: 'compare' },
-    { id: 'characters', label: '캐릭터 페르소나', keywords: 'characters bible 캐릭터 페르소나 persona', icon: '👤', page: 'characters' },
-    { id: 'styles',     label: '룩북 & 레퍼런스', keywords: 'styles bible 룩북 스타일 reference 참고', icon: '🎨', page: 'styles' },
-    { id: 'cinema',     label: '영상 레퍼런스',    keywords: 'cinema 시네마 reference 참고', icon: '🎞', page: 'cinema' },
+    { id: 'pipeline',   label: 'Project Workbench', keywords: 'workbench pipeline 파이프라인 기본정보 캐릭터 키이미지 샷리스트 영상 편집 export', icon: '🌳', page: 'pipeline' },
+    { id: 'characters', label: '캐릭터 · 키이미지', keywords: 'characters keyimage sheet bible 캐릭터 페르소나 시트', icon: '👤', page: 'characters' },
+    { id: 'assets',     label: 'Assets',          keywords: 'assets voice tts music sfx audio transcript 음성 음악 효과음 오디오', icon: '🎙', page: 'assets' },
+    { id: 'video-editor', label: 'Edit · Render', keywords: 'video editor 영상 편집 타임라인 trim cut ffmpeg render', icon: '✂️', page: 'video-editor' },
     { id: 'library',    label: 'Library',         keywords: 'library 라이브러리',  icon: '📚', page: 'library' },
-    { id: 'extract',    label: 'Transcript',      keywords: 'transcript 자막 추출',icon: '📝', page: 'transcript' },
-    { id: 'history',    label: 'Production Log',  keywords: 'history 활동 로그',   icon: '📊', page: 'production-log' },
-    { id: 'voices',     label: 'Voices Library',  keywords: 'voices 보이스',       icon: '🗣', page: 'voices' },
     { id: 'settings',   label: 'Settings',        keywords: 'settings 설정',       icon: '⚙', page: 'settings' },
   ];
 
@@ -57550,7 +57880,7 @@ window.svErrorBoundary = function (renderFn, containerId) {
           <strong>이제부터는 당신의 스타일을 기억합니다</strong>
           <span>저장한 선택을 바탕으로 다음 편집안을 더 빠르게 추천합니다.</span>
         </div>
-        <button class="onboarding-primary-btn" type="button" data-onboarding-free-continue data-track="signup_cta" data-track-label="무료로 계속 만들기">무료로 계속 만들기</button>
+        <button class="onboarding-primary-btn" type="button" data-onboarding-free-continue data-track="signup_cta" data-track-label="크레딧으로 계속 만들기">크레딧으로 계속 만들기</button>
       </div>
     `;
   }
@@ -59285,18 +59615,18 @@ bindComparePage();
 bindCinemaPage();
 bindVideoEditor();
 syncGuestLockedNavigation();
-// 첫 화면: Today 대시보드가 기본 홈. file://에서도 ?page=projects / #projects 딥링크 허용.
-// voice/transcript/audio/extract 계열 URL 파라미터는 무시하고 today로 진입.
+// 첫 화면: 로그인 후에는 Project Workbench가 기본 홈. file://에서도 ?page=projects / #projects 딥링크 허용.
+// voice/transcript/audio/extract 계열 URL 파라미터는 무시하고 workbench로 진입.
 try {
   const _rawRoute = new URLSearchParams(location.search || '').get('page') || (location.hash || '').replace(/^#/, '');
   const _blockedAsHome = new Set(['voice', 'voices', 'transcript', 'audio', 'extract', 'studio', 'landing', '']);
   const _postLoginRoute = !window.SoavizAuth?.isGuest?.() ? window.SoavizAuth?.takePostLoginPage?.('') : '';
   const _guestBetaLocked = Boolean(window.SOAVIZ_BETA_LOGIN_REQUIRED && window.SoavizAuth?.isGuest?.());
   const initialRoute = _postLoginRoute
-    || (_guestBetaLocked && !_rawRoute ? 'landing' : ((_rawRoute && !_blockedAsHome.has(_rawRoute)) ? _rawRoute : 'today'));
+    || (_guestBetaLocked && !_rawRoute ? 'landing' : ((_rawRoute && !_blockedAsHome.has(_rawRoute)) ? _rawRoute : 'pipeline'));
   showPage(initialRoute);
 } catch (_) {
-  try { showPage('today'); } catch (_) {}
+  try { showPage('pipeline'); } catch (_) {}
 }
 $('#story-view-result')?.addEventListener('click', () => viewLastStory('story'));
 $('#random-view-result')?.addEventListener('click', () => viewLastStory('random'));
