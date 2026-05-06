@@ -13,6 +13,7 @@
     { "source": "/app",         "destination": "/soaviz-studio.html" },
     { "source": "/login",       "destination": "/signup.html" },
     { "source": "/signup",      "destination": "/signup.html" },
+    { "source": "/mobile",      "destination": "/mobile.html" },
     { "source": "/docs",        "destination": "/docs/index.html" },
     { "source": "/roadmap",     "destination": "/deployment-roadmap.html" },
     { "source": "/sitemap.xml", "destination": "/public/sitemap.xml" },
