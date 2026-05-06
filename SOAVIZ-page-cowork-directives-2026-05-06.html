@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOAVIZ Page-Level Cowork Directives</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f2ec;
+      --paper: #fffefa;
+      --ink: #191816;
+      --muted: #6b655c;
+      --line: #ded7cb;
+      --accent: #136d66;
+      --accent-2: #b3472e;
+      --soft: #edf5f3;
+      --soft-2: #fff1e8;
+      --code: #24211e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, rgba(19,109,102,.08), transparent 360px), var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.72;
+    }
+    main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 84px; }
+    .actions { position: fixed; top: 18px; right: 18px; z-index: 20; display: flex; gap: 10px; }
+    .download { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; border: 1px solid rgba(19,109,102,.28); border-radius: 8px; background: var(--accent); color: #fffefa; box-shadow: 0 12px 30px rgba(25,24,22,.16); cursor: pointer; font-size: 14px; font-weight: 800; line-height: 1; padding: 0 16px; text-decoration: none; }
+    .download:hover { background: #105851; }
+    .hero { padding: 44px 0 30px; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-size: 13px; font-weight: 800; text-transform: uppercase; }
+    h1, h2, h3 { line-height: 1.22; letter-spacing: 0; }
+    h1 { margin: 0; max-width: 900px; font-size: clamp(36px, 5.8vw, 68px); }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }
+    .summary div { min-height: 88px; padding: 16px; border: 1px solid rgba(19,109,102,.2); border-radius: 8px; background: rgba(237,245,243,.82); }
+    .summary strong { display: block; margin-bottom: 4px; color: var(--accent); font-size: 13px; }
+    section { padding: 34px 0; border-bottom: 1px solid var(--line); }
+    h2 { margin: 0 0 18px; font-size: 30px; }
+    h3 { margin: 28px 0 12px; font-size: 21px; }
+    p { margin: 0 0 15px; }
+    blockquote { margin: 22px 0; padding: 18px 22px; border-left: 4px solid var(--accent); background: rgba(255,254,250,.72); font-size: 18px; font-weight: 750; }
+    code { border-radius: 5px; background: rgba(25,24,22,.08); padding: 2px 5px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: .92em; }
+    pre { overflow-x: auto; margin: 18px 0; padding: 18px; border-radius: 8px; background: var(--code); color: #faf1e7; line-height: 1.58; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    .table-wrap { overflow-x: auto; margin: 18px 0 24px; }
+    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); background: var(--paper); font-size: 15px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { background: #ebe4d9; color: #332f29; font-weight: 800; }
+    tr:last-child td { border-bottom: 0; }
+    ol, ul { margin: 10px 0 16px; padding-left: 24px; }
+    li { margin: 5px 0; }
+    footer { padding-top: 28px; color: var(--muted); font-size: 14px; }
+    @media (max-width: 800px) {
+      main { width: min(100% - 24px, 1120px); padding-top: 24px; }
+      .actions { position: sticky; top: 10px; justify-content: flex-end; margin: 0 12px; }
+      .summary { grid-template-columns: 1fr; }
+      table { min-width: 760px; }
+    }
+    @media print {
+      body { background: #fff; }
+      main { width: auto; padding: 24px; }
+      .actions { display: none; }
+      section { break-inside: avoid; }
+      .summary div, table, blockquote { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <div class="actions"><a class="download" href="SOAVIZ-page-cowork-directives-2026-05-06.pdf" download="SOAVIZ-page-cowork-directives-2026-05-06.pdf">PDF 다운로드</a></div>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">SOAVIZ Studio Cowork Directives</p>
+      <h1>페이지별 수정 반영사항과 코워크 지시문</h1>
+      <div class="summary">
+        <div><strong>작성 기준</strong>OpenAI식 상위 1% AI 제품 개발자 관점</div>
+        <div><strong>핵심 목표</strong>2분 안에 결과물, 저장, 크레딧 결제 루프 완성</div>
+        <div><strong>우선순위</strong>P0 매출/온보딩/신뢰, P1 구조 단순화, P2 저장/권리</div>
+      </div>
+    </header>
+    <h1>SOAVIZ Studio Page-Level Cowork Directives</h1>
+<p>작성일: 2026-05-06</p>
+<p>기준 문서: <code>SOAVIZ-studio-current-assessment-2026-05-06.html</code></p>
+<p>작성 기준: OpenAI식 상위 1% AI 제품 개발자 관점의 코워크 지시문</p>
+<p>주의: 이 문서는 OpenAI 공식 평가 문서가 아니라, OpenAI식 AI 플랫폼/제품 CEO 관점과 최상위 제품 엔지니어링 기준을 적용한 실행 지시문입니다.</p>
+</section>
+<section><h2>0. 최종 목표</h2>
+<p>SOAVIZ Studio의 다음 개발 목표는 기능 추가가 아닙니다. 목표는 <strong>첫 사용자가 2분 안에 결과물을 만들고, 저장하고, 크레딧 기반 결제 루프까지 자연스럽게 도달하는 단일 제작 루프</strong>를 닫는 것입니다.</p>
+<p>제품 포지션은 다음 한 문장으로 고정합니다.</p>
+<blockquote>AI 영상 제작자를 위한 결과 중심 Creative OS - 시나리오부터 샷리스트, 키이미지, 영상 편집, Export까지 한 번에 끝내는 제작 루프.</blockquote>
+</section>
+<section><h2>1. 코워크 운영 원칙</h2>
+<h3>1.1 개발자의 기본 판단 기준</h3>
+<p>모든 페이지 수정은 다음 질문을 통과해야 합니다.</p>
+<pre><code data-lang="text">1. 사용자가 2분 안에 결과물을 얻는가?
+2. 결과물이 저장되고 다시 열리는가?
+3. Generate, Key Image, Compare, Export 중 하나 이상이 크레딧 루프와 연결되는가?
+4. 실패 시 mock이 아니라 명확한 에러, 재시도, Demo Mode로 분리되는가?
+5. 상업용 사용 가능성에 대한 출처/권리 로그가 남는가?</code></pre>
+<h3>1.2 협업 규칙</h3>
+<div class="table-wrap"><table><thead><tr><th>역할</th><th>책임</th></tr></thead><tbody><tr><td>Product Lead</td><td>첫 루트, 요금제, 크레딧 정책, 페이지 축소 결정을 승인</td></tr><tr><td>Frontend Owner</td><td>Landing, Sidebar, Onboarding, Generate/Edit UI, empty state 구현</td></tr><tr><td>Backend Owner</td><td>Credit ledger, Stripe webhook, Supabase/R2 저장 계약 구현</td></tr><tr><td>AI Pipeline Owner</td><td>Key Image, Video, Voice, Music, SFX 생성 API의 Demo/Live 모드 분리</td></tr><tr><td>QA Owner</td><td>첫 사용자 루프, 결제 실패/성공, 저장 복구, mock 차단 테스트</td></tr></tbody></table></div>
+<h3>1.3 코드 스타일 지시문</h3>
+<p>Next.js/TypeScript 전환을 기준으로 하되, 단일 HTML 파일 유지가 필요한 부분은 동일한 함수 경계로 구현합니다. 핵심은 UI 이벤트 안에 비즈니스 로직을 섞지 않는 것입니다.</p>
+<pre><code data-lang="ts">type Result&lt;T, E&gt; =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+type Option&lt;T&gt; =
+  | { kind: "some"; value: T }
+  | { kind: "none" };
+
+type PlanId = "guest" | "free" | "standard" | "pro";
+type RuntimeMode = "demo" | "live";
+
+type CreditAction =
+  | "keyImage.generate"
+  | "video.generate"
+  | "video.compare"
+  | "audio.extract"
+  | "voice.generate"
+  | "export.final";
+
+type CreditQuote = {
+  action: CreditAction;
+  plan: PlanId;
+  cost: number;
+  remainingBefore: number;
+  remainingAfter: number;
+  requiresUpgrade: boolean;
+};
+
+type ProvenanceRecord = {
+  assetId: string;
+  assetType: "image" | "video" | "voice" | "music" | "sfx" | "reference" | "export";
+  prompt?: string;
+  sourceUrl?: string;
+  sourceOwner?: string;
+  modelName?: string;
+  licenseStatus: "unknown" | "user-confirmed" | "platform-generated" | "blocked";
+  createdAt: string;
+};</code></pre>
+<p>모든 중요한 액션은 다음 4단계 순수 함수 흐름을 따릅니다.</p>
+<pre><code data-lang="ts">const runPaidAction = async &lt;TInput, TOutput&gt;(
+  ctx: UserContext,
+  action: CreditAction,
+  input: TInput,
+  execute: (input: TInput) =&gt; Promise&lt;Result&lt;TOutput, AppError&gt;&gt;
+): Promise&lt;Result&lt;TOutput, AppError&gt;&gt; =&gt; {
+  const quote = quoteCredit(ctx, action);
+  if (quote.requiresUpgrade) return fail(upgradeRequired(quote));
+
+  const reserved = await reserveCredit(ctx.userId, quote);
+  if (!reserved.ok) return reserved;
+
+  const output = await execute(input);
+  if (!output.ok) {
+    await refundCredit(ctx.userId, reserved.value.ledgerId);
+    return output;
+  }
+
+  await commitCredit(ctx.userId, reserved.value.ledgerId);
+  return output;
+};</code></pre>
+</section>
+<section><h2>2. 중요도 순서별 전역 지시문</h2>
+<h3>P0-01. 결제와 크레딧 루프를 먼저 닫는다</h3>
+<p>적용 페이지: Credits/Pricing, Settings/Billing, Generate, Key Image, Compare, Export</p>
+<p>개발 지시문:</p>
+<ol>
+<li><code>stripeUrls.standard</code>, <code>stripeUrls.pro</code>, <code>checkoutUrl</code>을 <code>null</code> 상태로 배포하지 않습니다.</li>
+<li>Payment Link가 없으면 결제 버튼은 비활성화하고, Admin/Settings에서 누락 상태를 표시합니다.</li>
+<li>Stripe 성공 후 클라이언트 local state만 바꾸지 말고, 서버의 <code>plan</code>, <code>credits</code>, <code>ledger</code>를 업데이트합니다.</li>
+<li>Generate, Key Image, Compare, Export 버튼에는 액션 전 예상 크레딧 차감량을 노출합니다.</li>
+<li>크레딧 부족 시 결제 모달은 "업그레이드 권유"가 아니라 "이 액션을 완료하기 위해 필요한 크레딧"을 보여줘야 합니다.</li>
+</ol>
+<p>완료 기준:</p>
+<pre><code data-lang="text">사용자가 Free 상태에서 Export 클릭
+-&gt; 필요 크레딧 표시
+-&gt; Upgrade 모달
+-&gt; Stripe 이동
+-&gt; 성공 복귀
+-&gt; plan/credits 갱신
+-&gt; Export 재시도 가능</code></pre>
+<h3>P0-02. 첫 진입 루트를 하나로 고정한다</h3>
+<p>적용 페이지: Landing, Today, Edit/Video Editor, Create, Pipeline</p>
+<p>권장 결정:</p>
+<pre><code data-lang="text">Landing
+-&gt; 샘플로 체험하기
+-&gt; Video Editor 온보딩
+-&gt; 15초 샘플 영상 자동 분석
+-&gt; A/B/C 버전 제안
+-&gt; Export
+-&gt; Upgrade</code></pre>
+<p>개발 지시문:</p>
+<ol>
+<li>Landing의 CTA는 하나의 Primary CTA로 통일합니다.</li>
+<li><code>today</code>, <code>create</code>, <code>pipeline</code>, <code>edit</code> 중 첫 사용자 default route는 하나만 허용합니다.</li>
+<li>신규 사용자의 empty state에는 "샘플 프로젝트로 시작"을 넣습니다.</li>
+<li>첫 루트 중간에 Settings, Library, Admin, Guide로 흩어지지 않게 합니다.</li>
+</ol>
+<h3>P0-03. Mock fallback을 Demo Mode로 분리한다</h3>
+<p>적용 페이지: Key Image, Generate, Video Editor, Audio/Extract</p>
+<p>개발 지시문:</p>
+<ol>
+<li>API 실패 시 mock 결과를 live 결과 카드에 넣지 않습니다.</li>
+<li>Demo Mode는 UI 상단에 명확한 배지를 표시합니다.</li>
+<li>Live Mode에서는 API 실패를 에러 상태로 처리하고, 재시도/설정 이동/서버 상태 확인 CTA를 제공합니다.</li>
+<li>유료 액션에서는 mock 결과 생성 시 크레딧을 차감하지 않습니다.</li>
+</ol>
+<p>함수 계약:</p>
+<pre><code data-lang="ts">type GenerationRequest&lt;TInput&gt; = {
+  mode: RuntimeMode;
+  input: TInput;
+  userId: string;
+};
+
+type GenerationOutput&lt;TAsset&gt; =
+  | { kind: "live"; asset: TAsset; provenance: ProvenanceRecord }
+  | { kind: "demo"; asset: TAsset; demoReason: string }
+  | { kind: "failed"; error: AppError };
+
+function assertLiveResult&lt;TAsset&gt;(
+  output: GenerationOutput&lt;TAsset&gt;
+): Result&lt;Extract&lt;GenerationOutput&lt;TAsset&gt;, { kind: "live" }&gt;, AppError&gt; {
+  if (output.kind !== "live") return fail({ code: "LIVE_RESULT_REQUIRED" });
+  return ok(output);
+}</code></pre>
+<h3>P0-04. Admin은 클라이언트 앱에서 분리한다</h3>
+<p>적용 페이지: Admin, Settings</p>
+<p>개발 지시문:</p>
+<ol>
+<li>공개 HTML 내부에서 Admin UI가 보이면 안 됩니다.</li>
+<li>Admin route는 feature flag와 role guard를 모두 통과해야 합니다.</li>
+<li>운영 지표는 별도 관리자 URL 또는 서버 권한이 있는 대시보드로 분리합니다.</li>
+</ol>
+<p>완료 기준:</p>
+<pre><code data-lang="text">guest/free/standard/pro 사용자 -&gt; Admin 메뉴 미노출
+admin role 사용자 -&gt; 별도 관리자 URL에서 접근
+client source에 민감한 운영 액션 미노출</code></pre>
+<h3>P1-01. 사이드바를 9개 이하로 축소한다</h3>
+<p>추천 구조:</p>
+<pre><code data-lang="text">Today
+Create
+Characters
+Pre Production
+Generate
+Edit
+Assets
+Library
+Settings</code></pre>
+<p>흡수 정책:</p>
+<div class="table-wrap"><table><thead><tr><th>현재 메뉴</th><th>처리</th></tr></thead><tbody><tr><td>Voice</td><td>Assets 하위 Voice 탭</td></tr><tr><td>Music</td><td>Assets 하위 Music 탭</td></tr><tr><td>SFX</td><td>Assets 하위 SFX 탭</td></tr><tr><td>Audio</td><td>Assets 대표 메뉴</td></tr><tr><td>Cinema</td><td>Style Reference 탭 또는 Library Reference 탭</td></tr><tr><td>Compare</td><td>Generate/Edit 내부 모드</td></tr><tr><td>Memory Graph</td><td>Library 고급 기능, 조건부 노출</td></tr><tr><td>Project Archive</td><td>Library Export 탭</td></tr><tr><td>Admin</td><td>별도 관리자 URL</td></tr></tbody></table></div>
+</section>
+<section><h2>3. 페이지별 수정 반영사항</h2>
+<h3>3.1 Credits / Pricing</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 58</p>
+<p>최종 목표: 가격표가 아니라 실제 매출 전환 페이지로 바꿉니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Standard/Pro 플랜의 Stripe Payment Link를 실제 값으로 연결합니다.</li>
+<li>Free, Standard, Pro의 월 제공 크레딧과 액션별 차감량을 같은 표 안에 표시합니다.</li>
+<li>결제 버튼 클릭 전 사용자가 얻는 결과물을 명확히 씁니다. 예: "월 120 크레딧으로 Export 12회".</li>
+<li>결제 성공/실패/취소 query state를 처리합니다.</li>
+<li>가격표 UI와 실제 billing state가 불일치하면 상단 경고를 표시합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type CheckoutState =
+  | { kind: "idle" }
+  | { kind: "redirecting"; plan: Exclude&lt;PlanId, "guest" | "free"&gt; }
+  | { kind: "success"; sessionId: string }
+  | { kind: "cancelled"; plan?: PlanId }
+  | { kind: "failed"; reason: string };
+
+function resolveCheckoutUrl(plan: "standard" | "pro", env: BillingEnv): Result&lt;URL, AppError&gt;;
+function parseCheckoutReturn(search: URLSearchParams): CheckoutState;
+function syncBillingState(userId: string, sessionId: string): Promise&lt;Result&lt;UserPlan, AppError&gt;&gt;;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">Payment Link 없음 -&gt; 버튼 disabled
+결제 취소 -&gt; plan 유지, 재시도 가능
+결제 성공 -&gt; credits 갱신, toast + Billing 카드 반영</code></pre>
+<h3>3.2 Landing</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 74</p>
+<p>최종 목표: 신규 사용자를 하나의 성공 루프로 밀어 넣습니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Primary CTA를 "샘플 영상으로 2분 체험"으로 고정합니다.</li>
+<li>Secondary CTA는 숨기거나 "가격 보기" 정도로 제한합니다.</li>
+<li>CTA 클릭 시 <code>edit?sample=starter</code> 또는 결정된 onboarding route로 이동합니다.</li>
+<li>landing에서 제품 기능을 나열하지 말고, 첫 결과물 하나를 약속합니다.</li>
+<li>hero 문구는 "AI가 만든다. 당신이 완성한다"를 유지하되, supporting copy에 "15초 샘플 영상 분석 -&gt; 3개 버전 제안 -&gt; Export"를 넣습니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type OnboardingEntry = "sample-video" | "create-shotlist";
+
+function selectOnboardingEntry(user: UserContext): OnboardingEntry {
+  if (user.hasExistingProject) return "create-shotlist";
+  return "sample-video";
+}
+
+function buildOnboardingHref(entry: OnboardingEntry): string {
+  return entry === "sample-video"
+    ? "/edit?sample=starter"
+    : "/create?template=story-to-shotlist";
+}</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">비로그인 사용자 CTA -&gt; sample route
+기존 프로젝트 사용자 CTA -&gt; 이어서 작업 또는 sample 선택
+모바일에서 CTA가 첫 화면 안에 보임</code></pre>
+<h3>3.3 Edit / Video Editor</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 86</p>
+<p>최종 목표: SOAVIZ의 첫 유료 성공 경험이 되는 메인 온보딩 화면으로 승격합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>샘플 영상 로드 버튼을 첫 화면 기본 상태로 노출합니다.</li>
+<li>"자동 분석 -&gt; 버전 제안 -&gt; 미리보기 -&gt; Export"를 stepper로 표시합니다.</li>
+<li>Export 버튼에는 크레딧 차감량과 워터마크 여부를 표시합니다.</li>
+<li>분석 실패 시 Demo Mode 샘플 결과와 Live Mode 에러를 분리합니다.</li>
+<li>사용자가 만든 버전은 Library와 Project에 즉시 저장합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type EditorStep =
+  | "sampleLoaded"
+  | "analyzing"
+  | "versionsReady"
+  | "previewReady"
+  | "exporting"
+  | "exported";
+
+type EditVersion = {
+  id: string;
+  label: "A" | "B" | "C";
+  strategy: "pacing" | "hook" | "clarity";
+  changes: string[];
+  renderUrl?: string;
+  score?: number;
+};
+
+function reduceEditorStep(state: EditorState, event: EditorEvent): EditorState;
+function rankEditVersions(versions: EditVersion[]): EditVersion[];
+function quoteExport(plan: PlanId, version: EditVersion): CreditQuote;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">샘플 영상 클릭 -&gt; 분석 결과 표시
+A/B/C 버전 생성 -&gt; 하나 선택 가능
+Export 클릭 -&gt; 크레딧 확인
+크레딧 부족 -&gt; Upgrade 모달
+Export 성공 -&gt; Library 저장</code></pre>
+<h3>3.4 Generate / Video Studio</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 73</p>
+<p>최종 목표: 모델 라우터 컨셉을 실제 비용/성공률/결과물 중심으로 바꿉니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>모델 선택 UI에 예상 비용, 예상 시간, 실패 가능성을 표시합니다.</li>
+<li>Generate 버튼에 크레딧 차감량을 표시합니다.</li>
+<li>생성 전 입력 이미지/오디오 출처 로그를 요구합니다.</li>
+<li>실패 시 credit refund 규칙을 명확히 적용합니다.</li>
+<li>Compare Mode는 Generate 내부의 "3개 버전 생성" 모드로 흡수합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type VideoModelId = "runway" | "pika" | "luma" | "kling" | "demo";
+
+type ModelRoute = {
+  model: VideoModelId;
+  estimatedSeconds: number;
+  estimatedCredits: number;
+  qualityBias: "speed" | "quality" | "motion" | "style";
+};
+
+function routeVideoModel(input: VideoGenerateInput, ctx: UserContext): ModelRoute;
+function validateVideoInputs(input: VideoGenerateInput): Result&lt;VideoGenerateInput, AppError&gt;;
+function createVideoJob(route: ModelRoute, input: VideoGenerateInput): Promise&lt;Result&lt;VideoJob, AppError&gt;&gt;;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">입력 누락 -&gt; Generate disabled
+크레딧 부족 -&gt; Upgrade
+API 실패 -&gt; refund
+성공 -&gt; output/provenance 저장</code></pre>
+<h3>3.5 Key Image Studio</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 70</p>
+<p>최종 목표: 캐릭터/IP 신뢰를 만드는 live 생성 도구로 정리합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li><code>/api/character-key-image/generate</code> 실패 시 mock 이미지를 결과 카드에 넣지 않습니다.</li>
+<li>Demo Mode를 켠 경우에만 mock/sample 이미지를 표시합니다.</li>
+<li>생성 버튼 옆에 "Live API 연결됨/연결 필요" 상태를 표시합니다.</li>
+<li>참조 이미지가 있으면 출처/권리 확인 체크를 요구합니다.</li>
+<li>성공 결과는 Character와 Library 양쪽에 저장합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type KeyImageInput = {
+  characterId: string;
+  prompt: string;
+  referenceImageIds: string[];
+  aspectRatio: "1:1" | "9:16" | "16:9";
+  mode: RuntimeMode;
+};
+
+function validateKeyImageInput(input: KeyImageInput): Result&lt;KeyImageInput, AppError&gt;;
+function generateKeyImage(input: KeyImageInput): Promise&lt;GenerationOutput&lt;ImageAsset&gt;&gt;;
+function attachKeyImageToCharacter(characterId: string, asset: ImageAsset): Promise&lt;Result&lt;void, AppError&gt;&gt;;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">Live API 없음 -&gt; 생성 전 차단
+Demo Mode on -&gt; Demo 배지 노출
+참조 이미지 출처 미입력 -&gt; 생성 차단
+성공 -&gt; character.card와 library에 동시 반영</code></pre>
+<h3>3.6 Settings / Billing / API Vault</h3>
+<p>중요도: P0</p>
+<p>현재 점수: 65</p>
+<p>최종 목표: 결제, 저장, API 상태를 사용자가 이해할 수 있는 신뢰 페이지로 만듭니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Account, Workspace, Storage, Billing, API Status를 탭으로 분리합니다.</li>
+<li>API 키 입력 모델을 "서버 키 사용"과 "개인 키 사용"으로 명확히 구분합니다.</li>
+<li>Stripe, Supabase, R2, AI API health를 한 줄 상태로 보여줍니다.</li>
+<li>Storage policy를 Guest/Signed-in/Paid로 설명합니다.</li>
+<li>Admin 기능은 Settings에서 제거합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type ServiceHealth = {
+  service: "stripe" | "supabase" | "r2" | "openai" | "video-model";
+  status: "ok" | "degraded" | "down" | "not-configured";
+  checkedAt: string;
+  actionHref?: string;
+};
+
+function summarizeHealth(health: ServiceHealth[]): "ready" | "partial" | "blocked";
+function resolveStoragePolicy(plan: PlanId): StoragePolicy;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">Stripe URL 없음 -&gt; Billing blocked
+R2 없음 -&gt; Paid storage warning
+OpenAI key 없음 -&gt; Live generation blocked
+Guest user -&gt; local only 설명</code></pre>
+<h3>3.7 Today</h3>
+<p>중요도: P1</p>
+<p>현재 점수: 78</p>
+<p>최종 목표: 내부 대시보드와 신규 사용자 empty state를 분리합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>신규 사용자에게는 "샘플 영상으로 시작"과 "세계관으로 시작"만 보여줍니다.</li>
+<li>기존 사용자에게는 최근 프로젝트, pending render, credit 상태를 보여줍니다.</li>
+<li>Today가 첫 루트가 아니라면 onboarding 완료 후 dashboard로 사용합니다.</li>
+<li>이어서 작업 CTA는 마지막 편집 지점을 복원해야 합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type TodayState =
+  | { kind: "new-user"; recommendedEntry: OnboardingEntry }
+  | { kind: "active"; recentProjects: ProjectSummary[]; credit: CreditBalance }
+  | { kind: "blocked"; reason: AppError };
+
+function resolveTodayState(ctx: UserContext, projects: ProjectSummary[]): TodayState;</code></pre>
+<h3>3.8 Create / Personas</h3>
+<p>중요도: P1</p>
+<p>현재 점수: 84</p>
+<p>최종 목표: 세계관 -&gt; 스토리 -&gt; 시나리오 -&gt; 샷리스트 연결을 제품의 두 번째 강한 루프로 유지합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Create 결과의 다음 행동을 "샷리스트 생성"으로 고정합니다.</li>
+<li>TTS/영상 연결 버튼은 보조 행동으로 낮춥니다.</li>
+<li>생성된 시나리오는 Pipeline 프로젝트로 자동 변환 가능해야 합니다.</li>
+<li>결과 복사보다 "프로젝트로 저장"을 우선합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type StorySeed = {
+  personaId: string;
+  world: string;
+  conflict: string;
+  tone: string;
+};
+
+function createScenario(seed: StorySeed): Promise&lt;Result&lt;Scenario, AppError&gt;&gt;;
+function scenarioToShotlist(scenario: Scenario): Promise&lt;Result&lt;Shot[], AppError&gt;&gt;;
+function persistScenarioProject(scenario: Scenario, shots: Shot[]): Promise&lt;Result&lt;Project, AppError&gt;&gt;;</code></pre>
+<h3>3.9 Pre Production / Pipeline</h3>
+<p>중요도: P1</p>
+<p>현재 점수: 80</p>
+<p>최종 목표: SOAVIZ의 제작 OS 차별점을 담당하는 샷리스트/보드 화면으로 정리합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>프로젝트 선택 전 empty state에 sample pipeline을 제공합니다.</li>
+<li>Shot Detail 독립 페이지는 Pipeline 내부 drawer/modal로 흡수합니다.</li>
+<li>각 shot에는 Key Image, Video Generate, Edit로 이어지는 next action을 둡니다.</li>
+<li>pipeline status는 <code>draft -&gt; ready -&gt; generated -&gt; edited -&gt; exported</code>로 단순화합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type ShotStatus = "draft" | "ready" | "generated" | "edited" | "exported";
+
+function nextShotAction(shot: Shot): "complete-brief" | "key-image" | "generate-video" | "edit" | "export";
+function updateShotStatus(shot: Shot, event: ShotEvent): Shot;</code></pre>
+<h3>3.10 Characters</h3>
+<p>중요도: P1</p>
+<p>현재 점수: 82</p>
+<p>최종 목표: IP 제작의 중심 데이터 모델로 유지하되, Key Image와 Voice를 연결합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>캐릭터 카드에는 readiness score를 표시합니다.</li>
+<li>부족한 항목은 "보이스 필요", "키이미지 필요", "권리 로그 필요"처럼 액션으로 보여줍니다.</li>
+<li>캐릭터 상세에서 Key Image Studio, Voice 탭으로 이동합니다.</li>
+<li>캐릭터 관련 asset provenance를 한 곳에서 볼 수 있어야 합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type CharacterReadiness = {
+  profile: boolean;
+  voice: boolean;
+  keyImage: boolean;
+  rights: boolean;
+  score: number;
+};
+
+function calculateCharacterReadiness(character: Character, assets: Asset[]): CharacterReadiness;
+function getCharacterNextAction(readiness: CharacterReadiness): CharacterAction;</code></pre>
+<h3>3.11 Projects</h3>
+<p>중요도: P1</p>
+<p>현재 점수: 68</p>
+<p>최종 목표: 빈 프로젝트 보관소가 아니라 샘플과 복구가 있는 시작점으로 만듭니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>프로젝트가 없으면 샘플 프로젝트 1개를 생성할 수 있게 합니다.</li>
+<li>프로젝트 카드에는 마지막 단계, 다음 액션, 저장 위치를 표시합니다.</li>
+<li>local project와 cloud project를 UI에서 구분합니다.</li>
+<li>삭제보다 archive를 기본 행동으로 둡니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">function createSampleProject(template: "video-editor" | "story-world"): Promise&lt;Result&lt;Project, AppError&gt;&gt;;
+function resolveProjectStorageBadge(project: Project): "local" | "cloud" | "r2";</code></pre>
+<h3>3.12 Assets: Audio / Voice / Music / SFX</h3>
+<p>중요도: P1</p>
+<p>현재 점수: Audio 78, Voice 75, Music 70, SFX 67, Voices 62, Clean 60</p>
+<p>최종 목표: 분산된 오디오 관련 메뉴를 Assets 하나로 통합합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Audio를 Assets의 대표 메뉴로 승격합니다.</li>
+<li>Voice, Music, SFX, Extract, Clean은 Assets 내부 탭으로 통합합니다.</li>
+<li>오디오에서 이미 구현된 권리 확인 구조를 모든 asset에 재사용합니다.</li>
+<li>Voice clone 여부와 상업 사용 가능 여부를 반드시 기록합니다.</li>
+<li>Music/SFX는 MVP 메인 루프 밖의 보조 기능으로 배치합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type AssetTab = "all" | "voice" | "music" | "sfx" | "extract" | "clean";
+
+function filterAssets(assets: Asset[], tab: AssetTab): Asset[];
+function requireCommercialRights(asset: Asset): Result&lt;Asset, AppError&gt;;
+function createAssetProvenance(asset: Asset, input: ProvenanceInput): ProvenanceRecord;</code></pre>
+<p>QA:</p>
+<pre><code data-lang="text">Voice/Music/SFX 메뉴 -&gt; Sidebar에서 제거
+Assets 탭 이동 -&gt; 기존 기능 접근 가능
+상업 권리 미확인 asset -&gt; Export 차단 또는 warning</code></pre>
+<h3>3.13 Library</h3>
+<p>중요도: P2</p>
+<p>현재 점수: 66</p>
+<p>최종 목표: 결과 보관소에서 재사용/채택/export 루프로 바꿉니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>asset card에 "Use in Generate", "Use in Edit", "Export"를 표시합니다.</li>
+<li>empty state는 "첫 결과물을 만들러 가기"로 연결합니다.</li>
+<li>Memory Graph는 데이터 20개 이상 또는 feature flag에서만 노출합니다.</li>
+<li>Project Archive는 Library의 Export 탭으로 흡수합니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">function suggestAssetReuse(asset: Asset): AssetReuseAction[];
+function shouldShowMemoryGraph(stats: WorkspaceStats): boolean {
+  return stats.acceptedAssets &gt;= 20 &amp;&amp; stats.featureFlags.memoryGraph;
+}</code></pre>
+<h3>3.14 Style / Cinema Library</h3>
+<p>중요도: P2</p>
+<p>현재 점수: Style 69, Cinema 65</p>
+<p>최종 목표: 생성 프롬프트에 실제 영향을 주는 Reference 시스템으로 정리합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Cinema Library는 독립 메뉴가 아니라 Style의 Reference 탭으로 흡수합니다.</li>
+<li>Reference 추가 시 URL, 원작자, 스타일 추출 여부, 저작권 고지를 기록합니다.</li>
+<li>Style Bible은 Generate/Key Image prompt에 자동 주입되는 preview를 보여줍니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type StyleBible = {
+  palette: string[];
+  cameraLanguage: string[];
+  lighting: string[];
+  negativePrompts: string[];
+  references: ProvenanceRecord[];
+};
+
+function compileStyleBible(inputs: StyleInput[]): Result&lt;StyleBible, AppError&gt;;
+function injectStyleIntoPrompt(prompt: string, bible: StyleBible): string;</code></pre>
+<h3>3.15 Compare Mode</h3>
+<p>중요도: P2</p>
+<p>현재 점수: 77</p>
+<p>최종 목표: 단독 페이지가 아니라 Generate/Edit의 고급 모드로 흡수합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Sidebar에서 Compare를 제거합니다.</li>
+<li>Generate에는 "3 Variants" toggle로 넣습니다.</li>
+<li>Edit에는 A/B/C 버전 비교 panel로 넣습니다.</li>
+<li>베스트 채택 시 Library와 Project history에 decision log를 남깁니다.</li>
+</ol>
+<p>함수 지시문:</p>
+<pre><code data-lang="ts">type CompareDecision = {
+  variants: EditVersion[];
+  selectedId: string;
+  reason: string;
+  decidedAt: string;
+};
+
+function scoreVariants(variants: EditVersion[]): EditVersion[];
+function recordCompareDecision(projectId: string, decision: CompareDecision): Promise&lt;Result&lt;void, AppError&gt;&gt;;</code></pre>
+<h3>3.16 Story View</h3>
+<p>중요도: P2</p>
+<p>현재 점수: 63</p>
+<p>최종 목표: 독립 페이지보다 Create 내부 결과 상태로 흡수합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Story View route는 legacy alias로만 유지합니다.</li>
+<li>신규 UI에서는 Create 결과 panel로 표시합니다.</li>
+<li>다음 액션은 Copy보다 "Shotlist 생성"과 "Project 저장"을 우선합니다.</li>
+</ol>
+<h3>3.17 History / Production Log</h3>
+<p>중요도: P2</p>
+<p>현재 점수: 64</p>
+<p>최종 목표: 사용자의 제작 신뢰를 위한 자동 기록으로 유지하되, 메인 메뉴에서는 숨깁니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Today 하위 "Recent Activity" 또는 Library 하위 "Production Log"로 이동합니다.</li>
+<li>credit ledger, provenance, export history와 연결합니다.</li>
+<li>사람이 직접 쓰는 로그가 아니라 자동 이벤트 로그를 기본으로 합니다.</li>
+</ol>
+<h3>3.18 Project Archive</h3>
+<p>중요도: P3</p>
+<p>현재 점수: 56</p>
+<p>최종 목표: 독립 페이지를 제거하고 Library Export 탭으로 흡수합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>Sidebar에서 제거합니다.</li>
+<li>완료 프로젝트는 Library의 Export/Archive tab에 표시합니다.</li>
+<li>archive 상태에서도 원본 asset과 provenance는 유지합니다.</li>
+</ol>
+<h3>3.19 Memory Graph</h3>
+<p>중요도: P3</p>
+<p>현재 점수: 60</p>
+<p>최종 목표: 데이터가 쌓인 후 드러나는 고급 기능으로 숨깁니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>기본 Sidebar에서 제거합니다.</li>
+<li>accepted asset 20개 이상 또는 admin feature flag에서만 노출합니다.</li>
+<li>그래프가 없을 때는 placeholder를 보여주지 않습니다.</li>
+</ol>
+<h3>3.20 Shot Detail</h3>
+<p>중요도: P3</p>
+<p>현재 점수: 55</p>
+<p>최종 목표: 독립 페이지를 없애고 Pipeline 내부 상세 패널로 흡수합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li><code>/shot/:id</code> 독립 진입은 legacy route로 유지합니다.</li>
+<li>Pipeline board에서 drawer로 열리게 합니다.</li>
+<li>Shot 안에서 Key Image, Generate, Edit next action을 바로 실행합니다.</li>
+</ol>
+<h3>3.21 Admin</h3>
+<p>중요도: P0 Security</p>
+<p>현재 점수: 45</p>
+<p>최종 목표: 공개 클라이언트에서 제거합니다.</p>
+<p>수정 지시문:</p>
+<ol>
+<li>일반 사용자 bundle에서 Admin 메뉴와 화면을 숨깁니다.</li>
+<li>관리자 기능은 서버 권한을 확인하는 별도 경로로 이동합니다.</li>
+<li>client HTML 안에 운영 지표 mutation 코드가 있으면 제거합니다.</li>
+</ol>
+</section>
+<section><h2>4. 라우팅과 메뉴 정리 지시문</h2>
+<p>현재 alias는 사용자를 살리기 위한 호환 계층으로만 유지합니다. 신규 제품 구조는 다음 단일 route map으로 압축합니다.</p>
+<pre><code data-lang="ts">type MainRoute =
+  | "today"
+  | "create"
+  | "characters"
+  | "pipeline"
+  | "generate"
+  | "edit"
+  | "assets"
+  | "library"
+  | "settings";
+
+const LEGACY_ROUTE_ALIASES: Record&lt;string, MainRoute&gt; = {
+  "voice": "assets",
+  "voices": "assets",
+  "music": "assets",
+  "sfx": "assets",
+  "audio": "assets",
+  "extract": "assets",
+  "clean": "assets",
+  "compare": "generate",
+  "cinema": "library",
+  "story": "create",
+  "shot": "pipeline",
+  "archive": "library"
+};
+
+function resolveRoute(rawRoute: string): MainRoute {
+  return isMainRoute(rawRoute) ? rawRoute : LEGACY_ROUTE_ALIASES[rawRoute] ?? "today";
+}</code></pre>
+<p>완료 기준:</p>
+<pre><code data-lang="text">Sidebar visible items &lt;= 9
+Legacy URL 접근 가능
+신규 사용자 default route는 하나
+Admin은 일반 사용자에게 미노출</code></pre>
+</section>
+<section><h2>5. 저장 구조 지시문</h2>
+<p>저장은 기능이 아니라 신뢰의 기반입니다. 다음 정책을 모든 페이지에 적용합니다.</p>
+<pre><code data-lang="text">Guest Mode: localStorage / IndexedDB
+Signed-in Mode: Supabase projects, assets, outputs
+Paid Mode: R2 storage + credit ledger + export history</code></pre>
+<p>함수 계약:</p>
+<pre><code data-lang="ts">type StoragePolicy = {
+  mode: "local" | "cloud" | "r2";
+  canSync: boolean;
+  canExportHistory: boolean;
+  maxAssetBytes?: number;
+};
+
+function resolveStoragePolicy(plan: PlanId): StoragePolicy {
+  switch (plan) {
+    case "guest":
+    case "free":
+      return { mode: "local", canSync: false, canExportHistory: false };
+    case "standard":
+      return { mode: "cloud", canSync: true, canExportHistory: true };
+    case "pro":
+      return { mode: "r2", canSync: true, canExportHistory: true };
+  }
+}
+
+async function persistAsset(asset: Asset, ctx: UserContext): Promise&lt;Result&lt;PersistedAsset, AppError&gt;&gt; {
+  const policy = resolveStoragePolicy(ctx.plan);
+  return matchStorage(policy, {
+    local: () =&gt; saveToIndexedDb(asset),
+    cloud: () =&gt; saveToSupabase(asset),
+    r2: () =&gt; saveToR2(asset)
+  });
+}</code></pre>
+</section>
+<section><h2>6. 권리 로그 지시문</h2>
+<p>상업용 사용 가능성은 Export 직전에 갑자기 묻지 않습니다. 생성/업로드/참조 단계부터 누적합니다.</p>
+<pre><code data-lang="ts">function requireProvenanceForExport(assets: Asset[]): Result&lt;ProvenanceRecord[], AppError&gt; {
+  const missing = assets.filter((asset) =&gt; !asset.provenance || asset.provenance.licenseStatus === "unknown");
+  if (missing.length &gt; 0) {
+    return fail({
+      code: "PROVENANCE_REQUIRED",
+      message: "Export 전에 모든 사용 asset의 출처/권리 로그가 필요합니다.",
+      details: { assetIds: missing.map((asset) =&gt; asset.id) }
+    });
+  }
+  return ok(assets.map((asset) =&gt; asset.provenance));
+}</code></pre>
+<p>적용 대상:</p>
+<div class="table-wrap"><table><thead><tr><th>대상</th><th>필수 기록</th></tr></thead><tbody><tr><td>Key Image</td><td>prompt, reference source, model, createdAt</td></tr><tr><td>Video</td><td>model, input image/audio source, license</td></tr><tr><td>Voice</td><td>owner, clone 여부, commercial use</td></tr><tr><td>Music/SFX</td><td>source, generator, usage purpose</td></tr><tr><td>Cinema Reference</td><td>URL, author, extraction purpose, copyright notice</td></tr><tr><td>Export</td><td>final asset manifest, credit ledger id, provenance bundle</td></tr></tbody></table></div>
+</section>
+<section><h2>7. QA 실행 시나리오</h2>
+<h3>7.1 첫 사용자 수익 루프</h3>
+<pre><code data-lang="text">1. file/app 진입
+2. Landing CTA 클릭
+3. 샘플 Video Editor 진입
+4. 자동 분석 완료
+5. A/B/C 버전 제안
+6. 베스트 선택
+7. Export 클릭
+8. 크레딧 부족 확인
+9. Upgrade modal
+10. Stripe 성공 복귀
+11. Export 성공
+12. Library 저장 확인</code></pre>
+<h3>7.2 Mock 차단 루프</h3>
+<pre><code data-lang="text">1. Live Mode에서 Key Image API 끄기
+2. Generate 클릭
+3. mock 이미지가 결과 카드에 나오지 않아야 함
+4. 에러 메시지와 Settings 이동 CTA 표시
+5. Demo Mode 켜기
+6. Demo 배지와 sample 결과 표시</code></pre>
+<h3>7.3 저장 복구 루프</h3>
+<pre><code data-lang="text">1. Guest로 sample project 생성
+2. 새로고침
+3. IndexedDB/localStorage에서 복구
+4. 로그인 전환
+5. cloud sync 안내
+6. paid 전환
+7. R2/export history 활성화</code></pre>
+</section>
+<section><h2>8. 개발 순서</h2>
+<h3>Sprint 1: P0 Revenue and Onboarding</h3>
+<ol>
+<li>Credits/Pricing Payment Link 연결</li>
+<li>Billing return state 처리</li>
+<li>Landing CTA 단일화</li>
+<li>Video Editor sample onboarding</li>
+<li>Export credit quote 표시</li>
+<li>Admin 숨김</li>
+</ol>
+<h3>Sprint 2: P0 Trust and Live Mode</h3>
+<ol>
+<li>Key Image mock fallback 제거</li>
+<li>Demo Mode 명시</li>
+<li>Generate model router cost/credit 표시</li>
+<li>API health 상태와 Settings 연결</li>
+<li>Credit reserve/refund/commit 흐름 추가</li>
+</ol>
+<h3>Sprint 3: P1 Product Simplification</h3>
+<ol>
+<li>Sidebar 9개 이하로 축소</li>
+<li>Assets 통합</li>
+<li>Compare를 Generate/Edit로 흡수</li>
+<li>Story View/Shot Detail legacy 처리</li>
+<li>Project empty state와 sample project 추가</li>
+</ol>
+<h3>Sprint 4: P2 Persistence and Rights</h3>
+<ol>
+<li>Guest/Signed-in/Paid 저장 정책 반영</li>
+<li>Provenance schema 추가</li>
+<li>Export manifest 생성</li>
+<li>Library reuse actions 추가</li>
+<li>Memory Graph 조건부 노출</li>
+</ol>
+</section>
+<section><h2>9. Definition of Done</h2>
+<pre><code data-lang="text">P0 완료 조건:
+- 사용자가 Landing에서 시작해 Export/Upgrade까지 끊기지 않는다.
+- 결제 URL이 null인 상태로 배포되지 않는다.
+- Live Mode에서 mock 결과가 유료 결과처럼 보이지 않는다.
+- Admin은 일반 사용자에게 보이지 않는다.
+
+P1 완료 조건:
+- Sidebar가 9개 이하이다.
+- Assets가 Voice/Music/SFX/Audio를 흡수한다.
+- Create/Pipeline/Characters가 하나의 IP 제작 루프로 이어진다.
+
+P2 완료 조건:
+- 모든 export asset에 provenance bundle이 붙는다.
+- Paid 사용자의 결과물은 R2/export history와 연결된다.
+- Library에서 채택/재사용/export 흐름이 가능하다.</code></pre>
+</section>
+<section><h2>10. 최종 코워크 메시지</h2>
+<p>개발팀은 "페이지를 더 만들기"보다 "첫 성공 루프를 닫기"에 집중해야 합니다. SOAVIZ Studio는 이미 화면 수와 기능 수가 충분합니다. 지금 필요한 것은 OpenAI식 AI 제품 개발 기준에서 가장 강한 단일 결과물, 즉 <strong>2분 안에 생성되고, 저장되고, 결제까지 이어지는 영상 제작 경험</strong>입니다.</p>
+<p>이번 수정의 핵심은 다음입니다.</p>
+<pre><code data-lang="text">1. Credits/Pricing과 Export를 연결한다.
+2. Landing과 Video Editor를 하나의 온보딩 루프로 묶는다.
+3. Key Image와 Generate의 mock을 Demo Mode로 분리한다.
+4. Sidebar를 줄이고 Assets/Library로 흡수한다.
+5. 저장/권리/크레딧 로그를 모든 결과물에 붙인다.</code></pre>
+</section>
+    <footer>SOAVIZ Studio Page-Level Cowork Directives · Generated for local review</footer>
+  </main>
+</body>
+</html>
