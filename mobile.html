@@ -395,6 +395,47 @@
         </div>
       </div>
 
+      <!-- STEP 4: 이미지 생성 -->
+      <div class="create-step" id="step-generate">
+        <div class="create-step-head" onclick="toggleStep('generate')">
+          <div class="step-num" id="sn-4">4</div>
+          <div class="step-title">이미지 생성</div>
+          <div class="step-status" id="ss-4">씬 비주얼</div>
+        </div>
+        <div class="step-body" id="sb-generate" style="display:none">
+          <!-- 프롬프트 미리보기 -->
+          <div id="gen-prompt-box" style="padding:10px 12px;background:var(--bg-elev);border-radius:var(--r-md);font-size:11px;color:var(--text-dim);line-height:1.5;margin-bottom:10px;display:none"></div>
+          <!-- 생성 버튼 -->
+          <div id="gen-btn-area">
+            <button id="gen-start-btn" class="btn btn-primary btn-full" onclick="generateMobileImage()" style="background:linear-gradient(135deg,var(--accent),#ec4899);border-color:transparent;font-weight:700;font-size:14px">
+              ✨ 씬 이미지 생성
+            </button>
+            <div style="margin-top:6px;font-size:10px;color:var(--text-faint);text-align:center">Settings에 OpenAI 키가 등록되어 있어야 합니다</div>
+          </div>
+          <!-- 로딩 -->
+          <div id="gen-loading" style="display:none;text-align:center;padding:24px 0">
+            <div class="spinner" style="width:32px;height:32px;border-width:3px;margin:0 auto 10px"></div>
+            <div style="font-size:12px;color:var(--text-faint)">이미지 생성 중… 보통 15~30초</div>
+          </div>
+          <!-- 결과 -->
+          <div id="gen-result" style="display:none">
+            <img id="gen-result-img" style="width:100%;border-radius:var(--r-lg);display:block;margin-bottom:12px" alt="generated scene">
+            <div style="display:flex;gap:8px">
+              <a id="gen-web-btn" href="https://soaviz-studio.vercel.app" target="_blank"
+                 style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:var(--accent);color:#fff;border-radius:var(--r-md);font-size:12px;font-weight:700;text-decoration:none">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                웹에서 계속 작업
+              </a>
+              <button onclick="generateMobileImage()" style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);font-size:12px;color:var(--text-dim);cursor:pointer">
+                🎲 다시 생성
+              </button>
+            </div>
+          </div>
+          <!-- 에러 -->
+          <div id="gen-error" style="display:none;padding:10px 12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:var(--r-md);font-size:12px;color:#f87171"></div>
+        </div>
+      </div>
+
       <!-- 저장된 씨드 목록 -->
       <div id="cr-saved">
         <div class="m-sec">저장된 씨드</div>
@@ -751,7 +792,7 @@ function loadCreate() {
 
 /* 스텝 토글 */
 function toggleStep(name) {
-  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save' };
+  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save', generate: 'sb-generate' };
   const body = document.getElementById(bodies[name]);
   if (!body) return;
   const isOpen = body.style.display !== 'none';
@@ -760,7 +801,7 @@ function toggleStep(name) {
 }
 
 function openStep(name) {
-  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save' };
+  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save', generate: 'sb-generate' };
   Object.entries(bodies).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (el) el.style.display = k === name ? '' : 'none';
@@ -815,6 +856,8 @@ function rollScenario() {
           document.getElementById('sn-1').textContent = '✓';
           document.getElementById('ss-1').textContent = _curScenario.genre;
           renderSavePreview();
+          /* 자동 전진: 시나리오 완료 → 캐릭터 스텝 오픈 */
+          setTimeout(() => { openStep('character'); }, 600);
         });
       });
     });
@@ -957,6 +1000,7 @@ async function saveSeed() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
       archived: false,
+      source: 'mobile',
     });
 
     // 캐릭터도 Dexie에
@@ -973,6 +1017,16 @@ async function saveSeed() {
 
     toast(`✓ "${_curScenario.title || '시나리오'}" 저장됨`, 'ok');
 
+    /* 웹 동기화: activeProject 설정 + story cache 기록 */
+    localStorage.setItem('soaviz_active_project_id', projId);
+    _lastSavedProjId = projId;
+    try {
+      const _stEntry = { id: uid(), text: _curScenario.synopsis || _curScenario.hook || '', label: _curScenario.title || '모바일 시나리오', type: 'story', savedAt: Date.now() };
+      const _stCache = JSON.parse(localStorage.getItem('soaviz.story.cache.v1') || '[]');
+      _stCache.unshift(_stEntry);
+      localStorage.setItem('soaviz.story.cache.v1', JSON.stringify(_stCache.slice(0, 20)));
+    } catch (_) {}
+
     // Step 3 완료
     document.getElementById('sn-3').classList.add('done');
     document.getElementById('sn-3').textContent = '✓';
@@ -981,34 +1035,19 @@ async function saveSeed() {
     // 씨드 목록 갱신
     loadSavedSeeds();
 
-    // F9 fix: 저장 완료 후 PC 핸드오프 CTA 표시
-    (function() {
-      const existing = document.getElementById('m-desktop-cta');
-      if (existing) existing.remove();
-      const cta = document.createElement('div');
-      cta.id = 'm-desktop-cta';
-      cta.style.cssText = 'margin-top:16px;padding:14px 16px;background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(236,72,153,0.08));border:1px solid rgba(167,139,250,0.3);border-radius:12px;display:flex;flex-direction:column;gap:10px';
-      cta.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:20px">💻</span>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">PC에서 계속 제작하기</div>
-            <div style="font-size:11px;color:var(--text-faint);margin-top:2px">저장된 씨드를 데스크톱에서 열어 이미지·영상을 생성하세요</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <a href="https://soaviz-studio.vercel.app" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            soaviz studio 열기
-          </a>
-          <button onclick="navigator.clipboard?.writeText('https://soaviz-studio.vercel.app').then(()=>toast('링크 복사됨'))" style="padding:9px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-dim);cursor:pointer">
-            링크 복사
-          </button>
-        </div>
-      `;
-      const saveCard = document.querySelector('#sb-save .save-card');
-      if (saveCard) saveCard.parentNode.insertBefore(cta, saveCard.nextSibling);
-    })();
+    /* Step 4 자동 전진 — 이미지 생성 스텝 오픈 */
+    setTimeout(() => {
+      document.getElementById('sn-4')?.classList.add('done');
+      document.getElementById('sn-4').textContent = '4';
+      document.getElementById('ss-4').textContent = '생성 가능';
+      openStep('generate');
+      // 프롬프트 미리보기 업데이트
+      const promptBox = document.getElementById('gen-prompt-box');
+      if (promptBox && _curScenario) {
+        promptBox.style.display = '';
+        promptBox.textContent = buildMobilePrompt(_curScenario, _curChars);
+      }
+    }, 800);
 
     // 저장 후 2초 후 초기화 유도
     setTimeout(() => {
@@ -1021,6 +1060,115 @@ async function saveSeed() {
     toast('저장 오류: ' + e.message, 'error');
     btn.disabled = false;
     btn.innerHTML = '💾 프로젝트에 저장';
+  }
+}
+
+/* ── 이미지 생성 (Step 4) ─────────────────────────────── */
+let _lastSavedProjId = null;  // saveSeed에서 설정됨
+
+function buildMobilePrompt(scenario, chars) {
+  const parts = [];
+  if (scenario) {
+    parts.push(`${scenario.genre || ''} cinematic scene`);
+    if (scenario.mood) parts.push(scenario.mood);
+    if (scenario.hook)  parts.push(scenario.hook.slice(0, 80));
+  }
+  if (chars && chars.length > 0) {
+    const c = chars[0];
+    const desc = [c.age && `${c.age}yo`, c.gender, c.appearance?.slice(0, 60), c.occupation].filter(Boolean).join(', ');
+    if (desc) parts.push(`main character: ${desc}`);
+  }
+  parts.push('high quality, dramatic lighting, film still');
+  return parts.filter(Boolean).join('. ');
+}
+
+async function generateMobileImage() {
+  const btnArea   = document.getElementById('gen-btn-area');
+  const loadEl    = document.getElementById('gen-loading');
+  const resultEl  = document.getElementById('gen-result');
+  const errorEl   = document.getElementById('gen-error');
+  const imgEl     = document.getElementById('gen-result-img');
+
+  if (!_curScenario) { toast('시나리오를 먼저 뽑아주세요', 'error'); return; }
+
+  /* OpenAI key 가져오기 */
+  let apiKey = '';
+  try {
+    const hv = await Vault.hasVault();
+    if (hv) {
+      if (!Vault.isUnlocked()) {
+        await new Promise((resolve) => {
+          openVaultModal(() => resolve());
+        });
+      }
+      apiKey = await Vault.get('openai') || '';
+    }
+  } catch (_) {}
+
+  if (!apiKey) {
+    toast('Settings → API Keys에서 OpenAI 키를 먼저 등록해주세요', 'warn');
+    showPage('settings');
+    setTimeout(() => loadSettings(), 100);
+    return;
+  }
+
+  /* UI 상태 전환 */
+  if (btnArea)  btnArea.style.display  = 'none';
+  if (loadEl)   loadEl.style.display   = '';
+  if (resultEl) resultEl.style.display = 'none';
+  if (errorEl)  errorEl.style.display  = 'none';
+
+  const prompt = buildMobilePrompt(_curScenario, _curChars);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/image/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-openai-key': apiKey,
+      },
+      body: JSON.stringify({ prompt, model: 'dall-e-3', aspect_ratio: '1:1', n: 1 }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(err.error || `생성 실패 (${res.status})`);
+    }
+
+    const data = await res.json();
+    const imageUrl = data.imageUrl || (data.images?.[0]?.url) || null;
+    if (!imageUrl) throw new Error('이미지 URL을 받지 못했습니다');
+
+    /* 결과 표시 */
+    if (loadEl)   loadEl.style.display   = 'none';
+    if (resultEl) resultEl.style.display = '';
+    if (imgEl)    imgEl.src = imageUrl;
+
+    /* step 상태 업데이트 */
+    document.getElementById('sn-4')?.classList.add('done');
+    document.getElementById('sn-4').textContent = '✓';
+    document.getElementById('ss-4').textContent = '생성완료';
+
+    /* Dexie assets에 저장 */
+    try {
+      const projId = _lastSavedProjId || localStorage.getItem('soaviz_active_project_id');
+      if (projId) {
+        await db.assets.put({
+          id: uid(), projectId: projId,
+          type: 'image', url: imageUrl,
+          prompt, source: 'mobile-gen',
+          createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+        });
+      }
+    } catch (_) {}
+
+    toast('✓ 이미지 생성 완료!', 'ok');
+
+  } catch (e) {
+    if (loadEl)  loadEl.style.display  = 'none';
+    if (btnArea) btnArea.style.display = '';
+    if (errorEl) { errorEl.style.display = ''; errorEl.textContent = '⚠ ' + e.message; }
+    toast('생성 오류: ' + e.message, 'error');
   }
 }
 
@@ -1050,6 +1198,21 @@ function resetCreate() {
   document.getElementById('sn-3').className = 'step-num';
   document.getElementById('sn-3').textContent = '3';
   document.getElementById('ss-3').textContent = '—';
+
+  // generate 스텝 초기화
+  const genBtnArea = document.getElementById('gen-btn-area');
+  const genLoading = document.getElementById('gen-loading');
+  const genResult  = document.getElementById('gen-result');
+  const genError   = document.getElementById('gen-error');
+  const genPrompt  = document.getElementById('gen-prompt-box');
+  if (genBtnArea) genBtnArea.style.display = '';
+  if (genLoading) genLoading.style.display = 'none';
+  if (genResult)  genResult.style.display  = 'none';
+  if (genError)   genError.style.display   = 'none';
+  if (genPrompt)  genPrompt.style.display  = 'none';
+  document.getElementById('sn-4')?.classList.remove('done');
+  if (document.getElementById('sn-4')) document.getElementById('sn-4').textContent = '4';
+  if (document.getElementById('ss-4')) document.getElementById('ss-4').textContent = '씬 비주얼';
 
   openStep('scenario');
   toast('초기화 완료', 'ok');

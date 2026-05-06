@@ -31229,6 +31229,7 @@ async function renderProjectsPage() {
         updated ? `${updated}` : '',
       ].filter(Boolean).join(' · ');
       const logline = p.logline || goal?.memo || '세계관, 씬, 프롬프트, 결과물을 이 프로젝트 아래에 묶어 제작 흐름을 시작하세요.';
+      const mobileBadge = p.source === 'mobile' ? '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:4px;font-size:10px;color:var(--accent);font-weight:600;margin-left:6px">📱 모바일</span>' : '';
       const _projMark = p.icon ? p.icon : escapeHTML(initials);
       const projColor = _projectPageColor(p.color);
 
@@ -31267,7 +31268,7 @@ async function renderProjectsPage() {
           <!-- 컬러 배너 -->
           <div class="project-card-banner">
             <div class="project-mark" data-project-action="pick-icon" data-project-id="${escapeHTML(p.id)}" title="아이콘 변경">${_projMark}</div>
-            <span class="project-banner-title">${escapeHTML(p.title || '프로젝트')}</span>
+            <span class="project-banner-title">${escapeHTML(p.title || '프로젝트')}${mobileBadge}</span>
             <span class="project-banner-status">${p.archived ? 'Archived' : 'Active'}</span>
           </div>
           <!-- 본문 -->
