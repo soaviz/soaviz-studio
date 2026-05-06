@@ -739,7 +739,7 @@
 
     /* ============ LAYOUT ============ */
     .layout {
-      padding-top: 56px;
+      padding-top: calc(var(--topbar-h, 56px) + var(--ctx-strip-h, 32px));
       display: grid; grid-template-columns: 84px 1fr;
       max-width: 1400px; margin: 0 auto; min-height: 100vh;
       transition: grid-template-columns 0.25s ease;
@@ -17654,6 +17654,90 @@
 .wb-empty-text   { font-size:15px; font-weight:600; margin-bottom:6px; color:var(--text-main); }
 .wb-empty-sub    { font-size:13px; }
 /* ============ /WORKBENCH PAGE ============ */
+
+/* ============ CONTEXT STRIP (P2) ============ */
+:root { --ctx-strip-h: 32px; }
+
+.ctx-strip {
+  position: fixed;
+  top: var(--topbar-h, 56px);
+  left: 0; right: 0;
+  height: var(--ctx-strip-h);
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--surface-1, #0a0a0e) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  overflow: hidden;
+  transition: opacity .2s;
+}
+.ctx-strip.hidden { display: none; }
+
+.ctx-proj-icon { font-size: 13px; margin-right: 6px; flex: 0 0 auto; }
+.ctx-proj-name {
+  font-weight: 700;
+  color: var(--text-main);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.ctx-proj-name:hover { color: var(--accent); }
+
+.ctx-sep { color: var(--text-faint); margin: 0 8px; flex: 0 0 auto; }
+
+.ctx-stage {
+  display: flex; align-items: center; gap: 5px;
+  color: var(--text-faint);
+  flex: 0 0 auto;
+}
+.ctx-stage-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  flex: 0 0 auto;
+}
+.ctx-stage-text { color: var(--text-main); font-weight: 600; }
+
+.ctx-spacer { flex: 1; }
+
+.ctx-wb-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.ctx-wb-btn:hover { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+.ctx-no-proj {
+  color: var(--text-faint);
+  display: flex; align-items: center; gap: 8px;
+}
+.ctx-no-proj-cta {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  .ctx-sep + .ctx-stage { display: none; }
+  .ctx-proj-name { max-width: 120px; }
+}
+/* ============ /CONTEXT STRIP (P2) ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -22184,6 +22268,19 @@
       <span>보관함</span>
     </button>
   </nav>
+</div>
+
+<!-- ═══ Production Context Strip (P2) ═══ -->
+<div id="ctx-strip" class="ctx-strip hidden">
+  <span class="ctx-proj-icon">🎬</span>
+  <span class="ctx-proj-name" id="ctx-proj-name" onclick="showPage('workbench')">—</span>
+  <span class="ctx-sep">·</span>
+  <span class="ctx-stage" id="ctx-stage">
+    <span class="ctx-stage-dot"></span>
+    <span class="ctx-stage-text" id="ctx-stage-text">—</span>
+  </span>
+  <span class="ctx-spacer"></span>
+  <button class="ctx-wb-btn" onclick="showPage('workbench')">워크벤치 →</button>
 </div>
 
 <div class="layout">
@@ -27157,6 +27254,7 @@ function showPage(name) {
   }
   // 모든 페이지 전환 시 크레딧 pill 갱신 (제작 탭에만 표시됨)
   try { if (typeof refreshCreditPill === 'function') refreshCreditPill(); } catch (_) {}
+  try { if (typeof updateCtxStrip === 'function') updateCtxStrip(name); } catch (_) {}
   // 히스토리 push (뒤로가기로 호출된 경우는 스킵)
   try {
     if (!window._isBackNav) {
@@ -46788,6 +46886,70 @@ function _wbRelTime(ts) {
   if (diff < 86400000)return `${Math.floor(diff/3600000)}시간 전`;
   return `${Math.floor(diff/86400000)}일 전`;
 }
+
+
+// ── Production Context Strip (P2) ─────────────────────────────
+let _ctxStripTimer = null;
+
+async function updateCtxStrip(pageName) {
+  const strip  = document.getElementById('ctx-strip');
+  if (!strip) return;
+
+  // 랜딩 페이지 → 숨김
+  if (!pageName || pageName === 'landing') {
+    strip.classList.add('hidden');
+    return;
+  }
+
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) {
+    // 프로젝트 없음 상태
+    const nameEl  = document.getElementById('ctx-proj-name');
+    const stageEl = document.getElementById('ctx-stage-text');
+    if (nameEl)  nameEl.textContent  = '프로젝트 없음';
+    if (stageEl) stageEl.textContent = '—';
+    strip.classList.remove('hidden');
+    return;
+  }
+
+  strip.classList.remove('hidden');
+
+  // 비동기 업데이트 (debounce)
+  if (_ctxStripTimer) clearTimeout(_ctxStripTimer);
+  _ctxStripTimer = setTimeout(async () => {
+    try {
+      const proj = await db.projects.get(activeId);
+      if (!proj) return;
+
+      const nameEl  = document.getElementById('ctx-proj-name');
+      const stageEl = document.getElementById('ctx-stage-text');
+      if (nameEl) nameEl.textContent = proj.title || '무제 프로젝트';
+
+      // 스테이지 결정
+      const [eps, chars, styl, shots, prompts, assets] = await Promise.all([
+        db.episodes.where('projectId').equals(activeId).count().catch(()=>0),
+        db.characters.where('projectId').equals(activeId).count().catch(()=>0),
+        db.styles.where('projectId').equals(activeId).count().catch(()=>0),
+        db.shots.where('projectId').equals(activeId).count().catch(()=>0),
+        db.prompts.where('projectId').equals(activeId).count().catch(()=>0),
+        db.assets.where('projectId').equals(activeId).count().catch(()=>0),
+      ]);
+      const cnts = { episodes:eps, characters:chars, styles:styl, shots, prompts, assets };
+
+      let stageLabel = '기획';
+      if (!cnts.episodes)   stageLabel = '1/8 에피소드 작성';
+      else if (!cnts.characters) stageLabel = '2/8 캐릭터 추가';
+      else if (!cnts.styles)     stageLabel = '3/8 스타일 설정';
+      else if (!cnts.shots)      stageLabel = '4/8 샷리스트';
+      else if (!cnts.prompts)    stageLabel = '5/8 프롬프트';
+      else if (!cnts.assets)     stageLabel = '6/8 이미지 생성';
+      else                       stageLabel = '7/8 리뷰 · 내보내기';
+
+      if (stageEl) stageEl.textContent = stageLabel;
+    } catch (_) {}
+  }, 200);
+}
+// ── /Production Context Strip ──────────────────────────────────
 
 async function renderWorkbenchPage() {
   const wrap = document.getElementById('page-workbench');
