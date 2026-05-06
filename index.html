@@ -59628,12 +59628,12 @@ window.MOBILE_STORY_IDEAS = MOBILE_STORY_IDEAS;
    § 2. 모델 / 앵글 설정
    ──────────────────────────────────────────────────────────── */
 const mobileModelConfig = [
-  { id:'flash',     name:'Flash',     provider:'internal', speed:'빠름', quality:'중상', cost:64,  costLabel:'₩64/장',  description:'빠른 생성 속도. 초안 캐릭터 시트 제작에 적합합니다.', recommended:true  },
-  { id:'pro',       name:'Pro',       provider:'comet',    speed:'중간', quality:'높음', cost:180, costLabel:'₩180/장', description:'고품질 결과물. 캐릭터 IP와 상업용 시안에 적합합니다.', recommended:true  },
-  { id:'ultra',     name:'Ultra',     provider:'internal', speed:'느림', quality:'최상', cost:290, costLabel:'₩290/장', description:'최고 디테일. 포트폴리오와 피치덱용 결과물에 적합합니다.', recommended:true  },
-  { id:'gpt-image', name:'GPT Image', provider:'openai',   speed:'중간', quality:'높음', cost:null, costLabel:'변동', description:'구성력과 해석력이 강한 이미지 생성 모델입니다.', recommended:false },
-  { id:'flux-pro',  name:'Flux Pro',  provider:'flux',     speed:'중간', quality:'높음', cost:null, costLabel:'변동', description:'반실사와 고품질 캐릭터 레퍼런스에 적합합니다.', recommended:false },
-  { id:'recraft',   name:'Recraft',   provider:'recraft',  speed:'중간', quality:'높음', cost:null, costLabel:'변동', description:'그래픽/일러스트 기반 캐릭터 시트에 적합합니다.', recommended:false },
+  { id:'flash',     name:'Flash',     provider:'internal', speed:'빠름', quality:'중상', cost:1, costLabel:'1 크레딧/장', description:'빠른 생성 속도. 초안 캐릭터 시트 제작에 적합합니다.', recommended:true  },
+  { id:'pro',       name:'Pro',       provider:'comet',    speed:'중간', quality:'높음', cost:3, costLabel:'3 크레딧/장', description:'고품질 결과물. 캐릭터 IP와 상업용 시안에 적합합니다.', recommended:true  },
+  { id:'ultra',     name:'Ultra',     provider:'internal', speed:'느림', quality:'최상', cost:5, costLabel:'5 크레딧/장', description:'최고 디테일. 포트폴리오와 피치덱용 결과물에 적합합니다.', recommended:true  },
+  { id:'gpt-image', name:'GPT Image', provider:'openai',   speed:'중간', quality:'높음', cost:3, costLabel:'3 크레딧/장', description:'구성력과 해석력이 강한 이미지 생성 모델입니다.', recommended:false },
+  { id:'flux-pro',  name:'Flux Pro',  provider:'flux',     speed:'중간', quality:'높음', cost:3, costLabel:'3 크레딧/장', description:'반실사와 고품질 캐릭터 레퍼런스에 적합합니다.', recommended:false },
+  { id:'recraft',   name:'Recraft',   provider:'recraft',  speed:'중간', quality:'높음', cost:3, costLabel:'3 크레딧/장', description:'그래픽/일러스트 기반 캐릭터 시트에 적합합니다.', recommended:false },
 ];
 const mobileAngleConfig = [
   { id:'front',        label:'정면'        },
@@ -63780,6 +63780,15 @@ async function generateMobileCharacterSheet() {
     if (typeof showToast === 'function') showToast('앵글을 하나 이상 선택해 주세요', 'error');
     return;
   }
+  const model = mobileModelConfig.find(m => m.id === state.selectedModelId) || mobileModelConfig[0];
+  const creditCost = Math.max(1, Number(model.cost || 3) * (state.selectedAngles.length || 1));
+  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+    action: 'mobile-character-sheet',
+    label: '모바일 캐릭터 시트 생성',
+    cost: creditCost,
+    modelTier: typeof getImagePromptModelTier === 'function' ? getImagePromptModelTier(model.id) : 'premium',
+    modelLabel: model.name || model.id,
+  })) return;
   state.isGenerating = true;
   renderMobileCharacterSheetFlow();
   try {
@@ -63787,6 +63796,8 @@ async function generateMobileCharacterSheet() {
     state.generatedImages = Array.isArray(images) ? images : [];
     if (state.generatedImages.length) {
       await persistMobileCharacterSheetImages(state.generatedImages);
+      const realCount = state.generatedImages.filter(img => !img.mock).length;
+      if (realCount && typeof consumeCredits === 'function') consumeCredits(creditCost, '모바일 캐릭터 시트 생성');
       if (typeof showToast === 'function') showToast('캐릭터 시트 생성 완료');
     } else {
       if (typeof showToast === 'function') showToast('생성된 이미지가 없습니다', 'warn');
