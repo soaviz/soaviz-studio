@@ -17840,6 +17840,177 @@
   margin-bottom: 20px;
 }
 .wb-review-panel.hidden { display: none; }
+  /* ── Shot Workspace Drawer ─────────────────────────────── */
+  .sw-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 1100;
+    backdrop-filter: blur(2px);
+  }
+  .sw-overlay.open { display: block; }
+  .sw-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(480px, 100vw);
+    background: var(--bg-1, #0d0d14);
+    border-left: 1px solid var(--border, rgba(255,255,255,.1));
+    z-index: 1101;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sw-drawer.open { transform: translateX(0); }
+  .sw-head {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .sw-head-info { flex: 1; min-width: 0; }
+  .sw-head-title {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin: 0 0 5px;
+  }
+  .sw-head-meta { font-size: 12px; color: var(--text-faint); display: flex; gap: 8px; flex-wrap: wrap; }
+  .sw-close {
+    flex-shrink: 0; width: 28px; height: 28px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-faint);
+    cursor: pointer; font-size: 14px; display: flex;
+    align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .sw-close:hover { background: var(--bg-card); color: var(--text); }
+  .sw-body {
+    flex: 1; overflow-y: auto; padding: 0;
+    scrollbar-width: thin;
+  }
+  .sw-section {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sw-section:last-child { border-bottom: none; }
+  .sw-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--text-faint);
+    margin: 0 0 10px;
+  }
+  /* 키이미지 */
+  .sw-key-image {
+    width: 100%; aspect-ratio: 16/9; object-fit: cover;
+    border-radius: 8px; background: var(--bg-card);
+    display: block;
+  }
+  .sw-key-placeholder {
+    width: 100%; aspect-ratio: 16/9;
+    border-radius: 8px; background: var(--bg-card);
+    border: 1px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-faint); font-size: 12px;
+  }
+  .sw-candidates {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .sw-candidate-thumb {
+    width: 64px; height: 48px; object-fit: cover;
+    border-radius: 4px; cursor: pointer; border: 2px solid transparent;
+    transition: border-color .15s;
+  }
+  .sw-candidate-thumb:hover { border-color: var(--accent); }
+  .sw-candidate-thumb.active { border-color: var(--accent); }
+  /* 영상 버전 */
+  .sw-video-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    margin-bottom: 6px; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .sw-video-item:hover { border-color: var(--accent); }
+  .sw-video-icon { font-size: 18px; flex-shrink: 0; }
+  .sw-video-info { flex: 1; min-width: 0; }
+  .sw-video-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .sw-video-meta { font-size: 11px; color: var(--text-faint); }
+  /* 상태 조작 */
+  .sw-status-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sw-status-btn {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-faint);
+    cursor: pointer; transition: all .15s;
+  }
+  .sw-status-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sw-status-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .sw-status-btn.approve-btn { border-color: #34d399; }
+  .sw-status-btn.approve-btn:hover { background: rgba(52,211,153,.1); color: #34d399; }
+  .sw-status-btn.revision-btn { border-color: #f59e0b; }
+  .sw-status-btn.revision-btn:hover { background: rgba(245,158,11,.1); color: #f59e0b; }
+  /* 담당자 */
+  .sw-assignee-row { display: flex; gap: 8px; align-items: center; }
+  .sw-assignee-input {
+    flex: 1; padding: 6px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); font-size: 13px;
+  }
+  .sw-assignee-btn {
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-faint); font-size: 12px; cursor: pointer;
+  }
+  .sw-assignee-btn:hover { border-color: var(--accent); color: var(--accent); }
+  /* 댓글 */
+  .sw-comment-item {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .sw-comment-emoji { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .sw-comment-body { flex: 1; min-width: 0; }
+  .sw-comment-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .sw-comment-meta { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .sw-comment-form { display: flex; gap: 8px; margin-top: 4px; }
+  .sw-comment-inp {
+    flex: 1; padding: 7px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); font-size: 13px;
+  }
+  .sw-comment-send {
+    padding: 7px 14px; border-radius: 8px;
+    border: none; background: var(--accent);
+    color: white; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  /* 워크벤치 내 최근 샷 그리드 */
+  .wb-shots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px; margin-top: 4px;
+  }
+  .wb-shot-card {
+    border-radius: 8px; border: 1px solid var(--border);
+    background: var(--bg-card); overflow: hidden;
+    cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  }
+  .wb-shot-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .wb-shot-card-thumb {
+    width: 100%; aspect-ratio: 16/9;
+    object-fit: cover; display: block; background: var(--bg-1);
+  }
+  .wb-shot-card-body { padding: 7px 9px; }
+  .wb-shot-card-title {
+    font-size: 11px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin: 0 0 3px;
+  }
+  .wb-shot-card-meta { display: flex; gap: 4px; align-items: center; }
+  .wb-shot-card-status {
+    font-size: 10px; font-weight: 700; letter-spacing: .04em;
+    padding: 2px 5px; border-radius: 3px; text-transform: uppercase;
+  }
+  .wb-shot-card-status.draft    { color: var(--text-faint); background: var(--bg-1); }
+  .wb-shot-card-status.ready    { color: #60a5fa; background: rgba(96,165,250,.1); }
+  .wb-shot-card-status.review   { color: #f59e0b; background: rgba(245,158,11,.1); }
+  .wb-shot-card-status.approved { color: #34d399; background: rgba(52,211,153,.1); }
+  .wb-shot-card-status.revision { color: #f87171; background: rgba(248,113,113,.1); }
+  .wb-shot-card-status.final    { color: #a78bfa; background: var(--accent-soft); }
 .wb-review-panel-head {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px;
@@ -25545,6 +25716,17 @@
           <span class="wb-review-count" id="wb-review-count">0</span>
         </div>
         <div id="wb-review-queue"></div>
+      </div>
+
+      <!-- 최근 샷 그리드 -->
+      <div id="wb-shots-section" style="margin-top:20px;margin-bottom:4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <p class="wb-panel-title" style="margin:0">최근 샷</p>
+          <button onclick="showPage('pipeline')" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0">전체 보기 →</button>
+        </div>
+        <div class="wb-shots-grid" id="wb-shots-grid">
+          <div style="font-size:12px;color:var(--text-faint);padding:16px 0">샷 없음 — Pipeline에서 샷리스트를 작성하세요</div>
+        </div>
       </div>
 
       <!-- P5/P6/P7 액션 바 -->
@@ -47704,6 +47886,52 @@ async function renderWorkbenchPage() {
 
   // §8.5: 리뷰 큐 렌더
   try { await TeamReviewLayer.renderReviewQueue(activeId); } catch (_) {}
+  // 최근 샷 그리드 렌더
+  try {
+    const _shotGrid = document.getElementById('wb-shots-grid');
+    if (_shotGrid && activeId) {
+      const _db = window.SoavizDB?.db;
+      const _shots = _db
+        ? await _db.shots.where('projectId').equals(activeId)
+            .filter(s => !s.archived).toArray().catch(() => [])
+        : [];
+      _shots.sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      const _recent = _shots.slice(0, 12);
+      if (_recent.length) {
+        const _statusCls = s => {
+          const m = {draft:'draft',ready:'ready',review:'review',approved:'approved',revision:'revision',final:'final'};
+          return m[s] || 'draft';
+        };
+        const _statusLabel = s => ({draft:'Draft',ready:'Ready',review:'Review',approved:'Approved',revision:'Revision',final:'Final',generating:'Gen…',exported:'Exported'}[s] || s || 'Draft');
+        const _gridHTML = await Promise.all(_recent.map(async sh => {
+          let thumbSrc = null;
+          if (_db) {
+            const _approved = sh.approvedAssetId
+              ? await _db.assets.get(sh.approvedAssetId).catch(()=>null)
+              : (await _db.assets.where('shotId').equals(sh.id)
+                  .filter(a=>a.status==='approved'||a.status==='final').limit(1).toArray().catch(()=>[]))[0]
+                || (await _db.assets.where('shotId').equals(sh.id).limit(1).toArray().catch(()=>[]))[0];
+            if (_approved?.imageData) thumbSrc = _approved.imageData.startsWith('data:') ? _approved.imageData : `data:image/jpeg;base64,${_approved.imageData}`;
+            else if (_approved?.url) thumbSrc = _approved.url;
+          }
+          return `<div class="wb-shot-card" onclick="openShotWorkspace('${sh.id}')">
+            ${thumbSrc
+              ? `<img class="wb-shot-card-thumb" src="${thumbSrc}" loading="lazy">`
+              : `<div class="wb-shot-card-thumb" style="display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:20px">🎬</div>`}
+            <div class="wb-shot-card-body">
+              <div class="wb-shot-card-title">${sh.title || ('Shot #' + (sh.number ?? ''))}</div>
+              <div class="wb-shot-card-meta">
+                <span class="wb-shot-card-status ${_statusCls(sh.status)}">${_statusLabel(sh.status)}</span>
+              </div>
+            </div>
+          </div>`;
+        }));
+        _shotGrid.innerHTML = _gridHTML.join('');
+      } else {
+        _shotGrid.innerHTML = '<div style="font-size:12px;color:var(--text-faint);padding:16px 0">샷 없음 — Pipeline에서 샷리스트를 작성하세요</div>';
+      }
+    }
+  } catch (_e) { console.warn('[wb shots grid]', _e); }
 }
 
 // SoavizProductionOS에 workbench 모듈 등록
@@ -48573,7 +48801,7 @@ const TeamReviewLayer = (() => {
       }[shot.status] || '';
 
       return `
-        <div class="wb-rq-item" data-shot-id="${shot.id}">
+        <div class="wb-rq-item" data-shot-id="${shot.id}" onclick="openShotWorkspace('${shot.id}')" style="cursor:pointer">
           ${thumbSrc
             ? `<img class="wb-rq-thumb" src="${thumbSrc}" loading="lazy">`
             : `<div class="wb-rq-thumb"></div>`}
@@ -48642,6 +48870,294 @@ async function _trlSendComment(shotId) {
 
 // SoavizProductionOS 노출
 window.SoavizProductionOS.reviewLayer = TeamReviewLayer;
+
+/* ════════════════════════════════════════════════════════════
+   Shot Workspace — 키이미지·영상·댓글·상태·담당자 통합뷰
+   ════════════════════════════════════════════════════════════ */
+const ShotWorkspace = (() => {
+  let _currentShotId = null;
+  const db = () => window.SoavizDB?.db;
+
+  /* ── 상태 배지 ── */
+  const STATUS_LABEL = {
+    draft:'Draft', ready:'Ready', generating:'Generating',
+    review:'Review', revision:'Revision', approved:'Approved',
+    final:'Final', exported:'Exported', archived:'Archived',
+  };
+  const STATUS_COLOR = {
+    draft:'var(--text-faint)', ready:'#60a5fa', generating:'#a78bfa',
+    review:'#f59e0b', revision:'#f87171', approved:'#34d399',
+    final:'#a78bfa', exported:'#6ee7b7', archived:'var(--text-faint)',
+  };
+
+  /* ── 허용되는 전환 버튼 ── */
+  const TRANSITION_BTNS = [
+    { to:'approved', label:'✅ 승인', cls:'approve-btn' },
+    { to:'revision', label:'🔄 재작업', cls:'revision-btn' },
+    { to:'final',    label:'★ Final', cls:'' },
+    { to:'ready',    label:'Ready',   cls:'' },
+  ];
+
+  /* ── 패널 열기/닫기 ── */
+  function open(shotId) {
+    _currentShotId = shotId;
+    document.getElementById('sw-overlay')?.classList.add('open');
+    document.getElementById('sw-drawer')?.classList.add('open');
+    _render(shotId);
+  }
+  function close() {
+    _currentShotId = null;
+    document.getElementById('sw-overlay')?.classList.remove('open');
+    document.getElementById('sw-drawer')?.classList.remove('open');
+  }
+
+  /* ── 메인 렌더 ── */
+  async function _render(shotId) {
+    const body = document.getElementById('sw-body');
+    if (!body) return;
+    body.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-faint);font-size:13px">로딩 중…</div>';
+
+    const d = db();
+    if (!d) { body.innerHTML = '<div style="padding:30px;color:var(--text-faint);font-size:13px">DB 연결 안 됨</div>'; return; }
+
+    // 데이터 병렬 로드
+    const [shot, allAssets, comments] = await Promise.all([
+      d.shots.get(shotId).catch(() => null),
+      d.assets.where('shotId').equals(shotId).toArray().catch(() => []),
+      d.activities.where('shotId').equals(shotId).filter(a => a.type === 'shot_comment').toArray().catch(() => []),
+    ]);
+
+    if (!shot) {
+      body.innerHTML = '<div style="padding:30px;color:var(--text-faint);font-size:13px">샷을 찾을 수 없습니다</div>';
+      return;
+    }
+
+    // 헤더 갱신
+    const titleEl = document.getElementById('sw-title');
+    const metaEl  = document.getElementById('sw-meta');
+    if (titleEl) titleEl.textContent = shot.title || `Shot #${shot.number ?? ''}`;
+    if (metaEl) {
+      const statusColor = STATUS_COLOR[shot.status] || 'var(--text-faint)';
+      metaEl.innerHTML = `
+        <span style="color:${statusColor};font-weight:700">${STATUS_LABEL[shot.status] || shot.status}</span>
+        <span>·</span>
+        <span>${shot.type || 'medium'}</span>
+        ${shot.durationSec ? `<span>·</span><span>${shot.durationSec}s</span>` : ''}
+        ${shot.assignee ? `<span>·</span><span>👤 ${shot.assignee}</span>` : ''}
+      `;
+    }
+
+    // 자산 분류
+    const imgAssets   = allAssets.filter(a => !a.type || a.type === 'image' || a.type === 'generated-image');
+    const vidAssets   = allAssets.filter(a => a.type === 'video' || a.type === 'generated-video');
+    const approvedImg = allAssets.find(a => a.id === shot.approvedAssetId)
+                     || imgAssets.find(a => a.status === 'approved' || a.status === 'final')
+                     || imgAssets[0];
+
+    function _imgSrc(a) {
+      if (!a) return null;
+      if (a.imageData) return a.imageData.startsWith('data:') ? a.imageData : `data:image/jpeg;base64,${a.imageData}`;
+      return a.url || a.imageUrl || a.dataUrl || null;
+    }
+
+    // ── 섹션 빌드 ──────────────────────────────────────────
+    const sections = [];
+
+    // 1. 키이미지
+    const approvedSrc = _imgSrc(approvedImg);
+    const candidateHtml = imgAssets.length > 1
+      ? imgAssets.slice(0, 8).map((a, i) => {
+          const src = _imgSrc(a);
+          if (!src) return '';
+          const isActive = a.id === approvedImg?.id;
+          return `<img class="sw-candidate-thumb${isActive ? ' active' : ''}"
+            src="${src}" loading="lazy"
+            title="${a.status || ''}"
+            onclick="ShotWorkspace._setApproved('${shotId}','${a.id}',this)"
+          >`;
+        }).join('')
+      : '';
+
+    sections.push(`
+      <div class="sw-section">
+        <p class="sw-section-title">키이미지</p>
+        ${approvedSrc
+          ? `<img class="sw-key-image" id="sw-key-img" src="${approvedSrc}" alt="키이미지">`
+          : `<div class="sw-key-placeholder">이미지 없음 — 이미지 생성 후 표시됩니다</div>`}
+        ${candidateHtml ? `<div class="sw-candidates">${candidateHtml}</div>` : ''}
+      </div>`);
+
+    // 2. 영상 버전
+    if (vidAssets.length > 0) {
+      const vidRows = vidAssets.map(v => {
+        const dur = v.duration ? `${v.duration}s` : '';
+        const model = v.modelId || v.model || '';
+        return `
+          <div class="sw-video-item" onclick="ShotWorkspace._previewVideo('${v.url || ''}','${v.id}')">
+            <span class="sw-video-icon">🎬</span>
+            <div class="sw-video-info">
+              <div class="sw-video-name">${v.label || `버전 ${v.id?.slice(-4) || ''}`}</div>
+              <div class="sw-video-meta">${[model, dur, v.status].filter(Boolean).join(' · ')}</div>
+            </div>
+            ${v.url ? `<a href="${v.url}" target="_blank" rel="noopener" style="font-size:11px;color:var(--accent);text-decoration:none;padding:4px 8px;border:1px solid var(--accent);border-radius:4px" onclick="event.stopPropagation()">▶</a>` : ''}
+          </div>`;
+      }).join('');
+      sections.push(`
+        <div class="sw-section">
+          <p class="sw-section-title">영상 버전 (${vidAssets.length})</p>
+          ${vidRows}
+        </div>`);
+    }
+
+    // 3. 상태 조작
+    const validTransitions = TRANSITION_BTNS.filter(b => {
+      try { return window.SoavizProductionOS?.canTransitionShot?.(shot.status, b.to); } catch { return false; }
+    });
+    const statusButtons = validTransitions.map(b =>
+      `<button class="sw-status-btn ${b.cls}"
+        onclick="ShotWorkspace._transition('${shotId}','${b.to}')">${b.label}</button>`
+    ).join('');
+
+    sections.push(`
+      <div class="sw-section">
+        <p class="sw-section-title">상태 변경</p>
+        <div class="sw-status-row">
+          ${statusButtons || '<span style="font-size:12px;color:var(--text-faint)">현재 상태에서 전환 가능한 단계가 없습니다</span>'}
+        </div>
+      </div>`);
+
+    // 4. 담당자
+    sections.push(`
+      <div class="sw-section">
+        <p class="sw-section-title">담당자</p>
+        <div class="sw-assignee-row">
+          <input class="sw-assignee-input" id="sw-assignee-inp"
+            placeholder="담당자 이름 또는 이메일"
+            value="${shot.assignee || ''}" />
+          <button class="sw-assignee-btn"
+            onclick="ShotWorkspace._saveAssignee('${shotId}')">저장</button>
+        </div>
+      </div>`);
+
+    // 5. 댓글
+    const commentRows = comments.length
+      ? [...comments].sort((a, b) => (a.ts||0) - (b.ts||0)).map(c => {
+          const ts = c.ts ? new Date(c.ts).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+          return `
+            <div class="sw-comment-item">
+              <span class="sw-comment-emoji">${c.icon || '💬'}</span>
+              <div class="sw-comment-body">
+                <div class="sw-comment-text">${c.label || ''}</div>
+                <div class="sw-comment-meta">${c.reviewer || 'me'} ${ts ? '· ' + ts : ''}</div>
+              </div>
+            </div>`;
+        }).join('')
+      : '<p style="font-size:12px;color:var(--text-faint);margin:0 0 10px">댓글이 없습니다</p>';
+
+    sections.push(`
+      <div class="sw-section">
+        <p class="sw-section-title">댓글 (${comments.length})</p>
+        <div id="sw-comments">${commentRows}</div>
+        <div class="sw-comment-form">
+          <input class="sw-comment-inp" id="sw-cmt-inp"
+            placeholder="코멘트 입력... (Enter 전송)"
+            onkeydown="if(event.key==='Enter')ShotWorkspace._sendComment('${shotId}')" />
+          <button class="sw-comment-send"
+            onclick="ShotWorkspace._sendComment('${shotId}')">전송</button>
+        </div>
+      </div>`);
+
+    body.innerHTML = sections.join('');
+  }
+
+  /* ── 내부 액션 핸들러 ── */
+  async function _transition(shotId, toStatus) {
+    try {
+      await window.SoavizProductionOS?.transitionShot?.(shotId, toStatus);
+      showToast?.(`상태 변경: ${STATUS_LABEL[toStatus] || toStatus}`);
+      _render(shotId);
+      TeamReviewLayer?.renderReviewQueue?.(
+        window.SoavizProductionOS?.context?.activeProjectId?.() ||
+        localStorage.getItem('soaviz_active_project_id')
+      ).catch(() => {});
+    } catch (e) {
+      showToast?.('❌ 상태 변경 실패: ' + (e?.message || e));
+    }
+  }
+
+  async function _saveAssignee(shotId) {
+    const inp = document.getElementById('sw-assignee-inp');
+    const val = inp?.value?.trim() || '';
+    const d = db();
+    if (!d) return;
+    const shot = await d.shots.get(shotId).catch(() => null);
+    if (!shot) return;
+    await d.shots.put({ ...shot, assignee: val, updatedAt: new Date().toISOString() });
+    showToast?.(`담당자 저장됨${val ? ': ' + val : ' (비움)'}`);
+    // 헤더 갱신
+    const metaEl = document.getElementById('sw-meta');
+    if (metaEl) {
+      const existing = metaEl.innerHTML;
+      const assigneeSpans = metaEl.querySelectorAll('span');
+      // 마지막 담당자 span 갱신 (간이)
+      _render(shotId);
+    }
+  }
+
+  async function _sendComment(shotId) {
+    const inp = document.getElementById('sw-cmt-inp');
+    const text = inp?.value?.trim();
+    if (!text) return;
+    await TeamReviewLayer.addShotComment(shotId, text);
+    if (inp) inp.value = '';
+    // 댓글 영역만 갱신
+    const d = db();
+    const comments = await d?.activities?.where('shotId').equals(shotId)
+      .filter(a => a.type === 'shot_comment').toArray().catch(() => []) || [];
+    const container = document.getElementById('sw-comments');
+    if (container) {
+      container.innerHTML = comments.length
+        ? [...comments].sort((a,b)=>(a.ts||0)-(b.ts||0)).map(c => {
+            const ts = c.ts ? new Date(c.ts).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+            return `<div class="sw-comment-item"><span class="sw-comment-emoji">${c.icon||'💬'}</span><div class="sw-comment-body"><div class="sw-comment-text">${c.label||''}</div><div class="sw-comment-meta">${c.reviewer||'me'} ${ts?'· '+ts:''}</div></div></div>`;
+          }).join('')
+        : '<p style="font-size:12px;color:var(--text-faint);margin:0">댓글 없음</p>';
+    }
+    showToast?.('💬 댓글 전송됨');
+  }
+
+  async function _setApproved(shotId, assetId, imgEl) {
+    const d = db();
+    if (!d) return;
+    const shot = await d.shots.get(shotId).catch(() => null);
+    if (!shot) return;
+    await d.shots.put({ ...shot, approvedAssetId: assetId, updatedAt: new Date().toISOString() });
+    // 키이미지 교체
+    const keyImg = document.getElementById('sw-key-img');
+    if (keyImg && imgEl) keyImg.src = imgEl.src;
+    // 썸네일 active 갱신
+    document.querySelectorAll('.sw-candidate-thumb').forEach(el => el.classList.remove('active'));
+    imgEl?.classList.add('active');
+    showToast?.('✅ 키이미지 확정됨');
+  }
+
+  function _previewVideo(url) {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener');
+  }
+
+  // ESC 키로 닫기
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && _currentShotId) close();
+  });
+
+  return { open, close, _transition, _saveAssignee, _sendComment, _setApproved, _previewVideo };
+})();
+
+window.SoavizProductionOS.shotWorkspace = ShotWorkspace;
+
+// 전역 단축 함수 (wb-rq-item, wb-shot-card에서 호출)
+function openShotWorkspace(shotId) { ShotWorkspace.open(shotId); }
 
 
 window.SoavizProductionOS.register('teamReview',     { share: _wbShareReview });
@@ -67474,5 +67990,20 @@ window.handleMobileReviewShareUrl = handleMobileReviewShareUrl;
 </script>
 <script src="scenarios-data.js"></script>
 <script src="characters-data.js"></script>
+  <!-- ══ Shot Workspace Drawer ══════════════════════════════ -->
+  <div id="sw-overlay" class="sw-overlay" onclick="ShotWorkspace.close()"></div>
+  <div id="sw-drawer" class="sw-drawer" role="dialog" aria-label="Shot Workspace">
+    <div class="sw-head">
+      <div class="sw-head-info">
+        <p class="sw-head-title" id="sw-title">Shot Workspace</p>
+        <div class="sw-head-meta" id="sw-meta"></div>
+      </div>
+      <button class="sw-close" onclick="ShotWorkspace.close()" title="닫기">✕</button>
+    </div>
+    <div class="sw-body" id="sw-body">
+      <div style="padding:40px;text-align:center;color:var(--text-faint);font-size:13px">샷을 선택하면 워크스페이스가 열립니다</div>
+    </div>
+  </div>
+
 </body>
 </html>
