@@ -981,6 +981,35 @@ async function saveSeed() {
     // 씨드 목록 갱신
     loadSavedSeeds();
 
+    // F9 fix: 저장 완료 후 PC 핸드오프 CTA 표시
+    (function() {
+      const existing = document.getElementById('m-desktop-cta');
+      if (existing) existing.remove();
+      const cta = document.createElement('div');
+      cta.id = 'm-desktop-cta';
+      cta.style.cssText = 'margin-top:16px;padding:14px 16px;background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(236,72,153,0.08));border:1px solid rgba(167,139,250,0.3);border-radius:12px;display:flex;flex-direction:column;gap:10px';
+      cta.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">💻</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">PC에서 계속 제작하기</div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:2px">저장된 씨드를 데스크톱에서 열어 이미지·영상을 생성하세요</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="https://soaviz-studio.vercel.app" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 12px;background:var(--accent);color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            soaviz studio 열기
+          </a>
+          <button onclick="navigator.clipboard?.writeText('https://soaviz-studio.vercel.app').then(()=>toast('링크 복사됨'))" style="padding:9px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-dim);cursor:pointer">
+            링크 복사
+          </button>
+        </div>
+      `;
+      const saveCard = document.querySelector('#sb-save .save-card');
+      if (saveCard) saveCard.parentNode.insertBefore(cta, saveCard.nextSibling);
+    })();
+
     // 저장 후 2초 후 초기화 유도
     setTimeout(() => {
       btn.disabled = false;

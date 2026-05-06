@@ -22044,24 +22044,24 @@
     </a>
     <!-- ═══ 01 PLANNING ═══ -->
     <div class="nav-section-label">기획</div>
-    <a class="nav-item persona-nav-item" data-page="personas" title="Story · Persona · Concept">
+    <a class="nav-item persona-nav-item" data-page="personas" title="스토리 · Persona · Concept">
       <svg class="icon" viewBox="0 0 24 24">
         <path d="M12 3.5 13.9 8l4.8.4-3.7 3.1 1.1 4.7-4.1-2.5-4.1 2.5 1.1-4.7-3.7-3.1 4.8-.4z"/>
         <path d="M8 20c0-2.2 1.8-4 4-4s4 1.8 4 4"/>
       </svg>
-      Create
-    </a>
-    <a class="nav-item" data-page="projects" title="Projects">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
-        <line x1="7" y1="13" x2="17" y2="13"/>
-      </svg>
-      프로젝트
+      Story
     </a>
 
     <!-- ═══ 02 PRE-PRODUCTION ═══ -->
     <div class="nav-section-label">프리프로덕션</div>
-    <a class="nav-item" data-page="pipeline" title="Pre Production · Character Pack · World Bible · Shotlist">
+    <a class="nav-item" data-page="characters" title="캐릭터 · IP Character Vault">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
+      </svg>
+      캐릭터
+    </a>
+    <a class="nav-item" data-page="pipeline" title="샷 리스트 · 시나리오 · World Bible">
       <svg class="icon" viewBox="0 0 24 24">
         <circle cx="6" cy="6" r="2"/>
         <circle cx="18" cy="6" r="2"/>
@@ -22069,17 +22069,10 @@
         <path d="M8 6h8M18 8v8"/>
         <path d="M6 8v6a2 2 0 0 0 2 2h6"/>
       </svg>
-      Pre Production
+      샷 리스트
       <span class="nav-pill" style="margin-left:auto;font-size:9px;padding:2px 6px;background:#a78bfa;color:#fff;border-radius:8px;font-weight:700">v3</span>
     </a>
-    <a class="nav-item" data-page="characters" title="Characters · IP Character Vault">
-      <svg class="icon" viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="4"/>
-        <path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/>
-      </svg>
-      Characters
-    </a>
-    <a class="nav-item" data-page="styles" title="Style · Lookbook · Visual Reference">
+    <a class="nav-item" data-page="styles" title="Style Bible · 참고 이미지 (선택)">
       <svg class="icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
         <circle cx="8" cy="9" r="1.5"/>
@@ -22088,8 +22081,9 @@
         <circle cx="16" cy="14" r="1.5"/>
       </svg>
       Style
+      <span style="margin-left:auto;font-size:9px;color:var(--text-faint);font-weight:400">선택</span>
     </a>
-    <a class="nav-item" data-page="cinema" title="Cinema Library · 참고 영상 → Style Bible">
+    <a class="nav-item" data-page="cinema" title="Cinema Library · 참고 영상 (선택)">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <rect x="2" y="2" width="20" height="20" rx="2.18"/>
         <line x1="7" y1="2" x2="7" y2="22"/>
@@ -22097,6 +22091,7 @@
         <line x1="2" y1="12" x2="22" y2="12"/>
       </svg>
       Cinema
+      <span style="margin-left:auto;font-size:9px;color:var(--text-faint);font-weight:400">선택</span>
     </a>
 
     <!-- ═══ 03 VIDEO GENERATION ═══ -->
@@ -22160,6 +22155,13 @@
     </a>
     <!-- ═══ SYSTEM ═══ -->
     <div class="nav-section-label">SYSTEM</div>
+    <a class="nav-item" data-page="projects" title="내 프로젝트 목록">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+        <line x1="7" y1="13" x2="17" y2="13"/>
+      </svg>
+      프로젝트
+    </a>
     <a class="nav-item" href="docs/index.html" id="sidebar-docs-btn" title="사용자 가이드">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -24625,6 +24627,18 @@
                     <button id="pl-sl-copy-btn" style="padding:5px 11px;font-size:12px;border:1px solid var(--border);background:var(--bg-1);color:var(--text-dim);border-radius:var(--r-sm)">전체 복사</button>
                     <button id="pl-sl-to-video-btn" style="padding:5px 11px;font-size:12px;border:1px solid rgba(167,139,250,0.4);background:var(--accent-soft);color:var(--accent);border-radius:var(--r-sm);font-weight:600"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>이미지 생성으로 →</button>
                   </div>
+                  <!-- F3 fix: 다음 단계 CTA 배너 -->
+                  <div id="pl-sl-next-cta" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:linear-gradient(135deg,rgba(167,139,250,0.12),rgba(236,72,153,0.06));border:1px solid rgba(167,139,250,0.25);border-radius:var(--r-md);margin-top:12px">
+                    <div style="font-size:13px;color:var(--text);font-weight:600">✓ 샷 리스트 완성 — 다음 단계</div>
+                    <div style="display:flex;gap:8px;flex-shrink:0">
+                      <button onclick="switchPipelineTab('imagegen')" style="padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r-pill);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        이미지 생성 →
+                      </button>
+                    </div>
+                  </div>
+                  <div style="display:none"><!-- placeholder close -->
+                  </div>
                 </div>
                 <div id="pl-sl-summary-meta" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--text-faint)"></div>
               </div>
@@ -26900,6 +26914,7 @@ function showPage(name) {
     name = 'landing';
   }
   window.currentPage = name === 'landing' ? 'landing' : name;
+  window._soavizCurrentPage = name; // F6: 크레딧 게이트 복귀용
   // 페이지는 전 플랜 오픈. 수익화는 생성/저장/API/Export 액션에서 처리한다.
 
   // ── 페이지 전환 시 모든 재생 중인 오디오 정지 ──
@@ -27004,6 +27019,37 @@ function showPage(name) {
   if (name === 'memory-graph' && typeof renderMemoryGraph === 'function') renderMemoryGraph();
   if (name === 'shot-detail' && typeof renderShotLogbook === 'function') renderShotLogbook();
   if (name === 'pipeline' && typeof renderPipelinePage === 'function') { try { renderPipelinePage(); } catch (_) {} }
+  // F2 fix: 크리에이티브 탭 진입 시 활성 프로젝트 컨텍스트 배너
+  if (['personas','characters','pipeline','sync','voice-studio'].includes(name)) {
+    requestAnimationFrame(() => {
+      const pageEl = document.getElementById('page-' + name);
+      if (!pageEl) return;
+      const existCtx = pageEl.querySelector('.sz-project-ctx-bar');
+      if (existCtx) existCtx.remove();
+      // 활성 프로젝트 가져오기
+      let projName = '';
+      try {
+        const pId = window._soavizActiveProjectId
+          || (typeof SoavizPipeline !== 'undefined' && SoavizPipeline.getActiveId?.())
+          || localStorage.getItem('soaviz_active_project_id');
+        if (pId) {
+          const projects = JSON.parse(localStorage.getItem('soaviz_projects') || '[]');
+          const p = projects.find(x => String(x.id) === String(pId));
+          if (p) projName = p.name || p.title || '';
+        }
+      } catch (_) {}
+      if (!projName) return;
+      const bar = document.createElement('div');
+      bar.className = 'sz-project-ctx-bar';
+      bar.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.18);border-radius:var(--r-pill);font-size:11px;color:var(--accent);font-weight:600;margin-bottom:12px;width:fit-content;cursor:pointer';
+      bar.innerHTML = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>'
+        + '<span>' + escapeHTML(projName) + '</span>'
+        + '<span style="color:var(--text-faint);font-weight:400">● 현재 프로젝트</span>';
+      bar.title = '프로젝트 페이지로 이동';
+      bar.addEventListener('click', () => showPage('projects'));
+      pageEl.insertBefore(bar, pageEl.firstChild);
+    });
+  }
   if (name === 'compare' && typeof renderComparePage === 'function') { try { renderComparePage(); } catch (_) {} }
   if (name === 'cinema' && typeof renderCinemaPage === 'function') { try { renderCinemaPage(); } catch (_) {} }
   if (name === 'styles' && typeof renderStylesPage === 'function') { try { renderStylesPage(); } catch (_) {} }
@@ -28198,19 +28244,39 @@ function openMonetizationGate({
 } = {}) {
   const planName = PLAN_FEATURES[recommendedPlan]?.label || recommendedPlan || 'Pro';
   const price = PLAN_PRICE_LABEL[recommendedPlan] || PLAN_PRICE_LABEL.pro;
-  const body = [
-    title,
-    '',
-    message || `${planName} 플랜에서 사용할 수 있습니다.`,
-    reason ? `\n이유: ${reason}` : '',
-    `\n추천: ${planName} · ${price}`,
-    '',
-    '[확인] 요금제 보기 / [취소] 닫기',
-  ].join('\n');
-  if (confirm(body)) {
+  // F6 fix: confirm() 대신 커스텀 인라인 모달 사용
+  const existingGate = document.getElementById('sz-monetization-gate');
+  if (existingGate) existingGate.remove();
+  const _prevPage = window._soavizCurrentPage || null;
+  const overlay = document.createElement('div');
+  overlay.id = 'sz-monetization-gate';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+  overlay.innerHTML = `
+    <div style="background:var(--bg-card,#1a1a2e);border:1px solid var(--border,rgba(255,255,255,0.1));border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="font-size:20px;font-weight:700;color:var(--text,#fff);margin-bottom:8px">${title}</div>
+      <div style="font-size:14px;color:var(--text-dim,rgba(255,255,255,0.6));margin-bottom:6px;line-height:1.5">${message || planName + ' 플랜에서 사용할 수 있습니다.'}</div>
+      ${reason ? `<div style="font-size:12px;color:var(--text-faint,rgba(255,255,255,0.4));margin-bottom:16px">${reason}</div>` : '<div style="margin-bottom:16px"></div>'}
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(167,139,250,0.15);border-radius:8px;font-size:12px;color:var(--accent,#a78bfa);font-weight:600;margin-bottom:20px">
+        추천: ${planName} · ${price}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="sz-gate-upgrade" style="flex:1;min-width:140px;padding:11px 16px;background:linear-gradient(135deg,var(--accent,#a78bfa),rgba(236,72,153,0.8));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">요금제 보기</button>
+        ${_prevPage ? `<button id="sz-gate-back" style="padding:11px 14px;background:var(--bg-1,rgba(255,255,255,0.05));color:var(--text-dim,rgba(255,255,255,0.6));border:1px solid var(--border,rgba(255,255,255,0.1));border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">← 작업으로 돌아가기</button>` : ''}
+        <button id="sz-gate-close" style="padding:11px 14px;background:transparent;color:var(--text-faint,rgba(255,255,255,0.35));border:none;font-size:13px;cursor:pointer">닫기</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('sz-gate-upgrade')?.addEventListener('click', () => {
+    overlay.remove();
     if (typeof showPage === 'function') showPage('credits');
-    else if (typeof window.openDocsModal === 'function') window.openDocsModal('pricing-page');
-  }
+  });
+  document.getElementById('sz-gate-back')?.addEventListener('click', () => {
+    overlay.remove();
+    if (_prevPage && typeof showPage === 'function') showPage(_prevPage);
+  });
+  document.getElementById('sz-gate-close')?.addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 window.openMonetizationGate = openMonetizationGate;
 
@@ -42872,6 +42938,18 @@ function pollVideoJob(id, histItem) {
         btn.querySelector('.vid-gen-label').textContent = 'Generate';
         renderVideoHistory();
         showToast('영상 생성 완료');
+        // F5 fix: Library CTA 표시
+        (function(){
+          const _libCta = $('#vid-library-cta');
+          if (_libCta) { _libCta.style.display = 'flex'; return; }
+          const _prev = $('#vid-preview-video');
+          if (!_prev) return;
+          const _cta = document.createElement('div');
+          _cta.id = 'vid-library-cta';
+          _cta.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:var(--r-md);margin-top:10px';
+          _cta.innerHTML = '<span style="font-size:12px;color:var(--success);font-weight:600">✓ 영상 생성 완료</span><button onclick="showPage(\'library\')" style="padding:6px 14px;background:var(--success);color:#fff;border:none;border-radius:var(--r-pill);font-size:12px;font-weight:700;cursor:pointer">라이브러리에서 보기 →</button>';
+          _prev.parentNode?.insertBefore(_cta, _prev.nextSibling);
+        })();
       } else if (d.status === 'failed' || d.status === 'canceled') {
         clearInterval(VIDEO_STATE.pollTimer);
         VIDEO_STATE.pollTimer = null;
