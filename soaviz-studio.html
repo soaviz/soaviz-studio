@@ -49851,23 +49851,27 @@ async function renderKeyImageStudioPage() {
   const _outputCnt = Number(s.outputCount || 4);
   const _estCredits = _outputCnt <= 1 ? 1 : _outputCnt <= 2 ? 1 : 2;
   const _extraCredits = _outputCnt * 1;
-  // 선택된 이미지 여부
+  // 선택된 이미지 여부 — action bar 항상 표시 (선택 여부에 따라 메시지 변경)
   const _selectedImg = images.find(img => img.status === 'approved');
-  const _actionBar = _selectedImg ? `
+  const _actionBar = `
     <div class="ck3-action-bar">
-      <div class="ck3-action-check">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="ck3-action-check" style="${_selectedImg ? '' : 'background:var(--border-strong);'}">
+        ${_selectedImg
+          ? `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`
+          : `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
+        }
       </div>
       <div class="ck3-action-text">
-        <strong>대표 이미지가 선택되었습니다.</strong>
-        <span>이제 캐릭터 시트를 만들어 다양한 각도를 확장하세요.</span>
+        ${_selectedImg
+          ? `<strong>대표 이미지 선택 완료</strong><span>이제 캐릭터 시트로 다양한 각도를 만들어보세요.</span>`
+          : `<strong>키이미지를 생성하고 대표로 지정하세요</strong><span>대표 이미지가 캐릭터 카드와 Shot 생성에 자동 적용됩니다.</span>`
+        }
       </div>
-      <button class="ck3-action-cta" id="ck-goto-sheet">
-        캐릭터 시트 만들기
+      <button class="ck3-action-cta" id="ck-goto-sheet" style="${_selectedImg ? '' : 'background:var(--bg-elev);color:var(--text-dim);border:1px solid var(--border-strong);'}">
+        ③ 캐릭터 시트 만들기
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <span class="ck3-action-cost">⚡ 추가 차감: ${_extraCredits} 크레딧</span>
-    </div>` : '';
+    </div>`;
 
   mount.innerHTML = `
     <div class="ck-studio ck2-studio" id="ch-keyimage-shell" style="min-height:100%;display:flex;flex-direction:column;">
@@ -50058,14 +50062,17 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   root.innerHTML = `
     <div class="bible-modal-card">
       <div class="bible-modal-head">
-        <h3>${isNew ? '＋ 새 캐릭터' : '캐릭터 편집'}</h3>
-        ${isNew ? '<button class="vault-btn" id="cf-dice" title="모든 필드를 랜덤으로 채우기" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent">🎲 랜덤 주사위</button>' : ''}
+        <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1">
+          <h3 style="margin:0">${isNew ? '＋ 새 캐릭터' : '캐릭터 편집'}</h3>
+          ${isNew ? '<span style="font-size:12px;color:var(--text-faint);font-weight:400">만들고 싶은 캐릭터의 페르소나를 직접 부여해보세요</span>' : ''}
+        </div>
+        ${isNew ? '<button class="vault-btn" id="cf-dice" title="모든 필드를 랜덤으로 채우기" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent">🎲 랜덤</button>' : ''}
         <button class="vault-btn" id="ch-close">닫기</button>
       </div>
       <div class="cf-tabs">
-        <button class="cf-tab-btn active" data-tab="info">기본 정보</button>
-        <button class="cf-tab-btn" data-tab="keyimage">키이미지 만들기</button>
-        <button class="cf-tab-btn" data-tab="sheet">캐릭터 시트 만들기</button>
+        <button class="cf-tab-btn active" data-tab="info">① 기본 정보</button>
+        <button class="cf-tab-btn" data-tab="keyimage">② 키이미지</button>
+        <button class="cf-tab-btn" data-tab="sheet">③ 캐릭터 시트</button>
       </div>
       <div class="bible-modal-body">
         <div class="cf-tab-pane active" id="cf-pane-info">
@@ -50404,7 +50411,14 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       <div class="bible-modal-foot">
         ${!isNew ? '<button class="vault-btn danger" id="cf-delete" style="margin-right:auto">삭제</button>' : ''}
         <button class="vault-btn" id="cf-cancel">취소</button>
-        <button class="vault-btn primary" id="cf-save">${isNew ? '추가' : '저장'}</button>
+        ${isNew
+          ? `<button class="vault-btn" id="cf-save-only" style="font-size:11px;color:var(--text-faint)">저장만</button>
+             <button class="vault-btn primary" id="cf-save" style="gap:6px">
+               저장 후 키이미지
+               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+             </button>`
+          : `<button class="vault-btn primary" id="cf-save">저장</button>`
+        }
       </div>
     </div>
   `;
@@ -51206,31 +51220,70 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   _updateSheetGenerateBtn();
   _renderSheetResults();
 
-  root.querySelector('#cf-save')?.addEventListener('click', async () => {
+  // ── 자동 태그 생성 헬퍼
+  function _autoTags(data) {
+    const tags = [];
+    const roleMap = { protagonist: '주인공', antagonist: '악당', supporting: '조연', extra: '엑스트라' };
+    if (roleMap[data.role]) tags.push(roleMap[data.role]);
+    if (data.gender) tags.push(data.gender);
+    if (data.age) tags.push(`${Math.floor(Number(data.age) / 10) * 10}대`);
+    const kwList = ['단발','롱헤어','숏컷','웨이브','스트레이트','안경','수염','타투','후드','코트','자켓'];
+    kwList.forEach(kw => { if ((data.appearance + ' ' + data.personality).includes(kw)) tags.push(kw); });
+    return [...new Set(tags)].slice(0, 6);
+  }
+
+  // ── 공통 save 로직 (저장만 버튼 + 기존 캐릭터 save)
+  async function _doSaveAndClose() {
     const data = gather();
-    if (!data.name) { showToast?.('이름을 입력하세요'); return; }
+    if (!data.name) { showToast?.('이름을 입력하세요'); return false; }
     if (!data.promptFragment) data.promptFragment = SoavizCharacters.autoFragment(data);
     if (isNew) {
       data.projectId = c.projectId;
       if (window.SoavizAuth?.isGuest?.()) {
-        try {
-          localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
-        } catch (_) {}
+        try { localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() })); } catch (_) {}
         showToast?.('초안을 임시 보관했습니다. 가입/로그인 후 자동 저장됩니다.');
         window.SoavizAuth.require('캐릭터 생성');
-        return;
+        return false;
       }
       const rec = await SoavizCharacters.create(data);
-      if (!rec) return;
+      if (!rec) return false;
       showToast?.(`✓ ${data.name} 추가`);
     } else {
       const rec = await SoavizCharacters.update(c.id, data);
-      if (!rec) return;
+      if (!rec) return false;
       showToast?.(`✓ ${data.name} 저장`);
     }
     close();
     renderCharactersPage();
+    return true;
+  }
+
+  // ── "저장 후 키이미지 →" (신규 캐릭터 메인 CTA)
+  root.querySelector('#cf-save')?.addEventListener('click', async () => {
+    if (!isNew) { await _doSaveAndClose(); return; }
+    const data = gather();
+    if (!data.name) { showToast?.('이름을 입력하세요'); return; }
+    if (!data.promptFragment) data.promptFragment = SoavizCharacters.autoFragment(data);
+    // 자동 태그 생성 (비어있으면)
+    if (!data.tags || !data.tags.length) data.tags = _autoTags(data);
+    data.projectId = c.projectId;
+    if (window.SoavizAuth?.isGuest?.()) {
+      try { localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() })); } catch (_) {}
+      showToast?.('초안을 임시 보관했습니다. 가입/로그인 후 자동 저장됩니다.');
+      window.SoavizAuth.require('캐릭터 생성');
+      return;
+    }
+    const rec = await SoavizCharacters.create(data);
+    if (!rec) return;
+    showToast?.(`✓ ${data.name} 저장 — 키이미지 스튜디오로 이동합니다`);
+    close();
+    renderCharactersPage();
+    // 키이미지 스튜디오로 자동 이동
+    setTimeout(() => openCharacterKeyImageStudio(rec.id), 80);
   });
+
+  // ── "저장만" (신규 캐릭터 보조 버튼)
+  root.querySelector('#cf-save-only')?.addEventListener('click', _doSaveAndClose);
 
   root.querySelector('#cf-delete')?.addEventListener('click', async () => {
     if (!confirm(`${c.name}을(를) 보관할까요?`)) return;
