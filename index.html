@@ -17830,6 +17830,88 @@
 }
 .wb-share-chip:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
 /* ============ /WORKBENCH ACTIONS ============ */
+
+/* ============ TEAM REVIEW LAYER (§8.5) ============ */
+.wb-review-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.wb-review-panel.hidden { display: none; }
+.wb-review-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.wb-review-panel-title {
+  font-size: 12px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--text-faint); margin: 0;
+}
+.wb-review-count {
+  font-size: 11px; font-weight: 700;
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #f59e0b;
+  border-radius: 999px; padding: 2px 8px;
+}
+
+.wb-rq-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.wb-rq-item:last-child { border-bottom: none; }
+
+.wb-rq-thumb {
+  width: 48px; height: 32px; border-radius: 5px;
+  background: var(--surface-3, #1a1a2e);
+  flex: 0 0 auto;
+  overflow: hidden; object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+.wb-rq-info { flex: 1; min-width: 0; }
+.wb-rq-title { font-size: 12px; font-weight: 700; color: var(--text-main);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-rq-meta  { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+
+.wb-rq-actions { display: flex; gap: 4px; flex: 0 0 auto; }
+.wb-rq-btn {
+  border: none; border-radius: 6px; cursor: pointer;
+  font-size: 12px; padding: 4px 8px; font-weight: 700;
+  transition: opacity .15s;
+}
+.wb-rq-btn:hover { opacity: .8; }
+.wb-rq-btn.approve  { background: color-mix(in srgb, #34d399 18%, transparent); color: #34d399; }
+.wb-rq-btn.reject   { background: color-mix(in srgb, #f87171 18%, transparent); color: #f87171; }
+.wb-rq-btn.revision { background: color-mix(in srgb, #f59e0b 18%, transparent); color: #f59e0b; }
+
+.wb-rq-comment-row {
+  margin-top: 6px; display: none; gap: 6px;
+}
+.wb-rq-comment-row.open { display: flex; }
+.wb-rq-comment-inp {
+  flex: 1; background: var(--surface-1); border: 1px solid var(--border);
+  color: var(--text-main); border-radius: 6px;
+  padding: 5px 9px; font-size: 12px;
+}
+.wb-rq-comment-send {
+  background: var(--accent); border: none; color: #fff;
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px;
+}
+
+.wb-status-badge {
+  display: inline-block; border-radius: 4px; padding: 2px 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.wb-status-badge.review    { background:rgba(251,191,36,.18); color:#fbbf24; }
+.wb-status-badge.approved  { background:rgba(52,211,153,.18); color:#34d399; }
+.wb-status-badge.revision  { background:rgba(251,146,60,.18); color:#fb923c; }
+.wb-status-badge.rejected  { background:rgba(248,113,113,.18); color:#f87171; }
+.wb-status-badge.final     { background:rgba(167,139,250,.18); color:#a78bfa; }
+/* ============ /TEAM REVIEW LAYER ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -25398,6 +25480,15 @@
           <p class="wb-panel-title">최근 활동</p>
           <div id="wb-activity"></div>
         </div>
+      </div>
+
+      <!-- §8.5 리뷰 큐 패널 -->
+      <div id="wb-review-panel" class="wb-review-panel hidden">
+        <div class="wb-review-panel-head">
+          <p class="wb-review-panel-title">리뷰 대기 큐</p>
+          <span class="wb-review-count" id="wb-review-count">0</span>
+        </div>
+        <div id="wb-review-queue"></div>
       </div>
 
       <!-- P5/P6/P7 액션 바 -->
@@ -47554,6 +47645,9 @@ async function renderWorkbenchPage() {
       pDesc.textContent = `${shots}개 샷으로 프롬프트 초안 생성`;
     }
   }
+
+  // §8.5: 리뷰 큐 렌더
+  try { await TeamReviewLayer.renderReviewQueue(activeId); } catch (_) {}
 }
 
 // SoavizProductionOS에 workbench 모듈 등록
@@ -48039,6 +48133,230 @@ async function _wbExportPackage() {
 window.SoavizProductionOS.register('promptDirector', { run: _wbPromptDirector });
 // §8.4 직접 접근 키
 window.SoavizProductionOS.promptDirector = PromptDirector;
+
+// ══════════════════════════════════════════════════════════════
+//  §8.5  TeamReviewLayer
+// ══════════════════════════════════════════════════════════════
+const TeamReviewLayer = (() => {
+
+  // 리뷰 액션 → 전환 상태 매핑
+  const REVIEW_ACTIONS = {
+    approve:   'approved',
+    reject:    'revision',   // reject → 수정 요청으로 처리 (archived 방지)
+    archive:   'archived',
+    revision:  'revision',
+    final:     'final',
+  };
+
+  // ── addShotComment ─────────────────────────────────────────
+  /**
+   * addShotComment(shotId, text, options)
+   * options: { reviewer, type, emoji, silent }
+   * type: 'note'|'approve'|'reject'|'revision'|'system'
+   * Returns: saved activity record
+   */
+  async function addShotComment(shotId, text, options = {}) {
+    if (!shotId || !text?.trim()) return null;
+
+    const shot = await db.shots.get(shotId).catch(() => null);
+    if (!shot) return null;
+
+    const type    = options.type || 'note';
+    const emoji   = options.emoji
+      || { approve:'✅', reject:'❌', revision:'🔄', note:'💬', system:'⚙️' }[type]
+      || '💬';
+
+    const rec = {
+      id:           `cmt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      projectId:    shot.projectId,
+      shotId,
+      type:         'shot_comment',
+      commentType:  type,
+      icon:         emoji,
+      label:        text.trim().slice(0, 200),
+      reviewer:     options.reviewer || 'me',
+      meta:         { shotTitle: shot.title || '', shotStatus: shot.status, commentType: type },
+      createdAt:    Date.now(),
+      ts:           Date.now(),
+    };
+
+    await db.activities.put(rec).catch(e => console.warn('[TeamReviewLayer.addShotComment]', e));
+    return rec;
+  }
+
+  // ── updateShotReviewStatus ─────────────────────────────────
+  /**
+   * updateShotReviewStatus(shotId, action, comment)
+   * action: 'approve' | 'reject' | 'revision' | 'final' | 'review'
+   * comment: optional string
+   * Returns: { ok, prev, next, commentId? }
+   */
+  async function updateShotReviewStatus(shotId, action, comment = '') {
+    const toStatus = REVIEW_ACTIONS[action] || action;
+
+    // ShotStateMachine 사용
+    const result = await transitionShot(shotId, toStatus).catch(e => ({
+      ok: false, reason: e.message,
+    }));
+
+    if (!result.ok) {
+      // 전환 불가면 강제 업데이트 (review → approved 등 직접 경로)
+      const shot = await db.shots.get(shotId).catch(() => null);
+      if (!shot) return { ok: false, reason: 'not_found' };
+      await db.shots.update(shotId, { status: toStatus, updatedAt: Date.now() });
+      result.ok = true; result.prev = shot.status; result.next = toStatus;
+    }
+
+    // 코멘트 자동 기록
+    let commentId = null;
+    if (comment?.trim() || action !== 'note') {
+      const autoMsg = comment?.trim() || {
+        approve:  '승인되었습니다 ✅',
+        reject:   '기각 — 수정이 필요합니다 ❌',
+        revision: '재작업 요청 🔄',
+        final:    '최종 확정 ★',
+        review:   '리뷰 대기열에 추가됨',
+      }[action] || '';
+
+      if (autoMsg) {
+        const cmt = await addShotComment(shotId, autoMsg, { type: action });
+        commentId = cmt?.id || null;
+      }
+    }
+
+    return { ok: true, prev: result.prev, next: result.next, commentId };
+  }
+
+  // ── getReviewQueue ─────────────────────────────────────────
+  /**
+   * getReviewQueue(projectId)
+   * 'review' 또는 'approved' 상태의 샷 목록 반환
+   */
+  async function getReviewQueue(projectId) {
+    if (!projectId) return [];
+    const shots = await db.shots.where('projectId').equals(projectId)
+      .filter(s => !s.archived && ['review', 'approved', 'revision'].includes(s.status))
+      .toArray().catch(() => []);
+    return shots;
+  }
+
+  // ── getShotComments ────────────────────────────────────────
+  async function getShotComments(shotId) {
+    return db.activities
+      .where('shotId').equals(shotId)
+      .filter(a => a.type === 'shot_comment')
+      .sortBy('createdAt')
+      .catch(() => []);
+  }
+
+  // ── renderReviewQueue (워크벤치 UI) ───────────────────────
+  async function renderReviewQueue(projectId) {
+    const panel     = document.getElementById('wb-review-panel');
+    const container = document.getElementById('wb-review-queue');
+    const countEl   = document.getElementById('wb-review-count');
+    if (!panel || !container) return;
+
+    const shots = await getReviewQueue(projectId);
+
+    if (!shots.length) {
+      panel.classList.add('hidden');
+      return;
+    }
+
+    panel.classList.remove('hidden');
+    if (countEl) countEl.textContent = shots.length;
+
+    // 각 샷의 approved asset 썸네일 로드
+    const rows = await Promise.all(shots.map(async shot => {
+      const asset = shot.approvedAssetId
+        ? await db.assets.get(shot.approvedAssetId).catch(() => null)
+        : (await db.assets.where('shotId').equals(shot.id)
+            .filter(a => a.status === 'approved' || a.status === 'final')
+            .limit(1).toArray().catch(() => []))[0] || null;
+
+      const thumbSrc = asset?.imageData
+        ? (asset.imageData.startsWith('data:') ? asset.imageData : `data:image/jpeg;base64,${asset.imageData}`)
+        : null;
+
+      const statusBadge = {
+        review:   '<span class="wb-status-badge review">REVIEW</span>',
+        approved: '<span class="wb-status-badge approved">APPROVED</span>',
+        revision: '<span class="wb-status-badge revision">REVISION</span>',
+        final:    '<span class="wb-status-badge final">FINAL</span>',
+      }[shot.status] || '';
+
+      return `
+        <div class="wb-rq-item" data-shot-id="${shot.id}">
+          ${thumbSrc
+            ? `<img class="wb-rq-thumb" src="${thumbSrc}" loading="lazy">`
+            : `<div class="wb-rq-thumb"></div>`}
+          <div class="wb-rq-info">
+            <div class="wb-rq-title">${shot.title || 'Untitled Shot'}</div>
+            <div class="wb-rq-meta">${statusBadge} &nbsp;Shot #${shot.number ?? ''}</div>
+            <div class="wb-rq-comment-row" id="cmt-row-${shot.id}">
+              <input class="wb-rq-comment-inp" id="cmt-inp-${shot.id}"
+                placeholder="코멘트 입력..." />
+              <button class="wb-rq-comment-send"
+                onclick="_trlSendComment('${shot.id}')">전송</button>
+            </div>
+          </div>
+          <div class="wb-rq-actions">
+            <button class="wb-rq-btn approve"
+              onclick="_trlAction('${shot.id}','approve')" title="승인">✅</button>
+            <button class="wb-rq-btn revision"
+              onclick="_trlAction('${shot.id}','revision')" title="재작업">🔄</button>
+            <button class="wb-rq-btn reject"
+              onclick="_trlToggleComment('${shot.id}')" title="코멘트">💬</button>
+          </div>
+        </div>`;
+    }));
+
+    container.innerHTML = rows.join('');
+  }
+
+  return {
+    addShotComment,
+    updateShotReviewStatus,
+    getReviewQueue,
+    getShotComments,
+    renderReviewQueue,
+  };
+})();
+
+// ── 워크벤치 리뷰 액션 글로벌 핸들러 ──────────────────────────
+async function _trlAction(shotId, action) {
+  const result = await TeamReviewLayer.updateShotReviewStatus(shotId, action);
+  if (result.ok) {
+    const labels = { approve:'승인', revision:'재작업 요청', reject:'기각', final:'최종 확정' };
+    showToast?.(`${labels[action] || action} 처리됐어요`, 'success');
+    // 리뷰 큐 새로고침
+    const pid = ProductionContextService.activeProjectId();
+    if (pid) TeamReviewLayer.renderReviewQueue(pid);
+  }
+}
+
+function _trlToggleComment(shotId) {
+  const row = document.getElementById(`cmt-row-${shotId}`);
+  if (!row) return;
+  row.classList.toggle('open');
+  if (row.classList.contains('open'))
+    document.getElementById(`cmt-inp-${shotId}`)?.focus();
+}
+
+async function _trlSendComment(shotId) {
+  const inp = document.getElementById(`cmt-inp-${shotId}`);
+  const text = inp?.value?.trim();
+  if (!text) return;
+  await TeamReviewLayer.addShotComment(shotId, text, { type: 'note' });
+  showToast?.('💬 코멘트가 저장됐어요', 'success');
+  if (inp) inp.value = '';
+  document.getElementById(`cmt-row-${shotId}`)?.classList.remove('open');
+}
+
+// SoavizProductionOS 노출
+window.SoavizProductionOS.reviewLayer = TeamReviewLayer;
+
+
 window.SoavizProductionOS.register('teamReview',     { share: _wbShareReview });
 window.SoavizProductionOS.register('exportPackage',  { export: _wbExportPackage });
 
