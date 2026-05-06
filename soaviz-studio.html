@@ -24646,10 +24646,6 @@
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><line x1="8" y1="11" x2="16" y2="6"/><line x1="8" y1="13" x2="16" y2="18"/></svg>
             관계 맵
           </button>
-          <button class="ch-action-btn ch-imagegen-header" id="ch-imagegen-btn">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L9.6 9.6 2 12l7.6 2.4L12 22l2.4-7.6L22 12l-7.6-2.4z"/></svg>
-            이미지 생성
-          </button>
         </div>
       </div>
       <div id="ch-metrics" class="ch-metrics"></div>
@@ -51773,11 +51769,6 @@ function bindCharactersPage() {
   $('#ch-random-btn')?.addEventListener('click', () => createRandomCharacterQuick());
   $('#ch-pack-btn')?.addEventListener('click', () => copyCharacterPromptPack());
   $('#ch-relmap-btn')?.addEventListener('click', () => openCharacterRelationMap());
-  $('#ch-imagegen-btn')?.addEventListener('click', () => {
-    const ids = [...CHARACTER_PAGE_STATE.selected];
-    if (ids.length > 0) openCharacterEditor(ids[0], null, 'sheet');
-    else openCharacterEditor(null, null, 'sheet');
-  });
   $('#ch-grid')?.addEventListener('click', async e => {
     const btn = e.target.closest('[data-ch-action]');
     if (!btn) return;
