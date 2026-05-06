@@ -6,18 +6,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#08080C" />
-  <meta name="description" content="soaviz studio — 모바일" />
   <title>soaviz studio</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
   <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="scenarios-data.js"></script>
+  <script src="characters-data.js"></script>
   <style>
     :root {
       --bg: #08080C; --bg-1: #0F0F18; --bg-card: #14141F; --bg-elev: #1B1B2A;
       --text: #F4F4F8; --text-dim: #B8B8C8; --text-faint: #6B6B82;
       --border: #1F1F30; --border-strong: #2A2A40;
       --accent: #A78BFA; --accent-2: #6366F1; --accent-soft: rgba(167,139,250,0.10);
+      --pink: #FF1493; --pink-soft: rgba(255,20,147,0.12);
       --danger: #F87171; --success: #6EE7B7; --warn: #FBBF24;
       --st: env(safe-area-inset-top, 0px);
       --sb: env(safe-area-inset-bottom, 0px);
@@ -59,15 +61,16 @@
     .m-card-title { font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.07em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
     .m-sec { font-size: 11px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.06em; text-transform: uppercase; margin: 20px 0 9px; }
     .m-sec:first-child { margin-top: 4px; }
-    .m-divider { height: 1px; background: var(--border); margin: 12px 0; }
-    .m-pb { height: 20px; }
+    .m-pb { height: 24px; }
 
     /* ── Buttons ── */
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 11px 18px; border-radius: 10px; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; transition: transform 0.1s; }
     .btn:active { transform: scale(0.97); }
     .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; box-shadow: 0 8px 20px -6px rgba(167,139,250,0.5); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; box-shadow: 0 8px 20px -6px rgba(167,139,250,0.45); }
+    .btn-pink    { background: linear-gradient(135deg, var(--pink), #EC4899); color: white; box-shadow: 0 8px 20px -6px rgba(255,20,147,0.45); }
     .btn-secondary { background: var(--bg-elev); color: var(--text); border: 1px solid var(--border-strong); }
+    .btn-ghost  { background: none; color: var(--text-faint); border: 1px solid var(--border); }
     .btn-danger { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.25); }
     .btn-full { width: 100%; }
     .btn-sm { padding: 8px 14px; font-size: 12px; }
@@ -101,6 +104,9 @@
     .badge-wip  { background: rgba(251,191,36,0.15);  color: #FBBF24; }
     .badge-todo { background: rgba(107,107,130,0.18); color: var(--text-faint); }
     .badge-pro  { background: rgba(167,139,250,0.15); color: var(--accent); }
+    .badge-genre{ background: rgba(167,139,250,0.12); color: var(--accent); border: 1px solid rgba(167,139,250,0.3); }
+    .badge-role { background: rgba(110,231,183,0.1);  color: #6EE7B7;  border: 1px solid rgba(110,231,183,0.3); }
+    .badge-role.antag { background: rgba(248,113,113,0.1); color: #F87171; border-color: rgba(248,113,113,0.3); }
 
     /* ── Toast ── */
     .toast { position: fixed; bottom: calc(56px + var(--sb) + 12px); left: 50%; transform: translateX(-50%) translateY(14px); background: var(--bg-elev); border: 1px solid var(--border-strong); padding: 9px 16px; border-radius: 10px; font-size: 13px; box-shadow: 0 10px 30px -8px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: 0.2s; z-index: 9900; white-space: nowrap; max-width: calc(100vw - 32px); }
@@ -109,7 +115,7 @@
     .toast.error{ border-color: rgba(248,113,113,0.4); color: #fecaca; }
     .toast.warn { border-color: rgba(251,191,36,0.4);  color: #fde68a; }
 
-    /* ── Modal (bottom sheet + center) ── */
+    /* ── Modal ── */
     .modal-bg { position: fixed; inset: 0; background: rgba(8,8,12,0.82); backdrop-filter: blur(8px); z-index: 8000; display: flex; align-items: flex-end; }
     .modal-bg.center { align-items: center; justify-content: center; padding: 16px; }
     .modal-sheet { width: 100%; background: var(--bg-card); border: 1px solid var(--border-strong); border-radius: 20px 20px 0 0; padding: 20px 20px calc(20px + var(--sb)); max-height: 92dvh; overflow-y: auto; }
@@ -129,7 +135,7 @@
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.18); border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Loading screen ── */
+    /* ── Loading ── */
     #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 9999; }
     #loading .ll { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; }
     #loading .ll span { background: linear-gradient(135deg, var(--accent), #f472b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
@@ -137,53 +143,106 @@
     /* ── HOME ── */
     .home-greet h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.03em; }
     .home-greet p  { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+    .quick-btn { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; cursor: pointer; transition: all 0.15s; text-align: left; }
+    .quick-btn:active { transform: scale(0.97); background: var(--bg-elev); }
+    .quick-icon { font-size: 26px; margin-bottom: 8px; }
+    .quick-title { font-size: 13px; font-weight: 700; }
+    .quick-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; line-height: 1.4; }
     .goal-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
-    .goal-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .goal-row:last-child { border-bottom: none; }
     .goal-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-strong); flex-shrink: 0; display: grid; place-items: center; cursor: pointer; transition: all 0.15s; }
     .goal-check.done { background: var(--accent); border-color: var(--accent); }
     .goal-check.done::after { content: '✓'; font-size: 11px; color: white; font-weight: 700; }
     .goal-text { font-size: 13px; flex: 1; }
     .goal-text.done { text-decoration: line-through; color: var(--text-faint); }
-    .diary-prev { font-size: 13px; color: var(--text-dim); line-height: 1.55; cursor: pointer; min-height: 36px; }
-    .diary-prev.empty { color: var(--text-faint); font-style: italic; }
 
-    /* ── PIPELINE ── */
+    /* ── CREATE (핵심 제작 탭) ── */
+    .create-step {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+      margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .create-step.active { border-color: rgba(167,139,250,0.5); }
+    .create-step-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; cursor: pointer;
+    }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--bg-elev); border: 1px solid var(--border-strong); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--text-faint); flex-shrink: 0; }
+    .step-num.done { background: var(--accent); border-color: var(--accent); color: white; }
+    .step-title { font-size: 14px; font-weight: 700; margin-left: 10px; flex: 1; }
+    .step-status { font-size: 11px; color: var(--text-faint); }
+    .step-body { padding: 0 16px 16px; }
+
+    /* 시나리오 카드 */
+    .scenario-card { background: var(--bg-1); border-radius: 12px; padding: 14px; margin-top: 4px; }
+    .sc-genre-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .sc-title { font-size: 17px; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 6px; line-height: 1.3; }
+    .sc-hook { font-size: 13px; color: var(--text-dim); line-height: 1.55; margin-bottom: 8px; }
+    .sc-synopsis { font-size: 12px; color: var(--text-faint); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .sc-synopsis.expanded { -webkit-line-clamp: unset; }
+
+    /* 캐릭터 카드 */
+    .char-card { background: var(--bg-1); border-radius: 12px; padding: 12px 14px; margin-top: 8px; position: relative; }
+    .char-card:first-child { margin-top: 4px; }
+    .char-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .char-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+    .char-occ { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .char-appear { font-size: 12px; color: var(--text-faint); line-height: 1.5; }
+    .char-mbti { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--bg-elev); color: var(--text-faint); margin-left: auto; }
+    .char-remove { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: var(--text-faint); font-size: 16px; padding: 4px; }
+
+    /* Roll button */
+    .roll-btn { width: 100%; padding: 13px; border: 2px dashed var(--border-strong); border-radius: 12px; background: none; color: var(--text-faint); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .roll-btn:hover, .roll-btn:active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .roll-btn.rolling { border-color: var(--pink); color: var(--pink); background: var(--pink-soft); animation: rollPulse 0.6s ease-in-out infinite alternate; }
+    @keyframes rollPulse { from { opacity: 0.7; } to { opacity: 1; } }
+
+    /* Save result card */
+    .save-card { background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(99,102,241,0.05)); border: 1px solid rgba(167,139,250,0.25); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+    .save-card-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.02em; }
+    .save-card-sub { font-size: 12px; color: var(--text-faint); margin-bottom: 12px; line-height: 1.5; }
+
+    /* Saved seeds list */
+    .seed-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 13px 14px; margin-bottom: 8px; cursor: pointer; }
+    .seed-card:active { background: var(--bg-elev); }
+    .seed-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .seed-card-title { font-size: 14px; font-weight: 700; flex: 1; line-height: 1.3; }
+    .seed-card-genre { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+    .seed-card-chars { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .seed-char-tag { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 5px; background: var(--bg-1); color: var(--text-dim); }
+    .seed-card-time { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+    /* Streaming animation */
+    @keyframes _mCaret { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+    ._m-caret { display: inline-block; width: 2px; height: 1em; background: var(--accent); border-radius: 1px; vertical-align: text-bottom; margin-left: 1px; animation: _mCaret 1s step-start infinite; }
+
+    /* ── PROJECTS ── */
     .pipe-ep { margin-bottom: 12px; }
-    .pipe-ep-title { font-size: 12px; font-weight: 700; color: var(--accent); padding: 6px 0; letter-spacing: 0.02em; }
+    .pipe-ep-title { font-size: 12px; font-weight: 700; color: var(--accent); padding: 6px 0; }
     .pipe-scene { padding-left: 12px; border-left: 2px solid var(--border-strong); margin-bottom: 8px; }
     .pipe-scene-title { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
     .pipe-shot { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--bg-1); border-radius: 8px; margin-bottom: 4px; }
     .pipe-shot-num { font-size: 10px; font-weight: 700; color: var(--text-faint); min-width: 36px; }
     .pipe-shot-name { font-size: 12px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* ── GENERATE ── */
-    .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .model-btn { padding: 10px 12px; background: var(--bg-card); border: 2px solid var(--border); border-radius: 10px; color: var(--text-faint); font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit; }
-    .model-btn.sel { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-    .gen-result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
-    .gen-thumb { width: 100%; aspect-ratio: 16/9; background: var(--bg-1); display: grid; place-items: center; color: var(--text-faint); font-size: 12px; }
-    .gen-thumb video, .gen-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .gen-meta { padding: 10px 14px; }
-    .gen-model-tag { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
-    .gen-prompt-prev { font-size: 12px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .vault-warn { background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
-    .vault-warn-title { font-size: 13px; font-weight: 600; color: var(--warn); margin-bottom: 4px; }
-    .vault-warn-sub { font-size: 12px; color: var(--text-faint); margin-bottom: 8px; }
-
     /* ── LIBRARY ── */
     .asset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .asset-card { aspect-ratio: 16/9; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: grid; place-items: center; cursor: pointer; position: relative; transition: transform 0.12s; }
     .asset-card:active { transform: scale(0.97); }
     .asset-card img, .asset-card video { width: 100%; height: 100%; object-fit: cover; }
-    .asset-type-tag { position: absolute; top: 5px; left: 5px; font-size: 9px; font-weight: 700; padding: 2px 5px; background: rgba(0,0,0,0.65); border-radius: 4px; color: var(--text-dim); letter-spacing: 0.04em; }
+    .asset-type-tag { position: absolute; top: 5px; left: 5px; font-size: 9px; font-weight: 700; padding: 2px 5px; background: rgba(0,0,0,0.65); border-radius: 4px; color: var(--text-dim); }
+    .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-pill { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-faint); transition: all 0.15s; }
+    .filter-pill.active { background: var(--accent-soft); border-color: rgba(167,139,250,0.4); color: var(--accent); }
 
     /* ── SETTINGS ── */
     .set-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
     .set-row:last-child { border-bottom: none; }
     .set-row-label { font-size: 14px; font-weight: 500; }
     .set-row-val { font-size: 13px; color: var(--text-faint); }
-    .set-row-btn { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px; }
-    .vault-status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); margin-bottom: 10px; transition: all 0.2s; }
+    .set-row-btn { font-size: 12px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; }
+    .vault-status { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--bg-1); border: 1px solid var(--border); margin-bottom: 10px; }
     .vault-status.unlocked { border-color: rgba(110,231,183,0.3); background: rgba(110,231,183,0.04); }
     .vault-icon { font-size: 20px; }
     .vault-text { flex: 1; }
@@ -193,16 +252,10 @@
     .key-row:last-child { border-bottom: none; }
     .key-name { font-size: 12px; color: var(--text-faint); font-family: ui-monospace, monospace; flex: 1; }
     .key-val { font-size: 11px; font-family: ui-monospace, monospace; background: var(--bg-1); padding: 3px 7px; border-radius: 4px; color: var(--text-dim); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .key-edit-btn { font-size: 11px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; padding: 4px; }
+    .key-edit-btn { font-size: 11px; font-weight: 600; color: var(--accent); background: none; border: none; cursor: pointer; }
 
     ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-
-    /* Filter pills */
-    .filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
-    .filter-row::-webkit-scrollbar { display: none; }
-    .filter-pill { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-faint); transition: all 0.15s; }
-    .filter-pill.active { background: var(--accent-soft); border-color: rgba(167,139,250,0.4); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -228,15 +281,39 @@
 
     <!-- ══════════ HOME ══════════ -->
     <div class="m-page active" id="pg-home">
-      <div class="home-greet" style="margin-bottom:14px">
+      <div class="home-greet" style="margin-bottom:16px">
         <h2 id="greet-text">안녕하세요 👋</h2>
         <p id="greet-date"></p>
       </div>
 
       <div class="m-stats">
+        <div class="m-stat"><div class="m-stat-num" id="s-seed">—</div><div class="m-stat-lbl">저장된 씨드</div></div>
         <div class="m-stat"><div class="m-stat-num" id="s-proj">—</div><div class="m-stat-lbl">프로젝트</div></div>
-        <div class="m-stat"><div class="m-stat-num" id="s-shot">—</div><div class="m-stat-lbl">Shot</div></div>
         <div class="m-stat"><div class="m-stat-num" id="s-asset">—</div><div class="m-stat-lbl">에셋</div></div>
+      </div>
+
+      <div class="m-sec">빠른 시작</div>
+      <div class="quick-grid">
+        <div class="quick-btn" onclick="showPage('create')">
+          <div class="quick-icon">🎲</div>
+          <div class="quick-title">랜덤 제작</div>
+          <div class="quick-sub">시나리오 + 캐릭터 즉시 생성</div>
+        </div>
+        <div class="quick-btn" onclick="showPage('projects')">
+          <div class="quick-icon">📁</div>
+          <div class="quick-title">프로젝트</div>
+          <div class="quick-sub">저장된 프로젝트 열기</div>
+        </div>
+        <div class="quick-btn" onclick="showPage('library')">
+          <div class="quick-icon">🎬</div>
+          <div class="quick-title">라이브러리</div>
+          <div class="quick-sub">에셋 및 결과물 보기</div>
+        </div>
+        <div class="quick-btn" id="home-seeds-btn" onclick="showPage('create');setTimeout(()=>document.getElementById('cr-saved').scrollIntoView({behavior:'smooth'}),300)">
+          <div class="quick-icon">💾</div>
+          <div class="quick-title">저장된 씨드</div>
+          <div class="quick-sub">이전에 만든 시나리오</div>
+        </div>
       </div>
 
       <div class="m-sec">진행 중 목표</div>
@@ -247,13 +324,88 @@
         </div>
       </div>
 
-      <div class="m-sec">최근 프로젝트</div>
-      <div id="home-recents"></div>
+      <div class="m-sec">최근 씨드</div>
+      <div id="home-seeds"></div>
+      <div class="m-pb"></div>
+    </div>
 
-      <div class="m-sec">오늘 다이어리</div>
-      <div class="m-card" id="diary-card">
-        <div class="diary-prev empty" id="diary-prev">탭하여 오늘 작업 기록...</div>
+    <!-- ══════════ CREATE (핵심 제작 플로우) ══════════ -->
+    <div class="m-page" id="pg-create">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:18px;font-weight:700;letter-spacing:-0.025em">🎲 랜덤 제작</div>
+        <button class="btn btn-ghost btn-sm" id="cr-reset-btn">초기화</button>
       </div>
+
+      <!-- STEP 1: 시나리오 -->
+      <div class="create-step" id="step-scenario">
+        <div class="create-step-head" onclick="toggleStep('scenario')">
+          <div class="step-num" id="sn-1">1</div>
+          <div class="step-title">시나리오</div>
+          <div class="step-status" id="ss-1">뽑기 필요</div>
+        </div>
+        <div class="step-body" id="sb-scenario" style="display:none">
+          <div id="scenario-card-area">
+            <button class="roll-btn" id="scenario-roll-btn" onclick="rollScenario()">
+              <span id="sr-icon">🎲</span> 시나리오 뽑기
+            </button>
+          </div>
+          <div id="scenario-card" style="display:none"></div>
+          <div id="scenario-btns" style="display:none;margin-top:10px;display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" style="flex:1" onclick="rollScenario()">🎲 다시 뽑기</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1" id="sc-expand-btn" onclick="toggleSynopsis()">더 보기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: 캐릭터 -->
+      <div class="create-step" id="step-character">
+        <div class="create-step-head" onclick="toggleStep('character')">
+          <div class="step-num" id="sn-2">2</div>
+          <div class="step-title">캐릭터</div>
+          <div class="step-status" id="ss-2">최대 3명</div>
+        </div>
+        <div class="step-body" id="sb-character" style="display:none">
+          <div id="char-list"></div>
+          <div id="char-add-area">
+            <button class="roll-btn" id="char-roll-btn" onclick="rollCharacter()">
+              <span id="cr-icon">🎲</span> 캐릭터 뽑기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: 저장 & 생성 -->
+      <div class="create-step" id="step-save">
+        <div class="create-step-head" onclick="toggleStep('save')">
+          <div class="step-num" id="sn-3">3</div>
+          <div class="step-title">저장 & 생성</div>
+          <div class="step-status" id="ss-3">—</div>
+        </div>
+        <div class="step-body" id="sb-save" style="display:none">
+          <div class="save-card">
+            <div class="save-card-title" id="save-preview-title">시나리오를 먼저 뽑아주세요</div>
+            <div class="save-card-sub" id="save-preview-sub">위에서 시나리오와 캐릭터를 뽑으면 이 카드에 미리보기가 표시됩니다.</div>
+            <button class="btn btn-primary btn-full" id="save-seed-btn" onclick="saveSeed()" disabled>
+              💾 프로젝트에 저장
+            </button>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text-faint);text-align:center">
+            저장된 씨드는 데스크톱에서 바로 열어 작업할 수 있습니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- 저장된 씨드 목록 -->
+      <div id="cr-saved">
+        <div class="m-sec">저장된 씨드</div>
+        <div id="cr-seeds-list"></div>
+        <div class="m-empty" id="cr-seeds-empty" style="display:none">
+          <div class="m-empty-icon">💾</div>
+          <div class="m-empty-title">저장된 씨드 없음</div>
+          <div class="m-empty-sub">위에서 시나리오와 캐릭터를 뽑고<br>프로젝트에 저장해보세요.</div>
+        </div>
+      </div>
+
       <div class="m-pb"></div>
     </div>
 
@@ -264,54 +416,6 @@
         <button class="btn btn-primary btn-sm" id="new-proj-btn">+ 새 프로젝트</button>
       </div>
       <div id="proj-list"></div>
-      <div class="m-pb"></div>
-    </div>
-
-    <!-- ══════════ GENERATE ══════════ -->
-    <div class="m-page" id="pg-generate">
-      <div style="font-size:18px;font-weight:700;letter-spacing:-0.025em;margin-bottom:14px">⚡ 생성</div>
-
-      <div class="vault-warn" id="gen-vault-warn" style="display:none">
-        <div class="vault-warn-title">🔐 Vault 잠김</div>
-        <div class="vault-warn-sub">API 키 사용을 위해 Vault를 잠금 해제하세요.</div>
-        <button class="btn btn-secondary btn-sm btn-full" id="gen-unlock-btn">Vault 잠금 해제</button>
-      </div>
-
-      <div class="m-field">
-        <label class="m-label">프로젝트</label>
-        <select class="m-select" id="gen-proj"><option value="">— 선택 안 함 —</option></select>
-      </div>
-      <div class="m-field">
-        <label class="m-label">프롬프트</label>
-        <textarea class="m-textarea" id="gen-prompt" placeholder="영상 생성 프롬프트를 입력하세요..." rows="4"></textarea>
-      </div>
-      <div class="m-field">
-        <label class="m-label">모델 선택</label>
-        <div class="model-grid" id="model-grid">
-          <button class="model-btn sel" data-model="kling-v2">Kling v2</button>
-          <button class="model-btn" data-model="seedance-v1">Seedance v1</button>
-          <button class="model-btn" data-model="veo-3">Veo 3</button>
-          <button class="model-btn" data-model="hailuo-v3">Hailuo v3</button>
-          <button class="model-btn" data-model="wan-pro">Wan Pro</button>
-          <button class="model-btn" data-model="minimax-video">MiniMax</button>
-        </div>
-      </div>
-      <div class="m-field">
-        <label class="m-label">해상도 · 길이</label>
-        <select class="m-select" id="gen-res">
-          <option value="720p_5">720p · 5초</option>
-          <option value="720p_10">720p · 10초</option>
-          <option value="1080p_5">1080p · 5초</option>
-          <option value="1080p_10">1080p · 10초</option>
-        </select>
-      </div>
-      <button class="btn btn-primary btn-full" id="gen-btn" style="margin-bottom:8px">
-        <span id="gen-btn-inner">⚡ 생성하기</span>
-      </button>
-      <div id="gen-status" style="text-align:center;font-size:12px;color:var(--text-faint);margin-bottom:14px;display:none"></div>
-
-      <div class="m-sec">최근 결과</div>
-      <div id="gen-results"></div>
       <div class="m-pb"></div>
     </div>
 
@@ -328,7 +432,7 @@
       <div class="m-empty" id="lib-empty" style="display:none">
         <div class="m-empty-icon">🎬</div>
         <div class="m-empty-title">에셋 없음</div>
-        <div class="m-empty-sub">생성 탭에서 영상을 만들면 여기에 저장됩니다.</div>
+        <div class="m-empty-sub">데스크톱에서 생성한 결과물이 여기에 표시됩니다.</div>
       </div>
       <div class="m-pb"></div>
     </div>
@@ -342,8 +446,8 @@
         <div style="display:flex;align-items:center;gap:14px">
           <div class="m-avatar" id="set-avatar" style="width:46px;height:46px;font-size:19px;border-radius:12px"></div>
           <div style="flex:1;min-width:0">
-            <div id="set-name" style="font-size:16px;font-weight:700;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-            <div id="set-email" style="font-size:12px;color:var(--text-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+            <div id="set-name" style="font-size:16px;font-weight:700;letter-spacing:-0.02em"></div>
+            <div id="set-email" style="font-size:12px;color:var(--text-faint);margin-top:2px"></div>
           </div>
           <span class="m-plan" id="set-plan">FREE</span>
         </div>
@@ -390,8 +494,8 @@
 
   <nav class="m-nav">
     <button class="m-nav-btn active" data-page="home"><div class="m-nav-icon">🏠</div><div class="m-nav-lbl">홈</div></button>
+    <button class="m-nav-btn" data-page="create"><div class="m-nav-icon">🎲</div><div class="m-nav-lbl">제작</div></button>
     <button class="m-nav-btn" data-page="projects"><div class="m-nav-icon">📁</div><div class="m-nav-lbl">프로젝트</div></button>
-    <button class="m-nav-btn" data-page="generate"><div class="m-nav-icon">⚡</div><div class="m-nav-lbl">생성</div></button>
     <button class="m-nav-btn" data-page="library"><div class="m-nav-icon">🎬</div><div class="m-nav-lbl">라이브러리</div></button>
     <button class="m-nav-btn" data-page="settings"><div class="m-nav-icon">⚙️</div><div class="m-nav-lbl">설정</div></button>
   </nav>
@@ -400,30 +504,30 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    CONFIG
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 const API_BASE = (() => {
   const loc = location.hostname;
   return (loc === 'localhost' || loc === '127.0.0.1' || location.protocol === 'file:')
     ? 'http://localhost:8787'
     : 'https://soaviz-studio-api.fly.dev';
 })();
-const SUPA_URL = 'https://yfzhvuyrdabpzowprupa.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmemh2dXlyZGFicHpvd3BydXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTk3NTcsImV4cCI6MjA5Mjg5NTc1N30.b2rFHl5axZfy4v1_onrJeMQp7c6nEyUIvOI8ScT9doM';
-const PROFILE_KEY  = 'soaviz.profile.v1';
-const DIARY_KEY    = 'soaviz.work.diary.v1';
-const GOALS_KEY    = 'soaviz.production.goals.v2';
+const SUPA_URL   = 'https://yfzhvuyrdabpzowprupa.supabase.co';
+const SUPA_KEY   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmemh2dXlyZGFicHpvd3BydXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMTk3NTcsImV4cCI6MjA5Mjg5NTc1N30.b2rFHl5axZfy4v1_onrJeMQp7c6nEyUIvOI8ScT9doM';
+const PROFILE_KEY = 'soaviz.profile.v1';
+const GOALS_KEY   = 'soaviz.production.goals.v2';
+const SEEDS_KEY   = 'soaviz.mobile.seeds.v1';
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    SUPABASE
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 const sb = (() => { try { return supabase.createClient(SUPA_URL, SUPA_KEY); } catch { return null; } })();
 function getProfile() { try { return JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch { return null; } }
 
-/* ══════════════════════════════════════════
-   DEXIE — same schema as desktop
-══════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   DEXIE
+════════════════════════════════════════ */
 const db = new Dexie('soaviz_v3');
 db.version(1).stores({
   projects:   'id, *tags, updatedAt, archived',
@@ -444,70 +548,43 @@ db.version(1).stores({
   blobs:      'id, kind, size, createdAt',
 });
 
-/* ══════════════════════════════════════════
-   VAULT — same crypto as desktop (PBKDF2 + AES-GCM)
-══════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   VAULT
+════════════════════════════════════════ */
 const Vault = (() => {
   const ENC = new TextEncoder(), DEC = new TextDecoder();
   const ITER = 250_000;
   let _k = null;
   const b64a = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
   const ab64 = a => btoa(String.fromCharCode(...new Uint8Array(a)));
-
   async function _derive(pp, salt) {
     const base = await crypto.subtle.importKey('raw', ENC.encode(pp), 'PBKDF2', false, ['deriveKey']);
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' },
-      base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-    );
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
   }
-  async function _enc(txt) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, _k, ENC.encode(txt));
-    return { iv: ab64(iv), ct: ab64(ct) };
-  }
-  async function _dec(rec) {
-    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64a(rec.iv) }, _k, b64a(rec.ct));
-    return DEC.decode(pt);
-  }
-
+  async function _enc(txt) { const iv = crypto.getRandomValues(new Uint8Array(12)); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, _k, ENC.encode(txt)); return { iv: ab64(iv), ct: ab64(ct) }; }
+  async function _dec(rec) { const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64a(rec.iv) }, _k, b64a(rec.ct)); return DEC.decode(pt); }
   async function unlock(pp) {
     let salt;
     const sr = await db.kv.get('vault.salt');
-    if (sr) { salt = b64a(sr.v); }
-    else { salt = crypto.getRandomValues(new Uint8Array(16)); await db.kv.put({ k: 'vault.salt', v: ab64(salt) }); }
+    if (sr) { salt = b64a(sr.v); } else { salt = crypto.getRandomValues(new Uint8Array(16)); await db.kv.put({ k: 'vault.salt', v: ab64(salt) }); }
     const tmpK = await _derive(pp, salt);
     const vr = await db.secrets.get('vault.verifier');
-    if (vr) {
-      try {
-        const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64a(vr.iv) }, tmpK, b64a(vr.ct));
-        if (DEC.decode(pt) !== 'soaviz-verifier-v1') throw new Error('wrong');
-        _k = tmpK; return true;
-      } catch { return false; }
-    } else {
-      _k = tmpK;
-      const v = await _enc('soaviz-verifier-v1');
-      await db.secrets.put({ id: 'vault.verifier', kind: 'verifier', ...v });
-      return true;
-    }
+    if (vr) { try { const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64a(vr.iv) }, tmpK, b64a(vr.ct)); if (DEC.decode(pt) !== 'soaviz-verifier-v1') throw new Error(); _k = tmpK; return true; } catch { return false; } }
+    else { _k = tmpK; const v = await _enc('soaviz-verifier-v1'); await db.secrets.put({ id: 'vault.verifier', kind: 'verifier', ...v }); return true; }
   }
   function lock() { _k = null; }
   function isUnlocked() { return _k !== null; }
   async function hasVault() { return !!(await db.secrets.get('vault.verifier')); }
   async function set(id, val) { const e = await _enc(val); await db.secrets.put({ id, kind: 'api_key', ...e }); }
-  async function get(id) {
-    const r = await db.secrets.get(id);
-    if (!r) return null;
-    try { return await _dec(r); } catch { return null; }
-  }
+  async function get(id) { const r = await db.secrets.get(id); if (!r) return null; try { return await _dec(r); } catch { return null; } }
   return { unlock, lock, isUnlocked, hasVault, set, get };
 })();
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    UTILS
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function ago(ts) {
   if (!ts) return '';
@@ -517,6 +594,7 @@ function ago(ts) {
   if (d < 86400e3) return `${Math.floor(d/3600e3)}시간 전`;
   return `${Math.floor(d/86400e3)}일 전`;
 }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 /* TOAST */
 const toastEl = document.getElementById('toast');
@@ -537,12 +615,34 @@ function modal(html, center = false, onClose) {
   return { el: bg, close };
 }
 
-/* ══════════════════════════════════════════
+/* Streaming text (mobile version) */
+function mStream(el, text, onDone) {
+  if (!el || !text) { if (el) el.textContent = text || ''; onDone?.(); return; }
+  el.textContent = '';
+  const caret = document.createElement('span');
+  caret.className = '_m-caret';
+  el.appendChild(caret);
+  const speed = text.length > 500 ? 12 : 8;
+  let i = 0;
+  const tick = setInterval(() => {
+    const chunk = Math.random() < 0.15 ? 3 : 1;
+    for (let c = 0; c < chunk && i < text.length; c++) {
+      el.insertBefore(document.createTextNode(text[i]), caret);
+      i++;
+    }
+    if (i >= text.length) {
+      clearInterval(tick);
+      setTimeout(() => { caret.remove(); onDone?.(); }, 400);
+    }
+  }, speed);
+}
+
+/* ════════════════════════════════════════
    NAVIGATION
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 let _curPage = 'home';
-const _pages = { home: 'pg-home', projects: 'pg-projects', generate: 'pg-generate', library: 'pg-library', settings: 'pg-settings' };
-const _loaders = { home: loadHome, projects: loadProjects, generate: loadGenerate, library: loadLibrary, settings: loadSettings };
+const _pages = { home: 'pg-home', create: 'pg-create', projects: 'pg-projects', library: 'pg-library', settings: 'pg-settings' };
+const _loaders = { home: loadHome, create: loadCreate, projects: loadProjects, library: loadLibrary, settings: loadSettings };
 
 function showPage(name) {
   _curPage = name;
@@ -553,50 +653,38 @@ function showPage(name) {
 }
 document.querySelectorAll('.m-nav-btn').forEach(b => b.addEventListener('click', () => showPage(b.dataset.page)));
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    HOME
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 async function loadHome() {
   const p = getProfile();
   const h = new Date().getHours();
-  const greet = h < 12 ? '좋은 아침이에요' : h < 18 ? '안녕하세요' : '수고하셨어요';
+  const greet = h < 6 ? '밤이 깊었네요' : h < 12 ? '좋은 아침이에요' : h < 18 ? '안녕하세요' : '수고하셨어요';
   document.getElementById('greet-text').textContent = `${greet}, ${p?.name || '크리에이터'} 👋`;
   document.getElementById('greet-date').textContent = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
 
   // Stats
   try {
-    const [pc, sc, ac] = await Promise.all([
+    const seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]');
+    document.getElementById('s-seed').textContent = seeds.length;
+    const [pc, ac] = await Promise.all([
       db.projects.filter(p => !p.archived).count(),
-      db.shots.filter(s => !s.archived).count(),
       db.assets.filter(a => !a.archived).count(),
     ]);
     document.getElementById('s-proj').textContent = pc;
-    document.getElementById('s-shot').textContent = sc;
     document.getElementById('s-asset').textContent = ac;
   } catch {}
 
   await loadGoals();
-  await loadRecentProj();
-  loadDiaryPreview();
+  loadRecentSeeds();
 }
 
 async function loadGoals() {
   const el = document.getElementById('goals-list');
   try {
     let goals = JSON.parse(localStorage.getItem(GOALS_KEY) || '[]');
-    // Merge IDB goals
-    try {
-      const idbGoals = await db.goals.filter(g => !g.archived).toArray();
-      idbGoals.forEach(g => {
-        if (!goals.find(x => x.id === g.id))
-          goals.push({ id: g.id, title: g.title || g.name || '목표', done: g.done || false, deadline: g.deadlineDate });
-      });
-    } catch {}
-    if (!goals.length) {
-      el.innerHTML = `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:10px 0">목표가 없습니다.</div>`;
-      return;
-    }
-    el.innerHTML = goals.slice(0, 6).map(g => `
+    if (!goals.length) { el.innerHTML = `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:10px 0">목표가 없습니다.</div>`; return; }
+    el.innerHTML = goals.slice(0, 5).map(g => `
       <div class="goal-row">
         <div class="goal-check ${g.done ? 'done' : ''}" data-gid="${esc(g.id)}"></div>
         <span class="goal-text ${g.done ? 'done' : ''}">${esc(g.title || '목표')}</span>
@@ -629,67 +717,390 @@ document.getElementById('add-goal-btn').addEventListener('click', () => {
   el.querySelector('#gs').onclick = () => {
     const title = el.querySelector('#gi').value.trim();
     if (!title) { toast('목표를 입력하세요', 'error'); return; }
-    try {
-      let g = JSON.parse(localStorage.getItem(GOALS_KEY) || '[]');
-      g.push({ id: uid(), title, done: false, deadline: el.querySelector('#gd').value || null });
-      localStorage.setItem(GOALS_KEY, JSON.stringify(g));
-    } catch {}
+    let g = JSON.parse(localStorage.getItem(GOALS_KEY) || '[]');
+    g.push({ id: uid(), title, done: false, deadline: el.querySelector('#gd').value || null });
+    localStorage.setItem(GOALS_KEY, JSON.stringify(g));
     close(); loadGoals(); toast('✓ 목표 추가', 'ok');
   };
   el.querySelector('#gi').focus();
 });
 
-async function loadRecentProj() {
-  const el = document.getElementById('home-recents');
-  try {
-    const ps = (await db.projects.orderBy('updatedAt').reverse().limit(4).toArray()).filter(p => !p.archived);
-    el.innerHTML = ps.length
-      ? ps.map(p => `<div class="m-item" onclick="openProjDetail('${esc(p.id)}')"><div class="m-item-icon">${esc(p.icon || '📁')}</div><div class="m-item-body"><div class="m-item-title">${esc(p.name || p.title || '프로젝트')}</div><div class="m-item-sub">${ago(p.updatedAt)}</div></div><div class="m-item-right">›</div></div>`).join('')
-      : `<div class="m-empty"><div class="m-empty-icon">📁</div><div class="m-empty-title">프로젝트 없음</div><div class="m-empty-sub">프로젝트 탭에서 시작하세요.</div></div>`;
-  } catch { el.innerHTML = ''; }
+function loadRecentSeeds() {
+  const el = document.getElementById('home-seeds');
+  const seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]');
+  const recent = seeds.slice(-4).reverse();
+  el.innerHTML = recent.length
+    ? recent.map(s => renderSeedCard(s)).join('')
+    : `<div class="m-empty" style="padding:20px 16px"><div class="m-empty-icon">🎲</div><div class="m-empty-title">아직 씨드 없음</div><div class="m-empty-sub">제작 탭에서 시나리오를 뽑아보세요.</div></div>`;
 }
 
-function loadDiaryPreview() {
-  try {
-    const d = JSON.parse(localStorage.getItem(DIARY_KEY) || '{}');
-    const e = d[today()];
-    const el = document.getElementById('diary-prev');
-    if (e?.text) { el.textContent = e.text; el.className = 'diary-prev'; }
-    else { el.textContent = '탭하여 오늘 작업 기록...'; el.className = 'diary-prev empty'; }
-  } catch {}
+/* ════════════════════════════════════════
+   CREATE — 핵심 제작 플로우
+════════════════════════════════════════ */
+let _curScenario = null;
+let _curChars = [];
+let _synopsisExpanded = false;
+
+function loadCreate() {
+  // 스텝 1 열기 (시나리오)
+  openStep('scenario');
+  renderCharList();
+  renderSavePreview();
+  loadSavedSeeds();
 }
 
-document.getElementById('diary-card').addEventListener('click', () => {
-  let d = {}; try { d = JSON.parse(localStorage.getItem(DIARY_KEY) || '{}'); } catch {}
-  const entry = d[today()] || { text: '' };
+/* 스텝 토글 */
+function toggleStep(name) {
+  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save' };
+  const body = document.getElementById(bodies[name]);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  document.getElementById('step-' + name)?.classList.toggle('active', !isOpen);
+}
+
+function openStep(name) {
+  const bodies = { scenario: 'sb-scenario', character: 'sb-character', save: 'sb-save' };
+  Object.entries(bodies).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = k === name ? '' : 'none';
+    document.getElementById('step-' + k)?.classList.toggle('active', k === name);
+  });
+}
+
+/* 시나리오 뽑기 */
+function rollScenario() {
+  const pool = window.SOAVIZ_SCENARIOS;
+  if (!pool || !pool.length) { toast('시나리오 데이터 로드 중...', 'warn'); return; }
+
+  const btn = document.getElementById('scenario-roll-btn');
+  const icon = document.getElementById('sr-icon');
+  if (btn) { btn.classList.add('rolling'); icon.textContent = '⏳'; }
+
+  setTimeout(() => {
+    _curScenario = pick(pool);
+    _synopsisExpanded = false;
+
+    const cardArea = document.getElementById('scenario-card-area');
+    const card = document.getElementById('scenario-card');
+    const btns = document.getElementById('scenario-btns');
+
+    // 롤 버튼 축소 → 카드 표시
+    if (btn) { btn.classList.remove('rolling'); icon.textContent = '🎲'; }
+    if (cardArea) cardArea.style.display = 'none';
+
+    card.style.display = '';
+    card.innerHTML = `
+      <div class="scenario-card">
+        <div class="sc-genre-row">
+          <span class="badge badge-genre">${esc(_curScenario.genre)}</span>
+          <span style="font-size:11px;color:var(--text-faint)">${esc(_curScenario.mood)}</span>
+        </div>
+        <div class="sc-title" id="sc-title-el"></div>
+        <div class="sc-hook" id="sc-hook-el"></div>
+        <div class="sc-synopsis" id="sc-syn-el"></div>
+        ${_curScenario.keywords?.length ? `<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">${_curScenario.keywords.slice(0,5).map(k=>`<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg-elev);color:var(--text-faint)">${esc(k)}</span>`).join('')}</div>` : ''}
+      </div>`;
+
+    // 스트리밍 순서: 제목 → hook → synopsis
+    const titleEl = document.getElementById('sc-title-el');
+    const hookEl  = document.getElementById('sc-hook-el');
+    const synEl   = document.getElementById('sc-syn-el');
+
+    mStream(titleEl, _curScenario.title || '', () => {
+      mStream(hookEl, _curScenario.hook || '', () => {
+        mStream(synEl, _curScenario.synopsis || '', () => {
+          // 완료 후 step status 업데이트
+          document.getElementById('sn-1').classList.add('done');
+          document.getElementById('sn-1').textContent = '✓';
+          document.getElementById('ss-1').textContent = _curScenario.genre;
+          renderSavePreview();
+        });
+      });
+    });
+
+    btns.style.display = 'flex';
+  }, 400);
+}
+
+/* synopsis 토글 */
+function toggleSynopsis() {
+  _synopsisExpanded = !_synopsisExpanded;
+  const el = document.getElementById('sc-syn-el');
+  const btn = document.getElementById('sc-expand-btn');
+  if (el) el.className = 'sc-synopsis' + (_synopsisExpanded ? ' expanded' : '');
+  if (btn) btn.textContent = _synopsisExpanded ? '접기' : '더 보기';
+}
+
+/* 캐릭터 뽑기 */
+function rollCharacter() {
+  const pool = window.SOAVIZ_CHARACTERS;
+  if (!pool || !pool.length) { toast('캐릭터 데이터 로드 중...', 'warn'); return; }
+  if (_curChars.length >= 3) { toast('최대 3명까지 추가 가능합니다', 'warn'); return; }
+
+  const btn = document.getElementById('char-roll-btn');
+  const icon = document.getElementById('cr-icon');
+  if (btn) { btn.classList.add('rolling'); icon.textContent = '⏳'; }
+
+  setTimeout(() => {
+    // 중복 방지
+    const usedIds = new Set(_curChars.map(c => c.id));
+    const avail = pool.filter(c => !usedIds.has(c.id));
+    const char = avail.length ? pick(avail) : pick(pool);
+    _curChars.push({ ...char });
+
+    if (btn) { btn.classList.remove('rolling'); icon.textContent = '🎲'; }
+    renderCharList();
+    updateCharStatus();
+    renderSavePreview();
+  }, 300);
+}
+
+function removeChar(id) {
+  _curChars = _curChars.filter(c => c.id !== id);
+  renderCharList();
+  updateCharStatus();
+  renderSavePreview();
+}
+
+function renderCharList() {
+  const list = document.getElementById('char-list');
+  const addArea = document.getElementById('char-add-area');
+  if (!list) return;
+
+  const roleLabel = r => ({ protagonist: '주인공', antagonist: '빌런', supporting: '조연', extra: '단역' }[r] || r);
+  const roleClass = r => r === 'antagonist' ? 'antag' : '';
+
+  list.innerHTML = _curChars.map(c => `
+    <div class="char-card">
+      <button class="char-remove" onclick="removeChar(${c.id})">✕</button>
+      <div class="char-name-row">
+        <div class="char-name">${esc(c.name)}</div>
+        <span class="badge badge-role ${roleClass(c.role)}">${roleLabel(c.role)}</span>
+        <span class="char-mbti">${esc(c.mbti || '')}</span>
+      </div>
+      <div class="char-occ">${esc(c.occupation || '')}</div>
+      <div class="char-appear">${esc(c.appearance || '')} · ${esc(c.personality?.slice(0,40) || '')}…</div>
+    </div>`).join('');
+
+  if (addArea) addArea.style.display = _curChars.length >= 3 ? 'none' : '';
+}
+
+function updateCharStatus() {
+  const el = document.getElementById('ss-2');
+  const num = document.getElementById('sn-2');
+  if (!el || !num) return;
+  if (_curChars.length > 0) {
+    el.textContent = `${_curChars.length}명 추가됨`;
+    num.classList.add('done'); num.textContent = '✓';
+  } else {
+    el.textContent = '최대 3명';
+    num.classList.remove('done'); num.textContent = '2';
+  }
+}
+
+/* 저장 미리보기 업데이트 */
+function renderSavePreview() {
+  const titleEl = document.getElementById('save-preview-title');
+  const subEl = document.getElementById('save-preview-sub');
+  const saveBtn = document.getElementById('save-seed-btn');
+  const stepEl = document.getElementById('step-save');
+
+  if (_curScenario) {
+    titleEl.textContent = _curScenario.title || `${_curScenario.genre} 시나리오`;
+    const charNames = _curChars.length ? _curChars.map(c => c.name).join(', ') : '캐릭터 없음';
+    subEl.textContent = `${_curScenario.genre} · ${_curScenario.mood} · ${charNames}`;
+    saveBtn.disabled = false;
+
+    // Step 3 status
+    document.getElementById('ss-3').textContent = `저장 준비`;
+    document.getElementById('sn-3').textContent = '3';
+    stepEl?.classList.add('active');
+  } else {
+    titleEl.textContent = '시나리오를 먼저 뽑아주세요';
+    subEl.textContent = '위에서 시나리오와 캐릭터를 뽑으면 이 카드에 미리보기가 표시됩니다.';
+    saveBtn.disabled = true;
+  }
+}
+
+/* 씨드 저장 */
+async function saveSeed() {
+  if (!_curScenario) { toast('시나리오를 먼저 뽑아주세요', 'error'); return; }
+  const btn = document.getElementById('save-seed-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 저장 중...';
+
+  try {
+    // localStorage에 씨드 저장
+    let seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]');
+    const seed = {
+      id: uid(),
+      scenario: { ..._curScenario },
+      characters: [..._curChars],
+      savedAt: Date.now(),
+    };
+    seeds.push(seed);
+    // 최대 50개 유지
+    if (seeds.length > 50) seeds = seeds.slice(-50);
+    localStorage.setItem(SEEDS_KEY, JSON.stringify(seeds));
+
+    // Dexie project에도 저장
+    const projId = uid();
+    await db.projects.put({
+      id: projId,
+      name: _curScenario.title || `${_curScenario.genre} 시나리오`,
+      icon: _curScenario.genre === '로맨스' ? '💕' : _curScenario.genre === '스릴러' ? '🔪' : _curScenario.genre === 'SF' ? '🚀' : _curScenario.genre === '판타지' ? '🧙' : _curScenario.genre === '공포' ? '👻' : '🎬',
+      description: `${_curScenario.mood} · ${_curScenario.hook?.slice(0,80) || ''}`,
+      genre: _curScenario.genre,
+      seedId: seed.id,
+      characters: _curChars.map(c => ({ name: c.name, role: c.role, occupation: c.occupation })),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      archived: false,
+    });
+
+    // 캐릭터도 Dexie에
+    for (const c of _curChars) {
+      await db.characters.put({
+        id: uid(), projectId: projId,
+        name: c.name, role: c.role, gender: c.gender, age: c.age,
+        mbti: c.mbti, occupation: c.occupation,
+        appearance: c.appearance, personality: c.personality,
+        promptFragment: [c.age && `${c.age}세`, c.gender, c.appearance?.slice(0,60), c.personality?.slice(0,40)].filter(Boolean).join(', '),
+        createdAt: Date.now(), updatedAt: Date.now(), archived: false,
+      });
+    }
+
+    toast(`✓ "${_curScenario.title || '시나리오'}" 저장됨`, 'ok');
+
+    // Step 3 완료
+    document.getElementById('sn-3').classList.add('done');
+    document.getElementById('sn-3').textContent = '✓';
+    document.getElementById('ss-3').textContent = '저장완료';
+
+    // 씨드 목록 갱신
+    loadSavedSeeds();
+
+    // 저장 후 2초 후 초기화 유도
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = '✓ 저장됨 · 다시 만들기';
+      btn.onclick = () => resetCreate();
+    }, 1500);
+
+  } catch (e) {
+    toast('저장 오류: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '💾 프로젝트에 저장';
+  }
+}
+
+/* 초기화 */
+function resetCreate() {
+  _curScenario = null;
+  _curChars = [];
+  _synopsisExpanded = false;
+
+  // 시나리오 카드 초기화
+  document.getElementById('scenario-card').style.display = 'none';
+  document.getElementById('scenario-card-area').style.display = '';
+  document.getElementById('scenario-btns').style.display = 'none';
+  document.getElementById('sn-1').className = 'step-num';
+  document.getElementById('sn-1').textContent = '1';
+  document.getElementById('ss-1').textContent = '뽑기 필요';
+
+  // 캐릭터 초기화
+  renderCharList();
+  document.getElementById('sn-2').className = 'step-num';
+  document.getElementById('sn-2').textContent = '2';
+  document.getElementById('ss-2').textContent = '최대 3명';
+
+  // 저장 초기화
+  document.getElementById('save-seed-btn').onclick = saveSeed;
+  renderSavePreview();
+  document.getElementById('sn-3').className = 'step-num';
+  document.getElementById('sn-3').textContent = '3';
+  document.getElementById('ss-3').textContent = '—';
+
+  openStep('scenario');
+  toast('초기화 완료', 'ok');
+}
+
+document.getElementById('cr-reset-btn').addEventListener('click', resetCreate);
+
+/* 저장된 씨드 목록 */
+function loadSavedSeeds() {
+  const list = document.getElementById('cr-seeds-list');
+  const empty = document.getElementById('cr-seeds-empty');
+  const seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]').reverse();
+  if (!seeds.length) { if (list) list.innerHTML = ''; if (empty) empty.style.display = ''; return; }
+  if (empty) empty.style.display = 'none';
+  if (list) list.innerHTML = seeds.slice(0, 20).map(s => renderSeedCard(s, true)).join('');
+}
+
+function renderSeedCard(s, withDelete = false) {
+  const charTags = (s.characters || []).map(c => `<span class="seed-char-tag">${esc(c.name)}</span>`).join('');
+  return `<div class="seed-card" onclick="openSeedDetail('${esc(s.id)}')">
+    <div class="seed-card-head">
+      <div class="seed-card-title">${esc(s.scenario?.title || s.scenario?.genre || '시나리오')}</div>
+      <span class="seed-card-genre">${esc(s.scenario?.genre || '')}</span>
+    </div>
+    <div class="seed-card-chars">${charTags || '<span style="color:var(--text-faint)">캐릭터 없음</span>'}</div>
+    <div class="seed-card-time">${ago(s.savedAt)}</div>
+  </div>`;
+}
+
+function openSeedDetail(id) {
+  const seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]');
+  const s = seeds.find(x => x.id === id);
+  if (!s) return;
+  const charHTML = (s.characters || []).map(c => `
+    <div style="padding:10px 12px;background:var(--bg-1);border-radius:10px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <strong style="font-size:14px">${esc(c.name)}</strong>
+        <span class="badge badge-role ${c.role==='antagonist'?'antag':''}">${{protagonist:'주인공',antagonist:'빌런',supporting:'조연',extra:'단역'}[c.role]||c.role}</span>
+        <span style="font-size:10px;color:var(--text-faint)">${esc(c.mbti||'')}</span>
+      </div>
+      <div style="font-size:12px;color:var(--accent);margin-bottom:3px">${esc(c.occupation||'')}</div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.5">${esc(c.appearance||'')}</div>
+    </div>`).join('') || '<div style="font-size:12px;color:var(--text-faint)">캐릭터 없음</div>';
+
   const { el, close } = modal(`
     <div class="modal-handle"></div>
-    <div class="modal-title">📝 오늘 다이어리</div>
-    <div class="m-field"><textarea class="m-textarea" id="di" style="min-height:150px" placeholder="오늘 작업, 아이디어, 메모...">${esc(entry.text)}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" id="dc">취소</button>
-      <button class="btn btn-primary" id="ds">저장</button>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span class="badge badge-genre">${esc(s.scenario?.genre||'')}</span>
+      <span style="font-size:11px;color:var(--text-faint)">${esc(s.scenario?.mood||'')}</span>
+    </div>
+    <div style="font-size:18px;font-weight:700;letter-spacing:-0.025em;margin-bottom:8px;line-height:1.3">${esc(s.scenario?.title||'')}</div>
+    <div style="font-size:13px;color:var(--text-dim);line-height:1.55;margin-bottom:8px">${esc(s.scenario?.hook||'')}</div>
+    <div style="font-size:12px;color:var(--text-faint);line-height:1.6;margin-bottom:14px">${esc(s.scenario?.synopsis||'')}</div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-faint);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">캐릭터</div>
+    ${charHTML}
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-danger btn-sm" id="del-seed">삭제</button>
+      <button class="btn btn-secondary" id="cl-seed">닫기</button>
     </div>`);
-  el.querySelector('#dc').onclick = close;
-  el.querySelector('#ds').onclick = () => {
-    const txt = el.querySelector('#di').value.trim();
-    try { let x = JSON.parse(localStorage.getItem(DIARY_KEY) || '{}'); x[today()] = { text: txt, updatedAt: Date.now() }; localStorage.setItem(DIARY_KEY, JSON.stringify(x)); } catch {}
-    close(); loadDiaryPreview(); toast('📝 저장완료', 'ok');
+  el.querySelector('#cl-seed').onclick = close;
+  el.querySelector('#del-seed').onclick = () => {
+    let seeds = JSON.parse(localStorage.getItem(SEEDS_KEY) || '[]');
+    seeds = seeds.filter(x => x.id !== id);
+    localStorage.setItem(SEEDS_KEY, JSON.stringify(seeds));
+    close(); loadSavedSeeds(); toast('씨드 삭제됨', 'ok');
   };
-});
+}
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    PROJECTS
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 async function loadProjects() {
   const el = document.getElementById('proj-list');
   el.innerHTML = `<div style="text-align:center;padding:30px"><div class="spinner" style="color:var(--accent)"></div></div>`;
   try {
     const ps = (await db.projects.orderBy('updatedAt').reverse().toArray()).filter(p => !p.archived);
     el.innerHTML = ps.length
-      ? ps.map(p => `<div class="m-item" onclick="openProjDetail('${esc(p.id)}')"><div class="m-item-icon">${esc(p.icon || '📁')}</div><div class="m-item-body"><div class="m-item-title">${esc(p.name || p.title || '프로젝트')}</div><div class="m-item-sub">${ago(p.updatedAt)}</div></div><div class="m-item-right">›</div></div>`).join('')
-      : `<div class="m-empty"><div class="m-empty-icon">📁</div><div class="m-empty-title">프로젝트 없음</div><div class="m-empty-sub">새 프로젝트를 만들어 시작하세요.</div></div>`;
-  } catch (e) { el.innerHTML = `<div class="m-empty"><div class="m-empty-icon">⚠️</div><div class="m-empty-title">로드 오류</div></div>`; }
+      ? ps.map(p => `<div class="m-item" onclick="openProjDetail('${esc(p.id)}')"><div class="m-item-icon">${esc(p.icon || '📁')}</div><div class="m-item-body"><div class="m-item-title">${esc(p.name || p.title || '프로젝트')}</div><div class="m-item-sub">${esc(p.genre||'')}${p.genre&&p.description?' · ':''} ${esc(p.description?.slice(0,40)||'')} · ${ago(p.updatedAt)}</div></div><div class="m-item-right">›</div></div>`).join('')
+      : `<div class="m-empty"><div class="m-empty-icon">📁</div><div class="m-empty-title">프로젝트 없음</div><div class="m-empty-sub">제작 탭에서 시나리오를 만들고 저장해보세요.</div></div>`;
+  } catch { el.innerHTML = `<div class="m-empty"><div class="m-empty-icon">⚠️</div><div class="m-empty-title">로드 오류</div></div>`; }
 }
 
 document.getElementById('new-proj-btn').addEventListener('click', () => {
@@ -701,7 +1112,7 @@ document.getElementById('new-proj-btn').addEventListener('click', () => {
     <div class="m-field"><label class="m-label">이름</label><input class="m-input" id="pn" placeholder="프로젝트 이름" maxlength="60" /></div>
     <div class="m-field">
       <label class="m-label">아이콘</label>
-      <div style="display:flex;flex-wrap:wrap;gap:8px" id="icon-picker">${ICONS.map(i => `<div data-i="${i}" style="font-size:24px;padding:8px;border-radius:8px;cursor:pointer;border:2px solid var(--border);background:var(--bg-1);transition:all .15s">${i}</div>`).join('')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="icon-picker">${ICONS.map(i=>`<div data-i="${i}" style="font-size:24px;padding:8px;border-radius:8px;cursor:pointer;border:2px solid var(--border);background:var(--bg-1);transition:all .15s">${i}</div>`).join('')}</div>
     </div>
     <div class="m-field"><label class="m-label">설명 (선택)</label><input class="m-input" id="pd" placeholder="간단한 설명" maxlength="100" /></div>
     <div class="modal-actions">
@@ -710,11 +1121,11 @@ document.getElementById('new-proj-btn').addEventListener('click', () => {
     </div>`);
   const picker = el.querySelector('#icon-picker');
   picker.querySelectorAll('[data-i]').forEach(btn => {
-    if (btn.dataset.i === icon) { btn.style.borderColor = 'var(--accent)'; btn.style.background = 'var(--accent-soft)'; }
+    if (btn.dataset.i === icon) { btn.style.borderColor='var(--accent)'; btn.style.background='var(--accent-soft)'; }
     btn.addEventListener('click', () => {
       icon = btn.dataset.i;
-      picker.querySelectorAll('[data-i]').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.background = 'var(--bg-1)'; });
-      btn.style.borderColor = 'var(--accent)'; btn.style.background = 'var(--accent-soft)';
+      picker.querySelectorAll('[data-i]').forEach(b => { b.style.borderColor='var(--border)'; b.style.background='var(--bg-1)'; });
+      btn.style.borderColor='var(--accent)'; btn.style.background='var(--accent-soft)';
     });
   });
   el.querySelector('#pc').onclick = close;
@@ -730,135 +1141,41 @@ document.getElementById('new-proj-btn').addEventListener('click', () => {
 async function openProjDetail(projId) {
   const proj = await db.projects.get(projId);
   if (!proj) return;
+  const chars = await db.characters.where('projectId').equals(projId).toArray();
   const eps = await db.episodes.where('parentId').equals(projId).toArray();
-  const scIds = eps.map(e => e.id);
-  const scenes = scIds.length ? await db.scenes.where('parentId').anyOf(scIds).toArray() : [];
-  const shIds = scenes.map(s => s.id);
-  const shots = shIds.length ? await db.shots.where('parentId').anyOf(shIds).toArray() : [];
 
-  const pipeHTML = eps.length ? eps.map(ep => {
-    const epScenes = scenes.filter(s => s.parentId === ep.id);
-    return `<div class="pipe-ep">
-      <div class="pipe-ep-title">EP ${ep.number || 1} · ${esc(ep.title || '에피소드')}</div>
-      ${epScenes.map(sc => {
-        const scShots = shots.filter(sh => sh.parentId === sc.id);
-        return `<div class="pipe-scene">
-          <div class="pipe-scene-title">SC ${sc.number || 1} · ${esc(sc.title || '씬')}</div>
-          ${scShots.map(sh => `<div class="pipe-shot">
-            <span class="pipe-shot-num">SHOT ${sh.number || 1}</span>
-            <span class="pipe-shot-name">${esc(sh.title || sh.prompt || '—')}</span>
-            <span class="badge badge-${sh.status === 'done' ? 'done' : sh.status === 'wip' ? 'wip' : 'todo'}">${sh.status === 'done' ? '완료' : sh.status === 'wip' ? '진행' : '대기'}</span>
-          </div>`).join('')}
-          ${!scShots.length ? `<div style="font-size:11px;color:var(--text-faint);padding:4px 10px">Shot 없음</div>` : ''}
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).join('') : `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:16px">에피소드 없음 — 데스크톱에서 추가하세요</div>`;
+  const charHTML = chars.length ? chars.slice(0,6).map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <span style="font-size:13px;font-weight:600">${esc(c.name)}</span>
+        <span style="font-size:11px;color:var(--text-faint);margin-left:6px">${esc(c.occupation||c.role||'')}</span>
+      </div>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--text-faint)">캐릭터 없음</div>';
 
   const { el, close } = modal(`
     <div class="modal-handle"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="font-size:30px">${esc(proj.icon || '📁')}</div>
-      <div><div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${esc(proj.name || proj.title)}</div>
-      <div style="font-size:12px;color:var(--text-faint)">${eps.length}개 에피소드 · ${scenes.length}개 씬 · ${shots.length}개 Shot</div></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="font-size:30px">${esc(proj.icon||'📁')}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${esc(proj.name||proj.title)}</div>
+        <div style="font-size:12px;color:var(--text-faint)">${esc(proj.description||'')}</div>
+      </div>
     </div>
-    <div class="m-card-title">Pipeline</div>
-    <div style="max-height:52vh;overflow-y:auto">${pipeHTML}</div>
-    <div class="modal-actions">
+    ${proj.genre ? `<div style="margin-bottom:10px"><span class="badge badge-genre">${esc(proj.genre)}</span></div>` : ''}
+    <div style="font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">캐릭터 (${chars.length}명)</div>
+    ${charHTML}
+    <div style="margin-top:12px;font-size:11px;color:var(--text-faint)">${eps.length}개 에피소드 · ${ago(proj.updatedAt)}</div>
+    <div class="modal-actions" style="margin-top:14px">
       <button class="btn btn-secondary" id="pd-close">닫기</button>
-      <button class="btn btn-primary" id="pd-gen">⚡ 생성하기</button>
+      <button class="btn btn-primary" id="pd-desk">데스크톱에서 열기</button>
     </div>`);
   el.querySelector('#pd-close').onclick = close;
-  el.querySelector('#pd-gen').onclick = () => {
-    close(); showPage('generate');
-    setTimeout(() => { const s = document.getElementById('gen-proj'); if (s) s.value = projId; }, 100);
-  };
+  el.querySelector('#pd-desk').onclick = () => { close(); window.location.href = '/'; };
 }
 
-/* ══════════════════════════════════════════
-   GENERATE
-══════════════════════════════════════════ */
-let _model = 'kling-v2';
-
-document.querySelectorAll('.model-btn').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.model-btn').forEach(x => x.classList.remove('sel'));
-    b.classList.add('sel'); _model = b.dataset.model;
-  });
-});
-
-document.getElementById('gen-unlock-btn')?.addEventListener('click', () => openVaultModal(() => {
-  document.getElementById('gen-vault-warn').style.display = 'none';
-}));
-
-async function loadGenerate() {
-  // Populate project selector
-  try {
-    const ps = (await db.projects.orderBy('updatedAt').reverse().toArray()).filter(p => !p.archived);
-    const sel = document.getElementById('gen-proj');
-    sel.innerHTML = '<option value="">— 선택 안 함 —</option>' + ps.map(p => `<option value="${esc(p.id)}">${esc(p.icon || '📁')} ${esc(p.name || p.title)}</option>`).join('');
-  } catch {}
-  // Vault warning
-  const hv = await Vault.hasVault();
-  document.getElementById('gen-vault-warn').style.display = (hv && !Vault.isUnlocked()) ? '' : 'none';
-  // Load results
-  await loadGenResults();
-}
-
-document.getElementById('gen-btn').addEventListener('click', async () => {
-  const prompt = document.getElementById('gen-prompt').value.trim();
-  if (!prompt) { toast('프롬프트를 입력하세요', 'error'); return; }
-  const projId = document.getElementById('gen-proj').value;
-  const [res, dur] = document.getElementById('gen-res').value.split('_');
-  const btn = document.getElementById('gen-btn');
-  const status = document.getElementById('gen-status');
-  btn.disabled = true;
-  document.getElementById('gen-btn-inner').innerHTML = '<span class="spinner"></span> 생성 중...';
-  status.style.display = ''; status.textContent = '요청 전송 중...'; status.style.color = '';
-  try {
-    let apiKey = null;
-    if (Vault.isUnlocked()) apiKey = await Vault.get('replicate');
-    const body = { action: 'video-generate', model: _model, prompt, duration: parseInt(dur) || 5, resolution: res, projectId: projId || null };
-    if (apiKey) body.apiKey = apiKey;
-    const resp = await fetch(`${API_BASE}/api/generate`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    });
-    if (!resp.ok) throw new Error(`서버 오류 ${resp.status}`);
-    const data = await resp.json();
-    await db.compares.put({ id: uid(), projectId: projId || null, prompt, model: _model, status: data.status || 'queued', taskId: data.taskId || null, resultUrl: data.url || null, updatedAt: Date.now(), archived: false });
-    document.getElementById('gen-prompt').value = '';
-    status.textContent = '✓ 생성 요청 완료'; status.style.color = 'var(--success)';
-    toast('⚡ 생성 요청 전송', 'ok');
-    await loadGenResults();
-  } catch (e) {
-    status.textContent = '오류: ' + e.message; status.style.color = 'var(--danger)';
-    toast('생성 오류: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false;
-    document.getElementById('gen-btn-inner').textContent = '⚡ 생성하기';
-    setTimeout(() => { status.style.display = 'none'; status.style.color = ''; }, 4000);
-  }
-});
-
-async function loadGenResults() {
-  const el = document.getElementById('gen-results');
-  try {
-    const cs = await db.compares.orderBy('updatedAt').reverse().limit(10).toArray();
-    el.innerHTML = cs.length ? cs.map(c => `
-      <div class="gen-result">
-        <div class="gen-thumb">${c.resultUrl
-          ? (c.resultUrl.match(/\.(mp4|webm|mov)/i) ? `<video src="${esc(c.resultUrl)}" controls playsinline></video>` : `<img src="${esc(c.resultUrl)}" />`)
-          : `<div style="text-align:center"><div style="font-size:13px;margin-bottom:4px">${c.status === 'queued' ? '⏳ 대기' : c.status === 'processing' ? '⚙️ 처리 중' : c.status === 'done' ? '✓ 완료' : esc(c.status)}</div><div style="font-size:11px">${ago(c.updatedAt)}</div></div>`}
-        </div>
-        <div class="gen-meta"><div class="gen-model-tag">${esc(c.model || '')} · ${ago(c.updatedAt)}</div><div class="gen-prompt-prev">${esc(c.prompt || '—')}</div></div>
-      </div>`).join('')
-      : `<div class="m-empty"><div class="m-empty-icon">⚡</div><div class="m-empty-title">결과 없음</div><div class="m-empty-sub">위에서 프롬프트를 입력해 생성해보세요.</div></div>`;
-  } catch { el.innerHTML = ''; }
-}
-
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    LIBRARY
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 let _libFilter = 'all';
 document.querySelectorAll('.filter-pill').forEach(p => {
   p.addEventListener('click', () => {
@@ -877,13 +1194,13 @@ async function loadLibrary() {
     if (!assets.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
     empty.style.display = 'none';
     grid.innerHTML = assets.map(a => `
-      <div class="asset-card" onclick="previewAsset('${esc(a.url || '')}','${esc(a.type || '')}')">
-        <div class="asset-type-tag">${esc((a.type || 'ASSET').toUpperCase())}</div>
+      <div class="asset-card" onclick="previewAsset('${esc(a.url||'')}','${esc(a.type||'')}')">
+        <div class="asset-type-tag">${esc((a.type||'ASSET').toUpperCase())}</div>
         ${a.url
-          ? (a.type === 'video' ? `<video src="${esc(a.url)}" muted preload="metadata"></video>`
-            : a.type === 'image' ? `<img src="${esc(a.url)}" loading="lazy" />`
+          ? (a.type==='video' ? `<video src="${esc(a.url)}" muted preload="metadata"></video>`
+            : a.type==='image' ? `<img src="${esc(a.url)}" loading="lazy" />`
             : `<span style="font-size:22px">🎵</span>`)
-          : `<span style="font-size:11px;color:var(--text-faint)">${esc(a.type || 'asset')}</span>`}
+          : `<span style="font-size:11px;color:var(--text-faint)">${esc(a.type||'asset')}</span>`}
       </div>`).join('');
   } catch { grid.innerHTML = ''; empty.style.display = ''; }
 }
@@ -893,17 +1210,17 @@ function previewAsset(url, type) {
   const { el, close } = modal(`
     <div class="modal-handle"></div>
     <div style="border-radius:10px;overflow:hidden;background:var(--bg-1);margin-bottom:12px">
-      ${type === 'video' ? `<video src="${esc(url)}" controls playsinline style="width:100%;max-height:55vh;display:block"></video>`
-        : type === 'image' ? `<img src="${esc(url)}" style="width:100%;max-height:55vh;object-fit:contain;display:block" />`
+      ${type==='video' ? `<video src="${esc(url)}" controls playsinline style="width:100%;max-height:55vh;display:block"></video>`
+        : type==='image' ? `<img src="${esc(url)}" style="width:100%;max-height:55vh;object-fit:contain;display:block" />`
         : `<audio src="${esc(url)}" controls style="width:100%;padding:12px"></audio>`}
     </div>
     <button class="btn btn-secondary btn-full" id="pv-close">닫기</button>`);
   el.querySelector('#pv-close').onclick = close;
 }
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    SETTINGS
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 async function loadSettings() {
   const p = getProfile();
   document.getElementById('set-name').textContent  = p?.name  || '—';
@@ -912,14 +1229,11 @@ async function loadSettings() {
   document.getElementById('set-plan').textContent = plan;
   const init = (p?.name || 'U')[0].toUpperCase();
   const pic = p?.picture || p?.photoUrl;
-  ['set-avatar'].forEach(id => {
-    const el = document.getElementById(id);
-    el.innerHTML = pic ? `<img src="${esc(pic)}" />` : init;
-  });
-  // Storage estimate
+  const avatarEl = document.getElementById('set-avatar');
+  avatarEl.innerHTML = pic ? `<img src="${esc(pic)}" />` : init;
   try {
     const est = await navigator.storage?.estimate?.();
-    if (est) document.getElementById('storage-info').textContent = `${(est.usage / 1024 / 1024).toFixed(1)} MB`;
+    if (est) document.getElementById('storage-info').textContent = `${(est.usage/1024/1024).toFixed(1)} MB`;
   } catch {}
   await refreshVaultUI();
 }
@@ -932,17 +1246,9 @@ async function refreshVaultUI() {
   const b = document.getElementById('vault-btn');
   const row = document.getElementById('vault-row');
   const panel = document.getElementById('vault-keys-panel');
-  if (!hv) {
-    t.textContent = '초기화 안됨'; s.textContent = '패스프레이즈로 Vault 초기화'; b.textContent = '초기화';
-    row.className = 'vault-status'; panel.style.display = 'none';
-  } else if (ul) {
-    t.textContent = '잠금 해제됨'; s.textContent = 'API 키에 접근 가능'; b.textContent = '잠금';
-    row.className = 'vault-status unlocked'; panel.style.display = '';
-    await loadKeys();
-  } else {
-    t.textContent = '잠김'; s.textContent = '패스프레이즈로 잠금 해제'; b.textContent = '해제';
-    row.className = 'vault-status'; panel.style.display = 'none';
-  }
+  if (!hv) { t.textContent='초기화 안됨'; s.textContent='패스프레이즈로 Vault 초기화'; b.textContent='초기화'; row.className='vault-status'; panel.style.display='none'; }
+  else if (ul) { t.textContent='잠금 해제됨'; s.textContent='API 키에 접근 가능'; b.textContent='잠금'; row.className='vault-status unlocked'; panel.style.display=''; await loadKeys(); }
+  else { t.textContent='잠김'; s.textContent='패스프레이즈로 잠금 해제'; b.textContent='해제'; row.className='vault-status'; panel.style.display='none'; }
 }
 
 document.getElementById('vault-btn').addEventListener('click', async () => {
@@ -955,19 +1261,18 @@ function openVaultModal(onSuccess) {
     <div class="modal-handle"></div>
     <div class="modal-title">🔐 Vault 잠금 해제</div>
     <div class="m-field"><label class="m-label">마스터 패스프레이즈</label><input class="m-input" type="password" id="vpp" placeholder="패스프레이즈" autocomplete="current-password" /></div>
-    <div id="v-err" style="font-size:12px;color:var(--danger);margin-top:-6px;margin-bottom:8px;display:none">패스프레이즈가 틀렸습니다.</div>
+    <div id="v-err" style="font-size:12px;color:var(--danger);margin:-6px 0 8px;display:none">패스프레이즈가 틀렸습니다.</div>
     <div class="modal-actions">
       <button class="btn btn-secondary" id="vc">취소</button>
       <button class="btn btn-primary" id="vu">해제</button>
     </div>`, true);
   el.querySelector('#vc').onclick = close;
   const doUnlock = async () => {
-    const pp = el.querySelector('#vpp').value;
-    if (!pp) return;
+    const pp = el.querySelector('#vpp').value; if (!pp) return;
     const b = el.querySelector('#vu'); b.disabled = true; b.innerHTML = '<span class="spinner"></span>';
     const ok = await Vault.unlock(pp);
     if (ok) { close(); toast('✓ Vault 해제', 'ok'); onSuccess?.(); }
-    else { el.querySelector('#v-err').style.display = ''; b.disabled = false; b.textContent = '해제'; }
+    else { el.querySelector('#v-err').style.display=''; b.disabled=false; b.textContent='해제'; }
   };
   el.querySelector('#vu').onclick = doUnlock;
   el.querySelector('#vpp').addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
@@ -975,11 +1280,9 @@ function openVaultModal(onSuccess) {
 }
 
 const API_KEYS = [
-  { id: 'replicate',  label: 'Replicate' },
-  { id: 'openai',     label: 'OpenAI' },
-  { id: 'anthropic',  label: 'Anthropic' },
-  { id: 'elevenlabs', label: 'ElevenLabs' },
-  { id: 'kling',      label: 'Kling API' },
+  { id: 'replicate', label: 'Replicate' }, { id: 'openai', label: 'OpenAI' },
+  { id: 'anthropic', label: 'Anthropic' }, { id: 'elevenlabs', label: 'ElevenLabs' },
+  { id: 'kling', label: 'Kling API' },
 ];
 
 async function loadKeys() {
@@ -988,7 +1291,7 @@ async function loadKeys() {
   el.innerHTML = rows.map(r => `
     <div class="key-row">
       <span class="key-name">${esc(r.label)}</span>
-      <span class="key-val">${r.val ? r.val.slice(0,6) + '••••••' : '미설정'}</span>
+      <span class="key-val">${r.val ? r.val.slice(0,6)+'••••••' : '미설정'}</span>
       <button class="key-edit-btn" data-kid="${esc(r.id)}" data-klbl="${esc(r.label)}">편집</button>
     </div>`).join('');
   el.querySelectorAll('[data-kid]').forEach(b => b.addEventListener('click', () => editKey(b.dataset.kid, b.dataset.klbl)));
@@ -1031,9 +1334,9 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   };
 });
 
-/* ══════════════════════════════════════════
-   HEADER AVATAR sync
-══════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
 function syncHeader() {
   const p = getProfile();
   const plan = (localStorage.getItem('soaviz.user.plan') || 'free').toUpperCase();
@@ -1043,11 +1346,10 @@ function syncHeader() {
   document.getElementById('h-avatar').innerHTML = pic ? `<img src="${esc(pic)}" />` : init;
 }
 
-/* ══════════════════════════════════════════
+/* ════════════════════════════════════════
    BOOT
-══════════════════════════════════════════ */
+════════════════════════════════════════ */
 async function boot() {
-  // Auth check
   const profile = getProfile();
   if (!profile) {
     if (sb) {
@@ -1055,19 +1357,15 @@ async function boot() {
       if (!data?.session) { window.location.href = '/signup'; return; }
     } else { window.location.href = '/signup'; return; }
   }
-  // Open DB
-  try { await db.open(); } catch (e) { console.warn('DB open:', e); }
-  // Sync header
+  try { await db.open(); } catch (e) { console.warn('DB:', e); }
   syncHeader();
-  // Show app
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  // Load first page
   await loadHome();
 }
 
 boot().catch(e => {
-  document.getElementById('loading').innerHTML = `<div style="color:var(--danger);font-size:14px;padding:24px;text-align:center">로드 실패: ${esc(e?.message || '')}<br><br><a href="/signup" style="color:var(--accent)">다시 로그인</a></div>`;
+  document.getElementById('loading').innerHTML = `<div style="color:var(--danger);font-size:14px;padding:24px;text-align:center">로드 실패: ${e?.message||''}<br><br><a href="/signup" style="color:var(--accent)">다시 로그인</a></div>`;
 });
 </script>
 </body>
