@@ -17912,6 +17912,62 @@
 .wb-status-badge.rejected  { background:rgba(248,113,113,.18); color:#f87171; }
 .wb-status-badge.final     { background:rgba(167,139,250,.18); color:#a78bfa; }
 /* ============ /TEAM REVIEW LAYER ============ */
+
+/* ============ EXPORT PACKAGE BUILDER (§8.6) ============ */
+.epb-modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(4px);
+}
+.epb-modal {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  max-width: 460px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7);
+}
+.epb-modal-title {
+  font-size: 16px; font-weight: 800;
+  margin: 0 0 6px; letter-spacing: -.02em;
+}
+.epb-modal-sub {
+  font-size: 13px; color: var(--text-faint);
+  margin: 0 0 20px;
+}
+.epb-pkg-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+.epb-pkg-card {
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 10px;
+  cursor: pointer; text-align: center;
+  transition: border-color .15s, background .15s;
+  background: var(--surface-1);
+}
+.epb-pkg-card:hover,
+.epb-pkg-card.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.epb-pkg-icon  { font-size: 22px; margin-bottom: 6px; display: block; }
+.epb-pkg-label { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 4px; }
+.epb-pkg-desc  { font-size: 10px; color: var(--text-faint); line-height: 1.4; }
+
+.epb-modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.epb-btn-cancel {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-faint); border-radius: 8px;
+  padding: 9px 18px; cursor: pointer; font-size: 13px;
+}
+.epb-btn-export {
+  background: var(--accent); border: none; color: #fff;
+  border-radius: 8px; padding: 9px 20px;
+  cursor: pointer; font-size: 13px; font-weight: 700;
+}
+.epb-btn-export:disabled { opacity: .4; cursor: wait; }
+/* ============ /EXPORT PACKAGE BUILDER ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -48075,57 +48131,288 @@ async function _wbShareReview() {
 // ══════════════════════════════════════════════════════════════
 //  P7: Export Package — 프로젝트 JSON 다운로드
 // ══════════════════════════════════════════════════════════════
-async function _wbExportPackage() {
-  const activeId = localStorage.getItem('soaviz_active_project_id');
-  if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
 
-  const btn = document.getElementById('wb-act-export');
-  if (btn) btn.classList.add('disabled');
+// ══════════════════════════════════════════════════════════════
+//  §8.6  ExportPackageBuilder
+// ══════════════════════════════════════════════════════════════
+const ExportPackageBuilder = (() => {
 
-  try {
-    const [proj, eps, scenes, shots, chars, styles, prompts, assets] = await Promise.all([
-      db.projects.get(activeId).catch(()=>null),
-      db.episodes.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.scenes.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.shots.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.characters.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.styles.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.prompts.where('projectId').equals(activeId).toArray().catch(()=>[]),
-      db.assets.where('projectId').equals(activeId)
-        .filter(a => a.type !== 'blob') // 바이너리 제외
-        .toArray().catch(()=>[]),
-    ]);
+  function _ts() { return new Date().toISOString(); }
+  function _slug(str) { return (str || 'project').replace(/[^a-zA-Z0-9가-힣_-]/g, '_').slice(0, 40); }
 
-    const pkg = {
-      exportVersion: '1.0',
-      exportedAt: new Date().toISOString(),
-      source: 'soaviz-studio',
-      project: proj,
-      episodes: eps,
-      scenes,
-      shots,
-      characters: chars,
-      styles,
-      prompts,
-      assets: assets.map(a => ({ ...a, imageData: undefined })), // base64 제외
-    };
-
-    const json   = JSON.stringify(pkg, null, 2);
-    const blob   = new Blob([json], { type: 'application/json' });
-    const url    = URL.createObjectURL(blob);
-    const a      = document.createElement('a');
-    const title  = (proj?.title || 'project').replace(/[^a-zA-Z0-9가-힣_-]/g, '_');
-    a.href       = url;
-    a.download   = `soaviz_${title}_${new Date().toISOString().slice(0,10)}.json`;
+  // ── 공통 다운로드 유틸 ─────────────────────────────────────
+  function _downloadJSON(data, filename) {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
     a.click();
     URL.revokeObjectURL(url);
+    return Math.round(json.length / 1024); // KB
+  }
 
-    const kbSize = Math.round(json.length / 1024);
-    showToast?.(`📦 내보내기 완료 (${kbSize} KB)`, 'success');
+  // ── SNS 패키지 ──────────────────────────────────────────────
+  // 최종 승인(approved/final) 이미지만 + 캡션 텍스트
+  async function _buildSNS(projectId, proj) {
+    const finalAssets = await db.assets.where('projectId').equals(projectId)
+      .filter(a => ['approved', 'final'].includes(a.status) && !a.archived)
+      .toArray().catch(() => []);
+
+    const shots = await db.shots.where('projectId').equals(projectId)
+      .toArray().catch(() => []);
+    const shotMap = Object.fromEntries(shots.map(s => [s.id, s]));
+
+    const items = finalAssets.map(a => {
+      const shot = shotMap[a.shotId] || {};
+      return {
+        assetId:   a.id,
+        shotTitle: shot.title || '',
+        shotType:  shot.type  || '',
+        status:    a.status,
+        promptId:  a.promptId || null,
+        // imageData: base64 포함 (SNS 업로드용)
+        imageData: a.imageData || null,
+        url:       a.url || null,
+        caption:   [
+          proj?.title || '',
+          shot.title  || '',
+          shot.description?.slice(0, 120) || '',
+        ].filter(Boolean).join(' | '),
+        hashtags:  `#soaviz #aifilm #${_slug(proj?.title)} #cinematicAI`,
+        createdAt: a.createdAt,
+      };
+    });
+
+    return {
+      packageType:  'sns',
+      exportVersion:'1.0',
+      exportedAt:   _ts(),
+      source:       'soaviz-studio',
+      project: { id: proj?.id, title: proj?.title, genre: proj?.genre },
+      totalImages:  items.length,
+      items,
+    };
+  }
+
+  // ── Client 패키지 ────────────────────────────────────────────
+  // 샷리스트 + 프롬프트 + approved 이미지(base64 없음) + 개요
+  async function _buildClient(projectId, proj) {
+    const [eps, scenes, shots, chars, styles, prompts, assets] = await Promise.all([
+      db.episodes.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.scenes.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.shots.where('projectId').equals(projectId).filter(s => !s.archived).toArray().catch(() => []),
+      db.characters.where('projectId').equals(projectId).filter(c => !c.archived).toArray().catch(() => []),
+      db.styles.where('projectId').equals(projectId).filter(s => !s.archived).toArray().catch(() => []),
+      db.prompts.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.assets.where('projectId').equals(projectId)
+        .filter(a => ['approved', 'final'].includes(a.status) && !a.archived)
+        .toArray().catch(() => []),
+    ]);
+
+    const promptMap = Object.fromEntries(prompts.map(p => [p.shotId, p]));
+    const assetMap  = {};
+    assets.forEach(a => { if (a.shotId) assetMap[a.shotId] = a; });
+
+    const shotList = shots.map(s => ({
+      number:      s.number,
+      title:       s.title,
+      type:        s.type,
+      cameraMove:  s.cameraMove,
+      durationSec: s.durationSec,
+      description: s.description,
+      status:      s.status,
+      promptText:  promptMap[s.id]?.text || '',
+      hasImage:    !!assetMap[s.id],
+      assetUrl:    assetMap[s.id]?.url || null,
+    }));
+
+    return {
+      packageType:  'client',
+      exportVersion:'1.0',
+      exportedAt:   _ts(),
+      source:       'soaviz-studio',
+      project: {
+        id:      proj?.id,
+        title:   proj?.title,
+        genre:   proj?.genre,
+        logline: proj?.logline || proj?.description || '',
+        createdAt: proj?.createdAt,
+      },
+      summary: {
+        episodes:   eps.length,
+        scenes:     scenes.length,
+        shots:      shots.length,
+        characters: chars.length,
+        approvedImages: assets.length,
+      },
+      characters: chars.map(c => ({
+        name: c.name, role: c.role, logline: c.logline,
+        promptFragment: c.promptFragment,
+      })),
+      styles: styles.map(s => ({
+        name: s.name, lightingMood: s.lightingMood,
+        cameraStyle: s.cameraStyle, promptFragment: s.promptFragment,
+      })),
+      shotList,
+    };
+  }
+
+  // ── Archive 패키지 ───────────────────────────────────────────
+  // 전체 DB 스냅샷. base64 imageData 제외 (용량 절약).
+  async function _buildArchive(projectId, proj) {
+    const [eps, scenes, shots, chars, styles, refs, prompts, assets, acts, goals] = await Promise.all([
+      db.episodes.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.scenes.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.shots.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.characters.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.styles.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.refs?.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.prompts.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.assets.where('projectId').equals(projectId)
+        .filter(a => a.type !== 'blob').toArray().catch(() => []),
+      db.activities.where('projectId').equals(projectId).toArray().catch(() => []),
+      db.goals?.where('projectId').equals(projectId).toArray().catch(() => []),
+    ]);
+
+    return {
+      packageType:  'archive',
+      exportVersion:'1.0',
+      exportedAt:   _ts(),
+      source:       'soaviz-studio',
+      schema:       'soaviz_v3',
+      project:      proj,
+      episodes:     eps,
+      scenes,
+      shots,
+      characters:   chars,
+      styles,
+      refs:         refs || [],
+      prompts,
+      assets:       assets.map(a => ({ ...a, imageData: undefined })),
+      activities:   acts,
+      goals:        goals || [],
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  createPackage(projectId, type)
+  //  type: 'sns' | 'client' | 'archive'
+  //  Returns: { ok, kbSize, filename, packageType }
+  // ══════════════════════════════════════════════════════════════
+  async function createPackage(projectId, type = 'archive') {
+    if (!projectId) return { ok: false, reason: 'missing_project' };
+
+    const proj = await db.projects.get(projectId).catch(() => null);
+    const slug = _slug(proj?.title);
+    const date = new Date().toISOString().slice(0, 10);
+
+    let data, filename;
+    try {
+      if (type === 'sns') {
+        data     = await _buildSNS(projectId, proj);
+        filename = `soaviz_SNS_${slug}_${date}.json`;
+      } else if (type === 'client') {
+        data     = await _buildClient(projectId, proj);
+        filename = `soaviz_Client_${slug}_${date}.json`;
+      } else {
+        data     = await _buildArchive(projectId, proj);
+        filename = `soaviz_Archive_${slug}_${date}.json`;
+      }
+
+      const kbSize = _downloadJSON(data, filename);
+
+      // 활동 로그
+      await db.activities.put({
+        id:        `act_exp_${Date.now()}`,
+        projectId,
+        type:      'export',
+        icon:      '📦',
+        label:     `${type.toUpperCase()} 패키지 내보내기 (${kbSize} KB)`,
+        meta:      { packageType: type, kbSize, filename },
+        createdAt: Date.now(),
+        ts:        Date.now(),
+      }).catch(() => {});
+
+      return { ok: true, kbSize, filename, packageType: type };
+    } catch (e) {
+      console.error('[ExportPackageBuilder.createPackage]', e);
+      return { ok: false, reason: e.message };
+    }
+  }
+
+  return { createPackage, _downloadJSON };
+})();
+
+async function _wbExportPackage() {
+  const activeId = ProductionContextService?.activeProjectId?.()
+    || localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
+
+  // 기존 모달 제거
+  document.getElementById('epb-modal-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'epb-modal-overlay';
+  overlay.id = 'epb-modal-overlay';
+
+  // 클릭 외부 → 닫기
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+  overlay.innerHTML = `
+    <div class="epb-modal">
+      <p class="epb-modal-title">📦 내보내기 패키지</p>
+      <p class="epb-modal-sub">목적에 맞는 패키지 유형을 선택하세요</p>
+      <div class="epb-pkg-grid">
+        <div class="epb-pkg-card selected" data-pkg="sns" onclick="_epbSelect(this)">
+          <span class="epb-pkg-icon">📱</span>
+          <span class="epb-pkg-label">SNS</span>
+          <span class="epb-pkg-desc">승인된 이미지<br>+ 캡션 · 해시태그</span>
+        </div>
+        <div class="epb-pkg-card" data-pkg="client" onclick="_epbSelect(this)">
+          <span class="epb-pkg-icon">📋</span>
+          <span class="epb-pkg-label">Client</span>
+          <span class="epb-pkg-desc">샷리스트 + 프롬프트<br>+ 이미지 URL</span>
+        </div>
+        <div class="epb-pkg-card" data-pkg="archive" onclick="_epbSelect(this)">
+          <span class="epb-pkg-icon">🗄</span>
+          <span class="epb-pkg-label">Archive</span>
+          <span class="epb-pkg-desc">전체 DB 스냅샷<br>(백업 · 복원용)</span>
+        </div>
+      </div>
+      <div class="epb-modal-actions">
+        <button class="epb-btn-cancel" onclick="document.getElementById('epb-modal-overlay')?.remove()">취소</button>
+        <button class="epb-btn-export" id="epb-btn-run" onclick="_epbRunExport('${activeId}')">내보내기 시작</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+}
+
+function _epbSelect(card) {
+  document.querySelectorAll('.epb-pkg-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+}
+
+async function _epbRunExport(activeId) {
+  const selected = document.querySelector('.epb-pkg-card.selected');
+  const pkgType  = selected?.dataset?.pkg || 'archive';
+
+  const btn = document.getElementById('epb-btn-run');
+  if (btn) { btn.disabled = true; btn.textContent = '생성 중...'; }
+
+  try {
+    const result = await ExportPackageBuilder.createPackage(activeId, pkgType);
+    document.getElementById('epb-modal-overlay')?.remove();
+
+    if (result.ok) {
+      const typeLabel = { sns: 'SNS', client: 'Client', archive: 'Archive' }[pkgType] || pkgType;
+      showToast?.(`📦 ${typeLabel} 패키지 내보내기 완료 (${result.kbSize} KB)`, 'success');
+    } else {
+      showToast?.('내보내기 중 오류가 발생했습니다', 'error');
+    }
   } catch (e) {
     showToast?.('내보내기 중 오류가 발생했습니다', 'error');
-  } finally {
-    if (btn) btn.classList.remove('disabled');
+    if (btn) { btn.disabled = false; btn.textContent = '내보내기 시작'; }
   }
 }
 
@@ -48359,6 +48646,8 @@ window.SoavizProductionOS.reviewLayer = TeamReviewLayer;
 
 window.SoavizProductionOS.register('teamReview',     { share: _wbShareReview });
 window.SoavizProductionOS.register('exportPackage',  { export: _wbExportPackage });
+// §8.6 직접 접근 키
+window.SoavizProductionOS.exportPackage = ExportPackageBuilder;
 
 /** 워크벤치 페이지에서 호출 */
 async function _wbRunOrganizer() {
