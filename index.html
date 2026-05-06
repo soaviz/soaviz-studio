@@ -27369,6 +27369,16 @@ function showPage(name) {
   // 모든 페이지 전환 시 크레딧 pill 갱신 (제작 탭에만 표시됨)
   try { if (typeof refreshCreditPill === 'function') refreshCreditPill(); } catch (_) {}
   try { if (typeof updateCtxStrip === 'function') updateCtxStrip(name); } catch (_) {}
+  try {
+    // PCS: 레거시 soaviz_active_project_id 와 PCS 키 양방향 동기화
+    const _legacyId = localStorage.getItem('soaviz_active_project_id');
+    const _pcsCtx   = ProductionContextService?.getLocalContext?.() || {};
+    if (_legacyId && !_pcsCtx.projectId) {
+      ProductionContextService?.persistContext?.({ projectId: _legacyId });
+    } else if (_pcsCtx.projectId && !_legacyId) {
+      localStorage.setItem('soaviz_active_project_id', _pcsCtx.projectId);
+    }
+  } catch (_) {}
   // 히스토리 push (뒤로가기로 호출된 경우는 스킵)
   try {
     if (!window._isBackNav) {
@@ -46958,6 +46968,283 @@ async function syncAllGoalsToProjects() {
 }
 
 
+
+// ══════════════════════════════════════════════════════════════
+//  §5  Shot Status State Machine
+// ══════════════════════════════════════════════════════════════
+const SHOT_STATUS_TRANSITIONS = Object.freeze({
+  draft:      ['ready', 'archived'],
+  ready:      ['generating', 'review', 'archived'],
+  generating: ['review', 'revision'],
+  review:     ['revision', 'approved'],
+  revision:   ['generating', 'review'],
+  approved:   ['final', 'revision'],
+  final:      ['exported'],
+  exported:   ['archived'],
+  archived:   [],
+});
+
+/**
+ * canTransitionShot(from, to) → boolean
+ * 예: canTransitionShot('draft', 'ready') === true
+ */
+function canTransitionShot(from, to) {
+  return SHOT_STATUS_TRANSITIONS[from]?.includes(to) === true;
+}
+
+/**
+ * transitionShot(shotId, toStatus) — DB 저장 포함
+ * Returns: { ok, prev, next } or { ok:false, reason }
+ */
+async function transitionShot(shotId, toStatus) {
+  const shot = await db.shots.get(shotId).catch(() => null);
+  if (!shot) return { ok: false, reason: 'not_found' };
+  const prev = shot.status || 'draft';
+  if (!canTransitionShot(prev, toStatus))
+    return { ok: false, reason: `invalid_transition: ${prev} → ${toStatus}` };
+  await db.shots.update(shotId, { status: toStatus, updatedAt: Date.now() });
+  return { ok: true, prev, next: toStatus };
+}
+
+// ══════════════════════════════════════════════════════════════
+//  §8.1  ProductionContextService
+// ══════════════════════════════════════════════════════════════
+const ProductionContextService = (() => {
+  const STORAGE_KEY = 'soaviz_active_production_context_v1';
+
+  function getLocalContext() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch (_) { return {}; }
+  }
+
+  function persistContext(patch) {
+    const next = {
+      ...getLocalContext(),
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    // 레거시 키 동기화
+    if (next.projectId) {
+      localStorage.setItem('soaviz_active_project_id', next.projectId);
+      window._soavizActiveProjectId = next.projectId;
+    }
+    return next;
+  }
+
+  async function resolve() {
+    const local = getLocalContext();
+    // 우선순위: PCS 전용 키 → 글로벌 변수 → 레거시 localStorage
+    const projectId =
+      local.projectId ||
+      window._soavizActiveProjectId ||
+      localStorage.getItem('soaviz_active_project_id') ||
+      null;
+
+    if (!projectId) return { projectId: null, isEmpty: true };
+
+    // PCS 컨텍스트가 오래됐으면 레거시 키로 자동 보완
+    if (!local.projectId && projectId) {
+      persistContext({ projectId });
+    }
+
+    return {
+      projectId,
+      episodeId:  local.episodeId  || null,
+      sceneId:    local.sceneId    || null,
+      shotId:     local.shotId     || null,
+      versionId:  local.versionId  || null,
+      isEmpty:    false,
+    };
+  }
+
+  /** 활성 프로젝트 ID를 빠르게 가져오는 유틸 */
+  function activeProjectId() {
+    return getLocalContext().projectId
+      || window._soavizActiveProjectId
+      || localStorage.getItem('soaviz_active_project_id')
+      || null;
+  }
+
+  return { getLocalContext, persistContext, resolve, activeProjectId };
+})();
+
+// ══════════════════════════════════════════════════════════════
+//  §8.2  AutoOrganizer (saveToActiveProductionContext)
+// ══════════════════════════════════════════════════════════════
+const AutoOrganizer = (() => {
+
+  /**
+   * saveToActiveProductionContext(payload, options)
+   *
+   * payload 예:
+   *   { type: 'prompt', text: '...', shotId: '...' }
+   *   { type: 'asset',  imageData: '...', promptId: '...' }
+   *
+   * options:
+   *   context: {}          — 컨텍스트 오버라이드
+   *   requireShot: true    — shotId 필수 여부 (기본 true)
+   *   silent: false        — 토스트 표시 여부
+   *
+   * Returns: { ok, context, promptId?, assetId?, reason? }
+   */
+  async function saveToActiveProductionContext(payload = {}, options = {}) {
+    // 1. 컨텍스트 해결
+    const ctx = {
+      ...(await ProductionContextService.resolve()),
+      ...(options.context || {}),
+    };
+
+    if (!ctx.projectId) {
+      if (!options.silent) showToast?.('먼저 Project Workbench에서 프로젝트를 선택하세요.', 'warn');
+      showPage?.('pipeline');
+      return { ok: false, reason: 'missing_project' };
+    }
+
+    const requireShot = options.requireShot !== false;
+
+    // shotId 미설정 + 샷 필수인 경우 → 모달 fallback
+    if (!ctx.shotId && requireShot && payload.type !== 'asset_blob') {
+      return _openShotAttachModal(payload, ctx, options);
+    }
+
+    const now = Date.now();
+    let promptId = null;
+    let assetId  = null;
+
+    try {
+      // 2. 프롬프트 저장
+      if (payload.type === 'prompt' || payload.text) {
+        promptId = payload.id || `prompt_${now}_${Math.random().toString(36).slice(2,7)}`;
+        await db.prompts.put({
+          id:        promptId,
+          projectId: ctx.projectId,
+          shotId:    ctx.shotId    || null,
+          episodeId: ctx.episodeId || null,
+          sceneId:   ctx.sceneId   || null,
+          text:      payload.text  || '',
+          type:      payload.promptType || 'image',
+          status:    payload.status    || 'draft',
+          source:    payload.source    || 'manual',
+          meta:      payload.meta      || {},
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+
+      // 3. 에셋 저장
+      if (payload.type === 'asset' || payload.imageData || payload.assetUrl) {
+        assetId = payload.assetId || `asset_${now}_${Math.random().toString(36).slice(2,7)}`;
+        await db.assets.put({
+          id:          assetId,
+          projectId:   ctx.projectId,
+          shotId:      ctx.shotId    || null,
+          promptId:    promptId || payload.promptId || null,
+          episodeId:   ctx.episodeId || null,
+          sceneId:     ctx.sceneId   || null,
+          type:        payload.assetType  || 'image',
+          status:      payload.status     || 'draft',
+          imageData:   payload.imageData  || null,
+          url:         payload.assetUrl   || null,
+          meta:        payload.meta       || {},
+          createdAt:   now,
+          updatedAt:   now,
+        });
+      }
+
+      // 4. 활동 로그
+      await db.activities.put({
+        id:        `act_${now}_${Math.random().toString(36).slice(2,7)}`,
+        projectId: ctx.projectId,
+        shotId:    ctx.shotId    || null,
+        type:      payload.type  || 'save',
+        icon:      payload.icon  || '💾',
+        label:     payload.label || '컨텍스트에 저장됨',
+        meta:      { promptId, assetId, ctx },
+        createdAt: now,
+        ts:        now,
+      }).catch(() => {});
+
+      if (!options.silent) {
+        const what = promptId && assetId ? '프롬프트 + 에셋'
+                   : promptId ? '프롬프트' : '에셋';
+        showToast?.(`💾 ${what}이 현재 프로젝트에 저장됐습니다`, 'success');
+      }
+
+      return { ok: true, context: ctx, promptId, assetId };
+
+    } catch (e) {
+      console.error('[AutoOrganizer.saveToActiveProductionContext]', e);
+      if (!options.silent) showToast?.('저장 중 오류가 발생했습니다', 'error');
+      return { ok: false, reason: e.message || 'db_error', context: ctx };
+    }
+  }
+
+  /**
+   * _openShotAttachModal — shotId 없을 때 샷 선택 UI 표시
+   * Returns { ok: false, reason: 'pending_shot_select', ... }
+   */
+  function _openShotAttachModal(payload, ctx, options) {
+    // 기존 모달 제거
+    document.getElementById('sz-shot-attach-modal')?.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'sz-shot-attach-modal';
+    modal.style.cssText = `
+      position:fixed;inset:0;z-index:1000;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+    `;
+    modal.innerHTML = `
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:16px;
+                  padding:28px 28px 20px;max-width:420px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,.6);">
+        <p style="font-size:15px;font-weight:700;margin:0 0 6px;">샷을 연결하세요</p>
+        <p style="font-size:13px;color:var(--text-faint);margin:0 0 16px;">
+          저장할 프롬프트/에셋을 어느 샷에 연결할지 선택하세요.
+        </p>
+        <select id="sz-shot-select" style="width:100%;background:var(--surface-1);border:1px solid var(--border);
+          color:var(--text-main);border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:16px;">
+          <option value="">-- 샷 선택 --</option>
+        </select>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="document.getElementById('sz-shot-attach-modal').remove()"
+            style="background:transparent;border:1px solid var(--border);color:var(--text-faint);
+            border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;">취소</button>
+          <button id="sz-shot-attach-ok"
+            style="background:var(--accent);border:none;color:#fff;
+            border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:700;">저장</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    // 샷 목록 로드
+    db.shots.where('projectId').equals(ctx.projectId).toArray()
+      .then(shots => {
+        const sel = document.getElementById('sz-shot-select');
+        shots.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.title || `Shot ${s.id.slice(-4)}`;
+          sel.appendChild(opt);
+        });
+      }).catch(() => {});
+
+    document.getElementById('sz-shot-attach-ok').onclick = async () => {
+      const sel = document.getElementById('sz-shot-select');
+      const shotId = sel?.value;
+      modal.remove();
+      if (!shotId) { showToast?.('샷을 선택하지 않아 취소됐습니다', 'warn'); return; }
+      // 컨텍스트 업데이트 후 재시도
+      ProductionContextService.persistContext({ ...ctx, shotId });
+      await saveToActiveProductionContext(payload, { ...options, context: { ...ctx, shotId }, requireShot: false });
+    };
+
+    return { ok: false, reason: 'pending_shot_select' };
+  }
+
+  return { saveToActiveProductionContext };
+})();
+
 // ══════════════════════════════════════════════════════════════
 //  window.SoavizProductionOS  (P1 — Workbench Hub Lock)
 // ══════════════════════════════════════════════════════════════
@@ -46967,6 +47254,11 @@ window.SoavizProductionOS = window.SoavizProductionOS || {
   register(name, mod) { this.modules[name] = mod; },
   get(name) { return this.modules[name]; },
 };
+// §8.1 / §8.2 직접 접근 키 (PDF spec 호환)
+window.SoavizProductionOS.context  = ProductionContextService;
+window.SoavizProductionOS.organizer = AutoOrganizer;
+window.SoavizProductionOS.canTransitionShot = canTransitionShot;
+window.SoavizProductionOS.transitionShot    = transitionShot;
 
 /** 제작 8단계 정의 */
 const WB_STAGES = [
