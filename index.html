@@ -47652,50 +47652,310 @@ window.SoavizProductionOS.register('autoOrganize', async function(projectId) {
 // ══════════════════════════════════════════════════════════════
 //  P5: Prompt Director — 샷 → 프롬프트 일괄 생성
 // ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+//  §8.4  PromptDirector — composeCinematicPrompt
+// ══════════════════════════════════════════════════════════════
+const PromptDirector = (() => {
+
+  // ── 샷 타입 → 영화 용어 ────────────────────────────────────
+  const SHOT_TYPE_TERMS = {
+    extreme_wide: 'extreme wide shot',  establishing: 'establishing shot',
+    wide:         'wide shot',          full:         'full shot',
+    medium:       'medium shot',        medium_close: 'medium close-up',
+    medium_close_up: 'medium close-up', close:        'close-up shot',
+    close_up:     'close-up shot',      extreme_close: 'extreme close-up',
+    extreme_close_up: 'extreme close-up', over_shoulder: 'over-the-shoulder shot',
+    pov:          'POV shot',           two_shot:     'two-shot',
+    insert:       'insert shot',        drone:        'aerial drone shot',
+    aerial:       'aerial drone shot',  overhead:     "overhead bird's-eye view",
+  };
+
+  // ── 카메라 무브 → 영화 용어 ────────────────────────────────
+  const CAM_MOVE_TERMS = {
+    static:    'static camera',    pan:       'slow pan',
+    tilt:      'camera tilt',      dolly:     'dolly push-in',
+    dolly_in:  'dolly push-in',    dolly_out: 'dolly pull-out',
+    zoom:      'slow zoom',        handheld:  'handheld camera',
+    crane:     'crane shot',       tracking:  'tracking shot',
+    steadicam: 'steadicam glide',  whip_pan:  'whip pan',
+  };
+
+  // ── 조명 무드 → 프롬프트 표현 ─────────────────────────────
+  const LIGHTING_TERMS = {
+    natural:     'natural soft lighting',
+    dramatic:    'dramatic chiaroscuro lighting, deep shadows',
+    soft:        'soft diffused cinematic lighting',
+    noir:        'film noir low-key lighting, stark shadows',
+    'high-key':  'high-key bright even lighting',
+    'low-key':   'low-key moody atmospheric lighting',
+    golden_hour: 'golden hour warm amber light, magic hour',
+    blue_hour:   'blue hour cool twilight, dusk atmosphere',
+    neon:        'neon-lit cyberpunk glow, vivid colored light',
+    candlelight: 'warm flickering candlelight, intimate shadows',
+    overcast:    'overcast flat cinematic lighting',
+    backlit:     'strong backlit silhouette, rim lighting',
+  };
+
+  // ── 캐릭터 외형 → 프롬프트 문자열 ───────────────────────────
+  function _charToFragment(c) {
+    if (!c) return '';
+    // promptFragment 우선 사용 (이미 잘 정제된 경우)
+    if (c.promptFragment && c.promptFragment.trim().length > 4) return c.promptFragment.trim();
+    const vd = c.visualDesign || {};
+    const parts = [
+      c.name ? `${c.name}` : '',
+      c.role === 'protagonist' ? 'protagonist' : (c.role || ''),
+      vd.face   || '',
+      vd.hair   || '',
+      vd.outfit || '',
+      vd.silhouette || '',
+      vd.mood   || '',
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  // ── 스타일 → 프롬프트 문자열 ──────────────────────────────
+  function _styleToFragment(style) {
+    if (!style) return '';
+    // promptFragment 우선
+    if (style.promptFragment && style.promptFragment.trim().length > 4) return style.promptFragment.trim();
+    const parts = [
+      LIGHTING_TERMS[style.lightingMood] || style.lightingMood || '',
+      style.cameraStyle || '',
+      style.scoreMood   ? `${style.scoreMood} atmosphere` : '',
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  // ── 색상 팔레트 → 힌트 ────────────────────────────────────
+  function _paletteHint(palette) {
+    if (!palette?.length) return '';
+    // 팔레트 HEX를 색조 이름으로 변환 (간단한 매핑)
+    const hues = palette.slice(0, 3).map(hex => {
+      if (!hex || !hex.startsWith('#')) return '';
+      const r = parseInt(hex.slice(1,3),16);
+      const g = parseInt(hex.slice(3,5),16);
+      const b = parseInt(hex.slice(5,7),16);
+      const max = Math.max(r,g,b), min = Math.min(r,g,b);
+      const l = (max+min)/2/255;
+      if (l < 0.15) return 'deep black';
+      if (l > 0.85) return 'bright white';
+      if (max === r && r > g+30) return 'warm red';
+      if (max === g && g > b+30) return 'verdant green';
+      if (max === b && b > r+30) return 'cool blue';
+      if (r > 180 && g > 140 && b < 80) return 'golden amber';
+      if (r > 150 && b > 150 && g < 100) return 'violet purple';
+      return '';
+    }).filter(Boolean);
+    return hues.length ? `color palette: ${[...new Set(hues)].join(', ')}` : '';
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  핵심 함수: composeCinematicPrompt(shot, chars, style)
+  //
+  //  shot    — DB shots 레코드
+  //  chars   — DB characters 레코드 배열 (shot.characterIds 기준)
+  //  style   — DB styles 레코드 (shot.styleId 기준), nullable
+  //
+  //  Returns: { positive: string, negative: string, meta: {} }
+  // ══════════════════════════════════════════════════════════════
+  function composeCinematicPrompt(shot, chars = [], style = null) {
+    const parts = [];
+
+    // 1. 샷 타입 + 카메라 무브
+    const shotTerm = SHOT_TYPE_TERMS[shot.type] || shot.type || 'medium shot';
+    const camTerm  = CAM_MOVE_TERMS[shot.cameraMove] || '';
+    parts.push([shotTerm, camTerm].filter(Boolean).join(', '));
+
+    // 2. 캐릭터 묘사
+    const charFragments = chars.map(_charToFragment).filter(Boolean);
+    if (charFragments.length) {
+      parts.push(charFragments.length === 1
+        ? charFragments[0]
+        : charFragments.join(' and '));
+    }
+
+    // 3. 씬·샷 설명 (description 우선, dialogue는 행동으로 변환)
+    if (shot.description && shot.description.trim()) {
+      parts.push(shot.description.trim());
+    } else if (shot.title && shot.title.trim()) {
+      parts.push(shot.title.trim());
+    }
+
+    // 4. 스타일 (조명·카메라·무드)
+    const styleFrag = _styleToFragment(style);
+    if (styleFrag) parts.push(styleFrag);
+
+    // 5. 팔레트 힌트
+    const palette = style?.palette || [];
+    const palHint = _paletteHint(palette);
+    if (palHint) parts.push(palHint);
+
+    // 6. 보편 영화 품질 태그
+    const qualityTags = [
+      'cinematic composition',
+      'film still',
+      'shallow depth of field',
+      '8K resolution',
+      'professional color grading',
+    ].join(', ');
+    parts.push(qualityTags);
+
+    // ── 네거티브 프롬프트 ──────────────────────────────────────
+    const negParts = [
+      style?.negativePromptFragment || '',
+      chars.map(c => c.negativePrompt || '').filter(Boolean).join(', '),
+      'blurry, low quality, watermark, text overlay, bad anatomy, extra limbs, duplicate',
+    ].filter(Boolean);
+
+    const positive = parts.filter(Boolean).join(', ');
+    const negative = negParts.filter(Boolean).join(', ');
+
+    return {
+      positive,
+      negative,
+      meta: {
+        shotType:     shot.type,
+        cameraMove:   shot.cameraMove,
+        lightingMood: style?.lightingMood || null,
+        charCount:    chars.length,
+        hasStyle:     !!style,
+      },
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  hydratePromptDirectorFromShot(shotId)
+  //  DB에서 shot + 연결된 chars + style 로드 후 composeCinematicPrompt 호출
+  //  Returns: { positive, negative, meta, shotId, projectId } | null
+  // ══════════════════════════════════════════════════════════════
+  async function hydrateFromShot(shotId) {
+    if (!shotId) return null;
+
+    const shot = await db.shots.get(shotId).catch(() => null);
+    if (!shot) return null;
+
+    // 캐릭터 병렬 로드
+    const charIds = shot.characterIds || [];
+    const chars = (await Promise.all(
+      charIds.map(id => db.characters.get(id).catch(() => null))
+    )).filter(Boolean);
+
+    // 스타일 로드
+    const style = shot.styleId
+      ? await db.styles.get(shot.styleId).catch(() => null)
+      : null;
+
+    const result = composeCinematicPrompt(shot, chars, style);
+
+    return {
+      ...result,
+      shotId,
+      projectId: shot.projectId,
+      shotTitle: shot.title || '',
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  batchHydrateProject(projectId, limit)
+  //  프로젝트 내 모든 uncovered 샷에 대해 프롬프트 일괄 생성 + DB 저장
+  //  Returns: { created, skipped, errors }
+  // ══════════════════════════════════════════════════════════════
+  async function batchHydrateProject(projectId, limit = 30) {
+    if (!projectId) return { created: 0, skipped: 0, errors: 0 };
+
+    const shots = await db.shots.where('projectId').equals(projectId)
+      .filter(s => !s.archived).toArray().catch(() => []);
+
+    const existPrompts = await db.prompts.where('projectId').equals(projectId)
+      .toArray().catch(() => []);
+    const coveredShotIds = new Set(existPrompts.map(p => p.shotId).filter(Boolean));
+
+    const uncovered = shots.filter(s => !coveredShotIds.has(s.id)).slice(0, limit);
+
+    let created = 0, skipped = 0, errors = 0;
+
+    for (const shot of uncovered) {
+      try {
+        const result = await hydrateFromShot(shot.id);
+        if (!result) { skipped++; continue; }
+
+        await db.prompts.put({
+          id: `prompt_pd_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          projectId,
+          shotId:   shot.id,
+          text:     result.positive,
+          negative: result.negative,
+          type:     'image',
+          status:   'draft',
+          source:   'prompt-director',
+          meta:     result.meta,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+        created++;
+      } catch (e) {
+        console.warn('[PromptDirector] hydrateFromShot error', shot.id, e);
+        errors++;
+      }
+    }
+
+    return { created, skipped, errors, total: uncovered.length };
+  }
+
+  return {
+    composeCinematicPrompt,
+    hydrateFromShot,
+    batchHydrateProject,
+    // 내부 유틸 노출 (테스트/외부 사용)
+    _charToFragment,
+    _styleToFragment,
+    SHOT_TYPE_TERMS,
+    LIGHTING_TERMS,
+  };
+})();
+
 async function _wbPromptDirector() {
-  const activeId = localStorage.getItem('soaviz_active_project_id');
+  const activeId = ProductionContextService?.activeProjectId?.()
+    || localStorage.getItem('soaviz_active_project_id');
   if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
 
-  const shots = await db.shots.where('projectId').equals(activeId).toArray().catch(()=>[]);
+  const shots = await db.shots.where('projectId').equals(activeId)
+    .filter(s => !s.archived).toArray().catch(() => []);
   if (!shots.length) {
     showToast?.('샷리스트가 없어요. Pipeline에서 먼저 샷을 만드세요', 'warn');
     return;
   }
 
-  // 프롬프트가 없는 샷 확인
-  const shotIds = shots.map(s => s.id);
-  const existPrompts = await db.prompts.where('projectId').equals(activeId).toArray().catch(()=>[]);
-  const coveredShotIds = new Set(existPrompts.map(p => p.shotId).filter(Boolean));
-  const uncovered = shots.filter(s => !coveredShotIds.has(s.id));
+  // PromptDirector 엔진으로 일괄 생성
+  const btn = document.getElementById('wb-act-prompt');
+  if (btn) { btn.classList.add('disabled'); }
 
-  if (!uncovered.length) {
-    showToast?.('모든 샷에 이미 프롬프트가 있어요 ✓', 'info');
-    return;
+  try {
+    showToast?.('✍️ 영화적 프롬프트 합성 중...', 'info');
+    const result = await PromptDirector.batchHydrateProject(activeId, 30);
+
+    if (result.created === 0 && result.skipped === 0) {
+      showToast?.('모든 샷에 이미 프롬프트가 있어요 ✓', 'info');
+      return;
+    }
+
+    const msg = result.created
+      ? `✍️ ${result.created}개 프롬프트 생성 완료 (캐릭터·스타일·씬 합성)`
+      : '모든 샷에 이미 프롬프트가 있어요 ✓';
+    showToast?.(msg, result.created ? 'success' : 'info');
+
+    if (result.created > 0) {
+      setTimeout(() => renderWorkbenchPage?.(), 500);
+      showPage('studio');
+    }
+  } catch (e) {
+    showToast?.('프롬프트 생성 중 오류가 발생했습니다', 'error');
+    console.error('[_wbPromptDirector]', e);
+  } finally {
+    if (btn) btn.classList.remove('disabled');
   }
-
-  // 자동 프롬프트 생성 (간단한 기본 프롬프트)
-  let created = 0;
-  for (const shot of uncovered.slice(0, 20)) { // 최대 20개
-    const title = shot.title || `Shot ${created + 1}`;
-    const desc  = shot.description || shot.notes || '';
-    const auto  = [title, desc].filter(Boolean).join(', ') + '. cinematic, high quality, dramatic lighting, film still';
-    await db.prompts.add({
-      id: `prompt_auto_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
-      projectId: activeId,
-      shotId: shot.id,
-      text: auto,
-      type: 'image',
-      status: 'draft',
-      source: 'auto',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }).catch(()=>{});
-    created++;
-  }
-
-  showToast?.(`✍️ ${created}개 프롬프트 초안이 생성됐어요. Studio에서 검토하세요`, 'success');
-  setTimeout(() => renderWorkbenchPage?.(), 500);
-  showPage('studio');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -47777,6 +48037,8 @@ async function _wbExportPackage() {
 
 // SoavizProductionOS 모듈 등록
 window.SoavizProductionOS.register('promptDirector', { run: _wbPromptDirector });
+// §8.4 직접 접근 키
+window.SoavizProductionOS.promptDirector = PromptDirector;
 window.SoavizProductionOS.register('teamReview',     { share: _wbShareReview });
 window.SoavizProductionOS.register('exportPackage',  { export: _wbExportPackage });
 
