@@ -27714,6 +27714,29 @@ async function renderFlowGuide() {
 
   /* 1. 활성 프로젝트 이름 */
   const activeId = localStorage.getItem('soaviz_active_project_id');
+
+  /* E안: 프로젝트 미선택 시 온보딩 CTA 렌더 후 조기 반환 */
+  if (!activeId) {
+    wrap.innerHTML = `
+      <div class="fg-header">
+        <span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-faint);font-weight:700">🗺&nbsp;제작 흐름 가이드</span>
+      </div>
+      <div class="fg-cta fg-cta--start" style="gap:16px">
+        <span class="fg-cta-icon">🚀</span>
+        <div class="fg-cta-text">
+          <strong>프로젝트를 선택하고 흐름을 시작하세요</strong>
+          <span>프로젝트를 만들면 단계별 제작 가이드가 자동으로 활성화됩니다.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="fg-cta-btn primary" onclick="showPage('projects')">프로젝트 만들기 →</button>
+        </div>
+      </div>
+    `;
+    const rec = document.getElementById('td-start-recommendation');
+    if (rec) rec.textContent = '프로젝트를 먼저 만들어 제작 흐름을 시작하세요.';
+    return;
+  }
+
   let projectName = null;
   if (activeId) {
     try {
@@ -48783,6 +48806,17 @@ function bindPipelinePage() {
     });
 
     _updateCharBadge(charBadge);
+
+    /* D안: 캐릭터 페이지에서 자동 주입 — pending이면 해당 카드 자동 클릭 */
+    if (window._sz_pendingCharInject) {
+      const _pendingId = window._sz_pendingCharInject;
+      window._sz_pendingCharInject = null;
+      if (charBody && charBody.style.display === 'none') charToggle?.click();
+      setTimeout(() => {
+        const _pCard = charGrid.querySelector(`[data-char-id="${_pendingId}"]`);
+        if (_pCard) { _pCard.click(); _pCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      }, 80);
+    }
   }
 
   function _updateCharBadge(badge) {
@@ -49082,6 +49116,21 @@ function bindPipelinePage() {
     await renderPipelineQuickBar();
   });
 }
+
+/* D안: 캐릭터 → Pipeline imagegen 자동 주입 브리지 ─────────── */
+window.injectCharToImagegen = async function(charId) {
+  if (!charId) return;
+  window._sz_pendingCharInject = charId;
+  showPage('pipeline');
+  if (typeof switchPipelineTab === 'function') switchPipelineTab('imagegen');
+  let charName = '';
+  try {
+    await SoavizDB?.ready;
+    const c = await SoavizDB.db.characters.get(charId);
+    charName = c?.name || '';
+  } catch (_) {}
+  showToast?.(`🎭${charName ? ' ' + charName + ' →' : ''} Pipeline 이미지 생성으로 전달됨`);
+};
 
 /* ════════════════════════════════════════════════════════════
    v3 통합 — Today 시그니처 Pipeline-aware 확장
@@ -49828,6 +49877,10 @@ async function renderCharactersPage() {
             <button class="ch-card-btn imagegen" data-ch-action="imagegen" data-ch-id="${escapeHTML(c.id)}">
               <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L9.6 9.6 2 12l7.6 2.4L12 22l2.4-7.6L22 12l-7.6-2.4z"/></svg>
               이미지 생성
+            </button>
+            <button class="ch-card-btn" data-ch-action="to-imagegen" data-ch-id="${escapeHTML(c.id)}" title="Pipeline 샷 이미지에 이 캐릭터 적용" style="background:linear-gradient(135deg,rgba(167,139,250,0.15),rgba(236,72,153,0.08));border-color:rgba(167,139,250,0.35);color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:4px">
+              <svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              샷에 넣기 →
             </button>
           </div>
         </div>
@@ -53751,6 +53804,9 @@ function bindCharactersPage() {
     else if (action === 'relations' && id) await openCharacterRelationsModal(id);
     else if (action === 'duplicate' && id) await duplicateCharacter(id);
     else if (action === 'imagegen' && id) openCharacterKeyImageStudio(id);
+    else if (action === 'to-imagegen' && id) {
+      if (typeof window.injectCharToImagegen === 'function') window.injectCharToImagegen(id);
+    }
     else if (action === 'keyimage' && id) openCharacterKeyImageStudio(id);
     else if (action === 'delete' && id) {
       try {
