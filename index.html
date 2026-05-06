@@ -24637,7 +24637,7 @@
 
       <!-- ── 탭 1.5: 샷 이미지 생성 ── -->
       <div id="pl-tab-imagegen" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
           <div>
             <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em">🖼 샷 이미지 생성</div>
             <div style="font-size:13px;color:var(--text-faint);margin-top:3px">각 샷의 image prompt로 스틸 이미지를 생성하고 스토리보드를 완성합니다</div>
@@ -24652,6 +24652,46 @@
             </button>
           </div>
         </div>
+        <!-- ── 캐릭터 불러오기 패널 ── -->
+        <div id="pl-ig-char-panel" style="margin-bottom:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+          <button id="pl-ig-char-toggle" style="width:100%;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;background:none;border:none;color:var(--text);cursor:pointer;font-size:13px;font-weight:600;text-align:left;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>캐릭터 불러오기</span>
+              <span id="pl-ig-char-sel-badge" style="display:none;padding:1px 8px;background:var(--accent);color:#fff;border-radius:999px;font-size:10px;font-weight:700"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="pl-ig-char-hint" style="font-size:11px;color:var(--text-faint);font-weight:400">생성된 캐릭터를 샷에 적용</span>
+              <svg id="pl-ig-char-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="transition:transform .2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </button>
+          <div id="pl-ig-char-body" style="display:none;padding:12px 16px 14px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--text-faint);margin-bottom:10px;line-height:1.5">
+              선택한 캐릭터의 <strong style="color:var(--text-dim)">키이미지</strong>가 각 샷 생성 시 레퍼런스로 사용되고,
+              <strong style="color:var(--text-dim)">캐릭터 프롬프트</strong>가 image prompt에 추가됩니다.
+              여러 캐릭터 선택 가능 · 첫 번째 캐릭터가 주요 레퍼런스로 사용됩니다.
+            </div>
+            <div id="pl-ig-char-grid" style="display:flex;flex-wrap:wrap;gap:8px;min-height:24px"></div>
+            <div id="pl-ig-char-empty" style="display:none;font-size:12px;color:var(--text-faint);padding:16px 0;text-align:center">
+              저장된 캐릭터가 없습니다.
+              <span onclick="showPage('characters')" style="color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px">캐릭터 페이지</span>에서 먼저 캐릭터를 생성하세요.
+            </div>
+            <div id="pl-ig-char-loading" style="font-size:12px;color:var(--text-faint);padding:8px 0">캐릭터 로딩 중…</div>
+            <div id="pl-ig-char-mode-row" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span style="font-size:11px;color:var(--text-faint)">적용 방식</span>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer">
+                <input type="radio" name="pl-ig-char-mode" value="ref" checked style="accent-color:var(--accent)"> 레퍼런스 이미지로 사용
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer">
+                <input type="radio" name="pl-ig-char-mode" value="prompt" style="accent-color:var(--accent)"> 프롬프트 텍스트만
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);cursor:pointer">
+                <input type="radio" name="pl-ig-char-mode" value="both" style="accent-color:var(--accent)"> 둘 다
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- ── 진행 바 ── -->
         <div id="pl-ig-progress-bar" style="display:none;margin-bottom:16px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);align-items:center;gap:12px">
           <div style="flex:1;height:4px;background:var(--bg-1);border-radius:9px;overflow:hidden">
             <div id="pl-ig-progress-fill" style="height:100%;background:var(--accent);border-radius:9px;transition:width .4s ease;width:0%"></div>
@@ -47946,6 +47986,175 @@ function bindPipelinePage() {
   }
   _loadImgStore();
 
+  // ── 캐릭터 패널 초기화 함수 ──
+  let _charPanelInited = false;
+  async function _initImgCharPanel() {
+    // 이미 바인딩된 경우 캐릭터만 다시 로드
+    const charGrid = $('#pl-ig-char-grid');
+    const charEmpty = $('#pl-ig-char-empty');
+    const charLoading = $('#pl-ig-char-loading');
+    const charToggle = $('#pl-ig-char-toggle');
+    const charBody = $('#pl-ig-char-body');
+    const charChevron = $('#pl-ig-char-chevron');
+    const charBadge = $('#pl-ig-char-sel-badge');
+    const modeRow = $('#pl-ig-char-mode-row');
+    if (!charGrid) return;
+
+    // 토글 바인딩 (최초 1회)
+    if (!_charPanelInited) {
+      _charPanelInited = true;
+      charToggle?.addEventListener('click', () => {
+        const open = charBody.style.display !== 'none';
+        charBody.style.display = open ? 'none' : 'block';
+        if (charChevron) charChevron.style.transform = open ? '' : 'rotate(180deg)';
+      });
+      // 적용 방식 라디오
+      document.querySelectorAll('input[name="pl-ig-char-mode"]').forEach(r => {
+        r.addEventListener('change', e => { _plCharMode = e.target.value; });
+      });
+    }
+
+    // 캐릭터 로드 (Dexie)
+    charLoading.style.display = 'block';
+    charGrid.style.display = 'none';
+    charEmpty.style.display = 'none';
+    if (modeRow) modeRow.style.display = 'none';
+
+    let chars = [];
+    try {
+      await SoavizDB?.ready;
+      chars = (await SoavizDB.db.characters.toArray()).filter(c => !c.archived);
+    } catch (e) { console.warn('[imagegen char]', e); }
+
+    charLoading.style.display = 'none';
+
+    if (!chars.length) {
+      charEmpty.style.display = 'block';
+      return;
+    }
+
+    charGrid.style.display = 'flex';
+    if (modeRow) modeRow.style.display = 'flex';
+
+    // 카드 렌더
+    charGrid.innerHTML = '';
+    chars.forEach(c => {
+      const imgUrl = (typeof getCharacterPrimaryReferenceUrl === 'function')
+        ? getCharacterPrimaryReferenceUrl(c)
+        : (c.keyImageUrl || c.avatarUrl || c.mainImageUrl || '');
+      const isSelected = _plCharSelected.has(c.id);
+      const card = document.createElement('div');
+      card.dataset.charId = c.id;
+      card.className = 'pl-ig-char-card';
+      card.style.cssText = `
+        display:flex;align-items:center;gap:8px;padding:7px 10px 7px 7px;
+        border:1.5px solid ${isSelected ? 'var(--accent)' : 'var(--border)'};
+        background:${isSelected ? 'rgba(139,92,246,0.1)' : 'var(--bg-1)'};
+        border-radius:var(--r-md);cursor:pointer;transition:all .15s;
+        max-width:200px;user-select:none;position:relative
+      `;
+      card.innerHTML = `
+        <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--bg-card);border:1px solid var(--border)">
+          ${imgUrl
+            ? `<img src="${escapeHTML(imgUrl)}" style="width:100%;height:100%;object-fit:cover" loading="lazy">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:15px">👤</div>`}
+        </div>
+        <div style="min-width:0">
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${escapeHTML(c.name || '이름없음')}</div>
+          <div style="font-size:10px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${escapeHTML(c.role || c.className || '')}</div>
+        </div>
+        ${isSelected ? `<svg style="position:absolute;top:5px;right:5px;color:var(--accent)" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+        ${imgUrl ? '' : `<span title="키이미지 없음" style="position:absolute;top:4px;right:4px;font-size:9px;color:var(--text-faint)">⚠</span>`}
+      `;
+
+      card.addEventListener('click', () => {
+        const cid = c.id;
+        if (_plCharSelected.has(cid)) {
+          _plCharSelected.delete(cid);
+        } else {
+          _plCharSelected.set(cid, {
+            name: c.name || '',
+            keyImageUrl: imgUrl || '',
+            promptFragment: c.promptFragment || c.name || ''
+          });
+        }
+        _updateCharBadge(charBadge);
+        // 카드 시각 업데이트
+        const selected = _plCharSelected.has(cid);
+        card.style.borderColor = selected ? 'var(--accent)' : 'var(--border)';
+        card.style.background  = selected ? 'rgba(139,92,246,0.1)' : 'var(--bg-1)';
+        // 체크 아이콘 토글
+        let chk = card.querySelector('.pl-ig-chk');
+        if (selected && !chk) {
+          chk = document.createElementNS('http://www.w3.org/2000/svg','svg');
+          chk.setAttribute('class','pl-ig-chk');
+          chk.setAttribute('viewBox','0 0 24 24');
+          chk.setAttribute('width','12');
+          chk.setAttribute('height','12');
+          chk.setAttribute('fill','none');
+          chk.setAttribute('stroke','currentColor');
+          chk.setAttribute('stroke-width','2.5');
+          chk.setAttribute('stroke-linecap','round');
+          chk.style.cssText = 'position:absolute;top:5px;right:5px;color:var(--accent)';
+          chk.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+          card.appendChild(chk);
+        } else if (!selected && chk) {
+          chk.remove();
+        }
+        // 샷 카드에 캐릭터 배지 업데이트
+        _updateShotCharBadges();
+      });
+
+      charGrid.appendChild(card);
+    });
+
+    _updateCharBadge(charBadge);
+  }
+
+  function _updateCharBadge(badge) {
+    if (!badge) return;
+    const n = _plCharSelected.size;
+    if (n === 0) {
+      badge.style.display = 'none';
+    } else {
+      badge.style.display = 'inline-block';
+      badge.textContent = `${n}명 선택`;
+    }
+  }
+
+  function _updateShotCharBadges() {
+    const n = _plCharSelected.size;
+    const names = [..._plCharSelected.values()].map(c => c.name).filter(Boolean).join(', ');
+    document.querySelectorAll('.pl-ig-char-badge').forEach(b => {
+      if (n === 0) {
+        b.style.display = 'none';
+        b.textContent = '';
+      } else {
+        b.style.display = 'inline-block';
+        b.textContent = `👤 ${names.length > 24 ? names.slice(0,24)+'…' : names}`;
+      }
+    });
+  }
+
+  // ── 캐릭터 선택 상태 (탭 공유) ──
+  const _plCharSelected = new Map(); // charId → { name, keyImageUrl, promptFragment }
+  let _plCharMode = 'ref'; // 'ref' | 'prompt' | 'both'
+
+  /* 선택된 캐릭터 컨텍스트 반환 */
+  function _getCharContext() {
+    const chars = [..._plCharSelected.values()];
+    if (!chars.length) return { refImage: null, charPrompt: '' };
+    // 첫 번째 캐릭터가 주 레퍼런스
+    const refImage = (_plCharMode === 'ref' || _plCharMode === 'both')
+      ? (chars[0].keyImageUrl || null) : null;
+    const charPrompt = (_plCharMode === 'prompt' || _plCharMode === 'both')
+      ? chars.map(c => c.promptFragment || c.name).filter(Boolean).join(', ')
+      : (_plCharMode === 'ref' && chars.length)
+        ? chars.map(c => c.name).filter(Boolean).join(', ')
+        : '';
+    return { refImage, charPrompt };
+  }
+
   window.initShotImagegenTab = function initShotImagegenTab() {
     const KEY = 'soaviz_sl_saved';
     const sel  = $('#pl-ig-sl-select');
@@ -47955,6 +48164,9 @@ function bindPipelinePage() {
     const genAllBtn = $('#pl-ig-gen-all');
     const progressBar = $('#pl-ig-progress-bar');
     if (!sel || !grid) return;
+
+    // ─── 캐릭터 패널 초기화 ───
+    _initImgCharPanel();
 
     // 샷리스트 목록 로드
     let saved = [];
@@ -48024,6 +48236,7 @@ function bindPipelinePage() {
               </div>
               <div style="font-size:12px;color:var(--text-dim);line-height:1.5;flex:1">${(shot.description || '').slice(0, 80)}${(shot.description||'').length>80?'…':''}</div>
               ${prompt ? `<div style="font-size:10px;color:var(--text-faint);background:var(--bg-1);border-radius:var(--r-sm);padding:6px 8px;font-family:var(--font-mono,monospace);line-height:1.4;border:1px solid var(--border)">${prompt.slice(0, 120)}${prompt.length>120?'…':''}</div>` : ''}
+              <span class="pl-ig-char-badge" style="display:none;font-size:10px;color:var(--accent);background:rgba(139,92,246,0.1);border-radius:var(--r-sm);padding:3px 7px;border:1px solid rgba(139,92,246,0.2)"></span>
               <button class="pl-ig-shot-btn" data-key="${key}" data-prompt="${(prompt).replace(/"/g,'&quot;')}"
                 style="padding:7px 0;background:${imgUrl?'var(--bg-1)':'var(--accent)'};color:${imgUrl?'var(--text-faint)':'#fff'};border:1px solid ${imgUrl?'var(--border)':'transparent'};border-radius:var(--r-md);font-size:12px;font-weight:600;cursor:pointer;width:100%;transition:all .15s">
                 ${imgUrl ? '🔄 재생성' : '✦ 이미지 생성'}
@@ -48034,6 +48247,8 @@ function bindPipelinePage() {
       });
 
       _updateProgress(slIdx);
+      // 캐릭터 배지 초기 상태
+      _updateShotCharBadges();
     }
 
     function _updateProgress(slIdx) {
@@ -48063,7 +48278,12 @@ function bindPipelinePage() {
       if (overlay) overlay.style.display = 'flex';
       if (btn) { btn.disabled = true; btn.textContent = '생성 중…'; }
       try {
-        const url = await generateImageFromPrompt({ prompt, model: 'dall-e-3', ratio: '16:9', creditLabel: '샷 이미지 생성' });
+        // 캐릭터 컨텍스트 주입
+        const { refImage, charPrompt } = _getCharContext();
+        const finalPrompt = charPrompt ? `${prompt}, featuring ${charPrompt}` : prompt;
+        const genOpts = { prompt: finalPrompt, model: 'dall-e-3', ratio: '16:9', creditLabel: '샷 이미지 생성' };
+        if (refImage) genOpts.refImage = refImage;
+        const url = await generateImageFromPrompt(genOpts);
         if (!url) throw new Error('이미지 URL 없음');
         _plImgStore.set(key, url);
         _saveImgStore();
@@ -51795,12 +52015,12 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
     { id:'flash',        name:'Flash',                provider:'internal',  speed:'빠름', quality:'중상', costLabel:'1 크레딧',  description:'빠른 생성 속도',      recommended:true  },
     { id:'pro',          name:'Pro',                  provider:'comet',     speed:'중간', quality:'높음', costLabel:'3 크레딧',  description:'고품질 결과물',       recommended:true  },
     { id:'ultra',        name:'Ultra',                provider:'internal',  speed:'느림', quality:'최상', costLabel:'5 크레딧',  description:'최고 디테일',         recommended:true  },
-    { id:'gpt-image',    name:'GPT Image',            provider:'openai',    speed:'중간', quality:'높음', costLabel:'변동',     description:'강한 구성력과 해석력',  recommended:false },
-    { id:'flux-pro',     name:'Flux Pro',             provider:'flux',      speed:'중간', quality:'높음', costLabel:'변동',     description:'포토리얼 이미지',     recommended:false },
-    { id:'flux-schnell', name:'Flux Schnell',         provider:'flux',      speed:'빠름', quality:'중',   costLabel:'변동',     description:'초고속 초안',         recommended:false },
-    { id:'recraft',      name:'Recraft',              provider:'recraft',   speed:'중간', quality:'높음', costLabel:'변동',     description:'벡터/일러스트 특화',  recommended:false },
-    { id:'ideogram',     name:'Ideogram',             provider:'ideogram',  speed:'중간', quality:'높음', costLabel:'변동',     description:'텍스트 포함 이미지',  recommended:false },
-    { id:'sdxl',         name:'SDXL',                 provider:'stability', speed:'빠름', quality:'중상', costLabel:'변동',     description:'커스텀 파인튜닝',     recommended:false },
+    { id:'gpt-image',    name:'GPT Image',            provider:'openai',    speed:'중간', quality:'높음', costLabel:'3 크레딧',  description:'강한 구성력과 해석력',  recommended:false },
+    { id:'flux-pro',     name:'Flux Pro',             provider:'flux',      speed:'중간', quality:'높음', costLabel:'3 크레딧',  description:'포토리얼 이미지',     recommended:false },
+    { id:'flux-schnell', name:'Flux Schnell',         provider:'flux',      speed:'빠름', quality:'중',   costLabel:'1 크레딧',  description:'초고속 초안',         recommended:false },
+    { id:'recraft',      name:'Recraft',              provider:'recraft',   speed:'중간', quality:'높음', costLabel:'3 크레딧',  description:'벡터/일러스트 특화',  recommended:false },
+    { id:'ideogram',     name:'Ideogram',             provider:'ideogram',  speed:'중간', quality:'높음', costLabel:'3 크레딧',  description:'텍스트 포함 이미지',  recommended:false },
+    { id:'sdxl',         name:'SDXL',                 provider:'stability', speed:'빠름', quality:'중상', costLabel:'3 크레딧',  description:'커스텀 파인튜닝',     recommended:false },
     { id:'custom',       name:'Custom Internal Model',provider:'internal',  speed:'가변', quality:'가변', costLabel:'3 크레딧',  description:'내부 파인튜닝 모델',  recommended:false },
   ];
   const CSHEET_ANGLE_LABEL = { front:'정면', side45:'측면 45°', left90:'좌측 90°', right90:'우측 90°', back:'후면', threeQuarter:'쓰리쿼터' };
@@ -53878,7 +54098,7 @@ window.SoavizPromptKit = SoavizPromptKit;
   const _now = () => Date.now();
   const _newId = () => (typeof ulid === 'function') ? ulid() : ('id_' + _now());
 
-  // 추정 비용 (단위: USD, 5초 1080p 기준 — 모델별 대략값)
+  // 크레딧 가중치 (5초 1080p 기준 — 모델별 상대 원가)
   const COST_ESTIMATE = {
     'sora-2-pro': 1.50,
     'veo-3.1': 1.20,
@@ -53904,6 +54124,10 @@ window.SoavizPromptKit = SoavizPromptKit;
       total += (COST_ESTIMATE[id] || 0.30) * factor;
     }
     return total;
+  }
+
+  function estimateCredits(modelIds, duration) {
+    return Math.max(300, Math.ceil((estimateCost(modelIds, duration) || 1) * 1000));
   }
 
   async function createSession(data) {
@@ -54062,7 +54286,7 @@ window.SoavizPromptKit = SoavizPromptKit;
   }
 
   window.SoavizCompare = {
-    COST_ESTIMATE, estimateCost,
+    COST_ESTIMATE, estimateCost, estimateCredits,
     createSession, update, listRecent, get,
     runOne, pickWinner, setScore,
   };
@@ -54092,7 +54316,7 @@ async function renderComparePage() {
         <input type="checkbox" ${checked ? 'checked' : ''} />
         <span style="flex:1">${escapeHTML(m.label || m.id)}</span>
         ${m.is_new ? '<span class="new-badge">NEW</span>' : ''}
-        <span style="font-size:10px;color:var(--text-faint);font-variant-numeric:tabular-nums">~$${(SoavizCompare.COST_ESTIMATE[m.id] || 0.30).toFixed(2)}</span>
+        <span style="font-size:10px;color:var(--text-faint);font-variant-numeric:tabular-nums">~${Math.ceil((SoavizCompare.COST_ESTIMATE[m.id] || 0.30) * 1000).toLocaleString()} credits</span>
       </label>`;
     }).join('') || '<div style="padding:14px;color:var(--text-faint);font-size:11px;text-align:center">백엔드 모델 로드 실패<br>Settings에서 백엔드 확인</div>';
     wrap.querySelectorAll('[data-mid]').forEach(el => {
@@ -54125,11 +54349,11 @@ async function renderComparePage() {
 
 function updateCompareCost() {
   const dur = parseInt($('#cmp-duration')?.value || '5', 10);
-  const cost = SoavizCompare.estimateCost(_CMP_STATE.models, dur);
+  const credits = SoavizCompare.estimateCredits(_CMP_STATE.models, dur);
   const row = $('#cmp-cost-row');
   if (row) row.innerHTML = `
     <span>모델 <strong>${_CMP_STATE.models.length}</strong>개 × ${dur}초</span>
-    <span>예상 비용 <strong>~$${cost.toFixed(2)}</strong></span>
+    <span>예상 크레딧 <strong>${credits.toLocaleString()}</strong></span>
   `;
 }
 
@@ -54495,7 +54719,7 @@ function bindComparePage() {
     if (!_CMP_STATE.models.length) { showToast?.('모델을 1개 이상 선택하세요'); return; }
     const duration = parseInt($('#cmp-duration')?.value || '5', 10);
     const shotId = $('#cmp-shot-select')?.value || null;
-    const compareCredits = Math.max(300, Math.ceil((SoavizCompare.estimateCost(_CMP_STATE.models, duration) || 1) * 1000));
+    const compareCredits = SoavizCompare.estimateCredits(_CMP_STATE.models, duration);
     if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
       action: 'compare-batch',
       label: `${_CMP_STATE.models.length}개 모델 Compare`,
@@ -61446,11 +61670,11 @@ window.bindMobileProductionEvents = bindMobileProductionEvents;
 const mobileGenerationModelConfig = [
   { id:'image-flash', name:'Image Flash', type:'image', provider:'internal', speed:'빠름', quality:'중상', cost:60,  costLabel:'60 credits',  description:'샷 이미지 초안 생성에 적합합니다.',           recommended:true  },
   { id:'image-pro',   name:'Image Pro',   type:'image', provider:'internal', speed:'중간', quality:'높음', cost:160, costLabel:'160 credits', description:'키비주얼과 고품질 컷 생성에 적합합니다.',      recommended:true  },
-  { id:'gpt-image',   name:'GPT Image',   type:'image', provider:'openai',   speed:'중간', quality:'높음', cost:null,costLabel:'variable',   description:'프롬프트 해석력과 구성력이 강한 이미지 모델입니다.', recommended:false },
+  { id:'gpt-image',   name:'GPT Image',   type:'image', provider:'openai',   speed:'중간', quality:'높음', cost:160, costLabel:'160 credits', description:'프롬프트 해석력과 구성력이 강한 이미지 모델입니다.', recommended:false },
   { id:'video-fast',  name:'Video Fast',  type:'video', provider:'internal', speed:'빠름', quality:'중상', cost:180, costLabel:'180 credits', description:'짧은 모션 테스트에 적합합니다.',               recommended:true  },
   { id:'video-pro',   name:'Video Pro',   type:'video', provider:'internal', speed:'느림', quality:'높음', cost:320, costLabel:'320 credits', description:'최종 컷 후보용 고품질 영상 생성에 적합합니다.',  recommended:true  },
-  { id:'kling',       name:'Kling',       type:'video', provider:'kling',    speed:'중간', quality:'높음', cost:null,costLabel:'variable',   description:'이미지 기반 영상화와 자연스러운 모션에 적합합니다.', recommended:false },
-  { id:'runway',      name:'Runway',      type:'video', provider:'runway',   speed:'중간', quality:'높음', cost:null,costLabel:'variable',   description:'시네마틱 영상 생성과 모션 제어에 적합합니다.',    recommended:false }
+  { id:'kling',       name:'Kling',       type:'video', provider:'kling',    speed:'중간', quality:'높음', cost:320, costLabel:'320 credits', description:'이미지 기반 영상화와 자연스러운 모션에 적합합니다.', recommended:false },
+  { id:'runway',      name:'Runway',      type:'video', provider:'runway',   speed:'중간', quality:'높음', cost:320, costLabel:'320 credits', description:'시네마틱 영상 생성과 모션 제어에 적합합니다.',    recommended:false }
 ];
 window.mobileGenerationModelConfig = mobileGenerationModelConfig;
 
@@ -61761,23 +61985,31 @@ async function loadMobileGenerationJobs(projectId) {
 /* ── 6차: 비용 추정 ──────────────────────────────────────────── */
 function getMobileGenerationModel(modelId) {
   const cfg = window.mobileGenerationModelConfig || {};
-  for (const cat of Object.values(cfg)) {
-    for (const m of (cat.models || [])) {
-      if (m.id === modelId) return m;
-    }
-  }
-  return null;
+  const list = Array.isArray(cfg) ? cfg : Object.values(cfg).flatMap(cat => cat.models || []);
+  return list.find(m => m.id === modelId) || null;
 }
 
 function estimateMobileGenerationCost(modelId, mode, duration) {
   const m = getMobileGenerationModel(modelId);
-  if (!m) return null;
-  if (mode === 'video') {
-    const perSec = m.costPerSecond || 0;
-    return { amount: +(perSec * (duration || 5)).toFixed(4), unit: 'USD', label: `~$${(perSec * (duration || 5)).toFixed(3)}/샷` };
-  }
-  const perImg = m.costPerImage || 0;
-  return { amount: +perImg.toFixed(4), unit: 'USD', label: `~$${perImg.toFixed(3)}/샷` };
+  const fallback = mode === 'video' ? 320 : 60;
+  const amount = Math.max(1, Number(m?.cost || fallback));
+  return { amount, unit: 'credits', label: `${amount.toLocaleString()} credits/샷` };
+}
+
+function getMobileGenerationCreditCost(draft = {}) {
+  return Math.max(1, Number(estimateMobileGenerationCost(draft.modelId, draft.mode, draft.duration)?.amount || 0));
+}
+
+function canRunMobileGenerationDraft(draft = {}, { multiplier = 1 } = {}) {
+  const model = getMobileGenerationModel(draft.modelId);
+  const creditCost = getMobileGenerationCreditCost(draft) * Math.max(1, Number(multiplier || 1));
+  return typeof canRunMonetizedAction !== 'function' || canRunMonetizedAction({
+    action: draft.mode === 'video' ? 'mobile-video-generate' : 'mobile-image-generate',
+    label: draft.mode === 'video' ? '모바일 영상 생성' : '모바일 이미지 생성',
+    cost: creditCost,
+    modelTier: draft.mode === 'video' ? 'premium' : (typeof getImagePromptModelTier === 'function' ? getImagePromptModelTier(draft.modelId) : 'premium'),
+    modelLabel: model?.name || draft.modelId || '',
+  });
 }
 
 /* ── 6차: Confirm Bottom Sheet ───────────────────────────────── */
@@ -61810,7 +62042,7 @@ function renderMobileGenerationConfirmSheetHTML(draft) {
   const model = getMobileGenerationModel(draft.modelId);
   const modeLabel = draft.mode === 'video' ? '영상 생성' : '이미지 생성';
   const costHtml = cost
-    ? `<div class="mobile-cost-card"><span class="mobile-cost-label">예상 비용</span><span class="mobile-cost-value">${cost.label}</span></div>`
+    ? `<div class="mobile-cost-card"><span class="mobile-cost-label">예상 크레딧</span><span class="mobile-cost-value">${cost.label}</span></div>`
     : '';
   return `
     <div class="mobile-sheet-handle"></div>
@@ -61859,6 +62091,7 @@ function bindMobileGenerationConfirmEvents() {
   if (startBtn) startBtn.onclick = async () => {
     const gq = MobileState.generationQueue;
     const draft = gq.pendingJobDraft;
+    if (draft && !canRunMobileGenerationDraft(draft)) return;
     closeMobileGenerationConfirm();
     if (draft) await enqueueMobileGenerationJob(draft);
   };
@@ -61957,6 +62190,7 @@ async function mobileGenerateImageAssetFromJob(job) {
     } catch (_) {}
   }
   let resultUrl = null;
+  let isMock = false;
   try {
     const resp = await fetch(`${BACKEND_URL}/api/generate-image`, {
       method: 'POST',
@@ -61976,6 +62210,7 @@ async function mobileGenerateImageAssetFromJob(job) {
   } catch (_) {}
   if (!resultUrl) {
     resultUrl = `https://picsum.photos/seed/${job.id}/800/450`;
+    isMock = true;
   }
   const assetId = 'asset_img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   const asset = {
@@ -61992,6 +62227,7 @@ async function mobileGenerateImageAssetFromJob(job) {
     createdAt:   Date.now(),
     updatedAt:   Date.now(),
     archived:    0,
+    mock:         isMock,
     ...(charRefPayload.characterReferences.length ? {
       characterReferences: charRefPayload.characterReferences,
       identityLock:        charRefPayload.hasIdentityLock,
@@ -62010,6 +62246,7 @@ async function mobileGenerateImageAssetFromJob(job) {
       }
     } catch (_) {}
   }
+  if (!isMock && typeof consumeCredits === 'function') consumeCredits(getMobileGenerationCreditCost(job), '모바일 이미지 생성');
   return assetId;
 }
 
@@ -62059,6 +62296,7 @@ async function mobileGenerateVideoAssetFromJob(job) {
     createdAt:   Date.now(),
     updatedAt:   Date.now(),
     archived:    0,
+    mock:         !resultUrl,
     ...(charRefPayload.characterReferences.length ? {
       characterReferences: charRefPayload.characterReferences,
       identityLock:        charRefPayload.hasIdentityLock,
@@ -62077,6 +62315,7 @@ async function mobileGenerateVideoAssetFromJob(job) {
       }
     } catch (_) {}
   }
+  if (resultUrl && typeof consumeCredits === 'function') consumeCredits(getMobileGenerationCreditCost(job), '모바일 영상 생성');
   return assetId;
 }
 
@@ -62236,7 +62475,7 @@ function openMobileBatchGenerationConfirm(bundle) {
   gq2.pendingJobDraft = { _batch: true, drafts };
   gq2.confirmSheetOpen = true;
   const cost = estimateMobileGenerationCost(drafts[0]?.modelId, drafts[0]?.mode, drafts[0]?.duration);
-  const totalCost = cost ? `~$${(cost.amount * drafts.length).toFixed(3)}` : '';
+  const totalCost = cost ? `${(cost.amount * drafts.length).toLocaleString()} credits` : '';
   let backdrop = document.getElementById('mobile-gen-confirm-backdrop');
   if (!backdrop) {
     backdrop = document.createElement('div');
@@ -62258,7 +62497,7 @@ function openMobileBatchGenerationConfirm(bundle) {
       <span class="mobile-cost-label">선택된 Shot</span>
       <span class="mobile-cost-value">${drafts.length}개</span>
     </div>
-    ${totalCost ? `<div class="mobile-cost-card" style="margin-bottom:14px;"><span class="mobile-cost-label">예상 총 비용</span><span class="mobile-cost-value">${totalCost}</span></div>` : ''}
+    ${totalCost ? `<div class="mobile-cost-card" style="margin-bottom:14px;"><span class="mobile-cost-label">예상 총 크레딧</span><span class="mobile-cost-value">${totalCost}</span></div>` : ''}
     <p class="mobile-sheet-note">각 Shot의 description을 프롬프트로 사용합니다.</p>
     <div style="display:flex;gap:10px;margin-top:16px;">
       <button class="mobile-secondary-btn" id="mobile-confirm-cancel-btn" style="flex:1;">취소</button>
@@ -62273,6 +62512,7 @@ function openMobileBatchGenerationConfirm(bundle) {
   if (cancelBtn) cancelBtn.onclick = () => closeMobileGenerationConfirm();
   if (backdrop)  backdrop.onclick  = () => closeMobileGenerationConfirm();
   if (startBtn)  startBtn.onclick  = async () => {
+    if (!canRunMobileGenerationDraft(drafts[0] || {}, { multiplier: drafts.length })) return;
     closeMobileGenerationConfirm();
     await enqueueMobileBatchGenerationJobs(drafts);
   };
