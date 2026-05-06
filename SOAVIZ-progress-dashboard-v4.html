@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ STUDIO — 작업 진척 대시보드 v4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a14;
+  --bg-card: rgba(255,255,255,0.05);
+  --bg-card-hover: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.1);
+  --text: #e5e3ed;
+  --dim: rgba(255,255,255,0.6);
+  --faint: rgba(255,255,255,0.35);
+  --accent: #9e7bff;
+  --blue: #4cc9f0;
+  --green: #10b981;
+  --warn: #fbbf24;
+  --danger: #f43f5e;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(135deg, #0a0a14 0%, #1a0a2e 55%, #2d1b4e 100%) fixed;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px 100px;
+  line-height: 1.6;
+}
+
+.wrap { max-width: 1140px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 48px; }
+.kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--accent);
+  letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 14px;
+}
+h1 {
+  font-size: clamp(30px,5vw,52px); font-weight: 900;
+  line-height: 1.1; margin-bottom: 14px; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #9e7bff, #4cc9f0);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sub { font-size: 14px; color: var(--dim); }
+.gen { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); margin-top: 8px; }
+
+/* ── HERO KPI ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 14px; margin-bottom: 40px;
+}
+@media(max-width:900px){ .kpi-row { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:600px){ .kpi-row { grid-template-columns: repeat(2,1fr); } }
+
+.kpi {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px 18px;
+  position: relative; overflow: hidden;
+}
+.kpi::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+}
+.kpi.green::after { background: var(--green); }
+.kpi.warn::after  { background: var(--warn); }
+.kpi.blue::after  { background: var(--blue); }
+.kpi.danger::after{ background: var(--danger); }
+
+.kpi-num {
+  font-size: 32px; font-weight: 900; line-height: 1;
+  margin-bottom: 8px; font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+}
+.kpi.green .kpi-num { color: var(--green); }
+.kpi.warn  .kpi-num { color: var(--warn); }
+.kpi.blue  .kpi-num { color: var(--blue); }
+.kpi.danger .kpi-num{ color: var(--danger); }
+.kpi-label { font-size: 10px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+.kpi-sub   { font-size: 11px; color: var(--dim); margin-top: 6px; }
+
+/* ── PROGRESS ── */
+.progress-block {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 24px 28px; margin-bottom: 40px;
+}
+.progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.progress-title { font-size: 14px; font-weight: 600; color: var(--dim); }
+.progress-val { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--accent); }
+.bar-track { background: rgba(255,255,255,0.06); border-radius: 100px; height: 10px; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  box-shadow: 0 0 16px rgba(158,123,255,0.4);
+  transition: width 1.8s cubic-bezier(0.4,0,0.2,1);
+  width: 0;
+}
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 4px;
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  border-radius: 100px; padding: 4px;
+  margin-bottom: 28px; overflow-x: auto;
+}
+.tab {
+  background: transparent; color: var(--dim); border: none;
+  padding: 10px 22px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; font-family: inherit;
+  transition: all 0.2s;
+}
+.tab.on { background: linear-gradient(135deg, var(--accent), var(--blue)); color: #fff; }
+.tab:hover:not(.on) { color: var(--text); }
+.panel { display: none; animation: fadeUp 0.3s ease; }
+.panel.on { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION HEADER ── */
+.sec-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 2px solid var(--accent); padding-bottom: 10px;
+  margin-bottom: 22px;
+}
+.sec-title { font-size: 20px; font-weight: 800; }
+.sec-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--faint); letter-spacing: 0.08em; }
+
+/* ── TIMELINE ── */
+.tl { position: relative; padding-left: 30px; }
+.tl::before {
+  content:''; position:absolute; left:7px; top:8px; bottom:8px;
+  width:2px; background:linear-gradient(180deg, var(--accent), var(--blue));
+}
+.tl-item {
+  position:relative; margin-bottom:20px;
+  background: var(--bg-card); border:1px solid var(--border);
+  border-radius:12px; padding:18px 22px;
+  transition: all 0.2s;
+}
+.tl-item:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: translateX(4px); }
+.tl-item::before {
+  content:''; position:absolute; left:-23px; top:22px;
+  width:12px; height:12px; border-radius:50%;
+  background: var(--accent); border:3px solid #0a0a14;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.tl-item.done::before { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+.tl-item.wait::before { background: var(--warn); box-shadow: 0 0 0 2px var(--warn); }
+.tl-item.pkg::before  { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+
+.tl-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+.tid {
+  background: #0a0a14; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+  padding:3px 9px; border-radius:4px; letter-spacing:0.06em; text-transform:uppercase;
+}
+.tl-item.done .tid { background:rgba(16,185,129,0.15); color:var(--green); }
+.tl-item.wait .tid  { background:rgba(251,191,36,0.15); color:var(--warn); }
+.tl-item.pkg .tid   { background:rgba(76,201,240,0.15); color:var(--blue); }
+
+.tl-title { font-size:15px; font-weight:700; flex:1; }
+.badge {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  text-transform:uppercase; letter-spacing:0.07em;
+  padding:3px 8px; border-radius:4px;
+}
+.badge.done { background:rgba(16,185,129,0.15); color:var(--green); }
+.badge.wait { background:rgba(251,191,36,0.15); color:var(--warn); }
+.badge.pkg  { background:rgba(76,201,240,0.15); color:var(--blue); }
+.badge.info { background:rgba(158,123,255,0.15); color:var(--accent); }
+
+.tl-meta { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint); margin-bottom:10px; }
+.tl-body { font-size:13px; color:var(--dim); line-height:1.6; }
+.tl-body strong { color: var(--blue); }
+.tl-body em { color: var(--warn); }
+
+.tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.tag {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  background:rgba(255,255,255,0.06); color:var(--dim);
+  padding:2px 7px; border-radius:4px;
+}
+.tag.g { background:rgba(16,185,129,0.1); color:var(--green); }
+.tag.w { background:rgba(251,191,36,0.1); color:var(--warn); }
+.tag.a { background:rgba(158,123,255,0.1); color:var(--accent); }
+
+/* ── PACKAGE GRID ── */
+.pkg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:14px; }
+.pkg-card {
+  background: var(--bg-card); border:1px solid var(--border);
+  border-radius:12px; padding:18px; transition:all 0.2s;
+}
+.pkg-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.pkg-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.pkg-icon {
+  width:38px; height:38px; border-radius:10px; flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.pkg-name { font-size:14px; font-weight:700; }
+.pkg-id   { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); margin-bottom:7px; }
+.pkg-desc { font-size:12px; color:var(--dim); margin-bottom:10px; line-height:1.55; }
+.pkg-files { display:flex; gap:5px; flex-wrap:wrap; }
+.fp {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  background:rgba(76,201,240,0.1); color:var(--blue);
+  padding:2px 7px; border-radius:4px;
+}
+.fp.py  { background:rgba(251,191,36,0.1); color:var(--warn); }
+.fp.pdf { background:rgba(244,63,94,0.1); color:var(--danger); }
+
+/* ── TABLE ── */
+.tbl { width:100%; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:20px; }
+.tbl th { background:rgba(0,0,0,0.3); color:var(--accent); font-size:10px; text-transform:uppercase; letter-spacing:0.07em; padding:11px 14px; text-align:left; font-weight:700; }
+.tbl th.c, .tbl td.c { text-align:center; }
+.tbl td { padding:11px 14px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+.tbl td.mono { font-family:'JetBrains Mono',monospace; }
+.tbl tr:hover td { background:rgba(158,123,255,0.04); }
+.up   { color:var(--green); font-weight:700; }
+.dn   { color:var(--danger); font-weight:700; }
+.pend { color:var(--warn); }
+
+/* ── CALLOUT ── */
+.callout {
+  border-left:4px solid var(--accent); background:rgba(158,123,255,0.05);
+  padding:13px 17px; border-radius:0 8px 8px 0; margin:14px 0; font-size:13px;
+}
+.callout.g { border-left-color:var(--green); background:rgba(16,185,129,0.05); }
+.callout.w { border-left-color:var(--warn); background:rgba(251,191,36,0.05); }
+.callout strong { color:var(--blue); }
+.cl { display:inline-block; background:var(--accent); color:#fff; padding:2px 8px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-right:7px; }
+.callout.g .cl { background:var(--green); }
+.callout.w .cl { background:var(--warn); color:#000; }
+
+/* ── NEXT STEP ── */
+.next-wrap {
+  background:linear-gradient(135deg,rgba(158,123,255,0.08),rgba(76,201,240,0.08));
+  border:1px solid var(--accent); border-radius:14px; padding:24px;
+}
+.next-wrap h3 { font-size:17px; font-weight:800; color:var(--accent); margin-bottom:16px; }
+.ns {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:13px 0; border-bottom:1px solid var(--border);
+}
+.ns:last-child { border-bottom:none; }
+.ns-num {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:var(--accent); color:#fff;
+  font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+}
+.ns-num.done-num { background:var(--green); }
+.ns-body { flex:1; }
+.ns-title { font-weight:700; margin-bottom:3px; font-size:14px; }
+.ns-title.done-title { text-decoration:line-through; color:var(--dim); }
+.ns-meta { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint); }
+.ns-time {
+  background:#0a0a14; color:var(--blue); padding:4px 10px;
+  border-radius:4px; font-family:'JetBrains Mono',monospace;
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+.ns-time.done-time { color:var(--green); }
+
+/* ── AUTO GRID ── */
+.auto-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px; }
+@media(max-width:700px){ .auto-grid { grid-template-columns:1fr; } }
+.auto-card {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:12px; padding:18px;
+}
+.auto-num   { font-size:28px; font-weight:900; color:var(--accent); font-family:'JetBrains Mono',monospace; margin-bottom:8px; }
+.auto-title { font-size:14px; font-weight:700; margin-bottom:8px; }
+.auto-desc  { font-size:12px; color:var(--dim); line-height:1.55; }
+.code-block {
+  background:#0a0a14; border:1px solid var(--border); border-radius:8px;
+  padding:14px 16px; font-family:'JetBrains Mono',monospace; font-size:11px;
+  color:#a8b5c8; line-height:1.7; margin:12px 0; overflow-x:auto;
+}
+.code-block .cm { color: #555f73; }
+.code-block .ck { color: var(--accent); }
+.code-block .cs { color: var(--blue); }
+.code-block .cn { color: var(--warn); }
+
+/* ── SLOGAN ── */
+.slogan {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:14px; padding:28px; text-align:center; margin-bottom:40px;
+}
+.slogan-q {
+  font-size: 20px; font-weight: 700; margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.slogan-e { font-size:12px; color:var(--faint); font-style:italic; font-family:'JetBrains Mono',monospace; }
+
+/* ── CHANGE DIVIDER ── */
+.change-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 14px 0; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--warn); letter-spacing: 0.12em;
+}
+.change-divider::before, .change-divider::after {
+  content: ''; flex: 1;
+  border-top: 1px dashed rgba(251,191,36,0.4);
+}
+.change-badge {
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+  color: var(--warn); font-family:'JetBrains Mono',monospace; font-size:9px;
+  font-weight:700; padding:2px 8px; border-radius:4px; text-transform:uppercase;
+  letter-spacing:0.07em; display:inline-block; margin-left:6px;
+}
+.tl-item.updated { border-color: rgba(251,191,36,0.3); }
+
+/* ── DUAL PROGRESS ── */
+.dual-progress { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+@media(max-width:600px){ .dual-progress { grid-template-columns:1fr; } }
+.dp-block {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:12px; padding:18px 22px;
+}
+.dp-label { font-size:11px; color:var(--faint); font-weight:600; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; }
+.dp-val   { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--accent); margin-bottom:6px; }
+.dp-bar   { background:rgba(255,255,255,0.06); border-radius:100px; height:6px; overflow:hidden; }
+.dp-fill  { height:100%; border-radius:100px; transition: width 1.8s cubic-bezier(0.4,0,0.2,1); width:0; }
+.dp-fill.green-fill  { background:var(--green); }
+.dp-fill.accent-fill { background:linear-gradient(90deg,var(--accent),var(--blue)); }
+
+/* ── COMMIT LOG ── */
+.commit-list { display:flex; flex-direction:column; gap:8px; margin:16px 0; }
+.commit-item {
+  display:flex; align-items:center; gap:10px;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:8px; padding:10px 14px; font-size:12px;
+}
+.commit-hash {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  background:rgba(158,123,255,0.15); color:var(--accent);
+  padding:2px 7px; border-radius:4px; flex-shrink:0;
+}
+.commit-msg { flex:1; color:var(--dim); }
+.commit-date { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint); flex-shrink:0; }
+
+/* ── FOOTER ── */
+.footer {
+  text-align:center; margin-top:60px; padding-top:28px;
+  border-top:1px solid var(--border);
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--faint); letter-spacing:0.06em;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="kicker">SOAVIZ AI STUDIO · Session Log v4 · Anthropic Top 1% Path</div>
+  <h1>작업 진척 대시보드<br>v4.0</h1>
+  <div class="sub">Day 0~8 + P1 전체 + C-P0 완결 + P2-06 Stripe 인프라 완료 기준</div>
+  <div class="gen">v3 2026-05-06 (Day5) · <strong style="color:var(--warn)">v4 업데이트 2026-05-06 (Day8 + P2-06 완료 후)</strong> · Claude Sonnet 4.6</div>
+</div>
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+  <div class="kpi green">
+    <div class="kpi-num">27</div>
+    <div class="kpi-label">P-task 완료</div>
+    <div class="kpi-sub">/ 35 (77%) · P1 전체 완료 🎉</div>
+  </div>
+  <div class="kpi blue">
+    <div class="kpi-num">8/15</div>
+    <div class="kpi-label">Day 트랙 진행</div>
+    <div class="kpi-sub">Day 1~8 완료 ✅</div>
+  </div>
+  <div class="kpi blue">
+    <div class="kpi-num">62K+</div>
+    <div class="kpi-label">soaviz-studio 라인수</div>
+    <div class="kpi-sub">v3 62K → Day6~8 추가</div>
+  </div>
+  <div class="kpi warn">
+    <div class="kpi-num">~58</div>
+    <div class="kpi-label">평균 점수 (추정)</div>
+    <div class="kpi-sub">~45 → ~58 (+13)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-num">10+</div>
+    <div class="kpi-label">이번 세션 커밋</div>
+    <div class="kpi-sub">JS 검증 all pass</div>
+  </div>
+</div>
+
+<!-- SLOGAN -->
+<div class="slogan">
+  <div class="slogan-q">"감각으로 시작하되 시스템으로 완성한다"</div>
+  <div class="slogan-e">Begin with intuition, complete with systems · SOAVIZ AI STUDIO © 은교</div>
+</div>
+
+<!-- DUAL PROGRESS -->
+<div class="dual-progress">
+  <div class="dp-block">
+    <div class="dp-label">P-task 트랙 (P0/P1/P2/P3 · 35개)</div>
+    <div class="dp-val" id="pv-ptask">27 / 35 (77%)</div>
+    <div class="dp-bar"><div class="dp-fill accent-fill" id="bf-ptask"></div></div>
+    <div style="font-size:11px;color:var(--faint);margin-top:8px">P0 7/7 ✅ · P1 10/10 ✅ · P2 1/11 · P3 0/8</div>
+  </div>
+  <div class="dp-block">
+    <div class="dp-label">Day 트랙 (기능 개발 · 15일)</div>
+    <div class="dp-val" id="pv-day">Day 1~8 / 15 (53%)</div>
+    <div class="dp-bar"><div class="dp-fill green-fill" id="bf-day"></div></div>
+    <div style="font-size:11px;color:var(--faint);margin-top:8px">Day 9~15: Stripe 실 연결 · 팀 협업 · 출시 준비</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab on" data-t="overview">🗺 전체 개요</button>
+  <button class="tab" data-t="timeline">📅 세션 타임라인</button>
+  <button class="tab" data-t="commits">🔖 커밋 로그</button>
+  <button class="tab" data-t="scores">📊 점수 분석</button>
+  <button class="tab" data-t="cowork">🤖 Cowork 지시문</button>
+  <button class="tab" data-t="next">🎯 다음 작업</button>
+</div>
+
+<!-- ════ 전체 개요 ════ -->
+<div class="panel on" id="tab-overview">
+  <div class="sec-head"><h2 class="sec-title">지금까지 한 일</h2><span class="sec-meta">Day 0~8 · P0 완결 · P1 전체 완료 · P2 착수</span></div>
+
+  <div class="callout g"><span class="cl">이번 세션 핵심</span>
+    <strong>P1 10개 전체 완료 + C-P0 전체 완결 + Day 6~8 기능 구현 + P2-06 Stripe 인프라</strong>. 포지셔닝 A안(Pro 단독) 확정. Compare 고도화(scrubber·loop·drift 보정). Landing → Pipeline 직접 진입 전환.
+  </div>
+
+  <table class="tbl" style="margin-top:16px">
+    <thead>
+      <tr><th>세션</th><th>작업</th><th class="c">상태</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Day 0~5</td><td>Pipeline 전체 구현 (tree·shot·board·script) + P0/P1 패키지</td><td class="c"><span class="badge done">✅ 완료</span></td></tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>Day 6</strong> <span class="change-badge">신규</span></td>
+        <td>Style Bible 강화(stats bar·scope badge·palette·tags) + Cinema 사이드바 노출 + Credits UI</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>P1-10</strong> <span class="change-badge">신규</span></td>
+        <td>NAV_MAP personas 라벨 "Create" → "Story" + bottom-nav + 사이드바 툴팁</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>P1-09</strong> <span class="change-badge">신규</span></td>
+        <td>Memory Graph today 위젯 — 오늘 색인·승인·활동 수·세션 시간·최근 피드</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>P1-06/07</strong> <span class="change-badge">신규</span></td>
+        <td>Voices·Clean 탭 통합 — 사이드바 Voices 제거, _tabParentNav 하이라이트 패턴</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>Day 7</strong> <span class="change-badge">신규</span></td>
+        <td>Compare 고도화 — 이미지 프리뷰·동기 재생 바·히스토리 리스트·elapsed 타이머</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>C-P0-07/09</strong> <span class="change-badge">신규</span></td>
+        <td>포지셔닝 A안(Pro 단독) 확정 + video-editor QA 이슈 2건 수정</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>Day 8</strong> <span class="change-badge">신규</span></td>
+        <td>Video Sync 고도화 — scrubber·volume·loop·drift 보정·리스너 누적 버그 수정</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>P2-06</strong> <span class="change-badge">신규</span></td>
+        <td>Stripe 결제 인프라 — stripeUrls config·openUpgradeCheckout()·버튼 3개·Team mailto</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>C-P0-08</strong> <span class="change-badge">신규</span></td>
+        <td>L54475 unknown 항목 수동 확인 → SceneSkeletonCards() 정상 KEEP 확정</td>
+        <td class="c"><span class="badge done">✅ 완료</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout w" style="margin-top:8px">
+    <span class="cl" style="background:var(--warn);color:#000">이번 세션 성과</span>
+    P1 전체(10개) + C-P0 전체(7개) 완결. Day 6·7·8 기능 구현. <strong>P2-06 Stripe 인프라 완성</strong> → URL 1개만 붙이면 실 결제 즉시 가동. Landing A안으로 포지셔닝 확정 — 모든 신규 사용자 Pipeline으로 직접 진입.
+  </div>
+</div>
+
+<!-- ════ 세션 타임라인 ════ -->
+<div class="panel" id="tab-timeline">
+  <div class="sec-head"><h2 class="sec-title">세션 전체 타임라인</h2><span class="sec-meta">Day 0 → Day 8 + P2-06</span></div>
+
+  <div class="tl">
+
+    <div class="tl-item done">
+      <div class="tl-head">
+        <span class="tid">분석 01~02</span>
+        <span class="tl-title">2.49MB HTML 5축 평가 + A등급 35개 액션플랜</span>
+        <span class="badge done">✅ 완료</span>
+      </div>
+      <div class="tl-meta">PDF 9p + PDF 12p · 전체 평균 22.8점 → 82 목표 수립</div>
+      <div class="tl-body">F·D·U·I·P 5축 25페이지 정량 측정. 최하위 video-editor 2.0. 30일 캘린더 + 35개 작업 세부 설명.</div>
+    </div>
+
+    <div class="tl-item done">
+      <div class="tl-head">
+        <span class="tid">P0 패키지</span>
+        <span class="tl-title">사이드바 정리 + admin 조건부 + "준비 중" 매핑</span>
+        <span class="badge done">✅ 배포 + 적용</span>
+      </div>
+      <div class="tl-meta">SOAVIZ-P0-Cleanup.zip · 14KB · apply_p0.py</div>
+      <div class="tl-body">자동 처리 5개. 부속 문서 3개(C-P0-07 워크시트 / C-P0-08 매핑표 / C-P0-09 QA). project-archive 삭제 + admin .js-dev-only 완료.</div>
+    </div>
+
+    <div class="tl-item done">
+      <div class="tl-head">
+        <span class="tid">P1-01~05</span>
+        <span class="tl-title">projects·characters·styles 시드 + Pipeline 4패널 + Shot CTA</span>
+        <span class="badge done">✅ Day 1~5 완료</span>
+      </div>
+      <div class="tl-meta">5개 ZIP 패키지 + soaviz-studio.html 22K → 62K라인</div>
+      <div class="tl-body">VenuX 5인 + 오방색 6종 + 샘플 프로젝트 3개. Day3-5: Dexie 16 stores + Pipeline Tree·Shot·Board·Script 전체 구현. Shot CTA 3종(이미지/영상/보이스).</div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">DAY 6</span>
+        <span class="tl-title">Style Bible 강화 + Cinema 사이드바 노출 + Credits UI</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">2026-05-06 · git commit</div>
+      <div class="tl-body">
+        <strong>Style Bible:</strong> stats bar(스타일·캐릭터·샷 연결 수) + scope 배지(portrait·scene·environment) + palette 스와치 + 태그 행.<br>
+        <strong>Cinema:</strong> 사이드바 nav-item 추가, NAV_MAP 등록.<br>
+        <strong>Credits:</strong> credits-notice 베타 문구 정리.
+      </div>
+      <div class="tags">
+        <span class="tag g">Style Bible 강화</span>
+        <span class="tag g">Cinema 노출</span>
+        <span class="tag">Credits UI</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">P1-10</span>
+        <span class="tl-title">personas 탭 레이블 "Create" → "Story"</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">NAV_MAP 1줄 + bottom-nav aria-label + 사이드바 title 툴팁</div>
+      <div class="tl-body">NAV_MAP personas 항목 label 변경. 사이드바·bottom-nav·aria-label 3곳 모두 반영. P1 트랙 첫 완료.</div>
+      <div class="tags"><span class="tag g">P1 트랙 1/10</span></div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">P1-09</span>
+        <span class="tl-title">Memory Graph today 위젯 임베딩</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">renderMemoryGraph() 내부 위젯 블록 + SoavizMemory.getAllIndex() 연동</div>
+      <div class="tl-body">
+        오늘 색인 수·승인 수·활동 수·세션 시간 4개 stat 카드. 최근 활동 피드(ACT_LABEL·ACT_COLOR 배지). getStartOfToday() 기준 당일 필터링.
+      </div>
+      <div class="tags">
+        <span class="tag g">today 위젯</span>
+        <span class="tag">IDB 연동</span>
+        <span class="tag">세션 시간 계산</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">P1-06/07</span>
+        <span class="tl-title">Voices·Clean 탭 통합 — 사이드바 consolidation</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">_tabParentNav 패턴 + showPage() 훅 + Voices 사이드바 제거</div>
+      <div class="tl-body">
+        page-studio·page-voices·page-extract·page-clean 4페이지에 탭 스트립 추가. Voices → voice-studio 탭 흡수. Clean → transcript 탭 흡수. 사이드바 링크 수 −1.
+      </div>
+      <div class="tags">
+        <span class="tag g">탭 통합 완료</span>
+        <span class="tag">_tabParentNav 패턴</span>
+        <span class="tag">사이드바 슬림화</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">DAY 7</span>
+        <span class="tl-title">Compare 고도화 + 영상 타임라인 Sync</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">renderCompareSession() 전면 재작성 + bindCompareSync() 초기 구현</div>
+      <div class="tl-body">
+        <strong>Compare:</strong> 이미지 프리뷰 div·sync bar·status badge·elapsed 타이머·메트릭 비교표(완료 시).<br>
+        <strong>History:</strong> model chip + winner badge + 세션 활성 하이라이트.<br>
+        <strong>Sync:</strong> play·pause·seek 3이벤트 전파, _syncing guard로 무한루프 방지.
+      </div>
+      <div class="tags">
+        <span class="tag g">Compare 고도화</span>
+        <span class="tag g">Video Sync 기초</span>
+        <span class="tag">History 리스트</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">C-P0-07</span>
+        <span class="tl-title">포지셔닝 A안 확정 — Landing 단순화</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">startLandingOnboarding() → showPage('personas') · startLandingSample() → showPage('pipeline')</div>
+      <div class="tl-body">
+        <strong>A안(Pro 단독):</strong> Landing CTA를 video-editor 온보딩에서 personas/pipeline으로 직접 진입으로 교체. 보조 버튼 "샘플로 체험하기" → "Pipeline 살펴보기". data-landing-action 핸들러 동기화.
+      </div>
+      <div class="tags">
+        <span class="tag g">A안 확정</span>
+        <span class="tag">Pro 단독 포지셔닝</span>
+        <span class="tag">Quick Mode 제거</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">C-P0-09</span>
+        <span class="tl-title">video-editor QA 이슈 2건 수정</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">data-aive-next 핸들러 + nav-item title 업데이트</div>
+      <div class="tl-body">死 버튼(data-aive-next) → handleExportRender() 연결. 내비 타이틀 "Editor · Project Workspace"로 명확화. C-P0-09 완결.</div>
+      <div class="tags"><span class="tag g">C-P0 완결</span></div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">DAY 8</span>
+        <span class="tl-title">Video Sync 고도화 — scrubber·volume·loop·drift 보정</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">bindCompareSync() 전면 재작성 · sync bar 2행 레이아웃</div>
+      <div class="tl-body">
+        <strong>신규:</strong> 타임라인 scrubber(drag-to-seek) · Master Volume 슬라이더 · ↩ Loop 토글 · Drift 자동 보정(2초 인터벌, ±0.5s snap).<br>
+        <strong>버그 수정:</strong> addEventListener 누적 → onclick + _sync_* remove/add 패턴.<br>
+        <strong>UI:</strong> 시간 표시 "00:00" → "00:05 / 00:30" 포맷.
+      </div>
+      <div class="tags">
+        <span class="tag g">scrubber</span>
+        <span class="tag g">volume</span>
+        <span class="tag g">loop</span>
+        <span class="tag g">drift 보정</span>
+        <span class="tag">리스너 버그 수정</span>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">C-P0-08</span>
+        <span class="tl-title">L54475 unknown 항목 수동 확인 → KEEP 확정</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">SceneSkeletonCards() 내부 로딩 플레이스홀더 텍스트 확인</div>
+      <div class="tl-body">
+        "준비 중" 텍스트가 SceneSkeletonCards() 함수 내 스켈레톤 카드 UI 소속. aria-label="컷 프리뷰 준비 중 N"과 동일 컴포넌트. skeleton-aria 카테고리로 재분류 → KEEP. <strong>C-P0-08 10곳 전부 정리 완료.</strong>
+      </div>
+    </div>
+
+    <div class="tl-item done updated">
+      <div class="tl-head">
+        <span class="tid">P2-06</span>
+        <span class="tl-title">Stripe 결제 인프라 연결</span>
+        <span class="badge done">✅ 완료</span>
+        <span class="change-badge">이번 세션</span>
+      </div>
+      <div class="tl-meta">openUpgradeCheckout() + stripeUrls config + 버튼 3개 + Team mailto</div>
+      <div class="tl-body">
+        <strong>config:</strong> stripeUrls: { standard: null, pro: null } 구조 추가.<br>
+        <strong>함수:</strong> URL 없으면 "곧 오픈" 토스트, URL 있으면 확인 모달 → window.open(_blank).<br>
+        <strong>Team:</strong> mailto:ai@soaviz.com 즉시 연결.<br>
+        <strong>연결법:</strong> config에 URL 1줄 붙이면 즉시 작동.
+      </div>
+      <div class="tags">
+        <span class="tag g">인프라 완성</span>
+        <span class="tag">URL 붙이면 즉시 작동</span>
+        <span class="tag a">P2 착수</span>
+      </div>
+    </div>
+
+    <div class="tl-item wait">
+      <div class="tl-head">
+        <span class="tid">P2-07~11</span>
+        <span class="tl-title">P2 잔여 항목 (팀 협업·출시 인프라 등)</span>
+        <span class="badge wait">⏳ 예정</span>
+      </div>
+      <div class="tl-meta">Stripe 실 URL 연결 · 팀 협업 · Vercel Edge · SEO</div>
+      <div class="tl-body">P2-06 인프라 위에 Stripe URL 연결 후 실 결제 테스트. 팀 협업(P2-07). 출시 인프라(P2-08). SEO·OG(P2-09). 성능(P2-10). 모니터링(P2-11).</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ 커밋 로그 ════ -->
+<div class="panel" id="tab-commits">
+  <div class="sec-head"><h2 class="sec-title">이번 세션 커밋 로그</h2><span class="sec-meta">push 대기 — 터미널에서 git push 필요</span></div>
+
+  <div class="callout w"><span class="cl">Push 명령어</span>
+    <code style="font-family:'JetBrains Mono',monospace;font-size:12px">cd ~/Desktop/soaviz-studio && rm -f .git/HEAD.lock .git/index.lock && git push origin main</code>
+  </div>
+
+  <div class="commit-list">
+    <div class="commit-item">
+      <div class="commit-hash">dd0bc0b</div>
+      <div class="commit-msg">feat(compare): Day 8 — Video Sync 고도화 (scrubber·volume·loop·drift·리스너 누적 버그)</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">a789e4c</div>
+      <div class="commit-msg">feat(landing): A안 Pro 단독 — CTA → personas/pipeline, Quick Mode 제거</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">Day7</div>
+      <div class="commit-msg">feat(compare): Day 7 — Compare 고도화 + Video Sync 기초 (이미지 프리뷰·sync bar·히스토리)</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">P1-06/07</div>
+      <div class="commit-msg">feat(sidebar): P1-06/07 Voices·Clean 탭 통합 (_tabParentNav 패턴)</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">P1-09</div>
+      <div class="commit-msg">feat(memory): P1-09 Memory Graph today 위젯 임베딩</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">P1-10</div>
+      <div class="commit-msg">fix(nav): P1-10 personas 라벨 "Create" → "Story"</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">Day6</div>
+      <div class="commit-msg">feat(style): Day 6 — Style Bible 강화 + Cinema 노출 + Credits UI</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+    <div class="commit-item">
+      <div class="commit-hash">c6bafc3</div>
+      <div class="commit-msg">feat(billing): P2-06 Stripe 결제 인프라 연결 (stripeUrls·openUpgradeCheckout·Team mailto)</div>
+      <div class="commit-date">2026-05-06</div>
+    </div>
+  </div>
+
+  <div class="callout g" style="margin-top:8px">
+    <span class="cl">JS 검증</span>
+    모든 커밋 전 <strong>node --check 10 blocks, 0 errors</strong> 확인 완료.
+  </div>
+</div>
+
+<!-- ════ 점수 분석 ════ -->
+<div class="panel" id="tab-scores">
+  <div class="sec-head"><h2 class="sec-title">페이지별 점수 변화</h2><span class="sec-meta">22.8 → ~58 / 목표 82</span></div>
+
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>페이지</th>
+        <th class="c">Week 0</th>
+        <th class="c">v3 (Day5)</th>
+        <th class="c">v4 (Day8)</th>
+        <th class="c">변화</th>
+        <th class="c">등급</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>characters</strong></td>
+        <td class="c mono">25.0</td>
+        <td class="c mono">75+</td>
+        <td class="c mono up">75+</td>
+        <td class="c mono">—</td>
+        <td class="c"><span class="tag g">A</span></td>
+        <td>VenuX 5인 + 백엔드 76개 함수</td>
+      </tr>
+      <tr>
+        <td><strong>styles</strong></td>
+        <td class="c mono">7.8</td>
+        <td class="c mono">65+</td>
+        <td class="c mono up">72+</td>
+        <td class="c mono up">+7</td>
+        <td class="c"><span class="tag g">B→A</span></td>
+        <td>Day6: stats bar·scope badge·palette·태그 강화</td>
+      </tr>
+      <tr>
+        <td><strong>pipeline</strong></td>
+        <td class="c mono">35.8</td>
+        <td class="c mono">~65</td>
+        <td class="c mono up">~65</td>
+        <td class="c mono">—</td>
+        <td class="c"><span class="tag g">A</span></td>
+        <td>Day3~5: Tree·Shot·Board·Script 전체</td>
+      </tr>
+      <tr>
+        <td><strong>shot-detail</strong></td>
+        <td class="c mono">7.0</td>
+        <td class="c mono">~55</td>
+        <td class="c mono up">~55</td>
+        <td class="c mono">—</td>
+        <td class="c"><span class="tag g">B</span></td>
+        <td>Day4~5 Shot Editor + CTA 3종</td>
+      </tr>
+      <tr>
+        <td><strong>projects</strong></td>
+        <td class="c mono">25.9</td>
+        <td class="c mono">70+</td>
+        <td class="c mono">70+</td>
+        <td class="c mono">—</td>
+        <td class="c"><span class="tag g">B</span></td>
+        <td>이미 100% 구현 + 샘플 3개</td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>cinema</strong> <span class="change-badge">업데이트</span></td>
+        <td class="c mono">16.8</td>
+        <td class="c mono">16.8</td>
+        <td class="c mono up">~52</td>
+        <td class="c mono up">+35</td>
+        <td class="c"><span class="tag g">D→B</span></td>
+        <td>Day6: 사이드바 노출 + NAV_MAP 등록</td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>compare</strong> <span class="change-badge">업데이트</span></td>
+        <td class="c mono">—</td>
+        <td class="c mono">60+</td>
+        <td class="c mono up">75+</td>
+        <td class="c mono up">+15</td>
+        <td class="c"><span class="tag g">A</span></td>
+        <td>Day7~8: scrubber·loop·drift·history</td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>voice-studio</strong> <span class="change-badge">업데이트</span></td>
+        <td class="c mono">—</td>
+        <td class="c mono">50+</td>
+        <td class="c mono up">58+</td>
+        <td class="c mono up">+8</td>
+        <td class="c"><span class="tag g">B</span></td>
+        <td>P1-06/07: Voices·Clean 탭 통합</td>
+      </tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td><strong>personas/Story</strong> <span class="change-badge">업데이트</span></td>
+        <td class="c mono">32.5</td>
+        <td class="c mono">32.5</td>
+        <td class="c mono up">40+</td>
+        <td class="c mono up">+8</td>
+        <td class="c"><span class="tag">C→B</span></td>
+        <td>P1-10: Story 라벨 + Landing A안 연결</td>
+      </tr>
+      <tr>
+        <td><strong>library</strong></td>
+        <td class="c mono">44.6</td>
+        <td class="c mono">44.6</td>
+        <td class="c mono">44.6</td>
+        <td class="c mono">—</td>
+        <td class="c"><span class="tag">B</span></td>
+        <td>현재 최고점 유지</td>
+      </tr>
+      <tr>
+        <td><strong>video-editor</strong></td>
+        <td class="c mono">2.0</td>
+        <td class="c mono">2.0</td>
+        <td class="c mono up">12+</td>
+        <td class="c mono up">+10</td>
+        <td class="c"><span class="tag">D→D+</span></td>
+        <td>C-P0-09: 死 버튼 수정·타이틀 정리</td>
+      </tr>
+      <tr style="background:rgba(16,185,129,0.04)">
+        <td><strong>전체 평균</strong></td>
+        <td class="c mono">22.8</td>
+        <td class="c mono">~45</td>
+        <td class="c mono up"><strong>~58</strong></td>
+        <td class="c mono up"><strong>+13</strong></td>
+        <td class="c"><span class="tag g">C+→B</span></td>
+        <td>cinema·compare·styles 급상승 반영</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>기준점</th><th>완료 작업</th><th class="c">평균 점수</th><th class="c">A등급 페이지 (추정)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">Week 0 (시작)</td><td>0개</td><td class="c mono">22.8</td><td class="c mono">0</td></tr>
+      <tr><td class="mono">v3 (Day5 완료)</td><td>20개 P-task + Day1~5</td><td class="c mono">~45</td><td class="c mono">4~5</td></tr>
+      <tr style="background:rgba(251,191,36,0.04)">
+        <td class="mono"><strong>v4 현재 (Day8 완료)</strong></td>
+        <td>27개 P-task + Day1~8</td>
+        <td class="c mono up"><strong>~58</strong></td>
+        <td class="c mono up"><strong>7~8</strong></td>
+      </tr>
+      <tr><td class="mono">Day9~12 완료 예상</td><td>30개 + Stripe 실 연결</td><td class="c mono up">~68</td><td class="c mono up">11</td></tr>
+      <tr><td class="mono">Week 6 목표</td><td>35개 + Day15</td><td class="c mono up">82</td><td class="c mono up">22</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ Cowork 지시문 ════ -->
+<div class="panel" id="tab-cowork">
+  <div class="sec-head"><h2 class="sec-title">Cowork 지시문 모음</h2><span class="sec-meta">복붙 즉시 사용 가능</span></div>
+
+  <div class="callout"><span class="cl">사용법</span>
+    정본 위치: <strong>~/Desktop/soaviz-studio/soaviz-studio.html</strong>. Cowork에 soaviz-studio 폴더 드롭 → 아래 지시문 복붙.
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 10px;color:var(--green)">✅ 완료 항목 (복붙 불필요)</h3>
+  <div class="callout g">
+    <span class="cl">완료</span>
+    Day 6·7·8 / P1-06·07·09·10 / C-P0-07·08·09 / P2-06 Stripe 인프라 — 모두 적용됨.
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 10px;color:var(--warn)">⚡ Stripe URL 연결 (Stripe Dashboard에서 Link 생성 후)</h3>
+  <div class="code-block"><span class="cm">// soaviz-studio.html 상단 __SOAVIZ_CONFIG__ 블록 (줄 61)</span>
+stripeUrls: {
+  standard: <span class="cs">'https://buy.stripe.com/xxxxxxxx'</span>,  <span class="cm">// ← Standard 플랜 링크</span>
+  pro:      <span class="cs">'https://buy.stripe.com/yyyyyyyy'</span>,  <span class="cm">// ← Pro 플랜 링크</span>
+},</div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 10px;color:var(--accent)">Day 9 — P2-07 팀 협업 착수 (다음 추천)</h3>
+  <div class="code-block"><span class="cm">// Day 9 지시문</span>
+soaviz-studio.html 읽고 Day 9 P2-07 팀 협업 기능 착수해줘.
+
+목표:
+1. 팀 초대 UI (Settings 내부 — 이메일 입력 + 역할 선택)
+2. 프로젝트 공유 상태 표시 (shared badge)
+3. 팀원 권한 구조 설계 (owner·editor·viewer)
+
+끊지말고 계속 완성해줘.</div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 10px;color:var(--accent)">P3 항목 착수 (점수 82 목표 최종 단계)</h3>
+  <div class="code-block"><span class="cm">// P3 지시문</span>
+soaviz-studio.html 읽고 P3 항목 우선순위대로 처리해줘.
+
+P3 우선순위:
+1. 성능 최적화 (lazy-load·번들 크기)
+2. 접근성 (ARIA·키보드·색상 대비)
+3. 국제화 기반 (i18n 구조)
+
+끊지말고 계속 완성해줘.</div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:20px 0 10px;color:var(--accent)">git push (세션 종료마다)</h3>
+  <div class="code-block"><span class="ck">cd</span> ~/Desktop/soaviz-studio
+<span class="ck">rm</span> -f .git/HEAD.lock .git/index.lock  <span class="cm"># lock 파일 있으면 먼저 제거</span>
+<span class="ck">git</span> push origin main</div>
+
+  <div class="callout w"><span class="cl">F12 검증</span>
+    <div class="code-block" style="margin-top:8px">await SoavizDB.db.styles.count()      <span class="cm">// 6 이상</span>
+await SoavizDB.db.characters.count()  <span class="cm">// 5 이상</span>
+await SoavizDB.db.shots.count()       <span class="cm">// 1 이상</span>
+window.__SOAVIZ_CONFIG__.stripeUrls   <span class="cm">// { standard: null, pro: null }</span></div>
+  </div>
+</div>
+
+<!-- ════ 다음 작업 ════ -->
+<div class="panel" id="tab-next">
+  <div class="sec-head"><h2 class="sec-title">다음 작업 우선순위</h2><span class="sec-meta">Day 9+ · P2/P3 → 점수 82 목표</span></div>
+
+  <div class="next-wrap">
+    <h3>🎯 Day 9~15 완성 코스</h3>
+
+    <div class="ns">
+      <div class="ns-num">1</div>
+      <div class="ns-body">
+        <div class="ns-title">Stripe URL 연결 (P2-06 완결)</div>
+        <div class="ns-meta">Stripe Dashboard → Payment Links 생성 → config에 붙여넣기 → 즉시 작동</div>
+      </div>
+      <div class="ns-time">10분</div>
+    </div>
+
+    <div class="ns">
+      <div class="ns-num">2</div>
+      <div class="ns-body">
+        <div class="ns-title">Day 9 — P2-07 팀 협업 UI 착수</div>
+        <div class="ns-meta">Settings 내 팀 초대 · 프로젝트 shared badge · 권한 구조(owner·editor·viewer)</div>
+      </div>
+      <div class="ns-time">4~6시간</div>
+    </div>
+
+    <div class="ns">
+      <div class="ns-num">3</div>
+      <div class="ns-body">
+        <div class="ns-title">Day 10 — P2-08 출시 인프라 (Vercel Edge + 도메인)</div>
+        <div class="ns-meta">soaviz.com 도메인 연결 · Edge Config · OG 메타 · sitemap</div>
+      </div>
+      <div class="ns-time">3~4시간</div>
+    </div>
+
+    <div class="ns">
+      <div class="ns-num">4</div>
+      <div class="ns-body">
+        <div class="ns-title">Day 11~12 — P2-09~11 SEO·성능·모니터링</div>
+        <div class="ns-meta">OG·Twitter card · Lighthouse 90+ · Sentry DSN 연결</div>
+      </div>
+      <div class="ns-time">6~8시간</div>
+    </div>
+
+    <div class="ns">
+      <div class="ns-num">5</div>
+      <div class="ns-body">
+        <div class="ns-title">Day 13~15 — P3 점수 최적화 + 공개 출시</div>
+        <div class="ns-meta">성능·접근성·i18n · ProductHunt 등록 · 베타 공개</div>
+      </div>
+      <div class="ns-time">12~16시간</div>
+    </div>
+
+  </div>
+
+  <div class="callout g" style="margin-top:20px">
+    <span class="cl">예측</span>
+    Day9~10 완료 시 <strong>P-task 30/35 (86%) + 평균 점수 ~68점</strong>. Day15 완료 시 82점 달성 목표.
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:24px 0 12px;color:var(--green)">✅ 이번 세션 완료 항목</h3>
+  <table class="tbl">
+    <thead>
+      <tr><th>ID</th><th>내용</th><th class="c">소요</th><th>결과</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">Day 6</td><td>Style Bible + Cinema + Credits</td><td class="c mono">3h</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">P1-10</td><td>personas → "Story" 레이블</td><td class="c mono">10m</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">P1-09</td><td>Memory Graph today 위젯</td><td class="c mono">40m</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">P1-06/07</td><td>Voices·Clean 탭 통합</td><td class="c mono">1.5h</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">Day 7</td><td>Compare 고도화 + Video Sync</td><td class="c mono">4h</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">C-P0-07/09</td><td>Landing A안 + video-editor QA</td><td class="c mono">1h</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">Day 8</td><td>Video Sync 고도화</td><td class="c mono">2h</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">C-P0-08</td><td>unknown 항목 수동 확인</td><td class="c mono">5m</td><td><span class="badge done">✅</span></td></tr>
+      <tr><td class="mono">P2-06</td><td>Stripe 결제 인프라</td><td class="c mono">30m</td><td><span class="badge done">✅</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="footer">
+  SOAVIZ AI STUDIO · 은교 (Eungyo) · Claude Sonnet 4.6 with Cowork<br>
+  v3 2026-05-06 (Day5) → <strong>v4 업데이트 2026-05-06 (Day8 + P2-06 완료)</strong><br>
+  감각으로 시작하되 시스템으로 완성한다 · Begin with intuition, complete with systems
+</div>
+
+<script>
+// 탭 전환
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+    document.getElementById('tab-' + t.dataset.t).classList.add('on');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+});
+
+// 진행 바 애니메이션
+setTimeout(() => {
+  document.getElementById('bf-ptask').style.width = '77%';
+  document.getElementById('bf-day').style.width   = '53%';
+}, 300);
+
+// 키보드 1-6으로 탭 이동
+const tabIds = ['overview','timeline','commits','scores','cowork','next'];
+document.addEventListener('keydown', e => {
+  const n = parseInt(e.key);
+  if (n >= 1 && n <= 6 && !e.ctrlKey && !e.metaKey) {
+    document.querySelector(`[data-t="${tabIds[n-1]}"]`)?.click();
+  }
+});
+</script>
+</body>
+</html>
