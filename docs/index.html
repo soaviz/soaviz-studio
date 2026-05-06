@@ -245,6 +245,13 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
   </div>
 
   <div class="sb-section">
+    <div class="sb-label">모바일</div>
+    <div class="sb-link" onclick="show('mobile')">
+      <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>모바일 앱 <span class="pill new">NEW</span>
+    </div>
+  </div>
+
+  <div class="sb-section">
     <div class="sb-label">도움말</div>
     <div class="sb-link" onclick="show('shortcuts')">
       <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>단축키
@@ -626,32 +633,45 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 <section class="doc-page" id="page-characters">
   <div class="crumbs">프리프로덕션</div>
   <h1 class="doc-title">캐릭터 페르소나</h1>
-  <p class="doc-sub">① <strong>+ 새 캐릭터</strong>로 인물 등록 &nbsp;→&nbsp; ② 이름·나이·역할·직업·MBTI 입력 &nbsp;→&nbsp; ③ <strong>AI 프롬프트 생성</strong>으로 Midjourney 레퍼런스 제작</p>
+  <p class="doc-sub">① <strong>기본 정보</strong> 입력 &nbsp;→&nbsp; ② <strong>키이미지</strong> 생성 &amp; 대표 지정 &nbsp;→&nbsp; ③ <strong>캐릭터 시트</strong> 다각도 완성</p>
 
-  <h2>캐릭터 카드 구성</h2>
-  <ul>
-    <li><strong>이름 · 나이</strong>: 카드 상단에 대형으로 표시 (이름 / 나이 배지)</li>
-    <li><strong>역할</strong>: 주인공 / 조력자 / 악당 등 서사 포지션</li>
-    <li><strong>직업</strong>: 캐릭터의 직업·신분 (v3.7 신규 필드)</li>
-    <li><strong>MBTI</strong>: 성격 유형 배지로 시각화</li>
-    <li><strong>외형 묘사</strong>: 헤어·얼굴·체형·의상 상세 텍스트</li>
-    <li><strong>성격 태그</strong>: 핵심 성격 키워드 3~5개</li>
-    <li><strong>배경 스토리</strong>: 캐릭터 히스토리 요약</li>
-    <li><strong>AI 이미지 프롬프트</strong>: Midjourney 최적화 캐릭터 프롬프트 (영문)</li>
-  </ul>
-
-  <h2>How to — 캐릭터 만들기</h2>
+  <h2>3단계 캐릭터 제작 플로우 <span style="font-size:12px;color:var(--green);font-weight:600;margin-left:8px">v3.10 신규</span></h2>
   <ol class="step-list">
-    <li><span><strong>캐릭터 페르소나</strong> 클릭 → <strong>+ 새 캐릭터</strong></span></li>
-    <li><span>이름·나이·역할·직업 입력, 필요 시 MBTI 선택</span></li>
-    <li><span>외형 묘사 텍스트 입력 (헤어·체형·의상·분위기)</span></li>
-    <li><span><strong>AI 프롬프트 생성</strong> 클릭 → 외형 묘사 기반으로 Midjourney 프롬프트 자동 생성</span></li>
-    <li><span>생성된 프롬프트를 복사해 Midjourney에서 레퍼런스 이미지 제작 후 카드에 첨부</span></li>
+    <li><span><strong>+ 새 캐릭터</strong> 클릭 → 모달 상단 <em>"만들고 싶은 캐릭터의 페르소나를 직접 부여해보세요"</em><br>이름·나이·역할·외형·성격·MBTI 입력 (또는 🎲 랜덤 버튼으로 자동 채우기)</span></li>
+    <li><span><strong>저장 후 키이미지 →</strong> 클릭 → 역할·성별·나이에서 태그 자동 생성 → 바로 <strong>키이미지 스튜디오</strong>로 이동</span></li>
+    <li><span>키이미지 스튜디오에서 이미지 생성 → <strong>대표 키이미지 지정</strong></span></li>
+    <li><span>하단 <strong>③ 캐릭터 시트 만들기 →</strong> CTA 클릭 → 다각도 시트 생성</span></li>
+    <li><span>완료 후 캐릭터 목록으로 복귀 → 완성된 캐릭터 카드 확인</span></li>
   </ol>
 
   <div class="tip-box">
     <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-    <p>캐릭터 카드를 먼저 만들어두면 샷리스트 생성 시 <strong>등장인물</strong> 필드에 자동으로 참조됩니다. <strong>직업</strong> 필드는 Pre-Production Engine의 Character Pack 생성 시에도 활용됩니다.</p>
+    <p><strong>저장만</strong> 버튼으로 키이미지 단계를 건너뛸 수 있습니다. 탭(① ② ③)을 직접 클릭해 언제든지 단계를 이동할 수 있습니다.</p>
+  </div>
+
+  <h2>캐릭터 카드 구성</h2>
+  <ul>
+    <li><strong>이름 · 나이</strong>: 카드 상단 대형 표시</li>
+    <li><strong>역할</strong>: 주인공 / 조연 / 악당 / 엑스트라</li>
+    <li><strong>직업</strong>: 캐릭터 직업·신분</li>
+    <li><strong>MBTI</strong>: 성격 유형 배지</li>
+    <li><strong>자동 태그</strong>: 저장 시 역할·성별·나이·외형 키워드에서 자동 추출</li>
+    <li><strong>키이미지</strong>: 대표 지정 이미지가 카드 아바타로 반영</li>
+    <li><strong>캐릭터 시트</strong>: 정면·측면·후면·전신 다각도 이미지</li>
+  </ul>
+
+  <h2>헤더 버튼 안내</h2>
+  <ul>
+    <li><strong>키이미지 스튜디오</strong>: 선택된(또는 가장 최근) 캐릭터로 스튜디오 진입</li>
+    <li><strong>캐릭터 시트 만들기</strong>: 새 캐릭터를 만들고 즉시 시트 탭으로 이동</li>
+    <li><strong>랜덤 생성</strong>: 이름·외형·성격 등 모든 필드 자동 생성</li>
+    <li><strong>Prompt Pack 복사</strong>: 현재 프로젝트 전체 캐릭터 프롬프트를 한 번에 복사</li>
+    <li><strong>관계 맵</strong>: 캐릭터 간 관계도 시각화</li>
+  </ul>
+
+  <div class="tip-box">
+    <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <p>캐릭터 카드를 먼저 완성해두면 샷리스트 생성·영상 생성 시 <strong>등장인물</strong>이 자동 참조되고, 키이미지가 Shot 생성 프롬프트에 자동 주입됩니다.</p>
   </div>
 </section>
 
@@ -672,12 +692,13 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 
   <h2>How to — 캐릭터 키이미지 만들기</h2>
   <ol class="step-list">
-    <li><span><strong>캐릭터 페르소나</strong> 페이지 → 캐릭터 카드의 <strong>이미지 생성</strong> 버튼 클릭<br><small>또는 헤더의 <strong>키이미지 스튜디오</strong> 버튼 클릭</small></span></li>
+    <li><span><strong>+ 새 캐릭터</strong> 저장 시 자동 진입 (v3.10)<br><small>또는 캐릭터 카드의 <strong>이미지 생성</strong> 버튼 · 헤더의 <strong>키이미지 스튜디오</strong> 버튼으로 직접 진입</small></span></li>
     <li><span>상단 목적 탭에서 생성 유형 선택 (대표 이미지 / 전신 / 표정 / 변형)</span></li>
-    <li><span>자동 생성된 프롬프트 확인 · 수정 — 퀵 액션 버튼으로 간단히 보강</span></li>
+    <li><span>자동 생성된 프롬프트 확인 · 수정 — 퀵 액션 버튼으로 보강 (정제 / 더 디테일 / 시네마틱 / 강한 인상)</span></li>
     <li><span>고급 설정에서 모델·비율·스타일 조정 (선택)</span></li>
     <li><span><strong>이미지 생성</strong> 버튼 클릭 → 결과 그리드에서 이미지 확인</span></li>
-    <li><span>마음에 드는 이미지 카드의 <strong>☆ 대표 선택</strong> 클릭 → 캐릭터 대표 이미지로 저장</span></li>
+    <li><span>마음에 드는 이미지의 <strong>대표 키이미지 지정</strong> 클릭 → 캐릭터 아바타에 즉시 반영</span></li>
+    <li><span>하단 <strong>③ 캐릭터 시트 만들기 →</strong> 클릭 → 다각도 시트 생성 단계로 이동</span></li>
   </ol>
 
   <h2>변형(Variation) 활용</h2>
@@ -1160,6 +1181,41 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 </section>
 
 <!-- ══════════════════ 단축키 ══════════════════ -->
+<!-- ══════════════════ 모바일 앱 ══════════════════ -->
+<section class="doc-page" id="page-mobile">
+  <div class="crumbs">모바일</div>
+  <h1 class="doc-title">모바일 앱</h1>
+  <p class="doc-sub">별도 설치 없이 <strong>soaviz.com/mobile</strong> 접속 — 데스크탑과 동일한 데이터를 5탭 바텀 내비로 사용</p>
+
+  <h2>접속 방법</h2>
+  <ul>
+    <li>브라우저에서 <strong>soaviz.com/mobile</strong> 입력</li>
+    <li>Safari·Chrome에서 <strong>홈 화면에 추가</strong>하면 PWA처럼 전체화면 사용 가능</li>
+    <li>로그인 정보·프로젝트·생성 결과가 데스크탑과 완전 동기화</li>
+  </ul>
+
+  <h2>5탭 내비게이션</h2>
+  <ul>
+    <li><strong>🏠 홈</strong>: 인사말·통계(프로젝트/샷/에셋 수)·제작 목표·최근 프로젝트·작업 일기</li>
+    <li><strong>📁 프로젝트</strong>: 프로젝트 목록·생성, 탭 후 EP → SC → SHOT 파이프라인 드릴다운</li>
+    <li><strong>⚡ 생성</strong>: 프로젝트 선택 → 프롬프트 입력 → 6가지 AI 모델(Kling·Seedance·Veo·Hailuo·Wan·MiniMax) → 영상 생성</li>
+    <li><strong>🖼 라이브러리</strong>: 생성된 에셋 그리드 — 전체·영상·이미지·오디오 필터, 탭 → 미리보기</li>
+    <li><strong>⚙️ 설정</strong>: 프로필·Vault 잠금해제·API 키 편집(Replicate·OpenAI·Anthropic·ElevenLabs·Kling)·로그아웃</li>
+  </ul>
+
+  <h2>데스크탑과 데이터 공유</h2>
+  <ul>
+    <li>같은 도메인(<code>soaviz.com</code>)의 IndexedDB(<code>soaviz_v3</code>)를 공유 → 같은 기기에서 열면 데스크탑 데이터 즉시 확인</li>
+    <li>Vault 암호화 키도 동일 — 데스크탑에서 등록한 API 키를 모바일에서도 사용 가능</li>
+    <li>Supabase 인증 동일 — Google / Microsoft / GitHub / 이메일 로그인 지원</li>
+  </ul>
+
+  <div class="tip-box">
+    <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <p>모바일에서 영상을 생성하면 라이브러리 탭에 즉시 쌓입니다. 데스크탑에서 같은 기기로 접속하면 동일한 에셋을 확인할 수 있습니다.</p>
+  </div>
+</section>
+
 <section class="doc-page" id="page-shortcuts">
   <div class="crumbs">도움말</div>
   <h1 class="doc-title">단축키 모음</h1>
@@ -1280,6 +1336,25 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 
   <div class="changelog-item" style="border-left:2px solid var(--green);padding-left:14px">
     <div class="changelog-date">2026년 5월 <span class="pill new" style="font-size:10px">최신</span></div>
+    <div class="changelog-title">v3.10 — 모바일 앱 · Microsoft OAuth · 캐릭터 3단계 플로우</div>
+    <div class="changelog-body">
+      <ul>
+        <li>📱 <strong>모바일 웹앱 신규 출시</strong> (<code>soaviz.com/mobile</code>): 5탭 바텀 내비 구조 — 홈·프로젝트·생성·라이브러리·설정. 데스크탑과 동일한 DB·Vault 공유, 별도 설치 불필요</li>
+        <li>🔐 <strong>Microsoft(Azure) OAuth 로그인 추가</strong>: signup.html에 마이크로소프트 로그인 버튼 추가, Azure AD B2C 연동</li>
+        <li>✅ <strong>OAuth 프로바이더 toast 수정</strong>: Google·Microsoft·GitHub 로그인 시 각 서비스명이 정확히 표시되도록 수정 (기존: "Google 로그인" 고정 → 수정: 프로바이더 자동 감지)</li>
+        <li>🎭 <strong>캐릭터 3단계 플로우 개편</strong>: + 새 캐릭터 → <em>"페르소나를 직접 부여해보세요"</em> 서브타이틀 → 저장 후 키이미지 → 캐릭터 시트 → 기본정보 최종 뷰</li>
+        <li>🏷 <strong>자동 태그 생성</strong>: 캐릭터 저장 시 역할·성별·나이·외형 키워드에서 태그 자동 추출</li>
+        <li>🔢 <strong>탭 순서 번호화</strong>: ① 기본 정보 → ② 키이미지 → ③ 캐릭터 시트 (단계 명확화)</li>
+        <li>🧹 <strong>중복 버튼 제거</strong>: 캐릭터 헤더의 "이미지 생성" 버튼 제거 → "키이미지 스튜디오" 단일화</li>
+        <li>📌 <strong>키이미지 스튜디오 CTA 상시 표시</strong>: "③ 캐릭터 시트 만들기 →" 하단 바가 대표 이미지 지정 여부와 무관하게 항상 노출</li>
+        <li>🔧 <strong>CSP 수정 — 사용자 가이드 iframe 차단 해제</strong>: <code>frame-src 'self'</code> 추가 + YouTube·Vimeo 허용</li>
+        <li>🛣 <strong><code>/mobile</code> 라우트 추가</strong>: vercel.json에 <code>/mobile → mobile.html</code> 리라이트 추가</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="changelog-item" style="border-left:2px solid var(--border);padding-left:14px">
+    <div class="changelog-date">2026년 5월</div>
     <div class="changelog-title">v3.9 — 캐릭터 키이미지 스튜디오 v2 · 페르소나 UX 정비</div>
     <div class="changelog-body">
       <ul>

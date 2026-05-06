@@ -15117,6 +15117,221 @@
     .cf-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
     .cf-tab-pane { display: none; }
     .cf-tab-pane.active { display: flex; flex-direction: column; gap: 14px; }
+    .cf-flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 12px 22px;
+      background: rgba(255,255,255,0.025);
+      border-bottom: 1px solid var(--border);
+    }
+    .cf-flow-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.025);
+      color: var(--text-faint);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .cf-flow-step-index {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      background: var(--bg-elev);
+      color: var(--text-dim);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .cf-flow-step.active {
+      color: var(--accent);
+      border-color: rgba(167,139,250,0.45);
+      background: rgba(167,139,250,0.08);
+    }
+    .cf-flow-step.active .cf-flow-step-index {
+      color: white;
+      background: var(--accent);
+    }
+    .cf-flow-step.done {
+      color: var(--green, #34D399);
+      border-color: rgba(52,211,153,0.30);
+      background: rgba(52,211,153,0.055);
+    }
+    .cf-flow-card {
+      border: 1px solid rgba(167,139,250,0.22);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(255,255,255,0.025));
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+    .cf-flow-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .cf-flow-card-title {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .cf-flow-card-sub {
+      margin-top: 3px;
+      color: var(--text-faint);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .cf-prompt-preview {
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-1);
+      color: var(--text-dim);
+      font-family: var(--font-mono, Consolas, monospace);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+    .cf-flow-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .cf-flow-next {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .cf-flow-next.secondary {
+      background: var(--bg-elev);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+    .cf-keyimage-flow-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+      gap: 14px;
+      min-height: 360px;
+    }
+    .cf-flow-preview-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .cf-flow-thumb {
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: radial-gradient(circle at 50% 0%, rgba(167,139,250,0.10), transparent 60%), var(--bg-1);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--text-faint);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .cf-flow-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cf-review-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.15fr);
+      gap: 14px;
+    }
+    .cf-review-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      padding: 14px;
+      min-width: 0;
+    }
+    .cf-review-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .cf-review-row {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.055);
+      font-size: 12px;
+    }
+    .cf-review-row:last-child { border-bottom: 0; }
+    .cf-review-row span:first-child { color: var(--text-faint); }
+    .cf-review-row span:last-child { color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+    .cf-review-media {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+    }
+    .cf-review-media-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-1);
+    }
+    .cf-review-media-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+    .cf-review-media-item div {
+      padding: 7px 8px;
+      font-size: 10px;
+      color: var(--text-faint);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cf-review-empty {
+      border: 1px dashed var(--border-strong);
+      border-radius: 8px;
+      padding: 18px;
+      color: var(--text-faint);
+      font-size: 12px;
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+    }
+    @media (max-width: 860px) {
+      .cf-flow-steps { grid-template-columns: repeat(2, 1fr); }
+      .cf-keyimage-flow-grid,
+      .cf-review-grid { grid-template-columns: 1fr; }
+    }
 
     /* ── 캐릭터 시트 레이아웃 ── */
     .csheet-layout {
@@ -47708,6 +47923,8 @@ function bindPipelinePage() {
       role: data.role || 'supporting',
       age: data.age || null,
       gender: data.gender || '',
+      mbti: data.mbti || '',
+      occupation: data.occupation || '',
       appearance: data.appearance || '',
       personality: data.personality || '',
       faceRefAssetIds: data.faceRefAssetIds || [],
@@ -47716,7 +47933,9 @@ function bindPipelinePage() {
       voiceSampleAssetId: null,
       ttsSettings: data.ttsSettings || { stability: 0.5, similarity: 0.8, style: 0.0 },
       promptFragment: data.promptFragment || '',
+      keyImagePromptDraft: data.keyImagePromptDraft || '',
       tags: data.tags || [],
+      sheetImages: Array.isArray(data.sheetImages) ? data.sheetImages : [],
       relations: Array.isArray(data.relations) ? data.relations : [],
       createdAt: _now(), updatedAt: _now(), archived: false,
     };
@@ -48738,6 +48957,9 @@ async function approveCKImage(characterId, imageId) {
   if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'error'); return false; }
   if (!img.imageUrl && !img.url) { showToast?.('mock 이미지는 대표 이미지로 지정할 수 없습니다', 'warn'); return false; }
   await persistCKGeneratedImage(characterId, { ...img, status: 'approved' }, { saveAsGenerated: true, saveAsReference: true, saveAsKeyImage: true, setAsAvatar: true, saveToAssets: true });
+  if (typeof sendCKImageToCharacterSheet === 'function') {
+    try { await sendCKImageToCharacterSheet(characterId, imageId); } catch (_) {}
+  }
   window.CharacterKeyImageStudio.selectedImageId = imageId;
   // Identity Lock: auto-update defaultReferenceId/Url on approval (Task #85)
   if (typeof updateCharacterIdentityLock === 'function') {
@@ -48749,7 +48971,7 @@ async function approveCKImage(characterId, imageId) {
       }).catch(() => {});
     }
   }
-  showToast?.('대표 키이미지로 지정했습니다');
+  showToast?.('대표 키이미지로 지정했습니다. 캐릭터 시트 소스로도 연결됐어요');
   await renderKeyImageStudioPage();
   return true;
 }
@@ -48848,21 +49070,20 @@ function bindCKStudioEvents(character) {
   }));
 
   /* ── send-key-to-sheet: 캐릭터 시트에 추가 ── */
-  root.querySelectorAll('[data-send-key-to-sheet]').forEach(btn => btn.addEventListener('click', async () => {
+  root.querySelectorAll('[data-send-key-to-sheet]').forEach(btn => btn.addEventListener('click', async (event) => {
+    event?.stopImmediatePropagation?.();
     const s = window.CharacterKeyImageStudio;
     const img = s.generatedImages.find(x => x.id === btn.dataset.sendKeyToSheet);
     if (!img) { showToast?.('이미지를 찾을 수 없습니다', 'warn'); return; }
     const url = img.imageUrl || img.url || null;
     if (!url) { showToast?.('Mock 이미지는 시트에 추가할 수 없습니다', 'warn'); return; }
-    try {
-      await SoavizDB?.ready;
-      const c = await SoavizDB.db.characters.get(s.characterId);
-      if (!c) { showToast?.('캐릭터를 찾을 수 없습니다', 'warn'); return; }
-      const sheetImages = Array.isArray(c.sheetImages) ? [...c.sheetImages] : [];
-      if (!sheetImages.includes(url)) sheetImages.push(url);
-      await SoavizDB.db.characters.update(s.characterId, { sheetImages });
-      showToast?.('캐릭터 시트에 추가됨 ✓');
-    } catch(e) { showToast?.('시트 추가 실패: ' + e.message, 'error'); }
+    const ok = typeof sendCKImageToCharacterSheet === 'function'
+      ? await sendCKImageToCharacterSheet(character.id, btn.dataset.sendKeyToSheet)
+      : false;
+    if (ok) {
+      showToast?.('캐릭터 시트 탭으로 이동합니다');
+      setTimeout(() => openCharacterEditor(character.id, null, 'sheet'), 120);
+    }
   }));
 
   /* ── use-key-as-base: Variation 기준 이미지로 설정 ── */
@@ -49712,7 +49933,7 @@ async function renderKeyImageStudioPage() {
 
   resetCharacterKeyImageStudioState(c.id);
   const s = window.CharacterKeyImageStudio;
-  if (!s.promptText) s.promptText = buildCharacterKeyImagePrompt(c);
+  if (!s.promptText) s.promptText = c.keyImagePromptDraft || buildCharacterKeyImagePrompt(c);
   if (!s.negativePrompt) s.negativePrompt = buildCharacterKeyImageNegativePrompt();
   if (!s.purposeTab) s.purposeTab = 'portrait';
 
@@ -50069,10 +50290,17 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
         ${isNew ? '<button class="vault-btn" id="cf-dice" title="모든 필드를 랜덤으로 채우기" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));color:white;border-color:transparent">🎲 랜덤</button>' : ''}
         <button class="vault-btn" id="ch-close">닫기</button>
       </div>
+      <div class="cf-flow-steps" id="cf-flow-steps">
+        <div class="cf-flow-step active" data-flow-step="info"><span class="cf-flow-step-index">1</span><span>기본 정보</span></div>
+        <div class="cf-flow-step" data-flow-step="keyimage"><span class="cf-flow-step-index">2</span><span>키이미지</span></div>
+        <div class="cf-flow-step" data-flow-step="sheet"><span class="cf-flow-step-index">3</span><span>캐릭터 시트</span></div>
+        <div class="cf-flow-step" data-flow-step="review"><span class="cf-flow-step-index">4</span><span>저장 확인</span></div>
+      </div>
       <div class="cf-tabs">
         <button class="cf-tab-btn active" data-tab="info">① 기본 정보</button>
         <button class="cf-tab-btn" data-tab="keyimage">② 키이미지</button>
         <button class="cf-tab-btn" data-tab="sheet">③ 캐릭터 시트</button>
+        <button class="cf-tab-btn" data-tab="review">④ 저장 확인</button>
       </div>
       <div class="bible-modal-body">
         <div class="cf-tab-pane active" id="cf-pane-info">
@@ -50306,29 +50534,60 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
           <textarea id="cf-fragment" placeholder="자동: 외형 + 성격 합쳐서 생성">${escapeHTML(c.promptFragment || '')}</textarea>
           <button class="vault-btn" id="cf-fragment-build" style="align-self:flex-start;margin-top:4px;font-size:11px;padding:4px 10px">📝 외형·성격에서 fragment 생성</button>
         </div>
+        <div class="cf-flow-card" id="cf-info-flow-card">
+          <div class="cf-flow-card-head">
+            <div>
+              <div class="cf-flow-card-title">키이미지 프롬프트 자동 연결</div>
+              <div class="cf-flow-card-sub">기본 정보가 바뀌면 아래 프롬프트 초안이 같이 갱신됩니다. 이 초안은 키이미지 스튜디오에 그대로 이어집니다.</div>
+            </div>
+            <button class="cf-flow-next secondary" id="cf-refresh-keyimage-prompt" type="button">프롬프트 갱신</button>
+          </div>
+          <textarea class="cf-prompt-preview" id="cf-info-keyimage-prompt-preview" readonly></textarea>
+          <div class="cf-flow-actions">
+            <button class="cf-flow-next" id="cf-info-to-keyimage" type="button">
+              키이미지 탭으로 이동
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
         </div><!-- /cf-pane-info -->
 
         <!-- ── 키이미지 만들기 탭 페인 ── -->
         <div class="cf-tab-pane" id="cf-pane-keyimage">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;gap:24px;padding:40px 20px;text-align:center;">
-            <div style="width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--accent-soft),rgba(129,140,248,0.12));border:1px solid var(--accent-strong,rgba(167,139,250,0.3));display:flex;align-items:center;justify-content:center;">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-0.02em">캐릭터 키이미지 스튜디오</div>
-              <div style="font-size:13px;color:var(--text-dim);line-height:1.65;max-width:320px">
-                대표 이미지 · 전신 · 표정 · 변형을 AI로 생성합니다.<br>
-                목적 탭과 퀵 액션으로 빠르게 완성하세요.
+          <div class="cf-keyimage-flow-grid">
+            <div class="cf-flow-preview-box">
+              <div class="cf-flow-card-head">
+                <div>
+                  <div class="cf-flow-card-title">② 키이미지 생성 준비</div>
+                  <div class="cf-flow-card-sub">기본 정보에서 만든 프롬프트와 참조 사진을 키이미지 스튜디오로 넘깁니다. 대표 키이미지를 지정하면 캐릭터 시트 소스로 자동 저장됩니다.</div>
+                </div>
+                <span id="cf-keyimage-status" style="font-size:11px;color:var(--text-faint);font-weight:700">프롬프트 준비</span>
+              </div>
+              <textarea class="cf-prompt-preview" id="cf-keyimage-prompt-live"></textarea>
+              <div class="cf-flow-actions">
+                <button class="cf-flow-next secondary" id="cf-keyimage-back-info" type="button">기본 정보 수정</button>
+                <button id="cf-open-keyimage-studio" class="cf-flow-next" type="button">
+                  키이미지 스튜디오 열기
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
               </div>
             </div>
-            <button id="cf-open-keyimage-studio" style="padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;cursor:pointer;transition:all 120ms;letter-spacing:-0.01em" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
-              키이미지 스튜디오 열기 →
-            </button>
-            <div style="font-size:11px;color:var(--text-faint)">편집 내용을 저장 후 스튜디오로 이동합니다</div>
+            <div class="cf-flow-preview-box">
+              <div class="cf-flow-card-title">대표 키이미지</div>
+              <div class="cf-flow-thumb" id="cf-keyimage-thumb">
+                <div>
+                  아직 대표 키이미지가 없습니다<br>
+                  <span style="color:var(--text-faint)">스튜디오에서 생성 후 대표로 지정하세요</span>
+                </div>
+              </div>
+              <div class="cf-flow-card-sub">대표 이미지가 있으면 시트 생성의 참조 이미지로 자동 연결됩니다.</div>
+              <div class="cf-flow-actions">
+                <button class="cf-flow-next" id="cf-keyimage-to-sheet" type="button">
+                  캐릭터 시트로 이동
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div><!-- /cf-pane-keyimage -->
 
@@ -50396,7 +50655,10 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
             <div class="csheet-right">
               <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
                 <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint)">생성 결과</span>
-                <span id="cf-sheet-result-count" style="font-size:11px;color:var(--text-faint)">0장</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span id="cf-sheet-result-count" style="font-size:11px;color:var(--text-faint)">0장</span>
+                  <button class="vault-btn" id="cf-open-review-from-sheet" type="button" style="padding:5px 9px;font-size:10px">저장 확인</button>
+                </div>
               </div>
               <div class="csheet-result-grid" id="cf-sheet-result-grid">
                 <div class="csheet-result-empty">
@@ -50407,6 +50669,18 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
             </div>
           </div>
         </div><!-- /cf-pane-sheet -->
+        <div class="cf-tab-pane" id="cf-pane-review">
+          <div class="cf-flow-card">
+            <div class="cf-flow-card-head">
+              <div>
+                <div class="cf-flow-card-title">④ 저장 확인</div>
+                <div class="cf-flow-card-sub">캐릭터 정보, 대표 키이미지, 캐릭터 시트가 한 캐릭터 레코드에 잘 연결됐는지 마지막으로 확인합니다.</div>
+              </div>
+              <button class="cf-flow-next secondary" id="cf-review-refresh" type="button">새로고침</button>
+            </div>
+          </div>
+          <div id="cf-review-content"></div>
+        </div><!-- /cf-pane-review -->
       </div>
       <div class="bible-modal-foot">
         ${!isNew ? '<button class="vault-btn danger" id="cf-delete" style="margin-right:auto">삭제</button>' : ''}
@@ -50674,7 +50948,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   _populateVoiceSelect();
 
   function gather() {
-    return {
+    const data = {
       name: root.querySelector('#cf-name').value.trim(),
       role: root.querySelector('#cf-role').value,
       gender: root.querySelector('#cf-gender').value.trim(),
@@ -50687,6 +50961,181 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       promptFragment: root.querySelector('#cf-fragment').value,
       photos: _photos.slice(),
     };
+    if (!String(data.promptFragment || '').trim()) {
+      data.promptFragment = SoavizCharacters.autoFragment(data);
+    }
+    data.keyImagePromptDraft = _buildKeyImagePromptFromData(data);
+    return data;
+  }
+
+  function _buildKeyImagePromptFromData(data = gather()) {
+    const draft = {
+      ...(c || {}),
+      ...data,
+      id: c?.id || 'draft-character',
+      promptFragment: data.promptFragment || SoavizCharacters.autoFragment(data),
+    };
+    try {
+      if (typeof buildCharacterKeyImagePrompt === 'function') return buildCharacterKeyImagePrompt(draft);
+    } catch (_) {}
+    return [
+      'high quality character key image',
+      'single character only',
+      data.name ? `character name: ${data.name}` : '',
+      data.role ? `role: ${data.role}` : '',
+      data.gender ? `gender: ${data.gender}` : '',
+      data.age ? `age: ${data.age}` : '',
+      data.occupation ? `occupation: ${data.occupation}` : '',
+      data.mbti ? `personality type: ${data.mbti}` : '',
+      data.appearance ? `appearance: ${data.appearance}` : '',
+      data.personality ? `personality: ${data.personality}` : '',
+      data.promptFragment ? `existing prompt: ${data.promptFragment}` : '',
+      'production-ready character reference',
+      'clean composition, sharp focus, no text, no watermark',
+    ].filter(Boolean).join(', ');
+  }
+
+  function _getKeyImageUrlFromCharacter(char = c) {
+    if (!char) return '';
+    try {
+      if (typeof getCharacterPrimaryReferenceUrl === 'function') return getCharacterPrimaryReferenceUrl(char) || '';
+    } catch (_) {}
+    return char.keyImageUrl
+      || char.mainImageUrl
+      || char.avatarUrl
+      || (Array.isArray(char.keyImages) ? (char.keyImages.find(x => x?.imageUrl || x?.url)?.imageUrl || char.keyImages.find(x => x?.imageUrl || x?.url)?.url || '') : '')
+      || '';
+  }
+
+  function _normalizeSheetImageItem(item, index = 0) {
+    if (!item) return null;
+    if (typeof item === 'string') {
+      return {
+        id: `sheet_legacy_${index}`,
+        imageUrl: item,
+        url: item,
+        angle: index === 0 ? 'front' : '',
+        model: 'imported',
+        source: 'legacy-sheet-url',
+        createdAt: Date.now(),
+      };
+    }
+    return item;
+  }
+
+  async function _getLatestCharacter() {
+    try {
+      await SoavizDB?.ready;
+      const charId = c?.id || id;
+      if (charId) return await SoavizDB.db.characters.get(charId);
+    } catch (_) {}
+    return c;
+  }
+
+  function _syncCharacterFlowPrompt() {
+    const data = gather();
+    const prompt = data.keyImagePromptDraft || _buildKeyImagePromptFromData(data);
+    const infoPreview = root.querySelector('#cf-info-keyimage-prompt-preview');
+    const keyPreview = root.querySelector('#cf-keyimage-prompt-live');
+    if (infoPreview) infoPreview.value = prompt;
+    if (keyPreview && keyPreview !== document.activeElement) keyPreview.value = prompt;
+    const status = root.querySelector('#cf-keyimage-status');
+    if (status) status.textContent = prompt.length > 80 ? '프롬프트 준비 완료' : '기본 정보 입력 필요';
+  }
+
+  async function _renderKeyImageFlowPreview() {
+    const latest = await _getLatestCharacter();
+    const url = _getKeyImageUrlFromCharacter(latest);
+    const thumb = root.querySelector('#cf-keyimage-thumb');
+    if (!thumb) return;
+    if (url) {
+      thumb.innerHTML = `<img src="${escapeHTML(url)}" alt="대표 키이미지" loading="lazy">`;
+    } else {
+      thumb.innerHTML = `<div>아직 대표 키이미지가 없습니다<br><span style="color:var(--text-faint)">스튜디오에서 생성 후 대표로 지정하세요</span></div>`;
+    }
+  }
+
+  function _setCharacterFlowStep(tab = 'info') {
+    const order = ['info', 'keyimage', 'sheet', 'review'];
+    const idx = Math.max(0, order.indexOf(tab));
+    root.querySelectorAll('.cf-flow-step').forEach(step => {
+      const sidx = order.indexOf(step.dataset.flowStep);
+      step.classList.toggle('active', sidx === idx);
+      step.classList.toggle('done', sidx >= 0 && sidx < idx);
+    });
+  }
+
+  async function _renderFlowReview() {
+    const mount = root.querySelector('#cf-review-content');
+    if (!mount) return;
+    const data = gather();
+    const latest = await _getLatestCharacter();
+    const merged = { ...(latest || {}), ...data };
+    const roleLabel = SoavizCharacters.ROLE_LABEL?.[merged.role] || merged.role || '—';
+    const keyUrl = _getKeyImageUrlFromCharacter(latest || merged);
+    const sheetImages = [
+      ...((Array.isArray(latest?.sheetImages) ? latest.sheetImages : []).map(_normalizeSheetImageItem).filter(Boolean)),
+      ...(_sheetResults || []).map(_normalizeSheetImageItem).filter(Boolean),
+    ];
+    const uniqueSheets = [];
+    const seen = new Set();
+    sheetImages.forEach(item => {
+      const url = item?.imageUrl || item?.url || '';
+      const key = item?.id || url;
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      uniqueSheets.push(item);
+    });
+    const prompt = merged.keyImagePromptDraft || _buildKeyImagePromptFromData(merged);
+    mount.innerHTML = `
+      <div class="cf-review-grid">
+        <div class="cf-review-card">
+          <div class="cf-review-title">캐릭터 정보</div>
+          <div class="cf-review-row"><span>이름</span><span>${escapeHTML(merged.name || '—')}</span></div>
+          <div class="cf-review-row"><span>역할</span><span>${escapeHTML(roleLabel)}</span></div>
+          <div class="cf-review-row"><span>프로필</span><span>${escapeHTML([merged.gender, merged.age ? `${merged.age}세` : '', merged.mbti, merged.occupation].filter(Boolean).join(' · ') || '—')}</span></div>
+          <div class="cf-review-row"><span>외형</span><span>${escapeHTML(merged.appearance || '—')}</span></div>
+          <div class="cf-review-row"><span>성격</span><span>${escapeHTML(merged.personality || '—')}</span></div>
+        </div>
+        <div class="cf-review-card">
+          <div class="cf-review-title">키이미지 프롬프트</div>
+          <textarea class="cf-prompt-preview" readonly style="min-height:156px">${escapeHTML(prompt)}</textarea>
+        </div>
+      </div>
+      <div class="cf-review-grid" style="margin-top:14px">
+        <div class="cf-review-card">
+          <div class="cf-review-title">대표 키이미지</div>
+          ${keyUrl
+            ? `<div class="cf-review-media"><div class="cf-review-media-item"><img src="${escapeHTML(keyUrl)}" alt="대표 키이미지" loading="lazy"><div>Key Image Ready</div></div></div>`
+            : `<div class="cf-review-empty">대표 키이미지가 아직 없습니다. 키이미지 탭에서 생성 후 대표로 지정하세요.</div>`}
+        </div>
+        <div class="cf-review-card">
+          <div class="cf-review-title">캐릭터 시트</div>
+          ${uniqueSheets.length
+            ? `<div class="cf-review-media">${uniqueSheets.slice(0, 8).map((item, i) => {
+                const url = item.imageUrl || item.url || '';
+                return `<div class="cf-review-media-item">${url ? `<img src="${escapeHTML(url)}" alt="캐릭터 시트 ${i + 1}" loading="lazy">` : ''}<div>${escapeHTML(item.angle || item.model || `Sheet ${i + 1}`)}</div></div>`;
+              }).join('')}</div>`
+            : `<div class="cf-review-empty">캐릭터 시트 이미지가 아직 없습니다. 캐릭터 시트 탭에서 생성하거나 키이미지를 소스로 가져오세요.</div>`}
+        </div>
+      </div>
+      <div class="cf-flow-actions" style="margin-top:14px">
+        <button class="cf-flow-next secondary" id="cf-review-back-sheet" type="button">시트로 돌아가기</button>
+        <button class="cf-flow-next" id="cf-review-save-finish" type="button">저장 완료</button>
+      </div>
+    `;
+    mount.querySelector('#cf-review-back-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('sheet'));
+    mount.querySelector('#cf-review-save-finish')?.addEventListener('click', () => _saveCharacterFromEditor({ closeAfter: true }));
+  }
+
+  function _switchCharacterFlowTab(tab = 'info') {
+    root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
+    root.querySelector('#cf-pane-' + tab)?.classList.add('active');
+    _setCharacterFlowStep(tab);
+    if (tab === 'info' || tab === 'keyimage') _syncCharacterFlowPrompt();
+    if (tab === 'keyimage') _renderKeyImageFlowPreview();
+    if (tab === 'review') _renderFlowReview();
   }
 
   // 역할/성격/톤 select → 성격 textarea에 #태그 자동 추가
@@ -50828,7 +51277,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   let _sheetSelectedModels = new Set(['flash']);
   let _sheetRatio = '1:1';
   let _sheetRefImage = c.keyImageUrl || null;
-  let _sheetResults = Array.isArray(c.sheetImages) ? [...c.sheetImages] : [];
+  let _sheetResults = Array.isArray(c.sheetImages) ? c.sheetImages.map(_normalizeSheetImageItem).filter(Boolean) : [];
 
   // ── 키이미지 자동 참조 설정
   if (_sheetRefImage) {
@@ -50850,73 +51299,50 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
 
   // ── 탭 전환
   root.querySelectorAll('.cf-tab-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      // 키이미지 만들기 탭: 기존 캐릭터면 바로 스튜디오로 이동
-      if (btn.dataset.tab === 'keyimage') {
-        const saveBtn = root.querySelector('#cf-save');
-        let targetId = c.id;
-        if (!targetId) {
-          // 신규 캐릭터 — 저장 먼저
-          if (saveBtn) saveBtn.click();
-          await new Promise(r => setTimeout(r, 400));
-          const all = await SoavizDB?.db?.characters?.orderBy('createdAt').reverse().limit(1).toArray().catch(() => []);
-          targetId = all?.[0]?.id || null;
-        } else {
-          // 기존 캐릭터 — 변경사항 저장
-          if (saveBtn) saveBtn.click();
-          await new Promise(r => setTimeout(r, 200));
-        }
-        root.remove();
-        document.body.style.overflow = '';
-        if (targetId) {
-          openCharacterKeyImageStudio(targetId);
-        } else {
-          showToast?.('캐릭터를 먼저 저장해 주세요', 'warn');
-        }
-        return;
-      }
-      root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.remove('active'));
-      root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      root.querySelector('#cf-pane-' + btn.dataset.tab)?.classList.add('active');
-    });
+    btn.addEventListener('click', () => _switchCharacterFlowTab(btn.dataset.tab));
   });
 
   // ── 키이미지 스튜디오 열기 버튼
   root.querySelector('#cf-open-keyimage-studio')?.addEventListener('click', async () => {
-    // 저장 먼저 실행 (신규 캐릭터는 저장 후 id 확보)
-    const saveBtn = root.querySelector('#cf-save');
-    let targetId = c.id;
-    if (!targetId) {
-      // 신규 캐릭터 — 저장 트리거
-      if (saveBtn) saveBtn.click();
-      // 저장 완료 대기 (최대 1.5초)
-      await new Promise(r => setTimeout(r, 400));
-      // 최신 캐릭터 목록에서 방금 저장된 캐릭터 id 탐색
-      const all = await SoavizDB?.db?.characters?.orderBy('createdAt').reverse().limit(1).toArray();
-      targetId = all?.[0]?.id || null;
-    } else {
-      // 기존 캐릭터 — 저장 후 이동
-      if (saveBtn) saveBtn.click();
-      await new Promise(r => setTimeout(r, 200));
-    }
-    // 모달 닫기
-    root.remove();
-    document.body.style.overflow = '';
-    // 키이미지 스튜디오 열기
-    if (targetId) {
-      openCharacterKeyImageStudio(targetId);
-    } else {
-      showToast?.('캐릭터를 먼저 저장해 주세요', 'warn');
-    }
+    await _saveCharacterFromEditor({ openKeyImage: true });
+  });
+  root.querySelector('#cf-info-to-keyimage')?.addEventListener('click', () => _switchCharacterFlowTab('keyimage'));
+  root.querySelector('#cf-keyimage-back-info')?.addEventListener('click', () => _switchCharacterFlowTab('info'));
+  root.querySelector('#cf-keyimage-to-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('sheet'));
+  root.querySelector('#cf-open-review-from-sheet')?.addEventListener('click', () => _switchCharacterFlowTab('review'));
+  root.querySelector('#cf-review-refresh')?.addEventListener('click', () => _renderFlowReview());
+  root.querySelector('#cf-refresh-keyimage-prompt')?.addEventListener('click', () => {
+    const fragEl = root.querySelector('#cf-fragment');
+    const data = {
+      name: root.querySelector('#cf-name')?.value?.trim() || '',
+      role: root.querySelector('#cf-role')?.value || '',
+      gender: root.querySelector('#cf-gender')?.value?.trim() || '',
+      age: parseInt(root.querySelector('#cf-age')?.value || '0', 10) || null,
+      mbti: (root.querySelector('#cf-mbti')?.value || '').trim(),
+      occupation: (root.querySelector('#cf-occupation')?.value || '').trim(),
+      appearance: root.querySelector('#cf-appearance')?.value || '',
+      personality: root.querySelector('#cf-personality')?.value || '',
+    };
+    if (fragEl) fragEl.value = SoavizCharacters.autoFragment(data);
+    _syncCharacterFlowPrompt();
+    showToast?.('키이미지 프롬프트를 갱신했습니다');
+  });
+  ['input', 'change'].forEach(evt => {
+    root.querySelector('#cf-pane-info')?.addEventListener(evt, e => {
+      if (e.target?.closest?.('#cf-info-keyimage-prompt-preview')) return;
+      _syncCharacterFlowPrompt();
+    });
+  });
+  root.querySelector('#cf-keyimage-prompt-live')?.addEventListener('input', e => {
+    const val = e.target.value;
+    const infoPreview = root.querySelector('#cf-info-keyimage-prompt-preview');
+    if (infoPreview) infoPreview.value = val;
   });
   // defaultTab 파라미터로 초기 탭 지정
   if (defaultTab) {
-    root.querySelectorAll('.cf-tab-btn').forEach(b => b.classList.remove('active'));
-    root.querySelectorAll('.cf-tab-pane').forEach(p => p.classList.remove('active'));
-    root.querySelector(`.cf-tab-btn[data-tab="${defaultTab}"]`)?.classList.add('active');
-    root.querySelector(`#cf-pane-${defaultTab}`)?.classList.add('active');
+    _switchCharacterFlowTab(defaultTab);
   }
+  _syncCharacterFlowPrompt();
 
   // ── 모델 렌더링
   function _renderSheetModels() {
@@ -51232,11 +51658,16 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
     return [...new Set(tags)].slice(0, 6);
   }
 
-  // ── 공통 save 로직 (저장만 버튼 + 기존 캐릭터 save)
-  async function _doSaveAndClose() {
+  // ── 공통 save 로직 (저장만 / 키이미지 이동 / 최종 확인)
+  async function _saveCharacterFromEditor({ closeAfter = false, openKeyImage = false } = {}) {
     const data = gather();
     if (!data.name) { showToast?.('이름을 입력하세요'); return false; }
     if (!data.promptFragment) data.promptFragment = SoavizCharacters.autoFragment(data);
+    data.keyImagePromptDraft = root.querySelector('#cf-keyimage-prompt-live')?.value?.trim()
+      || root.querySelector('#cf-info-keyimage-prompt-preview')?.value?.trim()
+      || _buildKeyImagePromptFromData(data);
+    if (!data.tags || !data.tags.length) data.tags = _autoTags(data);
+    let rec = null;
     if (isNew) {
       data.projectId = c.projectId;
       if (window.SoavizAuth?.isGuest?.()) {
@@ -51245,45 +51676,37 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
         window.SoavizAuth.require('캐릭터 생성');
         return false;
       }
-      const rec = await SoavizCharacters.create(data);
+      rec = await SoavizCharacters.create(data);
       if (!rec) return false;
+      c = { ...c, ...rec };
       showToast?.(`✓ ${data.name} 추가`);
     } else {
-      const rec = await SoavizCharacters.update(c.id, data);
+      rec = await SoavizCharacters.update(c.id, data);
       if (!rec) return false;
+      c = { ...c, ...rec };
       showToast?.(`✓ ${data.name} 저장`);
     }
-    close();
     renderCharactersPage();
-    return true;
+    if (openKeyImage) {
+      close();
+      setTimeout(() => openCharacterKeyImageStudio(rec.id), 80);
+    } else if (closeAfter) {
+      close();
+    } else {
+      await _renderKeyImageFlowPreview();
+      if (root.querySelector('#cf-pane-review')?.classList.contains('active')) await _renderFlowReview();
+    }
+    return rec;
   }
 
   // ── "저장 후 키이미지 →" (신규 캐릭터 메인 CTA)
   root.querySelector('#cf-save')?.addEventListener('click', async () => {
-    if (!isNew) { await _doSaveAndClose(); return; }
-    const data = gather();
-    if (!data.name) { showToast?.('이름을 입력하세요'); return; }
-    if (!data.promptFragment) data.promptFragment = SoavizCharacters.autoFragment(data);
-    // 자동 태그 생성 (비어있으면)
-    if (!data.tags || !data.tags.length) data.tags = _autoTags(data);
-    data.projectId = c.projectId;
-    if (window.SoavizAuth?.isGuest?.()) {
-      try { localStorage.setItem(CHARACTER_PENDING_DRAFT_KEY, JSON.stringify({ ...data, savedAt: Date.now() })); } catch (_) {}
-      showToast?.('초안을 임시 보관했습니다. 가입/로그인 후 자동 저장됩니다.');
-      window.SoavizAuth.require('캐릭터 생성');
-      return;
-    }
-    const rec = await SoavizCharacters.create(data);
-    if (!rec) return;
-    showToast?.(`✓ ${data.name} 저장 — 키이미지 스튜디오로 이동합니다`);
-    close();
-    renderCharactersPage();
-    // 키이미지 스튜디오로 자동 이동
-    setTimeout(() => openCharacterKeyImageStudio(rec.id), 80);
+    if (!isNew) { await _saveCharacterFromEditor({ closeAfter: true }); return; }
+    await _saveCharacterFromEditor({ openKeyImage: true });
   });
 
   // ── "저장만" (신규 캐릭터 보조 버튼)
-  root.querySelector('#cf-save-only')?.addEventListener('click', _doSaveAndClose);
+  root.querySelector('#cf-save-only')?.addEventListener('click', () => _saveCharacterFromEditor({ closeAfter: true }));
 
   root.querySelector('#cf-delete')?.addEventListener('click', async () => {
     if (!confirm(`${c.name}을(를) 보관할까요?`)) return;
