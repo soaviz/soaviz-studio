@@ -754,8 +754,7 @@
             <span id="gsi-fb-label">Google로 로그인</span>
             <span class="badge ok" id="gsi-fb-badge">활성</span>
           </button>
-          <!-- ⚙ 항상 보임 (위로 띄움) -->
-          <button class="provider-cog" id="cfg-google" title="Google Client ID 변경 / 진단" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;background:rgba(20,20,31,0.9);backdrop-filter:blur(4px)">⚙</button>
+          <!-- ⚙ Google OAuth 설정은 관리자 페이지에서만 접근 가능 -->
         </div>
         <!-- file:// 등 환경에서 Google 비활성 시 표시되는 작은 helper (대체 UI) -->
         <button class="auth-btn" id="gsi-helper" style="display:none;border-style:dashed;background:transparent">
@@ -1287,7 +1286,7 @@
       const reasons = {
         file:    { msg: '⚠ <code>file://</code> 환경 — 로컬 서버 필요. <strong>설정 →</strong> 클릭', type: 'warn' },
         blocked: { msg: '⚠ Google SDK 차단됨 — 광고차단기 OFF 후 새로고침', type: 'error' },
-        nocid:   { msg: '⚠ Client ID 미설정 — 우측 ⚙ 클릭', type: 'warn' },
+        nocid:   { msg: '⚠ Client ID 미설정 — 관리자에게 문의하세요', type: 'warn' },
       };
       const info = reasons[reason] || { msg: '⚠ Google 로그인 비활성 — <strong>설정 →</strong> 클릭', type: 'warn' };
       setGsiStatus(info.msg, info.type);
@@ -1580,11 +1579,7 @@
 
     consumeOAuthRedirect();
 
-    /* Google Client ID 설정 모달 */
-    $('#cfg-google')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openGoogleConfigModal();
-    });
+    /* Google Client ID 설정 모달 — 관리자 페이지(soaviz-studio.html > Admin)에서만 접근 */
     function openGoogleConfigModal() {
       const saved = (() => { try { return (localStorage.getItem(GOOGLE_CID_KEY) || '').trim(); } catch { return ''; } })();
       const cur = saved || DEFAULT_GOOGLE_CLIENT_ID;

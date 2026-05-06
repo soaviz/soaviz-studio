@@ -15229,6 +15229,97 @@
       color: var(--text-dim);
       border: 1px solid var(--border);
     }
+    .cf-source-mode {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cf-source-choice {
+      width: 100%;
+      min-height: 76px;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-dim);
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 180ms, background 180ms, box-shadow 180ms;
+    }
+    .cf-source-choice:hover {
+      border-color: rgba(167,139,250,0.42);
+      background: rgba(167,139,250,0.045);
+    }
+    .cf-source-choice.active {
+      border-color: rgba(167,139,250,0.72);
+      background: rgba(167,139,250,0.09);
+      box-shadow: 0 0 0 2px rgba(167,139,250,0.12);
+      color: var(--text);
+    }
+    .cf-source-choice-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--bg-1);
+      color: var(--text-faint);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .cf-source-choice.active .cf-source-choice-mark {
+      background: var(--accent);
+      color: white;
+    }
+    .cf-source-choice strong {
+      display: block;
+      font-size: 12px;
+      font-weight: 850;
+      margin-bottom: 4px;
+      color: inherit;
+    }
+    .cf-source-choice > span:not(.cf-source-choice-mark) {
+      min-width: 0;
+    }
+    .cf-source-choice > span:not(.cf-source-choice-mark) > span {
+      display: block;
+      color: var(--text-faint);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .cf-source-panel[hidden] { display: none !important; }
+    .cf-generate-source-panel {
+      border: 1px dashed rgba(167,139,250,0.36);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(255,255,255,0.025));
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      min-height: 108px;
+      margin-bottom: 4px;
+    }
+    .cf-generate-source-title {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 850;
+      margin-bottom: 5px;
+    }
+    .cf-generate-source-copy {
+      color: var(--text-faint);
+      font-size: 11px;
+      line-height: 1.55;
+      max-width: 680px;
+    }
+    @media (max-width: 720px) {
+      .cf-source-mode,
+      .cf-generate-source-panel { grid-template-columns: 1fr; }
+    }
     .cf-keyimage-flow-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
@@ -25595,6 +25686,36 @@
           </article>
         </div>
 
+        <!-- 5. Google OAuth 설정 -->
+        <article class="admin-card" id="admin-google-oauth-card">
+          <header class="admin-card-head">
+            <div>
+              <h3>🔐 Google Sign-In 설정</h3>
+              <p>OAuth 2.0 Client ID를 변경합니다. 기본값은 즉시 동작하며, 자체 Client ID 사용 시 Google Cloud Console에서 승인된 도메인을 등록해야 합니다.</p>
+            </div>
+            <span id="admin-google-cid-status" class="admin-badge" style="font-size:11px;padding:4px 10px;white-space:nowrap">로딩 중…</span>
+          </header>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <label style="font-size:11px;color:var(--text-faint);font-weight:600;letter-spacing:0.04em">Client ID</label>
+              <input type="text" id="admin-google-cid-input"
+                placeholder="886041789747-…apps.googleusercontent.com"
+                style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:ui-monospace,monospace;font-size:11px;color:var(--text);width:100%;box-sizing:border-box;outline:none"
+                autocomplete="off" spellcheck="false" />
+              <div id="admin-google-cid-hint" style="font-size:11px;color:var(--text-faint);margin-top:2px"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <button class="admin-mini-btn" id="admin-google-cid-save" style="background:var(--accent);color:#fff;border-color:transparent">💾 저장</button>
+              <button class="admin-mini-btn" id="admin-google-cid-reset">↩ 기본값으로 복원</button>
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener"
+                style="font-size:11px;color:var(--accent);display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;text-decoration:none;line-height:1">
+                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Google Cloud Console
+              </a>
+            </div>
+          </div>
+        </article>
+
         <!-- 안내 -->
         <div class="admin-info-note">
           ⓘ 위 지표는 데모 데이터입니다. 백엔드 연결 후 자동으로 실제 데이터로 교체됩니다.
@@ -27835,6 +27956,57 @@ function _bindAdminContentOnce() {
     adminLogout();
     showToast?.('🚪 로그아웃됨');
   });
+
+  // Google OAuth Client ID 설정
+  (function _initGoogleCidPanel() {
+    const GOOGLE_CID_KEY = 'soaviz.google.client_id';
+    const DEFAULT_CID = '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com';
+    const input  = document.getElementById('admin-google-cid-input');
+    const hint   = document.getElementById('admin-google-cid-hint');
+    const status = document.getElementById('admin-google-cid-status');
+    const btnSave  = document.getElementById('admin-google-cid-save');
+    const btnReset = document.getElementById('admin-google-cid-reset');
+    if (!input) return;
+
+    function _refresh() {
+      let saved = '';
+      try { saved = (localStorage.getItem(GOOGLE_CID_KEY) || '').trim(); } catch (_) {}
+      const isCustom = !!saved && saved !== DEFAULT_CID;
+      input.value = saved || DEFAULT_CID;
+      if (isCustom) {
+        status.textContent = '사용자 정의 Client ID';
+        status.style.background = 'rgba(167,139,250,0.18)';
+        status.style.color = 'var(--accent)';
+        hint.textContent = '비워두고 저장하면 기본값으로 복원됩니다.';
+      } else {
+        status.textContent = '기본값 사용 중 (즉시 동작)';
+        status.style.background = 'rgba(34,197,94,0.15)';
+        status.style.color = '#22C55E';
+        hint.textContent = '기본 Client ID를 사용 중입니다. 자체 Client ID로 교체하려면 위에 입력하세요.';
+      }
+    }
+    _refresh();
+
+    btnSave?.addEventListener('click', () => {
+      const val = input.value.trim();
+      try {
+        if (!val || val === DEFAULT_CID) {
+          localStorage.removeItem(GOOGLE_CID_KEY);
+        } else {
+          localStorage.setItem(GOOGLE_CID_KEY, val);
+        }
+      } catch (_) {}
+      _refresh();
+      showToast?.('✓ Google Client ID 저장됨 — 로그인 페이지 새로고침 시 적용됩니다');
+    });
+
+    btnReset?.addEventListener('click', () => {
+      if (!confirm('기본 Client ID로 복원할까요?')) return;
+      try { localStorage.removeItem(GOOGLE_CID_KEY); } catch (_) {}
+      _refresh();
+      showToast?.('↩ 기본값으로 복원됨');
+    });
+  })();
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -47928,6 +48100,7 @@ function bindPipelinePage() {
       appearance: data.appearance || '',
       personality: data.personality || '',
       faceRefAssetIds: data.faceRefAssetIds || [],
+      imageSourceMode: data.imageSourceMode || 'generate',
       photos: data.photos || [],                // [{id, dataUrl, name}] — 첫 번째가 메인 아바타
       voiceId: data.voiceId || '',
       voiceSampleAssetId: null,
@@ -50277,6 +50450,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   if (!c && !isNew) return;
   if (isNew) c = { name: '', role: 'supporting', gender: '', age: null, appearance: '', personality: '', voiceId: '', promptFragment: '', tags: [], photos: [], relations: [], projectId: $('#ch-project-select')?.value || 'default', ...(preset || {}) };
   if (!Array.isArray(c.photos)) c.photos = [];
+  const initialImageSourceMode = c.imageSourceMode || (c.photos.length ? 'upload' : 'generate');
 
   const root = document.createElement('div');
   root.className = 'bible-modal';
@@ -50305,47 +50479,66 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       <div class="bible-modal-body">
         <div class="cf-tab-pane active" id="cf-pane-info">
         <div class="bible-field">
-          <label>사진 등록 <span style="color:var(--text-faint);font-weight:400;font-size:11px">— 정면 / 측면 / 후면 / 전신 — 외형 일관성용. 첫 등록 사진이 메인 아바타</span></label>
-          <div class="cf-photo-slots" id="cf-photo-slots">
-            <div class="cf-photo-slot" data-slot="front" data-name="정면" data-hint="얼굴 정면">
-              <div class="cf-slot-empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
-                <span class="cf-slot-name">정면</span>
-                <span class="cf-slot-hint">FRONT</span>
+          <label>캐릭터 이미지 방식 <span style="color:var(--text-faint);font-weight:400;font-size:11px">— 직접 등록하거나 기본 정보로 생성 시작</span></label>
+          <div class="cf-source-mode" id="cf-image-source-mode">
+            <button class="cf-source-choice ${initialImageSourceMode === 'upload' ? 'active' : ''}" type="button" data-cf-source-mode="upload" aria-pressed="${initialImageSourceMode === 'upload'}">
+              <span class="cf-source-choice-mark">1</span>
+              <span><strong>이미지 등록</strong><span>정면, 측면, 후면, 전신 이미지를 직접 올려 일관성을 확보합니다.</span></span>
+            </button>
+            <button class="cf-source-choice ${initialImageSourceMode === 'generate' ? 'active' : ''}" type="button" data-cf-source-mode="generate" aria-pressed="${initialImageSourceMode === 'generate'}">
+              <span class="cf-source-choice-mark">2</span>
+              <span><strong>생성으로 시작</strong><span>사진 없이 기본 정보와 프롬프트로 키이미지를 먼저 만듭니다.</span></span>
+            </button>
+          </div>
+          <div class="cf-source-panel" id="cf-upload-source-panel" ${initialImageSourceMode === 'generate' ? 'hidden' : ''}>
+            <div class="cf-photo-slots" id="cf-photo-slots">
+              <div class="cf-photo-slot" data-slot="front" data-name="정면" data-hint="얼굴 정면">
+                <div class="cf-slot-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>
+                  <span class="cf-slot-name">정면</span>
+                  <span class="cf-slot-hint">FRONT</span>
+                </div>
+                <span class="cf-slot-label">정면</span>
+                <input type="file" accept="image/*" />
               </div>
-              <span class="cf-slot-label">정면</span>
-              <input type="file" accept="image/*" />
+              <div class="cf-photo-slot" data-slot="side" data-name="측면" data-hint="옆모습">
+                <div class="cf-slot-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9c0-2 1.5-3.5 3.5-3.5S16 7 16 9c0 1.5-1 2.5-1 4v1"/><path d="M15 14h-1.5c-1 0-2 .5-2 1.5V20"/></svg>
+                  <span class="cf-slot-name">측면</span>
+                  <span class="cf-slot-hint">SIDE</span>
+                </div>
+                <span class="cf-slot-label">측면</span>
+                <input type="file" accept="image/*" />
+              </div>
+              <div class="cf-photo-slot" data-slot="back" data-name="후면" data-hint="뒷모습">
+                <div class="cf-slot-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/><path d="M10 8.5l1.5 1.5L13.5 8"/></svg>
+                  <span class="cf-slot-name">후면</span>
+                  <span class="cf-slot-hint">BACK</span>
+                </div>
+                <span class="cf-slot-label">후면</span>
+                <input type="file" accept="image/*" />
+              </div>
+              <div class="cf-photo-slot" data-slot="full" data-name="전신" data-hint="머리부터 발끝">
+                <div class="cf-slot-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v7"/><path d="M9 11h6"/><path d="M12 14l-2 6M12 14l2 6"/></svg>
+                  <span class="cf-slot-name">전신</span>
+                  <span class="cf-slot-hint">FULL BODY</span>
+                </div>
+                <span class="cf-slot-label">전신</span>
+                <input type="file" accept="image/*" />
+              </div>
             </div>
-            <div class="cf-photo-slot" data-slot="side" data-name="측면" data-hint="옆모습">
-              <div class="cf-slot-empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9c0-2 1.5-3.5 3.5-3.5S16 7 16 9c0 1.5-1 2.5-1 4v1"/><path d="M15 14h-1.5c-1 0-2 .5-2 1.5V20"/></svg>
-                <span class="cf-slot-name">측면</span>
-                <span class="cf-slot-hint">SIDE</span>
-              </div>
-              <span class="cf-slot-label">측면</span>
-              <input type="file" accept="image/*" />
-            </div>
-            <div class="cf-photo-slot" data-slot="back" data-name="후면" data-hint="뒷모습">
-              <div class="cf-slot-empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/><path d="M10 8.5l1.5 1.5L13.5 8"/></svg>
-                <span class="cf-slot-name">후면</span>
-                <span class="cf-slot-hint">BACK</span>
-              </div>
-              <span class="cf-slot-label">후면</span>
-              <input type="file" accept="image/*" />
-            </div>
-            <div class="cf-photo-slot" data-slot="full" data-name="전신" data-hint="머리부터 발끝">
-              <div class="cf-slot-empty">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v7"/><path d="M9 11h6"/><path d="M12 14l-2 6M12 14l2 6"/></svg>
-                <span class="cf-slot-name">전신</span>
-                <span class="cf-slot-hint">FULL BODY</span>
-              </div>
-              <span class="cf-slot-label">전신</span>
-              <input type="file" accept="image/*" />
+            <div style="margin-top:10px;font-size:11px;color:var(--text-faint);text-align:center;letter-spacing:0.02em">
+              슬롯 클릭 또는 이미지를 끌어다 놓으세요 · 자동 1024px 최적화 · 첫 등록 사진이 메인 아바타
             </div>
           </div>
-          <div style="margin-top:10px;font-size:11px;color:var(--text-faint);text-align:center;letter-spacing:0.02em">
-            슬롯 클릭 또는 이미지를 끌어다 놓으세요 · 자동 1024px 최적화 · 첫 등록 사진이 메인 아바타
+          <div class="cf-source-panel cf-generate-source-panel" id="cf-generate-source-panel" ${initialImageSourceMode === 'upload' ? 'hidden' : ''}>
+            <div>
+              <div class="cf-generate-source-title">기본 정보로 키이미지 생성</div>
+              <div class="cf-generate-source-copy">이름, 역할, 외형, 성격을 입력하면 프롬프트가 자동 정리되고 다음 단계에서 키이미지 스튜디오로 이어집니다. 생성에는 크레딧 또는 BYOK 설정이 필요합니다.</div>
+            </div>
+            <button class="cf-flow-next" id="cf-generate-source-cta" type="button">생성 프롬프트 준비</button>
           </div>
         </div>
         <div class="bible-row">
@@ -50707,6 +50900,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
   const SLOT_TYPES = ['front', 'side', 'back', 'full'];
   // 기존 photos 배열 → 슬롯 매핑 (호환)
   let _photos = (Array.isArray(c.photos) ? c.photos : []).slice();
+  let _imageSourceMode = initialImageSourceMode === 'upload' ? 'upload' : 'generate';
   // 기존 데이터에 type이 없으면 순서대로 슬롯에 매핑
   if (_photos.length && !_photos[0].slot) {
     _photos.forEach((p, i) => { p.slot = SLOT_TYPES[i] || 'front'; });
@@ -50828,6 +51022,27 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
     });
   });
   _renderPhotos();
+
+  function _setImageSourceMode(mode = 'generate') {
+    _imageSourceMode = mode === 'upload' ? 'upload' : 'generate';
+    root.querySelectorAll('[data-cf-source-mode]').forEach(btn => {
+      const active = btn.dataset.cfSourceMode === _imageSourceMode;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    root.querySelector('#cf-upload-source-panel')?.toggleAttribute('hidden', _imageSourceMode !== 'upload');
+    root.querySelector('#cf-generate-source-panel')?.toggleAttribute('hidden', _imageSourceMode !== 'generate');
+    _syncCharacterFlowPrompt();
+  }
+  root.querySelectorAll('[data-cf-source-mode]').forEach(btn => {
+    btn.addEventListener('click', () => _setImageSourceMode(btn.dataset.cfSourceMode));
+  });
+  root.querySelector('#cf-generate-source-cta')?.addEventListener('click', () => {
+    _setImageSourceMode('generate');
+    _syncCharacterFlowPrompt();
+    _switchCharacterFlowTab('keyimage');
+  });
+  _setImageSourceMode(_imageSourceMode);
 
   // 빈 상태 — 메인 프리뷰에 랜덤 컬러 주입 (모달 진입 시 1회)
   (function _randomEmptyPhotoColor() {
@@ -50959,6 +51174,7 @@ async function openCharacterEditor(id, preset = null, defaultTab = null) {
       personality: root.querySelector('#cf-personality').value,
       voiceId: (root.querySelector('#cf-voice')?.value || '').trim(),
       promptFragment: root.querySelector('#cf-fragment').value,
+      imageSourceMode: _imageSourceMode,
       photos: _photos.slice(),
     };
     if (!String(data.promptFragment || '').trim()) {
