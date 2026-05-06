@@ -25027,7 +25027,7 @@
           </button>
           <button class="ch-action-btn" id="ch-random-btn">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
-            랜덤 생성
+            랜덤으로 캐릭터 생성하기
           </button>
           <button class="ch-action-btn" id="ch-pack-btn">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -34065,13 +34065,18 @@ async function rollRandom() {
   if (!includeWorld && !includeStory) {
     showToast('세계관 또는 스토리 중 하나는 선택해 주세요', 'error'); return;
   }
-  const randomCost = _randomCostFor();
-  if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
-    action: 'random-generate',
-    label: '랜덤 세계관/스토리 생성',
-    cost: randomCost,
-    modelTier: 'basic',
-  })) return;
+  // ── 프리셋 사용 가능 여부 (랜덤 플로우 전용, AI 호출 없음 → 크레딧 불필요) ──
+  const _hasPresets = !!(window.SOAVIZ_SCENARIOS && window.SOAVIZ_SCENARIOS.length > 0);
+
+  if (!_hasPresets) {
+    const randomCost = _randomCostFor();
+    if (typeof canRunMonetizedAction === 'function' && !canRunMonetizedAction({
+      action: 'random-generate',
+      label: '랜덤 세계관/스토리 생성',
+      cost: randomCost,
+      modelTier: 'basic',
+    })) return;
+  }
 
   const btn = $('#random-roll');
   const dice = $('#random-dice-icon');
@@ -34242,6 +34247,96 @@ async function rollRandom() {
 
   let worldText = '';
   let storyText = '';
+
+  // ── 프리셋 빠른 경로 (랜덤 생성 전용 — story/world 탭에는 절대 영향 없음) ──
+  if (_hasPresets) {
+    try {
+      const _pool = window.SOAVIZ_SCENARIOS;
+      const preset = _pool[Math.floor(Math.random() * _pool.length)];
+
+      if (includeStory) {
+        const parts = [];
+        if (preset.hook)     parts.push(preset.hook);
+        if (preset.synopsis) parts.push(preset.synopsis);
+        storyText = parts.join('\n\n');
+        lastRandomStory = storyText;
+        lastStoryOutput  = storyText;
+      }
+      if (includeWorld) {
+        const wParts = [
+          `## 장르\n${preset.genre}`,
+          `## 분위기\n${preset.mood}`,
+        ];
+        if (preset.keywords && preset.keywords.length)
+          wParts.push(`## 키워드\n${preset.keywords.join(', ')}`);
+        if (preset.title)
+          wParts.push(`## 제목\n${preset.title}`);
+        worldText = wParts.join('\n\n');
+        lastRandomWorld = worldText;
+        lastWorldOutput  = worldText;
+      }
+
+      clearInterval(msgRotate);
+      clearInterval(rollAnim);
+
+      if ($('#random-world-block')) $('#random-world-block').style.display = includeWorld ? '' : 'none';
+      if ($('#random-story-block')) $('#random-story-block').style.display = includeStory ? '' : 'none';
+      if ($('#random-result'))      $('#random-result').style.display = '';
+      if (status) {
+        status.textContent = `✓ 완성됐어요! · #${preset.id}`;
+        status.style.color = 'var(--success)';
+      }
+
+      // 스트리밍 출력
+      if (includeWorld && worldText)  streamText($('#random-world-output'), worldText);
+      if (includeStory && storyText) {
+        const _doStory = () => streamText($('#random-story-output'), storyText);
+        (includeWorld && worldText)
+          ? setTimeout(_doStory, Math.min(worldText.length * 28, 800))
+          : _doStory();
+      }
+
+      // 다음 탭 미리 채우기 (보이지 않는 영역 — 즉시 할당)
+      if (includeWorld) {
+        if ($('#world-output')) $('#world-output').textContent = worldText;
+        if ($('#world-result')) $('#world-result').style.display = '';
+      }
+      if (includeStory) {
+        if ($('#story-output')) $('#story-output').textContent = storyText;
+        if ($('#story-result')) $('#story-result').style.display = '';
+      }
+
+      showToast(`✓ ${preset.title ? `"${preset.title}"` : `#${preset.id}`} 완성 — 결과를 확인하세요`);
+
+      setTimeout(() => {
+        const result = $('#random-result');
+        if (result) {
+          result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          result.style.transition = 'box-shadow 600ms ease';
+          result.style.boxShadow = '0 0 0 2px rgba(167,139,250,0.30), 0 12px 30px -8px rgba(167,139,250,0.40)';
+          setTimeout(() => { result.style.boxShadow = ''; }, 1600);
+        }
+        const _diceEl  = $('#random-dice-icon');
+        const _labelEl = $('#random-roll-label');
+        if (_diceEl)  _diceEl.textContent  = '🎲';
+        if (_labelEl) _labelEl.textContent = '주사위 굴리기';
+        btn.style.background = '';
+        btn.style.boxShadow  = '';
+        btn.style.color      = '';
+        if (bigDice) bigDice.classList.remove('rolling');
+        if (status) status.style.color = '';
+      }, 1400);
+
+    } finally {
+      clearInterval(rollAnim);
+      clearInterval(msgRotate);
+      const _d = $('#random-dice-icon');
+      if (_d && _d.textContent !== '✓') _d.textContent = '🎲';
+      if (bigDice) bigDice.classList.remove('rolling');
+      btn.disabled = false;
+    }
+    return; // 프리셋 경로 완료 — AI 호출 없음
+  }
 
   try {
     if (includeWorld) {
@@ -52701,7 +52796,13 @@ async function resumePendingCharacterDraftAfterAuth() {
 
 async function createRandomCharacterQuick() {
   if (!(await _ensureCharLimit())) return;
-  const r = SoavizCharacters.randomCharacter();
+
+  // ── 프리셋 우선 사용 (characters-data.js 로드 시) ──
+  const _charPool = window.SOAVIZ_CHARACTERS;
+  const r = (_charPool && _charPool.length > 0)
+    ? _charPool[Math.floor(Math.random() * _charPool.length)]
+    : SoavizCharacters.randomCharacter();
+
   if (window.SoavizAuth?.isGuest?.()) {
     await openCharacterEditor(null, { ...r, promptFragment: SoavizCharacters.autoFragment(r) });
     showToast?.('게스트 모드: 랜덤 초안을 열었습니다. 저장하려면 가입/로그인이 필요해요.');
@@ -65224,5 +65325,7 @@ window.handleMobileReviewShareUrl = handleMobileReviewShareUrl;
   }
 })();
 </script>
+<script src="scenarios-data.js"></script>
+<script src="characters-data.js"></script>
 </body>
 </html>
