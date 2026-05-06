@@ -979,7 +979,13 @@
       try { sessionStorage.removeItem('soaviz.signup.bypass'); } catch {}
       showToast(message || '✓ 로그인 완료', 'ok');
       if (notifyParentAuthSuccess()) return;
-      setTimeout(() => { location.href = getStudioUrl(); }, 700);
+      // mobile에서 로그인 후 다시 mobile로 복귀
+      let _returnTo = getStudioUrl();
+      try {
+        const _saved = localStorage.getItem('soaviz.auth.returnTo.v1');
+        if (_saved) { localStorage.removeItem('soaviz.auth.returnTo.v1'); _returnTo = _saved; }
+      } catch {}
+      setTimeout(() => { location.href = _returnTo; }, 700);
     }
     function escapeAttr(s) {
       return String(s || '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));

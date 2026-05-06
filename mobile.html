@@ -1354,8 +1354,8 @@ async function boot() {
   if (!profile) {
     if (sb) {
       const { data } = await sb.auth.getSession().catch(() => ({ data: null }));
-      if (!data?.session) { window.location.href = '/signup'; return; }
-    } else { window.location.href = '/signup'; return; }
+      if (!data?.session) { try { localStorage.setItem('soaviz.auth.returnTo.v1', '/mobile'); } catch {} window.location.href = '/signup'; return; }
+    } else { try { localStorage.setItem('soaviz.auth.returnTo.v1', '/mobile'); } catch {} window.location.href = '/signup'; return; }
   }
   try { await db.open(); } catch (e) { console.warn('DB:', e); }
   syncHeader();
