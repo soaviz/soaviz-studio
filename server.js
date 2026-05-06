@@ -44,7 +44,7 @@ dotenv.config();
 /* ── App ────────────────────────────────────────────────────── */
 const app = express();
 
-const CORS_ORIGINS = [
+const CORS_ORIGINS = new Set([
   'http://localhost:8787',
   'http://localhost:5500',
   'http://localhost:5501',
@@ -53,16 +53,27 @@ const CORS_ORIGINS = [
   'http://127.0.0.1:5501',
   'https://soaviz.com',
   'https://www.soaviz.com',
+  'https://soaviz.studio',
+  'https://www.soaviz.studio',
   'https://soaviz-studio.vercel.app',
-  // Railway/Render preview backend/frontend domains can be added through CORS_ORIGINS env.
-  ...String(process.env.CORS_ORIGINS || '')
+  // Extra origins from env (CORS_ORIGINS or ALLOWED_ORIGINS, comma-separated)
+  ...String(process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || '')
     .split(',')
-    .map(origin => origin.trim())
+    .map(o => o.trim())
     .filter(Boolean),
-];
+]);
+
+// *.vercel.app 프리뷰 배포도 허용 (와일드카드)
+const CORS_VERCEL_RE = /^https:\/\/[\w-]+\.vercel\.app$/;
 
 app.use(cors({
-  origin: CORS_ORIGINS,
+  origin: (origin, cb) => {
+    if (!origin || CORS_ORIGINS.has(origin) || CORS_VERCEL_RE.test(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error('CORS: origin not allowed — ' + origin));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());

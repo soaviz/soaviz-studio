@@ -58365,6 +58365,19 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
   let _lastState = null;
   let _checkInterval = null;
 
+  /* ── 배너를 표시하면 안 되는 페이지 ── */
+  const BANNER_EXCLUDED_PAGES = ['page-landing', 'page-pricing', 'page-onboarding'];
+  function shouldShowGlobalHealthBanner() {
+    try {
+      const active = document.querySelector('.page.active, .page[style*="display: block"], .page[style*="display:block"]');
+      if (active && BANNER_EXCLUDED_PAGES.includes(active.id)) return false;
+      // window.currentPage 기반 fallback
+      const cur = window.currentPage || '';
+      if (BANNER_EXCLUDED_PAGES.some(p => p === 'page-' + cur || p === cur)) return false;
+      return true;
+    } catch (_) { return true; }
+  }
+
   function _setBanner({ visible, online, msg, icon }) {
     const banner = document.getElementById('sv-health-banner');
     const iconEl = document.getElementById('sv-hb-icon');
@@ -58381,35 +58394,39 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
     if (!BACKEND_URL) return { online: false, reason: 'not-configured' };
     try {
       const ctrl = new AbortController();
-      setTimeout(() => ctrl.abort(), 2500);
-      const r = await fetch(`${BACKEND_URL}/api/health`, { signal: ctrl.signal });
-      if (!r.ok) return { online: false, reason: 'http ' + r.status };
+      setTimeout(() => ctrl.abort(), 5000);
+      const r = await fetch(`${BACKEND_URL}/api/health`, {
+        signal: ctrl.signal,
+        credentials: 'include',
+      });
+      if (!r.ok) {
+        console.warn('[SoavizHealth] /api/health returned', r.status);
+        return { online: false, reason: 'http ' + r.status };
+      }
       const d = await r.json();
       return { online: !!d.ok, checks: d.checks || {} };
     } catch (e) {
-      return { online: false, reason: (e && e.message) || 'unreachable' };
+      const reason = (e && e.message) || 'unreachable';
+      console.warn('[SoavizHealth] probe failed:', reason);
+      return { online: false, reason };
     }
   }
 
   async function check() {
     const state = await probeBackend();
     _lastState = state;
-    // 정상이면 배너 숨김 (5초 후 자동 사라짐)
     if (state.online) {
+      // 정상: 기존 오프라인 배너만 제거 — 녹색 성공 배너는 띄우지 않음
+      _setBanner({ visible: false });
+    } else {
+      // 오프라인: 랜딩/프라이싱/온보딩 페이지에서는 배너 생략
+      if (!shouldShowGlobalHealthBanner()) return;
       if (_dismissed) return;
       _setBanner({
-        visible: true, online: true,
-        icon: '✓',
-        msg: '백엔드 정상 — 영상/음성 생성 사용 가능',
-      });
-      setTimeout(() => _setBanner({ visible: false }), 4000);
-    } else {
-      // 오프라인이면 무엇이 안 되는지 친절히 안내
-      _setBanner({
-        visible: !_dismissed,
+        visible: true,
         online: false,
         icon: '!',
-        msg: `<strong>서버 연결 중단</strong> — 영상/음성 생성 기능을 일시적으로 사용할 수 없어요. 잠시 후 다시 시도해 주세요.`,
+        msg: '<strong>서버 연결 중단</strong> — 영상/음성 생성 기능을 일시적으로 사용할 수 없어요. 잠시 후 다시 시도해 주세요.',
       });
     }
   }
@@ -58433,7 +58450,29 @@ ${clips.map((c, i) => `          <clipitem id="clip_${i}">
     _checkInterval = setInterval(check, 60_000); // 1분마다
   }
 
-  window.SoavizHealth = { check, dismiss, getState: () => _lastState };
+  window.SoavizHealth = { check, dismiss, getState: () => _lastState, shouldShowBanner: shouldShowGlobalHealthBanner };
+
+  /* ── 디버그 헬퍼 (DevTools 콘솔용) ── */
+  window.SoavizHealthDebug = {
+    getState: () => _lastState,
+    reset: () => {
+      _dismissed = false;
+      try { localStorage.removeItem(KEY_DISMISSED); } catch {}
+      _setBanner({ visible: false });
+      console.log('[SoavizHealthDebug] reset — dismissed flag cleared');
+    },
+    probe: async () => {
+      const s = await probeBackend();
+      console.log('[SoavizHealthDebug] probe result:', s);
+      return s;
+    },
+    shouldShowBanner: () => {
+      const v = shouldShowGlobalHealthBanner();
+      console.log('[SoavizHealthDebug] shouldShowGlobalHealthBanner():', v);
+      return v;
+    },
+  };
+
   // 초기화 — DOM ready 후
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(start, 0);
