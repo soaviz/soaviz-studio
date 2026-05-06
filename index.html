@@ -17797,6 +17797,39 @@
 .wb-next-secondary.warn { border-color: color-mix(in srgb, #f59e0b 35%, transparent); }
 .wb-next-secondary.warn .wbs-tag { color: #f59e0b; }
 /* ============ /NEXT ACTION ENGINE (P4) ============ */
+
+/* ============ WORKBENCH ACTIONS (P5/P6/P7) ============ */
+.wb-actions-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.wb-action-tile {
+  flex: 1; min-width: 130px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: left;
+}
+.wb-action-tile:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.wb-action-tile.disabled { opacity: .4; cursor: default; pointer-events: none; }
+.wb-at-icon  { font-size: 20px; margin-bottom: 6px; display: block; }
+.wb-at-label { font-size: 13px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 2px; }
+.wb-at-desc  { font-size: 11px; color: var(--text-faint); }
+
+.wb-share-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.wb-share-chip:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+/* ============ /WORKBENCH ACTIONS ============ */
 </style>
 
   <!-- ════════════════════════════════════════════════════════════════════════
@@ -25365,6 +25398,25 @@
           <p class="wb-panel-title">최근 활동</p>
           <div id="wb-activity"></div>
         </div>
+      </div>
+
+      <!-- P5/P6/P7 액션 바 -->
+      <div id="wb-actions-bar" class="wb-actions-bar">
+        <button class="wb-action-tile" id="wb-act-prompt" onclick="_wbPromptDirector()">
+          <span class="wb-at-icon">✍️</span>
+          <span class="wb-at-label">프롬프트 자동 생성</span>
+          <span class="wb-at-desc" id="wb-act-prompt-desc">샷리스트로 프롬프트 일괄 생성</span>
+        </button>
+        <button class="wb-action-tile" id="wb-act-share" onclick="_wbShareReview()">
+          <span class="wb-at-icon">🔗</span>
+          <span class="wb-at-label">팀 리뷰 공유</span>
+          <span class="wb-at-desc">프로젝트 링크를 클립보드에 복사</span>
+        </button>
+        <button class="wb-action-tile" id="wb-act-export" onclick="_wbExportPackage()">
+          <span class="wb-at-icon">📦</span>
+          <span class="wb-at-label">내보내기 패키지</span>
+          <span class="wb-at-desc">프로젝트 JSON 다운로드</span>
+        </button>
       </div>
 
     </section>
@@ -47197,6 +47249,19 @@ async function renderWorkbenchPage() {
         </div>`).join('');
     }
   }
+
+  // P5: 프롬프트 버튼 desc 업데이트
+  const pBtn = document.getElementById('wb-act-prompt');
+  const pDesc = document.getElementById('wb-act-prompt-desc');
+  if (pBtn && pDesc) {
+    if (!shots) {
+      pBtn.classList.add('disabled');
+      pDesc.textContent = '먼저 샷리스트를 만드세요';
+    } else {
+      pBtn.classList.remove('disabled');
+      pDesc.textContent = `${shots}개 샷으로 프롬프트 초안 생성`;
+    }
+  }
 }
 
 // SoavizProductionOS에 workbench 모듈 등록
@@ -47290,6 +47355,138 @@ window.SoavizProductionOS.register('autoOrganize', async function(projectId) {
 
   return { fixed, orphans, details };
 });
+
+
+// ══════════════════════════════════════════════════════════════
+//  P5: Prompt Director — 샷 → 프롬프트 일괄 생성
+// ══════════════════════════════════════════════════════════════
+async function _wbPromptDirector() {
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
+
+  const shots = await db.shots.where('projectId').equals(activeId).toArray().catch(()=>[]);
+  if (!shots.length) {
+    showToast?.('샷리스트가 없어요. Pipeline에서 먼저 샷을 만드세요', 'warn');
+    return;
+  }
+
+  // 프롬프트가 없는 샷 확인
+  const shotIds = shots.map(s => s.id);
+  const existPrompts = await db.prompts.where('projectId').equals(activeId).toArray().catch(()=>[]);
+  const coveredShotIds = new Set(existPrompts.map(p => p.shotId).filter(Boolean));
+  const uncovered = shots.filter(s => !coveredShotIds.has(s.id));
+
+  if (!uncovered.length) {
+    showToast?.('모든 샷에 이미 프롬프트가 있어요 ✓', 'info');
+    return;
+  }
+
+  // 자동 프롬프트 생성 (간단한 기본 프롬프트)
+  let created = 0;
+  for (const shot of uncovered.slice(0, 20)) { // 최대 20개
+    const title = shot.title || `Shot ${created + 1}`;
+    const desc  = shot.description || shot.notes || '';
+    const auto  = [title, desc].filter(Boolean).join(', ') + '. cinematic, high quality, dramatic lighting, film still';
+    await db.prompts.add({
+      id: `prompt_auto_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+      projectId: activeId,
+      shotId: shot.id,
+      text: auto,
+      type: 'image',
+      status: 'draft',
+      source: 'auto',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }).catch(()=>{});
+    created++;
+  }
+
+  showToast?.(`✍️ ${created}개 프롬프트 초안이 생성됐어요. Studio에서 검토하세요`, 'success');
+  setTimeout(() => renderWorkbenchPage?.(), 500);
+  showPage('studio');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  P6: Team Review — 공유 링크 생성
+// ══════════════════════════════════════════════════════════════
+async function _wbShareReview() {
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
+
+  // 현재 URL에 project ID 파라미터 추가
+  const base = window.location.origin + window.location.pathname;
+  const shareUrl = `${base}?project=${activeId}&mode=review`;
+
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    showToast?.('🔗 리뷰 링크가 클립보드에 복사됐습니다', 'success');
+  } catch (_) {
+    // fallback: prompt
+    window.prompt('아래 링크를 복사하세요:', shareUrl);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  P7: Export Package — 프로젝트 JSON 다운로드
+// ══════════════════════════════════════════════════════════════
+async function _wbExportPackage() {
+  const activeId = localStorage.getItem('soaviz_active_project_id');
+  if (!activeId) { showToast?.('활성 프로젝트를 선택하세요', 'warn'); return; }
+
+  const btn = document.getElementById('wb-act-export');
+  if (btn) btn.classList.add('disabled');
+
+  try {
+    const [proj, eps, scenes, shots, chars, styles, prompts, assets] = await Promise.all([
+      db.projects.get(activeId).catch(()=>null),
+      db.episodes.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.scenes.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.shots.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.characters.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.styles.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.prompts.where('projectId').equals(activeId).toArray().catch(()=>[]),
+      db.assets.where('projectId').equals(activeId)
+        .filter(a => a.type !== 'blob') // 바이너리 제외
+        .toArray().catch(()=>[]),
+    ]);
+
+    const pkg = {
+      exportVersion: '1.0',
+      exportedAt: new Date().toISOString(),
+      source: 'soaviz-studio',
+      project: proj,
+      episodes: eps,
+      scenes,
+      shots,
+      characters: chars,
+      styles,
+      prompts,
+      assets: assets.map(a => ({ ...a, imageData: undefined })), // base64 제외
+    };
+
+    const json   = JSON.stringify(pkg, null, 2);
+    const blob   = new Blob([json], { type: 'application/json' });
+    const url    = URL.createObjectURL(blob);
+    const a      = document.createElement('a');
+    const title  = (proj?.title || 'project').replace(/[^a-zA-Z0-9가-힣_-]/g, '_');
+    a.href       = url;
+    a.download   = `soaviz_${title}_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    const kbSize = Math.round(json.length / 1024);
+    showToast?.(`📦 내보내기 완료 (${kbSize} KB)`, 'success');
+  } catch (e) {
+    showToast?.('내보내기 중 오류가 발생했습니다', 'error');
+  } finally {
+    if (btn) btn.classList.remove('disabled');
+  }
+}
+
+// SoavizProductionOS 모듈 등록
+window.SoavizProductionOS.register('promptDirector', { run: _wbPromptDirector });
+window.SoavizProductionOS.register('teamReview',     { share: _wbShareReview });
+window.SoavizProductionOS.register('exportPackage',  { export: _wbExportPackage });
 
 /** 워크벤치 페이지에서 호출 */
 async function _wbRunOrganizer() {
