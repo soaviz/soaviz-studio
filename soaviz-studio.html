@@ -25940,7 +25940,7 @@
           </div>
           <!-- 팀 전환 버튼 제거됨 — 비즈니스 계정은 별도 앱으로 분리 운영 -->
           <button class="swb-btn" id="swb-convert-btn" style="display:none" onclick="openSwbConvertModal()">팀 프로젝트로 전환</button>
-          <button class="swb-btn swb-btn-primary" onclick="swbToast('샷 추가 — 새 샷 생성','info')">+ 샷 추가</button>
+          <button class="swb-btn swb-btn-primary" onclick="openSwbAddShotModal()">+ 샷 추가</button>
         </div>
       </div>
 
@@ -26166,17 +26166,74 @@
       isInit: false,
     };
 
-    window.SwbShots = window.SwbShots || [
-      { code:'S001', title:'오프닝 와이드', status:'planning', assignee:'지수', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-15', cost:0, thumb:'swb-empty' },
-      { code:'S005', title:'전환 컷', status:'planning', assignee:'민호', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-13', cost:0, thumb:'swb-empty' },
-      { code:'S006', title:'타이틀 인서트', status:'planning', assignee:'은교', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-09', cost:0, thumb:'swb-empty' },
-      { code:'S004', title:'클로즈업', status:'production', assignee:'민호', model:'Kling 1.6', apiSource:'workspace', version:'v3', progress:60, comments:3, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-12', cost:0.84, thumb:'swb-blue' },
-      { code:'S007', title:'B-roll 도시', status:'production', assignee:'지수', model:'Kling 1.6', apiSource:'workspace', version:'-', progress:0, comments:1, hasFeedback:false, hasFailed:true, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-08', cost:0.42, thumb:'swb-red' },
-      { code:'S002', title:'인터뷰 컷', status:'review', assignee:'민호', model:'Runway Gen-3', apiSource:'workspace', version:'v3', comments:3, hasFeedback:true, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-11', cost:1.20, thumb:'swb-warm' },
-      { code:'S003', title:'B-roll 자연', status:'review', assignee:'지수', model:'Kling 1.6', apiSource:'personal', version:'v2', comments:1, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-12', cost:0.65, thumb:'swb-green' },
-      { code:'S008', title:'인서트 손', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v4', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.50, thumb:'swb-purple' },
-      { code:'S010', title:'엔딩 페이드', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v5', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.65, thumb:'swb-purple' },
-    ];
+    // SwbShots는 항상 IDB에서 로드 — 하드코딩 제거
+    window.SwbShots = [];
+
+    /* IDB status → SwbBoard status 매핑 */
+    function _swbDeriveStatus(shot) {
+      if (shot.boardStatus) return shot.boardStatus; // workbench에서 수동 지정
+      const s = shot.status || 'draft';
+      if (s === 'approved') return 'approved';
+      if (s === 'delivered') return 'delivered';
+      if (s === 'generated') return (shot.boardStatus === 'review') ? 'review' : 'production';
+      // draft
+      return (shot.candidateAssetIds && shot.candidateAssetIds.length > 0) ? 'production' : 'planning';
+    }
+
+    /* 프로젝트 모든 샷을 IDB에서 SwbShots 포맷으로 변환 */
+    async function swbLoadProjectShots(projectId) {
+      try {
+        if (!window.SoavizPipeline || !SoavizDB.db) return;
+        const db = SoavizDB.db;
+        const eps = await db.episodes.where('parentId').equals(projectId).and(e => !e.archived).toArray().catch(() => []);
+        const allShots = [];
+        for (const ep of eps) {
+          const scenes = await db.scenes.where('parentId').equals(ep.id).and(s => !s.archived).toArray().catch(() => []);
+          for (const sc of scenes) {
+            const shots = await db.shots.where('parentId').equals(sc.id).and(s => !s.archived).toArray().catch(() => []);
+            for (const sh of shots) {
+              const boardSt = _swbDeriveStatus(sh);
+              const hasCandidates = (sh.candidateAssetIds || []).length > 0;
+              const progress = sh.status === 'generated' ? 100 : (hasCandidates ? 60 : 0);
+              // thumb: approved/delivered → purple, review → warm, production → blue, failed → red, else empty
+              let thumb = 'swb-empty';
+              if (sh.status === 'approved' || boardSt === 'delivered') thumb = 'swb-purple';
+              else if (boardSt === 'review') thumb = 'swb-warm';
+              else if (boardSt === 'production' && !sh.hasFailed) thumb = 'swb-blue';
+              else if (sh.hasFailed) thumb = 'swb-red';
+              allShots.push({
+                _idbId: sh.id,
+                _sceneId: sc.id,
+                _sceneTitle: sc.title || sc.description || `씬 ${sc.number}`,
+                _epTitle: ep.title || `에피소드 ${ep.number}`,
+                code: `S${String(sh.number || allShots.length + 1).padStart(3, '0')}`,
+                title: sh.title || sh.description || `샷 ${sh.number || allShots.length + 1}`,
+                status: boardSt,
+                assignee: sh.boardAssignee || window.SwbState.me,
+                model: sh.lastModel || null,
+                apiSource: sh.apiSource || 'personal',
+                version: hasCandidates ? `v${(sh.candidateAssetIds || []).length}` : null,
+                progress,
+                comments: 0,
+                hasFeedback: !!sh.hasFeedback,
+                hasFailed: !!sh.hasFailed,
+                dueSoon: false,
+                clientReviewRequested: !!sh.clientReviewRequested,
+                dueDate: sh.dueDate || null,
+                cost: sh.totalCost || 0,
+                thumb,
+              });
+            }
+          }
+        }
+        window.SwbShots = allShots;
+        // 헤더 shot count 업데이트
+        const cntEl = document.getElementById('swb-shot-count');
+        if (cntEl) cntEl.textContent = `${allShots.length} shots`;
+      } catch (err) {
+        console.warn('[SWB] swbLoadProjectShots error:', err);
+      }
+    }
 
     const SWB_LABELS = { planning:'Planning', production:'Production', review:'In Review', approved:'Approved', delivered:'Delivered' };
     const SWB_LABELS_KO = { planning:'기획', production:'제작 중', review:'리뷰 중', approved:'승인 완료', delivered:'납품 완료' };
@@ -26752,46 +26809,79 @@
         <div class="swb-stat-card"><div class="swb-stat-num" style="color:var(--swb-success)">${counts.approved + counts.delivered}</div><div class="swb-stat-label">승인+납품</div></div>`;
     }
 
-    /* Public render entry — called from showPage */
-    function renderSwbWorkbench() {
+    /* Public render entry — called from showPage (async) */
+    async function renderSwbWorkbench() {
       window.SwbState.isInit = true;
       _swbApplyCtxClass(window.SwbState.projectType);
       const producer = document.getElementById('swb-producer');
       if (producer) producer.classList.add('show');
-      // Bind drawer change handlers once
+
+      // Bind drawer status change → IDB 동기화
       const ds = document.getElementById('swb-d-status');
       if (ds && !ds.dataset.swbBound) {
         ds.dataset.swbBound = '1';
-        ds.addEventListener('change', (e) => {
-          if (window.SwbState.currentShot) {
-            window.SwbState.currentShot.status = e.target.value;
-            renderSwbShotBoard();
-            renderSwbDrawerFoot(window.SwbState.currentShot);
+        ds.addEventListener('change', async (e) => {
+          const shot = window.SwbState.currentShot;
+          if (!shot) return;
+          const newSt = e.target.value;
+          shot.status = newSt;
+          // IDB 동기화 — boardStatus 필드 저장
+          if (shot._idbId && window.SoavizPipeline) {
+            const idbPatch = { boardStatus: newSt };
+            // approved → IDB status도 approved로
+            if (newSt === 'approved') idbPatch.status = 'approved';
+            // delivered → IDB status도 delivered로 (필드 있으면)
+            if (newSt === 'delivered') idbPatch.status = 'delivered';
+            await SoavizPipeline.updateShot(shot._idbId, idbPatch).catch(() => {});
           }
+          renderSwbShotBoard();
+          renderSwbDrawerFoot(shot);
         });
       }
+
+      // Bind drawer assignee change → IDB 동기화
       const da = document.getElementById('swb-d-assignee');
       if (da && !da.dataset.swbBound) {
         da.dataset.swbBound = '1';
-        da.addEventListener('change', (e) => {
-          if (window.SwbState.currentShot) {
-            window.SwbState.currentShot.assignee = e.target.value;
-            renderSwbShotBoard();
+        da.addEventListener('change', async (e) => {
+          const shot = window.SwbState.currentShot;
+          if (!shot) return;
+          shot.assignee = e.target.value;
+          if (shot._idbId && window.SoavizPipeline) {
+            await SoavizPipeline.updateShot(shot._idbId, { boardAssignee: e.target.value }).catch(() => {});
           }
+          renderSwbShotBoard();
         });
       }
-      // Active project name (best-effort): use real project if available
+
+      // 프로젝트 정보 + 샷 IDB 로드
       try {
-        const pid = window._soavizActiveProjectId || (window.SoavizPipeline && SoavizPipeline.getActiveId?.()) || localStorage.getItem('soaviz_active_project_id');
+        const pid = window._soavizActiveProjectId
+          || (window.SoavizPipeline && SoavizPipeline.getActiveId?.())
+          || localStorage.getItem('soaviz_active_project_id');
         if (pid) {
           const projects = JSON.parse(localStorage.getItem('soaviz_projects') || '[]');
           const p = projects.find(x => String(x.id) === String(pid));
-          if (p && p.title) {
-            const tEl = document.getElementById('swb-title'); if (tEl) tEl.textContent = p.title;
-            const dt = document.getElementById('swb-del-title'); if (dt) dt.textContent = p.title;
+          if (p) {
+            const tEl = document.getElementById('swb-title'); if (tEl) tEl.textContent = p.title || '프로젝트';
+            const dt = document.getElementById('swb-del-title'); if (dt) dt.textContent = p.title || '프로젝트';
+            // 마감 D-day
+            if (p.deadline) {
+              const diff = Math.ceil((new Date(p.deadline) - Date.now()) / 86400000);
+              const subEl = document.getElementById('swb-sub');
+              if (subEl && diff !== null) {
+                const dStr = diff <= 0 ? `<span style="color:var(--swb-danger);font-weight:600">D+${Math.abs(diff)}</span>`
+                  : diff <= 7 ? `<span style="color:var(--swb-warning);font-weight:600">D-${diff}</span>`
+                  : `<span>D-${diff}</span>`;
+                subEl.innerHTML = `<span>${p.client || p.title || ''}</span><span>·</span>${dStr}<span>·</span><span id="swb-shot-count">0 shots</span>`;
+              }
+            }
           }
+          // IDB에서 샷 로드
+          await swbLoadProjectShots(pid);
         }
       } catch (_) {}
+
       // Initial render based on current tab (default overview)
       const tab = window.SwbState.currentTab || 'overview';
       if (tab==='overview') renderSwbOverview();
@@ -26808,10 +26898,111 @@
       if (document.getElementById('swb-modal')?.classList.contains('open')) closeSwbModal();
     }
 
+    /* ===== 새 샷 추가 모달 ===== */
+    async function openSwbAddShotModal() {
+      // 씬 목록 수집
+      let sceneOptions = '<option value="">-- 씬 선택 --</option>';
+      let hasScenes = false;
+      try {
+        const pid = window._soavizActiveProjectId
+          || (window.SoavizPipeline && SoavizPipeline.getActiveId?.())
+          || localStorage.getItem('soaviz_active_project_id');
+        if (pid && SoavizDB.db) {
+          const db = SoavizDB.db;
+          const eps = await db.episodes.where('parentId').equals(pid).and(e => !e.archived).toArray().catch(() => []);
+          for (const ep of eps) {
+            const scenes = await db.scenes.where('parentId').equals(ep.id).and(s => !s.archived).toArray().catch(() => []);
+            for (const sc of scenes) {
+              const label = `${ep.title || `EP ${ep.number}`} / ${sc.title || sc.description || `씬 ${sc.number}`}`;
+              sceneOptions += `<option value="${sc.id}">${label}</option>`;
+              hasScenes = true;
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (!hasScenes) {
+        openSwbModal(`
+          <div class="swb-modal-title">씬이 없습니다</div>
+          <div class="swb-modal-text">먼저 Pipeline에서 에피소드와 씬을 추가해 주세요.<br>씬이 있어야 샷을 만들 수 있습니다.</div>
+          <div class="swb-modal-actions">
+            <button class="swb-btn" onclick="closeSwbModal()">닫기</button>
+            <button class="swb-btn swb-btn-primary" onclick="closeSwbModal(); showPage('pipeline')">Pipeline으로 이동</button>
+          </div>`, { icon: '🎬' });
+        return;
+      }
+
+      openSwbModal(`
+        <div class="swb-modal-title">새 샷 추가</div>
+        <div class="swb-modal-text" style="margin-bottom:14px">씬을 선택하고 샷 정보를 입력하세요.</div>
+        <div class="swb-row-flex" style="flex-direction:column; gap:10px; margin-bottom:16px">
+          <div class="swb-field">
+            <div class="swb-field-l">씬</div>
+            <select class="swb-select" id="swb-add-scene">${sceneOptions}</select>
+          </div>
+          <div class="swb-field">
+            <div class="swb-field-l">샷 제목</div>
+            <input type="text" class="swb-select" id="swb-add-title" placeholder="예: 오프닝 와이드 샷" style="background:var(--bg-elev); border:1px solid var(--border); color:var(--text); padding:7px 10px; border-radius:6px; font-size:13px; width:100%; font-family:inherit;">
+          </div>
+          <div class="swb-field">
+            <div class="swb-field-l">설명 (선택)</div>
+            <input type="text" class="swb-select" id="swb-add-desc" placeholder="예: 도시 전경, 황혼, 와이드" style="background:var(--bg-elev); border:1px solid var(--border); color:var(--text); padding:7px 10px; border-radius:6px; font-size:13px; width:100%; font-family:inherit;">
+          </div>
+        </div>
+        <div class="swb-modal-actions">
+          <button class="swb-btn" onclick="closeSwbModal()">취소</button>
+          <button class="swb-btn swb-btn-primary" onclick="confirmSwbAddShot()">샷 추가</button>
+        </div>`, { icon: '🎬' });
+    }
+
+    async function confirmSwbAddShot() {
+      const sceneId = document.getElementById('swb-add-scene')?.value;
+      const title = (document.getElementById('swb-add-title')?.value || '').trim();
+      const desc = (document.getElementById('swb-add-desc')?.value || '').trim();
+      if (!sceneId) { swbToast('씬을 선택해 주세요', 'warn'); return; }
+      if (!title) { swbToast('샷 제목을 입력해 주세요', 'warn'); return; }
+      try {
+        const newShot = await SoavizPipeline.createShot(sceneId, {
+          title,
+          description: desc,
+          status: 'draft',
+        });
+        closeSwbModal();
+        swbToast(`샷 "${title}" 추가됨`, 'success');
+        // SwbShots에 즉시 추가 (리렌더 전 낙관적 반영)
+        const sc = await SoavizDB.db.scenes.get(sceneId).catch(() => null);
+        const ep = sc?.parentId ? await SoavizDB.db.episodes.get(sc.parentId).catch(() => null) : null;
+        const num = (window.SwbShots.length + 1);
+        window.SwbShots.push({
+          _idbId: newShot.id,
+          _sceneId: sceneId,
+          _sceneTitle: sc?.title || sc?.description || '씬',
+          _epTitle: ep?.title || '에피소드',
+          code: `S${String(num).padStart(3, '0')}`,
+          title,
+          status: 'planning',
+          assignee: window.SwbState.me,
+          model: null, apiSource: 'personal', version: null,
+          progress: 0, comments: 0, hasFeedback: false, hasFailed: false,
+          dueSoon: false, clientReviewRequested: false, dueDate: null, cost: 0,
+          thumb: 'swb-empty',
+        });
+        const cntEl = document.getElementById('swb-shot-count');
+        if (cntEl) cntEl.textContent = `${window.SwbShots.length} shots`;
+        renderSwbShotBoard();
+        // board 탭으로 자동 이동
+        const boardTab = document.querySelector('[data-swb-tab="board"]');
+        if (boardTab) switchSwbTab(boardTab, 'board');
+      } catch (err) {
+        console.error('[SWB] createShot error:', err);
+        swbToast('샷 추가 실패: ' + (err.message || err), 'danger');
+      }
+    }
+
     // Smoke check on first load (console)
     (function swbSmokeCheck(){
       const checks = [
-        ['SwbShots populated', Array.isArray(window.SwbShots) && window.SwbShots.length === 9],
+        ['SwbShots is array', Array.isArray(window.SwbShots)],
         ['renderSwbWorkbench defined', typeof renderSwbWorkbench === 'function'],
         ['openSwbShotDrawer defined', typeof openSwbShotDrawer === 'function'],
         ['toggleSwbProjectType defined', typeof toggleSwbProjectType === 'function'],
