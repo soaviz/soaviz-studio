@@ -22225,19 +22225,11 @@
         body.swb-ctx-personal .sidebar, body.swb-ctx-team .sidebar { box-shadow: none; }
       }
     </style>
-    <div class="nav-section-label swb-ws-section-label">
+    <!-- WORKSPACE 탭 제거됨 (개인 작업 전용으로 전면 교체)
+         비즈니스 계정은 별도 앱으로 분리 운영 예정 — 토큰·데이터 혼동 방지 -->
+    <div class="nav-section-label" style="display:flex; align-items:center; justify-content:space-between; padding-right:12px;">
       <span>WORKSPACE</span>
-      <span id="swb-ws-pill" class="swb-ws-pill personal">PERSONAL</span>
-    </div>
-    <div class="swb-ws-list" role="tablist" aria-label="워크스페이스 전환">
-      <a class="swb-ws-item active" data-swb-ws="personal" role="tab" aria-selected="true" href="javascript:void(0)" onclick="setSwbWorkspace('personal'); return false;" title="개인 작업 — 인디고">
-        <span class="swb-ws-label"><span class="swb-ws-dot personal"></span>개인 작업</span>
-        <span class="swb-ws-meta">혼자 작업 중</span>
-      </a>
-      <a class="swb-ws-item" data-swb-ws="team" role="tab" aria-selected="false" href="javascript:void(0)" onclick="setSwbWorkspace('team'); return false;" title="팀 작업 — 오렌지">
-        <span class="swb-ws-label"><span class="swb-ws-dot team"></span>팀 작업</span>
-        <span class="swb-ws-meta">X Studio · 3 seats</span>
-      </a>
+      <span class="swb-ws-pill personal" style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:0.5px; background: rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.40);">PERSONAL</span>
     </div>
 
     <!-- ═══ CONTEXT TOOLS (Personal vs Team) ═══ -->
@@ -22282,27 +22274,11 @@
       <span>내 라이브러리</span>
     </a>
 
-    <div class="nav-section-label swb-ctx-label" data-ws="team">
-      <span>🟠 TEAM</span>
-      <span class="swb-ctx-tag team">Workspace API</span>
-    </div>
-    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('Workspace API Vault', true); return false;" title="팀이 공동으로 사용하는 API Key — Studio 플랜">
-      <span class="swb-ctx-link-dot team"></span>
-      <span>Workspace API Vault</span>
-      <span class="swb-ctx-link-meta">팀 공유</span>
-    </a>
-    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('팀 프로젝트', true); return false;" title="팀 프로젝트 목록 — Studio 플랜">
-      <span class="swb-ctx-link-dot team"></span>
-      <span>팀 프로젝트</span>
-    </a>
-    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('팀 멤버', true); return false;" title="팀 멤버 관리 — Studio 플랜">
-      <span class="swb-ctx-link-dot team"></span>
-      <span>팀 멤버</span>
-    </a>
-    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('Approval History', true); return false;" title="승인 흐름 + 클라 댓글 PDF — Business 플랜">
-      <span class="swb-ctx-link-dot team"></span>
-      <span>Approval History</span>
-      <span class="swb-ctx-link-meta">Biz+</span>
+    <!-- TEAM 메뉴 제거됨 — 비즈니스 계정은 별도 앱으로 분리 -->
+    <a class="nav-item" href="/contact?topic=business" target="_blank" title="비즈니스·팀 협업 별도 계정 문의">
+      <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ff6b3f; margin-right:9px; box-shadow: 0 0 0 2px rgba(255,107,63,0.18);"></span>
+      <span>비즈니스 계정 문의</span>
+      <span style="margin-left:auto; font-size:9px; color: var(--text-faint); font-weight:400;">별도</span>
     </a>
 
     <script>
@@ -25759,7 +25735,8 @@
               <div class="swb-api-foot" onclick="swbToast('API Vault 관리 페이지로 이동','info')">+ Manage API Vault</div>
             </div>
           </div>
-          <button class="swb-btn" id="swb-convert-btn" onclick="openSwbConvertModal()">팀 프로젝트로 전환</button>
+          <!-- 팀 전환 버튼 제거됨 — 비즈니스 계정은 별도 앱으로 분리 운영 -->
+          <button class="swb-btn" id="swb-convert-btn" style="display:none" onclick="openSwbConvertModal()">팀 프로젝트로 전환</button>
           <button class="swb-btn swb-btn-primary" onclick="swbToast('샷 추가 — 새 샷 생성','info')">+ 샷 추가</button>
         </div>
       </div>
@@ -26123,8 +26100,11 @@
       }
     }
 
-    /* Global workspace switcher (sidebar) — works from any page */
+    /* Global workspace switcher (sidebar) — works from any page
+       NOTE: 비즈니스 계정은 별도 앱으로 분리 — 이 앱은 항상 personal 강제 */
     function setSwbWorkspace(type) {
+      // 항상 personal 강제 (team 시도 무력화)
+      type = 'personal';
       // Ensure SwbState exists (workbench script may not have run yet)
       window.SwbState = window.SwbState || { projectType:'personal', activeFilter:'all', reviewFilter:'pending', currentShot:null, currentTab:'overview', me:'은교', isInit:false };
       // Use toggleSwbProjectType which already handles body class + sidebar UI + workbench UI (null-safe)
@@ -26157,12 +26137,12 @@
       }
     }
 
-    /* Initialize workspace context from localStorage on page load */
+    /* 워크스페이스 컨텍스트 — 개인 작업 전용으로 강제 고정
+       (비즈니스 계정은 별도 앱으로 분리 운영, 토큰·데이터 혼동 방지) */
     (function _initSwbWorkspaceCtx() {
       const apply = () => {
-        let saved = 'personal';
-        try { saved = localStorage.getItem('soaviz_workspace_ctx') || 'personal'; } catch (_) {}
-        setSwbWorkspace(saved);
+        try { localStorage.setItem('soaviz_workspace_ctx', 'personal'); } catch (_) {}
+        setSwbWorkspace('personal');
       };
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
       else apply();
