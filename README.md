@@ -142,7 +142,7 @@ curl https://YOUR-BACKEND-URL.railway.app/api/health
 - Rate Limit: 60 req/min (`RATE_LIMIT_PER_MIN` 조정)
 - 보안 헤더: vercel.json + main.py 미들웨어
 - BYOK: 사용자 API 키는 클라이언트 Vault(AES-GCM) + 헤더 forwarding
-- 취약점 신고: `security@soaviz.studio`
+- 취약점 신고: `ai@soaviz.com`
 
 ## 운영
 
@@ -170,6 +170,6 @@ Proprietary — (주)소아비즈
 
 ## 문의
 
-- 일반: support@soaviz.studio
-- 결제: billing@soaviz.studio
-- 보안: security@soaviz.studio
+- 일반: ai@soaviz.com
+- 결제: ai@soaviz.com
+- 보안: ai@soaviz.com
