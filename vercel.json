@@ -9,7 +9,9 @@
 
   "rewrites": [
     { "source": "/api/:path*",  "destination": "https://soaviz-studio-api.fly.dev/api/:path*" },
-    { "source": "/",            "destination": "/soaviz-studio.html" },
+    { "source": "/",            "destination": "/index.html" },
+    { "source": "/personal",    "destination": "/personal-onepager.html" },
+    { "source": "/team",        "destination": "/sales-onepager.html" },
     { "source": "/app",         "destination": "/soaviz-studio.html" },
     { "source": "/login",       "destination": "/signup.html" },
     { "source": "/signup",      "destination": "/signup.html" },
