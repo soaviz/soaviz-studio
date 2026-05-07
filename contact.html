@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ — 문의 메일 보내기</title>
+<meta name="description" content="SOAVIZ 도입, 데모, 플랜, 보안 문의를 ai@soaviz.com으로 바로 보낼 수 있습니다.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --bg-2: #101015;
+    --surface: #15151a;
+    --surface-2: #1d1d24;
+    --border: #2a2a32;
+    --border-light: #3a3a46;
+    --text: #e8e8ea;
+    --text-2: #a0a0aa;
+    --text-3: #70707a;
+    --indigo: #6366f1;
+    --orange: #ff6b3f;
+    --focus: rgba(99, 102, 241, 0.28);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Inter", "Segoe UI", sans-serif;
+    background:
+      linear-gradient(90deg, rgba(99, 102, 241, 0.09), transparent 30%, transparent 70%, rgba(255, 107, 63, 0.08)),
+      linear-gradient(180deg, var(--bg), #050506 82%);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 10, 11, 0.86);
+    backdrop-filter: blur(16px);
+    padding: 0 32px;
+    z-index: 10;
+  }
+
+  .nav-inner {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .logo { display: inline-flex; align-items: center; min-height: 38px; }
+  .logo-img { display: block; width: 132px; height: auto; }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  main {
+    width: min(100% - 40px, 1120px);
+    margin: 0 auto;
+    padding: 70px 0 96px;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  .intro {
+    padding-top: 20px;
+  }
+
+  .eyebrow {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    max-width: 560px;
+    font-size: clamp(38px, 6.4vw, 70px);
+    line-height: 1.04;
+    letter-spacing: 0;
+    margin-bottom: 22px;
+  }
+
+  .lead {
+    max-width: 560px;
+    color: var(--text-2);
+    font-size: 17px;
+  }
+
+  .contact-points {
+    display: grid;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .point {
+    border-left: 3px solid var(--accent);
+    padding: 10px 0 10px 14px;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .point strong {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .point.personal { --accent: var(--indigo); }
+  .point.team { --accent: var(--orange); }
+
+  .panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(21, 21, 26, 0.92);
+    padding: clamp(22px, 4vw, 34px);
+    box-shadow: 0 18px 56px rgba(0, 0, 0, 0.28);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .panel-title {
+    font-size: 24px;
+    line-height: 1.15;
+    font-weight: 800;
+  }
+
+  .mail-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 650;
+    padding: 0 11px;
+    white-space: nowrap;
+  }
+
+  form {
+    display: grid;
+    gap: 16px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .field {
+    display: grid;
+    gap: 7px;
+  }
+
+  label {
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-2);
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  }
+
+  input,
+  select {
+    height: 46px;
+    padding: 0 13px;
+  }
+
+  textarea {
+    min-height: 176px;
+    resize: vertical;
+    padding: 13px;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--indigo);
+    box-shadow: 0 0 0 3px var(--focus);
+    background: #121218;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .btn {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0 18px;
+    white-space: nowrap;
+  }
+
+  .btn:hover { border-color: #555564; background: #24242d; }
+
+  .btn-primary {
+    border-color: var(--orange);
+    background: var(--orange);
+    color: #070708;
+  }
+
+  .btn-primary:hover {
+    border-color: #ff8050;
+    background: #ff8050;
+  }
+
+  .status {
+    min-height: 20px;
+    color: var(--text-2);
+    font-size: 13px;
+  }
+
+  .preview {
+    display: none;
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0d0d11;
+    padding: 16px;
+  }
+
+  .preview.open { display: block; }
+
+  .preview-title {
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .preview-body {
+    color: var(--text-2);
+    font-family: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+  }
+
+  @media (max-width: 860px) {
+    .nav { height: auto; padding: 16px 20px; }
+    .nav-inner { align-items: flex-start; flex-direction: column; }
+    .nav-links { flex-wrap: wrap; }
+    main { width: min(100% - 28px, 1120px); padding-top: 44px; }
+    .hero { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .panel-head,
+    .actions { align-items: stretch; flex-direction: column; }
+    .mail-chip,
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="/" data-file-href="index.html" aria-label="SOAVIZ home">
+        <img class="logo-img" src="assets/brand/soaviz-logo-horizontal.png" alt="SOAVIZ">
+      </a>
+      <div class="nav-links">
+        <a href="/personal" data-file-href="personal-onepager.html">Personal</a>
+        <a href="/team" data-file-href="sales-onepager.html">Team</a>
+        <a href="/app" data-file-href="soaviz-studio.html">Studio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="intro">
+        <div class="eyebrow">Contact SOAVIZ</div>
+        <h1>문의는 바로 보낼 수 있게.</h1>
+        <p class="lead">도입 상담, 30분 데모, 플랜 문의, 보안 질문까지 한 번에 정리해서 SOAVIZ 팀으로 보냅니다.</p>
+        <div class="contact-points">
+          <div class="point personal">
+            <strong>Personal 문의</strong>
+            혼자 만드는 영상 작업실, 베타 사용, 개인 플랜 상담
+          </div>
+          <div class="point team">
+            <strong>Team 문의</strong>
+            제작팀 도입, 데모 요청, Business/Enterprise 상담
+          </div>
+        </div>
+      </div>
+
+      <section class="panel" aria-labelledby="contact-title">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Send Mail</div>
+            <h2 class="panel-title" id="contact-title">문의 메일 작성</h2>
+          </div>
+          <a class="mail-chip" href="mailto:ai@soaviz.com">ai@soaviz.com</a>
+        </div>
+
+        <form id="contact-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="name">이름</label>
+              <input id="name" name="name" autocomplete="name" required placeholder="홍길동">
+            </div>
+            <div class="field">
+              <label for="email">답장 받을 이메일</label>
+              <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="topic">문의 유형</label>
+              <select id="topic" name="topic" required>
+                <option value="demo">30분 데모 요청</option>
+                <option value="team">Team 도입 문의</option>
+                <option value="personal">Personal 베타 문의</option>
+                <option value="business">Business 플랜 문의</option>
+                <option value="enterprise">Enterprise 상담 요청</option>
+                <option value="privacy">개인정보 문의</option>
+                <option value="terms">이용약관 문의</option>
+                <option value="general">일반 문의</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="company">회사/팀</label>
+              <input id="company" name="company" autocomplete="organization" placeholder="SOAVIZ Studio">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="message">문의 내용</label>
+            <textarea id="message" name="message" required placeholder="현재 제작 방식, 팀 규모, 보고 싶은 데모 흐름을 적어주세요."></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">메일 보내기</button>
+            <button class="btn" type="button" id="copy-draft">내용 복사</button>
+          </div>
+          <div class="status" id="status" aria-live="polite"></div>
+        </form>
+
+        <div class="preview" id="preview" aria-live="polite">
+          <div class="preview-title">Mail Preview</div>
+          <div class="preview-body" id="preview-body"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const CONTACT_EMAIL = 'ai@soaviz.com';
+    const TOPIC_LABELS = {
+      demo: '30분 데모 요청',
+      team: 'Team 도입 문의',
+      personal: 'Personal 베타 문의',
+      business: 'Business 플랜 문의',
+      enterprise: 'Enterprise 상담 요청',
+      privacy: '개인정보 문의',
+      terms: '이용약관 문의',
+      general: '일반 문의'
+    };
+
+    function enableFileLinks() {
+      if (window.location.protocol !== 'file:') return;
+      document.querySelectorAll('[data-file-href]').forEach(function(link) {
+        link.setAttribute('href', link.getAttribute('data-file-href'));
+      });
+    }
+
+    function getDraft() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const company = document.getElementById('company').value.trim();
+      const topic = document.getElementById('topic').value;
+      const message = document.getElementById('message').value.trim();
+      const topicLabel = TOPIC_LABELS[topic] || TOPIC_LABELS.general;
+      const subject = `SOAVIZ ${topicLabel}`;
+      const body = [
+        `문의 유형: ${topicLabel}`,
+        `이름: ${name}`,
+        `이메일: ${email}`,
+        `회사/팀: ${company || '-'}`,
+        '',
+        '문의 내용:',
+        message
+      ].join('\n');
+      return { subject, body };
+    }
+
+    function updatePreview() {
+      const draft = getDraft();
+      document.getElementById('preview-body').textContent = `To: ${CONTACT_EMAIL}\nSubject: ${draft.subject}\n\n${draft.body}`;
+      document.getElementById('preview').classList.add('open');
+    }
+
+    function openMailClient() {
+      const draft = getDraft();
+      const href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`;
+      window.location.href = href;
+      document.getElementById('status').textContent = '메일 작성창을 열었습니다. 전송 버튼을 누르면 SOAVIZ로 전달됩니다.';
+    }
+
+    async function copyDraft() {
+      const draft = getDraft();
+      const text = `To: ${CONTACT_EMAIL}\nSubject: ${draft.subject}\n\n${draft.body}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        document.getElementById('status').textContent = '메일 내용이 복사되었습니다.';
+      } catch (_) {
+        document.getElementById('status').textContent = '복사를 지원하지 않는 브라우저입니다. 아래 미리보기에서 내용을 선택해 복사해주세요.';
+      }
+      updatePreview();
+    }
+
+    function applyTopicFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const topic = params.get('topic');
+      if (topic && TOPIC_LABELS[topic]) document.getElementById('topic').value = topic;
+    }
+
+    enableFileLinks();
+    applyTopicFromUrl();
+
+    document.querySelectorAll('input, select, textarea').forEach(function(field) {
+      field.addEventListener('input', updatePreview);
+      field.addEventListener('change', updatePreview);
+    });
+
+    document.getElementById('contact-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      if (!event.currentTarget.reportValidity()) return;
+      updatePreview();
+      openMailClient();
+    });
+
+    document.getElementById('copy-draft').addEventListener('click', function() {
+      const form = document.getElementById('contact-form');
+      if (!form.reportValidity()) return;
+      copyDraft();
+    });
+  </script>
+</body>
+</html>

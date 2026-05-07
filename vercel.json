@@ -17,6 +17,7 @@
     { "source": "/signup",      "destination": "/signup.html" },
     { "source": "/privacy",     "destination": "/privacy.html" },
     { "source": "/terms",       "destination": "/terms.html" },
+    { "source": "/contact",     "destination": "/contact.html" },
     { "source": "/mobile",      "destination": "/mobile.html" },
     { "source": "/docs",        "destination": "/docs/index.html" },
     { "source": "/roadmap",     "destination": "/deployment-roadmap.html" },
