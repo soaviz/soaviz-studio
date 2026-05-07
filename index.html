@@ -70,9 +70,15 @@
   }
 
   .brand {
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 1.4px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+  }
+
+  .brand-logo {
+    display: block;
+    width: 132px;
+    height: auto;
   }
 
   .nav-actions {
@@ -271,11 +277,13 @@
 <body>
   <div class="shell">
     <header class="nav" aria-label="Main">
-      <a class="brand" href="/" aria-label="SOAVIZ home">SOAVIZ</a>
+      <a class="brand" href="/" data-file-href="index.html" aria-label="SOAVIZ home">
+        <img class="brand-logo" src="assets/brand/soaviz-logo-horizontal.png" alt="SOAVIZ">
+      </a>
       <nav class="nav-actions">
-        <a class="nav-link" href="/personal">Personal</a>
-        <a class="nav-link" href="/team">Team</a>
-        <a class="app-link" href="/app">Studio 열기</a>
+        <a class="nav-link" href="/personal" data-file-href="personal-onepager.html">Personal</a>
+        <a class="nav-link" href="/team" data-file-href="sales-onepager.html">Team</a>
+        <a class="app-link" href="/app" data-file-href="soaviz-studio.html">Studio 열기</a>
       </nav>
     </header>
 
@@ -288,7 +296,7 @@
         </div>
 
         <div class="choices" aria-label="Start options">
-          <a class="choice choice-personal" href="/personal">
+          <a class="choice choice-personal" href="/personal" data-file-href="personal-onepager.html">
             <div class="choice-body">
               <div class="choice-kicker">Personal</div>
               <h2>혼자 만드는 AI 영상 작업실</h2>
@@ -300,7 +308,7 @@
             </div>
           </a>
 
-          <a class="choice choice-team" href="/team">
+          <a class="choice choice-team" href="/team" data-file-href="sales-onepager.html">
             <div class="choice-body">
               <div class="choice-kicker">Team</div>
               <h2>AI 영상 제작팀의 운영 OS</h2>
@@ -320,5 +328,13 @@
       <span>SOAVIZ Studio</span>
     </footer>
   </div>
+  <script>
+    (function enableFileLinks() {
+      if (window.location.protocol !== 'file:') return;
+      document.querySelectorAll('[data-file-href]').forEach(function(link) {
+        link.setAttribute('href', link.getAttribute('data-file-href'));
+      });
+    })();
+  </script>
 </body>
 </html>
