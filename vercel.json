@@ -15,6 +15,8 @@
     { "source": "/app",         "destination": "/soaviz-studio.html" },
     { "source": "/login",       "destination": "/signup.html" },
     { "source": "/signup",      "destination": "/signup.html" },
+    { "source": "/privacy",     "destination": "/privacy.html" },
+    { "source": "/terms",       "destination": "/terms.html" },
     { "source": "/mobile",      "destination": "/mobile.html" },
     { "source": "/docs",        "destination": "/docs/index.html" },
     { "source": "/roadmap",     "destination": "/deployment-roadmap.html" },

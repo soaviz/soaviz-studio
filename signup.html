@@ -830,7 +830,7 @@
       </form>
 
       <div class="auth-foot">
-        계속하면 <a id="auth-policy">개인정보 처리방침</a> 및 <a id="auth-terms">이용약관</a>에 동의하는 것으로 간주합니다. 만 14세 이상.
+        계속하면 <a id="auth-policy" href="/privacy" data-file-href="privacy.html">개인정보 처리방침</a> 및 <a id="auth-terms" href="/terms" data-file-href="terms.html">이용약관</a>에 동의하는 것으로 간주합니다. 만 14세 이상.
       </div>
     </section>
   </main>
@@ -1856,13 +1856,11 @@
       }
     });
 
-    /* Policy / Terms */
-    $('#auth-policy').addEventListener('click', () => {
-      alert('개인정보 처리방침\n\n• 모든 데이터는 본인 브라우저에만 저장 (IndexedDB + localStorage)\n• AES-GCM 256 + PBKDF2 250k 암호화\n• 외부 전송: BYOK API 호출 시 각 제공자(ElevenLabs/OpenAI/Anthropic/Replicate)로 직접만\n• Google 로그인 시 ID 토큰의 email/name/picture만 사용. 토큰 저장 X.\n• Export 시 키는 절대 포함되지 않음');
-    });
-    $('#auth-terms').addEventListener('click', () => {
-      alert('이용약관\n\n• 만 14세 이상 사용 가능 (만 18세 미만은 보호자 동의 권장)\n• 생성된 콘텐츠의 저작권/이용 책임은 사용자에게 있음\n• 마스터 패스프레이즈 분실 시 복구 불가 — 안전한 곳에 백업\n• 본 서비스는 "있는 그대로" 제공되며 무중단을 보장하지 않음\n• BYOK — 본인 API 키 사용, 각 제공자 약관도 준수');
-    });
+    if (window.location.protocol === 'file:') {
+      document.querySelectorAll('[data-file-href]').forEach(function(link) {
+        link.setAttribute('href', link.getAttribute('data-file-href'));
+      });
+    }
   </script>
 </body>
 </html>

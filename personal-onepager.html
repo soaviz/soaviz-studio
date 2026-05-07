@@ -68,10 +68,15 @@
   }
 
   .logo {
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+  }
+
+  .logo-img {
+    display: block;
+    width: 132px;
+    height: auto;
   }
 
   .nav-links {
@@ -865,15 +870,17 @@
 <!-- Nav -->
 <nav class="nav">
   <div class="nav-inner">
-    <div class="logo">SOAVIZ</div>
+    <a class="logo" href="/" data-file-href="index.html" aria-label="SOAVIZ home">
+      <img class="logo-img" src="assets/brand/soaviz-logo-horizontal.png" alt="SOAVIZ">
+    </a>
     <div class="nav-links">
       <a class="nav-link" href="#problem">문제</a>
       <a class="nav-link" href="#solution">제품</a>
       <a class="nav-link" href="#workflow">워크플로우</a>
       <a class="nav-link" href="#pricing">요금</a>
       <a class="nav-link" href="#faq">FAQ</a>
-      <button class="btn btn-ghost">로그인</button>
-      <button class="btn btn-primary" onclick="document.getElementById('cta').scrollIntoView()">베타 시작</button>
+      <a class="btn btn-ghost" href="/login" data-file-href="signup.html#login">로그인</a>
+      <a class="btn btn-primary" href="#cta">베타 시작</a>
     </div>
   </div>
 </nav>
@@ -893,8 +900,8 @@
         <strong style="color: var(--text);">1인 AI 크리에이터의 작업실</strong>입니다.
       </p>
       <div class="hero-cta">
-        <button class="btn btn-primary btn-lg" onclick="document.getElementById('cta').scrollIntoView()">베타 무료로 시작 →</button>
-        <button class="btn btn-lg" onclick="document.getElementById('solution').scrollIntoView()">기능 둘러보기</button>
+        <a class="btn btn-primary btn-lg" href="#cta">베타 무료로 시작 →</a>
+        <a class="btn btn-lg" href="#solution">기능 둘러보기</a>
       </div>
       <div class="hero-meta">
         <span><span class="check">✓</span> 베타 무료 · 카드 등록 X</span>
@@ -1275,7 +1282,7 @@
           <li>워터마크 포함 Export</li>
           <li>API 연결 불가</li>
         </ul>
-        <button class="btn price-cta">시작하기</button>
+        <a class="btn price-cta" href="/signup" data-file-href="signup.html">시작하기</a>
       </div>
 
       <div class="price-card recommended">
@@ -1290,7 +1297,7 @@
           <li>샷 라이브러리 · 버전 누적</li>
           <li>고급 Export · 워터마크 X</li>
         </ul>
-        <button class="btn btn-primary price-cta">베타 무료로 시작</button>
+        <a class="btn btn-primary price-cta" href="/signup" data-file-href="signup.html">베타 무료로 시작</a>
       </div>
 
       <div class="price-card">
@@ -1304,7 +1311,7 @@
           <li>Delivery Package</li>
           <li>Workspace API Vault</li>
         </ul>
-        <button class="btn price-cta">팀 시작하기</button>
+        <a class="btn price-cta" href="/team" data-file-href="sales-onepager.html">팀 시작하기</a>
       </div>
 
       <div class="price-card">
@@ -1318,7 +1325,7 @@
           <li>Approval History PDF</li>
           <li>Model Usage 리포트</li>
         </ul>
-        <button class="btn price-cta">문의하기</button>
+        <a class="btn price-cta" href="mailto:hello@soaviz.studio?subject=SOAVIZ%20Business%20%ED%94%8C%EB%9E%9C%20%EB%AC%B8%EC%9D%98">문의하기</a>
       </div>
 
       <div class="price-card">
@@ -1332,7 +1339,7 @@
           <li>감사·보안 정책 커스텀</li>
           <li>전담 CSM</li>
         </ul>
-        <button class="btn price-cta">상담 요청</button>
+        <a class="btn price-cta" href="mailto:hello@soaviz.studio?subject=SOAVIZ%20Enterprise%20%EC%83%81%EB%8B%B4%20%EC%9A%94%EC%B2%AD">상담 요청</a>
       </div>
     </div>
 
@@ -1420,9 +1427,9 @@
       쓰던 도구는 그대로 두고, SOAVIZ를 한번만 켜보세요.
     </p>
     <div class="final-cta-buttons">
-      <button class="btn btn-primary btn-lg">🚀 베타 무료로 시작</button>
-      <button class="btn btn-lg">기능 다시 보기</button>
-      <button class="btn btn-ghost btn-lg">문의하기</button>
+      <a class="btn btn-primary btn-lg" href="/signup" data-file-href="signup.html">베타 무료로 시작</a>
+      <a class="btn btn-lg" href="#solution">기능 다시 보기</a>
+      <a class="btn btn-ghost btn-lg" href="mailto:hello@soaviz.studio?subject=SOAVIZ%20Personal%20%EB%AC%B8%EC%9D%98">문의하기</a>
     </div>
     <div style="margin-top: 24px; font-size: 12px; color: var(--text-3);">
       hello@soaviz.studio · 답변까지 평균 6시간
@@ -1433,12 +1440,12 @@
 <!-- Footer -->
 <footer class="footer">
   <div class="footer-links">
-    <a>제품</a>
-    <a>요금</a>
-    <a>보안</a>
-    <a>개인정보처리방침</a>
-    <a>이용약관</a>
-    <a>문의</a>
+    <a href="#solution">제품</a>
+    <a href="#pricing">요금</a>
+    <a href="#faq">보안</a>
+    <a href="/privacy" data-file-href="privacy.html">개인정보처리방침</a>
+    <a href="/terms" data-file-href="terms.html">이용약관</a>
+    <a href="mailto:hello@soaviz.studio?subject=SOAVIZ%20%EB%AC%B8%EC%9D%98">문의</a>
   </div>
   <div>© 2026 SOAVIZ Studio. AI 영상 제작팀의 운영 OS.</div>
 </footer>
@@ -1449,6 +1456,14 @@ function toggleFaq(el) {
   document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
   if (!wasOpen) el.classList.add('open');
 }
+
+function enableFileLinks() {
+  if (window.location.protocol !== 'file:') return;
+  document.querySelectorAll('[data-file-href]').forEach(function(link) {
+    link.setAttribute('href', link.getAttribute('data-file-href'));
+  });
+}
+enableFileLinks();
 
 // Smooth scroll for anchor links is handled by CSS scroll-behavior
 </script>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ — 이용약관</title>
+<meta name="description" content="SOAVIZ 베타 서비스의 이용 기준입니다.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0b;
+    --surface: #15151a;
+    --border: #2a2a32;
+    --text: #e8e8ea;
+    --text-2: #a0a0aa;
+    --text-3: #70707a;
+    --accent: #ff6b3f;
+  }
+  body {
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Inter", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .nav {
+    position: sticky;
+    top: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 10, 11, 0.86);
+    backdrop-filter: blur(16px);
+    padding: 0 32px;
+  }
+  .nav-inner {
+    width: min(100%, 1040px);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .logo { display: inline-flex; align-items: center; min-height: 38px; }
+  .logo-img { display: block; width: 132px; height: auto; }
+  .nav-links { display: flex; align-items: center; gap: 18px; color: var(--text-2); font-size: 13px; }
+  .nav-links a:hover { color: var(--text); }
+  main {
+    width: min(100% - 40px, 880px);
+    margin: 0 auto;
+    padding: 72px 0 96px;
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.08;
+    letter-spacing: 0;
+    margin-bottom: 18px;
+  }
+  .lead { color: var(--text-2); font-size: 17px; max-width: 680px; }
+  .doc {
+    margin-top: 42px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: clamp(24px, 4vw, 36px);
+  }
+  h2 { font-size: 20px; margin: 28px 0 10px; }
+  h2:first-child { margin-top: 0; }
+  p, li { color: var(--text-2); font-size: 15px; }
+  ul { padding-left: 20px; }
+  .note {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 13px;
+  }
+  @media (max-width: 720px) {
+    .nav { height: auto; padding: 16px 20px; }
+    .nav-inner { align-items: flex-start; flex-direction: column; }
+    .nav-links { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="/" data-file-href="index.html" aria-label="SOAVIZ home">
+        <img class="logo-img" src="assets/brand/soaviz-logo-horizontal.png" alt="SOAVIZ">
+      </a>
+      <div class="nav-links">
+        <a href="/personal" data-file-href="personal-onepager.html">Personal</a>
+        <a href="/team" data-file-href="sales-onepager.html">Team</a>
+        <a href="/app" data-file-href="soaviz-studio.html">Studio</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="eyebrow">Terms</div>
+    <h1>이용약관</h1>
+    <p class="lead">SOAVIZ 베타 서비스는 AI 영상 제작 워크플로우를 더 빠르고 안전하게 운영하기 위한 도구입니다.</p>
+
+    <section class="doc">
+      <h2>이용 대상</h2>
+      <p>SOAVIZ는 만 14세 이상 사용자를 대상으로 합니다. 만 18세 미만 사용자는 보호자 또는 법정대리인의 동의를 권장합니다.</p>
+
+      <h2>사용자의 책임</h2>
+      <ul>
+        <li>생성한 콘텐츠의 사용 권리, 초상권, 저작권, 배포 책임은 사용자에게 있습니다.</li>
+        <li>연결한 API 키와 각 AI 제공자의 이용약관 준수 책임은 사용자에게 있습니다.</li>
+        <li>타인의 권리를 침해하거나 불법적인 목적의 콘텐츠 제작에 사용할 수 없습니다.</li>
+      </ul>
+
+      <h2>서비스 제공</h2>
+      <p>베타 서비스는 기능 실험과 품질 개선을 위해 변경될 수 있습니다. SOAVIZ는 안정적인 운영을 위해 노력하지만 무중단 제공을 보장하지는 않습니다.</p>
+
+      <h2>BYOK 정책</h2>
+      <p>SOAVIZ는 API 비용에 마진을 붙이지 않는 BYOK 구조를 지향합니다. 사용자는 본인 API 키의 보관, 사용량, 과금 상태를 직접 관리해야 합니다.</p>
+
+      <h2>문의</h2>
+      <p>이용약관 관련 문의는 <a href="mailto:hello@soaviz.studio?subject=SOAVIZ%20%EC%9D%B4%EC%9A%A9%EC%95%BD%EA%B4%80%20%EB%AC%B8%EC%9D%98">hello@soaviz.studio</a>로 보내주세요.</p>
+
+      <p class="note">최종 업데이트: 2026년 5월 7일. 이 문서는 베타 운영 기준이며, 정식 출시 전 법무 검토를 거쳐 보완될 수 있습니다.</p>
+    </section>
+  </main>
+
+  <script>
+    if (window.location.protocol === 'file:') {
+      document.querySelectorAll('[data-file-href]').forEach(function(link) {
+        link.setAttribute('href', link.getAttribute('data-file-href'));
+      });
+    }
+  </script>
+</body>
+</html>
