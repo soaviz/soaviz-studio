@@ -22212,9 +22212,9 @@
       .swb-ws-item.active[data-swb-ws="team"] .swb-ws-label { color: #ff6b3f; }
       .swb-ws-item.active .swb-ws-meta { opacity: 0.85; }
 
-      /* Sidebar global context line — vertical stripe follows tab */
-      body.swb-ctx-personal .sidebar { box-shadow: inset 3px 0 0 0 rgba(99,102,241,0.55); }
-      body.swb-ctx-team .sidebar { box-shadow: inset 3px 0 0 0 rgba(255,107,63,0.55); }
+      /* 좌측 컨텍스트 세로줄 제거 — 깔끔한 사이드바 (사용자 요청) */
+      body.swb-ctx-personal .sidebar,
+      body.swb-ctx-team .sidebar { box-shadow: none; }
 
       /* === COMPLETE SEPARATION: hide menu items belonging to inactive context === */
       body.swb-ctx-personal [data-ws="team"] { display: none !important; }
@@ -22222,56 +22222,52 @@
 
       @media (max-width: 800px) {
         .swb-ws-list, .swb-ws-section-label { display:none; }
-        body.swb-ctx-personal .sidebar, body.swb-ctx-team .sidebar { box-shadow: none; }
       }
     </style>
     <!-- WORKSPACE 탭 제거됨 (개인 작업 전용으로 전면 교체)
          비즈니스 계정은 별도 앱으로 분리 운영 예정 — 토큰·데이터 혼동 방지 -->
     <div class="nav-section-label" style="display:flex; align-items:center; justify-content:space-between; padding-right:12px;">
       <span>WORKSPACE</span>
-      <span class="swb-ws-pill personal" style="display:inline-block; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:0.5px; background: rgba(99,102,241,0.12); color:#6366f1; border:1px solid rgba(99,102,241,0.40);">PERSONAL</span>
+      <span style="display:inline-block; padding:1px 7px; border-radius:4px; font-size:9px; font-weight:600; letter-spacing:0.04em; background: transparent; color: var(--text-faint); border:1px solid var(--border);">PERSONAL</span>
     </div>
 
     <!-- ═══ CONTEXT TOOLS (Personal vs Team) ═══ -->
     <style>
       .swb-ctx-label { display:flex; align-items:center; justify-content:space-between; padding-right: 12px; }
-      .swb-ctx-tag { padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:0.4px; text-transform:none; }
-      .swb-ctx-tag.personal { background: rgba(99,102,241,0.10); color:#6366f1; border:1px solid rgba(99,102,241,0.35); }
-      .swb-ctx-tag.team { background: rgba(255,107,63,0.10); color:#ff6b3f; border:1px solid rgba(255,107,63,0.35); }
+      .swb-ctx-tag { padding:1px 6px; border-radius:4px; font-size:9px; font-weight:600; letter-spacing:0.04em; text-transform:none; }
+      .swb-ctx-tag.personal { background: transparent; color: var(--text-faint); border:1px solid var(--border); }
+      .swb-ctx-tag.team { background: transparent; color: var(--text-faint); border:1px solid var(--border); }
+      /* swb-ctx-link — 일반 nav-item 스타일 그대로 사용 (통일된 SVG 픽토그램) */
       .swb-ctx-link { display:flex !important; align-items:center; }
-      .swb-ctx-link-dot { width:7px; height:7px; border-radius:50%; margin-right:9px; flex-shrink:0; box-shadow: 0 0 0 2px rgba(0,0,0,0.0); }
-      .swb-ctx-link-dot.personal { background:#6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.18); }
-      .swb-ctx-link-dot.team { background:#ff6b3f; box-shadow: 0 0 0 2px rgba(255,107,63,0.18); }
       .swb-ctx-link-meta { margin-left:auto; font-size:9px; color: var(--text-faint); font-weight:400; padding-left:6px; }
-      /* Inactive-context items dimmed */
-      body.swb-ctx-personal .swb-ctx-link.team { opacity: 0.45; }
-      body.swb-ctx-personal .swb-ctx-link.team:hover { opacity: 0.85; }
-      body.swb-ctx-team .swb-ctx-link.personal { opacity: 0.55; }
-      body.swb-ctx-team .swb-ctx-link.personal:hover { opacity: 0.9; }
-      /* Active-context items get subtle bg highlight on hover */
-      body.swb-ctx-personal .swb-ctx-link.personal:hover { background: rgba(99,102,241,0.06); }
-      body.swb-ctx-team .swb-ctx-link.team:hover { background: rgba(255,107,63,0.06); }
       @media (max-width: 800px) {
         .swb-ctx-label, .swb-ctx-link { display: none !important; }
       }
     </style>
 
     <div class="nav-section-label swb-ctx-label" data-ws="personal">
-      <span>🟣 PERSONAL</span>
+      <span>PERSONAL</span>
       <span class="swb-ctx-tag personal">내 API</span>
     </div>
     <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 API Vault', false); return false;" title="개인 API Key 관리 — 본인 키 암호화 저장">
-      <span class="swb-ctx-link-dot personal"></span>
-      <span>내 API Vault</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+      </svg>
+      내 API Vault
       <span class="swb-ctx-link-meta">BYOK</span>
     </a>
     <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 프로젝트', false, 'projects'); return false;" title="개인 프로젝트 목록">
-      <span class="swb-ctx-link-dot personal"></span>
-      <span>내 프로젝트</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7h18M3 12h18M3 17h12"/>
+      </svg>
+      내 프로젝트
     </a>
     <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 라이브러리', false, 'library'); return false;" title="개인 라이브러리">
-      <span class="swb-ctx-link-dot personal"></span>
-      <span>내 라이브러리</span>
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      내 라이브러리
     </a>
 
     <!-- TEAM 메뉴 제거 + 비즈니스 계정 문의는 가이드 안으로 이동 (docs/index.html) -->
@@ -22484,12 +22480,11 @@
         border-color: rgba(255, 107, 63, 0.65);
         transform: translateY(-1px);
       }
-      .biz-switch-btn .biz-dot {
-        width: 9px; height: 9px;
-        border-radius: 50%;
-        background: #ff6b3f;
-        box-shadow: 0 0 0 2px rgba(255, 107, 63, 0.20);
+      .biz-switch-btn .biz-ico {
+        width: 18px;
+        height: 18px;
         flex-shrink: 0;
+        color: #ff6b3f;
       }
       .biz-switch-btn .biz-text { flex: 1; }
       .biz-switch-btn .biz-label {
@@ -22516,7 +22511,12 @@
       }
     </style>
     <button type="button" class="biz-switch-btn" onclick="openBizLoginPopup()" title="비즈니스 팀 워크스페이스로 로그인 — 새 창">
-      <span class="biz-dot"></span>
+      <svg class="biz-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
       <span class="biz-text">
         <span class="biz-label">팀 작업</span>
         <span class="biz-sub">비즈니스 계정 로그인 ↗</span>
