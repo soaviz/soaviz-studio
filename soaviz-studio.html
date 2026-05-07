@@ -24154,6 +24154,97 @@
 
     <!-- ================ PAGE: LANDING ================ -->
     <section id="page-landing" class="page landing-page">
+      <!-- 로고 클릭 시 첫 화면: personal-onepager.html (마케팅·기능 소개) -->
+      <style>
+        .landing-onepager-wrap {
+          position: relative;
+          width: 100%;
+          margin: 0 0 24px;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          background: var(--bg);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        }
+        .landing-onepager-bar {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 16px;
+          background: linear-gradient(180deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04));
+          border-bottom: 1px solid rgba(99, 102, 241, 0.30);
+        }
+        .landing-onepager-bar .lop-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #6366f1;
+          letter-spacing: 0.04em;
+        }
+        .landing-onepager-bar .lop-title svg {
+          width: 14px;
+          height: 14px;
+        }
+        .landing-onepager-bar .lop-actions {
+          display: flex;
+          gap: 6px;
+        }
+        .landing-onepager-bar .lop-btn {
+          padding: 6px 12px;
+          border-radius: 7px;
+          font-size: 12px;
+          font-weight: 600;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          color: var(--text);
+          cursor: pointer;
+          font-family: inherit;
+          transition: 0.15s;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .landing-onepager-bar .lop-btn:hover {
+          border-color: rgba(99, 102, 241, 0.50);
+          color: #6366f1;
+        }
+        .landing-onepager-iframe {
+          display: block;
+          width: 100%;
+          height: 100vh;
+          min-height: 720px;
+          border: 0;
+          background: var(--bg);
+        }
+        @media (max-width: 800px) {
+          .landing-onepager-wrap { margin: 0 0 18px; border-radius: 0; border-left: 0; border-right: 0; }
+          .landing-onepager-iframe { min-height: 640px; }
+          .landing-onepager-bar .lop-actions .lop-btn:not(:last-child) { display: none; }
+        }
+      </style>
+      <div class="landing-onepager-wrap">
+        <div class="landing-onepager-bar">
+          <div class="lop-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+            SOAVIZ — 1인 AI 영상 크리에이터의 작업실
+          </div>
+          <div class="lop-actions">
+            <a class="lop-btn" href="javascript:void(0)" onclick="document.querySelector('#soavizLanding')?.scrollIntoView({behavior:'smooth'})" title="아래로 스크롤하여 베타 화면 보기">↓ 베타 화면 보기</a>
+            <a class="lop-btn" href="personal-onepager.html" target="_blank" title="새 탭에서 전체 페이지 열기">↗ 새 탭</a>
+          </div>
+        </div>
+        <iframe class="landing-onepager-iframe" src="personal-onepager.html" title="SOAVIZ Personal — 1인 크리에이터 소개" loading="lazy"></iframe>
+      </div>
+
       <section class="soaviz-landing" id="soavizLanding">
         <style>
           /* ── BETA LANDING OVERRIDES ── */
