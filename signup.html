@@ -920,16 +920,35 @@
     // Google OAuth Client ID 기본값 (공개 식별자, secret 아님 — 임베드 안전)
     const DEFAULT_GOOGLE_CLIENT_ID = '886041789747-en0i68q11ojgtg7hpujasm5idni9emsq.apps.googleusercontent.com';
 
-    /* 부모 창(opener)에 인증 성공 알림 + 자체 닫기 */
+    /* 부모 창(opener)에 인증 성공 알림 + 자체 닫기
+       - file:// 같은 크로스오리진에서도 동작하도록 BroadcastChannel 동시 사용
+       - 팝업 컨텍스트는 window.name === 'soaviz_auth'로 robust 판정 */
     function notifyParentAuthSuccess() {
+      const isPopup = (window.name === 'soaviz_auth');
+      let parentReachable = false;
+      // 1) postMessage (same-origin or relaxed CORS)
       try {
         if (window.opener && !window.opener.closed) {
           window.opener.postMessage('soaviz:auth-success', '*');
-          // 부모 새로고침은 부모가 처리; 우리는 닫기만
-          setTimeout(() => { try { window.close(); } catch {} }, 400);
-          return true;
+          parentReachable = true;
         }
       } catch {}
+      // 2) BroadcastChannel — file://·cross-origin 안전한 백업 신호
+      try {
+        const bc = new BroadcastChannel('soaviz-auth');
+        bc.postMessage('soaviz:auth-success');
+        bc.close();
+      } catch {}
+      // 3) localStorage 핑 — 부모의 storage 이벤트로 감지 가능
+      try {
+        localStorage.setItem('soaviz.auth.popup.success', String(Date.now()));
+        localStorage.removeItem('soaviz.auth.popup.success');
+      } catch {}
+      if (isPopup || parentReachable) {
+        // 팝업이면 무조건 닫기 (returnTo redirect 차단)
+        setTimeout(() => { try { window.close(); } catch {} }, 400);
+        return true;
+      }
       return false;
     }
     let _gsiInited = false;

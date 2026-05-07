@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ — Project Workbench</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #15151a;
+    --surface-2: #1c1c22;
+    --surface-3: #25252d;
+    --border: #2a2a32;
+    --border-light: #35353f;
+    --text: #e8e8ea;
+    --text-2: #8e8e95;
+    --text-3: #5e5e65;
+    --accent: #ff6b3f;
+    --accent-dim: rgba(255, 107, 63, 0.15);
+    --accent-soft: rgba(255, 107, 63, 0.08);
+
+    --status-planning: #6b7280;
+    --status-production: #f0c419;
+    --status-review: #3b82f6;
+    --status-approved: #10b981;
+    --status-delivered: #8b5cf6;
+
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --info: #3b82f6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    overflow: hidden;
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mockup-banner {
+    background: linear-gradient(90deg, #2a1810, #1f1f26);
+    border-bottom: 1px solid var(--accent);
+    padding: 6px 24px;
+    font-size: 12px;
+    color: var(--text-2);
+    text-align: center;
+  }
+  .mockup-banner strong { color: var(--accent); }
+
+  .app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    height: calc(100vh - 28px);
+  }
+
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .logo {
+    padding: 0 20px 24px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+
+  .nav-item {
+    padding: 9px 20px;
+    cursor: pointer;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    transition: 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--surface-2); color: var(--text); }
+  .nav-item.active { background: var(--surface-2); color: var(--text); border-left-color: var(--accent); }
+
+  .nav-section {
+    color: var(--text-3);
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 18px 20px 6px;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+
+  .main { display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .breadcrumb { color: var(--text-2); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb .current { color: var(--text); font-weight: 600; }
+  .breadcrumb .link { cursor: pointer; }
+  .breadcrumb .link:hover { color: var(--text); }
+
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .content { flex: 1; overflow: auto; padding: 24px; padding-bottom: 80px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .btn {
+    background: var(--surface-3);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.15s;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--border-light); }
+
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #0a0a0b; font-weight: 600; }
+  .btn-primary:hover { background: #ff8050; border-color: #ff8050; }
+
+  .btn-ghost { background: transparent; border: 1px solid transparent; }
+  .btn-ghost:hover { background: var(--surface-2); }
+
+  .btn-success { background: var(--success); border-color: var(--success); color: #0a0a0b; font-weight: 600; }
+  .btn-success:hover { background: #14d390; border-color: #14d390; }
+
+  .btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
+
+  .btn-warn { background: transparent; border-color: var(--warning); color: var(--warning); }
+  .btn-warn:hover { background: rgba(245,158,11,0.1); }
+
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  .btn-locked {
+    background: var(--surface-2);
+    color: var(--text-3);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .btn-locked:hover { color: var(--text-2); border-color: var(--border-light); }
+
+  /* API Vault */
+  .api-vault-btn { position: relative; }
+
+  .api-vault-pill {
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 18px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.15s;
+  }
+  .api-vault-pill:hover { border-color: var(--accent); }
+
+  .api-vault-pill .pulse {
+    width: 7px; height: 7px;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .api-vault-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    width: 300px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    z-index: 100;
+    overflow: hidden;
+    display: none;
+  }
+  .api-vault-dropdown.open { display: block; }
+
+  .api-vault-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .api-vault-mode {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .api-service {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .api-service:last-of-type { border-bottom: none; }
+  .api-service .svc-info { display: flex; align-items: center; gap: 10px; }
+  .api-service .svc-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .api-service.connected .svc-dot { background: var(--success); }
+  .api-service.disconnected .svc-dot { background: var(--text-3); }
+  .api-service.disconnected { color: var(--text-3); }
+
+  .api-vault-footer {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--accent);
+    text-align: center;
+  }
+  .api-vault-footer:hover { background: var(--surface-3); }
+
+  /* Project dashboard */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+
+  .page-title { font-size: 22px; font-weight: 700; }
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+  }
+  .project-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .project-thumb {
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    position: relative;
+  }
+
+  .project-type-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .project-type-badge.team { background: var(--accent); color: #0a0a0b; }
+
+  .project-info { padding: 14px 16px; }
+  .project-name { font-weight: 600; margin-bottom: 4px; }
+  .project-client { font-size: 12px; color: var(--text-2); margin-bottom: 12px; }
+
+  .project-meta { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+
+  .progress-dots { display: flex; gap: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .dot.filled { background: var(--accent); }
+
+  .deadline { color: var(--text-2); }
+  .deadline.urgent { color: var(--warning); font-weight: 600; }
+
+  .activity-section { margin-top: 32px; }
+
+  .section-title {
+    font-size: 11px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;
+  }
+
+  .activity-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .activity-item .time { color: var(--text-3); margin-right: 8px; font-size: 11px; display: inline-block; min-width: 60px; }
+  .activity-item strong { color: var(--text); font-weight: 500; }
+
+  /* Workbench Header */
+  .workbench-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .workbench-meta { flex: 1; min-width: 0; }
+
+  .workbench-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .workbench-title { font-size: 20px; font-weight: 700; }
+
+  .project-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .project-type.personal { background: var(--surface-3); color: var(--text-2); border: 1px solid var(--border); }
+  .project-type.team { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); }
+
+  .workbench-sub { color: var(--text-2); font-size: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .workbench-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+  /* Tabs */
+  .project-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    align-items: center;
+  }
+
+  .tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: var(--text-2);
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+  .tab-spacer { flex: 1; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 12px;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-chip:hover { border-color: var(--border-light); color: var(--text); }
+  .filter-chip.active { background: var(--accent); border-color: var(--accent); color: #0a0a0b; font-weight: 600; }
+
+  .filter-chip .count {
+    background: rgba(255,255,255,0.15);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    margin-left: 2px;
+  }
+  .filter-chip.active .count { background: rgba(0,0,0,0.2); }
+
+  /* Kanban */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    height: calc(100vh - 380px);
+    min-height: 460px;
+  }
+
+  .column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .column-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    flex-shrink: 0;
+  }
+
+  .column-title { display: flex; align-items: center; gap: 8px; }
+  .column-title-en { font-size: 11px; }
+  .column-title-ko { font-size: 10px; color: var(--text-3); font-weight: 500; margin-left: 4px; text-transform: none; letter-spacing: 0; }
+
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-planning .status-dot, .pill.status-planning .status-dot { background: var(--status-planning); }
+  .status-production .status-dot, .pill.status-production .status-dot { background: var(--status-production); }
+  .status-review .status-dot, .pill.status-review .status-dot { background: var(--status-review); }
+  .status-approved .status-dot, .pill.status-approved .status-dot { background: var(--status-approved); }
+  .status-delivered .status-dot, .pill.status-delivered .status-dot { background: var(--status-delivered); }
+
+  .column-count {
+    background: var(--surface-3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--text-2);
+  }
+
+  .column-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: 0.15s;
+  }
+  .column-body.drag-over { background: var(--accent-dim); }
+  .column-body:empty::after {
+    content: '비어있음';
+    color: var(--text-3);
+    font-size: 11px;
+    text-align: center;
+    padding: 16px;
+    font-style: italic;
+  }
+
+  .shot-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .shot-card:hover { border-color: var(--border-light); transform: translateY(-1px); }
+  .shot-card.dragging { opacity: 0.4; }
+
+  .shot-thumb {
+    height: 80px;
+    background: #0f0f15;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 18px;
+  }
+  .shot-thumb.thumb-empty {
+    background: repeating-linear-gradient(45deg, #15151a, #15151a 8px, #1a1a22 8px, #1a1a22 16px);
+  }
+  .shot-thumb.thumb-blue { background: linear-gradient(135deg, #1a2540, #2a3a5a); }
+  .shot-thumb.thumb-warm { background: linear-gradient(135deg, #2a1f15, #3a2a1f); }
+  .shot-thumb.thumb-purple { background: linear-gradient(135deg, #2a1a3a, #3a2540); }
+  .shot-thumb.thumb-green { background: linear-gradient(135deg, #1a2a1f, #2a3a25); }
+  .shot-thumb.thumb-red { background: linear-gradient(135deg, #2a1518, #3a2025); }
+
+  .shot-progress {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(0,0,0,0.4);
+  }
+  .shot-progress-bar { height: 100%; background: var(--status-production); }
+
+  .shot-info { padding: 8px 10px; }
+
+  .shot-code-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 3px;
+    align-items: center;
+  }
+
+  .shot-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shot-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-2);
+    flex-wrap: wrap;
+  }
+
+  /* Next Action pill */
+  .next-action-pill {
+    margin-top: 8px;
+    padding: 5px 10px;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    font-size: 11px;
+    color: var(--text-2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+  }
+  .next-action-pill.tone-accent { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .next-action-pill.tone-warn { border-color: var(--warning); color: var(--warning); background: rgba(245,158,11,0.08); }
+  .next-action-pill.tone-success { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.08); }
+  .next-action-pill .arrow { font-weight: 700; }
+
+  .badge { background: var(--surface-3); padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .badge-warn { background: #4a3010; color: var(--warning); }
+  .badge-danger { background: #4a1518; color: var(--danger); }
+  .badge-feedback { background: #4a1518; color: var(--danger); }
+  .badge-due { background: #4a3010; color: var(--warning); }
+
+  .avatar {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #0a0a0b;
+    flex-shrink: 0;
+  }
+
+  .avatar-stack { display: inline-flex; }
+  .avatar-stack .avatar { border: 2px solid var(--bg); margin-left: -6px; }
+  .avatar-stack .avatar:first-child { margin-left: 0; }
+
+  /* DB View */
+  .db-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .view-switcher {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .view-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    font-family: inherit;
+    transition: 0.1s;
+  }
+  .view-btn:hover { color: var(--text); }
+  .view-btn.active { background: var(--accent); color: #0a0a0b; font-weight: 600; }
+
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: auto;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1100px; }
+  thead { background: var(--surface-2); }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody tr { cursor: pointer; transition: 0.1s; }
+  tbody tr:hover td { background: var(--surface-2); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: var(--surface-3);
+  }
+  .pill .status-dot { width: 6px; height: 6px; }
+
+  .table-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    color: var(--text-3);
+    font-size: 12px;
+  }
+
+  /* API source tag */
+  .api-source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text);
+  }
+  .api-source-tag.workspace { border-color: var(--accent); color: var(--accent); }
+  .api-source-tag.personal { border-color: var(--text-3); color: var(--text-2); }
+  .api-source-tag.demo { border-color: var(--text-3); color: var(--text-3); font-style: italic; }
+  .api-source-tag .tiny-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--success); }
+
+  /* Drawer */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none;
+    transition: 0.2s; z-index: 50;
+  }
+  .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed;
+    top: 0; right: 0;
+    width: 480px;
+    max-width: 92vw;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 51;
+    transform: translateX(100%);
+    transition: 0.25s ease-out;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .drawer-title { font-weight: 600; font-size: 15px; }
+  .drawer-title .code { color: var(--text-3); margin-right: 8px; font-weight: 400; font-family: ui-monospace, monospace; }
+
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+  .drawer-footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .drawer-footer .btn { flex: 1; min-width: calc(50% - 4px); justify-content: center; }
+  .drawer-footer .btn.btn-primary,
+  .drawer-footer .btn.btn-success { box-shadow: 0 0 0 2px var(--accent-soft); }
+
+  .drawer-section { margin-bottom: 24px; }
+  .drawer-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .video-preview {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #1a2540, #3a1f3a);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .play-icon {
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+  }
+
+  .versions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .version-pill {
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .version-pill:hover { border-color: var(--border-light); }
+  .version-pill.active { background: var(--accent); color: #0a0a0b; border-color: var(--accent); font-weight: 600; }
+  .version-pill.add { color: var(--text-3); border-style: dashed; }
+
+  .prompt-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+    font-family: ui-monospace, 'SF Mono', monospace;
+  }
+
+  .prompt-meta {
+    margin-top: 10px;
+    font-size: 11px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: var(--text-3);
+    align-items: center;
+  }
+
+  .comment {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .comment:last-of-type { border-bottom: none; }
+  .comment-author { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .comment-author .time { color: var(--text-3); font-weight: 400; }
+  .comment-body { color: var(--text-2); padding-left: 28px; }
+  .comment-actions { margin-top: 6px; padding-left: 28px; font-size: 11px; }
+  .resolve-btn { color: var(--text-3); cursor: pointer; text-decoration: underline; }
+  .resolve-btn:hover { color: var(--accent); }
+
+  .comment-input {
+    margin-top: 12px;
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 13px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Rights log enhanced */
+  .rights-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .rights-row {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .rights-row:last-child { border-bottom: none; }
+  .rights-label { color: var(--text-2); }
+  .rights-label strong { color: var(--text); font-weight: 500; display: block; font-size: 12px; }
+  .rights-label .sub { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+  .rights-status {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .rights-status.ok { background: rgba(16,185,129,0.15); color: var(--success); }
+  .rights-status.pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .rights-status.missing { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .rights-status.risk { background: rgba(239,68,68,0.25); color: var(--danger); }
+
+  /* Form */
+  .row-flex { display: flex; gap: 12px; margin-bottom: 16px; }
+  .field { flex: 1; }
+  .field-label {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  select, input[type="text"] {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 100%;
+    font-family: inherit;
+  }
+  select:focus, input[type="text"]:focus { outline: none; border-color: var(--accent); }
+
+  /* AI Producer */
+  .producer-panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+    z-index: 30;
+    transition: 0.2s;
+  }
+  .producer-panel.collapsed .producer-body { display: none; }
+  .producer-header {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #2a1810, #1f1f26);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .producer-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .producer-body { max-height: 380px; overflow-y: auto; }
+  .producer-item { padding: 12px 14px; font-size: 12px; border-bottom: 1px solid var(--border); }
+  .producer-item:last-child { border-bottom: none; }
+  .producer-item-title { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .producer-item-desc { color: var(--text-2); font-size: 11px; margin-bottom: 8px; line-height: 1.5; }
+  .producer-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* Delivery */
+  .delivery-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .delivery-head { padding: 20px 24px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #1a1518, #1f1f26); }
+  .delivery-head h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .delivery-head p { font-size: 13px; color: var(--text-2); }
+
+  .delivery-checklist { padding: 8px 24px; }
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    transition: 0.1s;
+  }
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check-icon {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .check-icon.ready { background: rgba(16,185,129,0.15); color: var(--success); }
+  .check-icon.included { background: rgba(16,185,129,0.15); color: var(--success); }
+  .check-icon.missing { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .check-icon.review-needed { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+  .checklist-info { flex: 1; }
+  .checklist-title { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .checklist-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  .checklist-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .checklist-status.ready { background: rgba(16,185,129,0.15); color: var(--success); }
+  .checklist-status.included { background: rgba(16,185,129,0.15); color: var(--success); }
+  .checklist-status.missing { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .checklist-status.review-needed { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+  .plan-lock-tag {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--surface-3);
+    color: var(--text-3);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .delivery-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .delivery-summary { font-size: 12px; color: var(--text-2); }
+  .delivery-summary strong { color: var(--text); }
+
+  /* Modal system (generic) */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 460px;
+    max-width: 100%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal.wide { width: 600px; }
+
+  .modal-icon {
+    height: 80px;
+    background: linear-gradient(135deg, #2a1810, #1f1f26);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .modal-text { color: var(--text-2); font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+
+  .modal-list {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .modal-list-item { font-size: 12px; color: var(--text-2); padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+  .modal-list-item::before { content: '✓'; color: var(--accent); font-weight: 700; }
+
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* New project modal options */
+  .pt-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .pt-option {
+    background: var(--surface-2);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: 0.15s;
+    position: relative;
+  }
+  .pt-option:hover { border-color: var(--border-light); }
+  .pt-option.selected { border-color: var(--accent); background: var(--accent-soft); }
+
+  .pt-option .pt-icon { font-size: 24px; margin-bottom: 8px; }
+  .pt-option .pt-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .pt-option .pt-desc { font-size: 11px; color: var(--text-2); margin-bottom: 8px; line-height: 1.5; }
+  .pt-option .pt-features { font-size: 10px; color: var(--text-3); }
+
+  .pt-option .recommended {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--accent);
+    color: #0a0a0b;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Toast */
+  .toast-container {
+    position: fixed;
+    top: 60px;
+    right: 24px;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    min-width: 240px;
+    max-width: 360px;
+    animation: toastIn 0.2s ease-out;
+    pointer-events: auto;
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.warn { border-left-color: var(--warning); }
+  .toast.danger { border-left-color: var(--danger); }
+  .toast.info { border-left-color: var(--info); }
+  .toast.fade-out { animation: toastOut 0.2s ease-in forwards; }
+
+  @keyframes toastIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes toastOut {
+    to { transform: translateX(40px); opacity: 0; }
+  }
+
+  /* Mobile bottom tabs */
+  .mobile-tabs {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 40;
+    padding: 8px 0;
+  }
+  .mobile-tabs-inner {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+  }
+  .mobile-tab {
+    text-align: center;
+    padding: 6px 4px;
+    color: var(--text-2);
+    font-size: 10px;
+    cursor: pointer;
+  }
+  .mobile-tab .icon { font-size: 18px; display: block; margin-bottom: 2px; }
+  .mobile-tab.active { color: var(--accent); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+  @media (max-width: 1100px) {
+    .board { grid-template-columns: repeat(3, 1fr); height: auto; min-height: 600px; }
+    .producer-panel { width: 280px; }
+  }
+
+  @media (max-width: 800px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .topbar { padding: 0 14px; }
+    .topbar-actions .btn-ghost { display: none; }
+    .content { padding: 14px; padding-bottom: 80px; }
+    .board { grid-template-columns: 1fr; }
+    .workbench-header { flex-direction: column; align-items: stretch; }
+    .workbench-actions { flex-wrap: wrap; }
+    .producer-panel { width: calc(100vw - 28px); right: 14px; bottom: 76px; }
+    .pt-options { grid-template-columns: 1fr; }
+    .drawer { width: 100vw; }
+    .drawer-footer .btn { min-width: calc(50% - 4px); }
+    .mobile-tabs { display: block; }
+    table { min-width: 700px; }
+  }
+</style>
+</head>
+<body>
+<div class="mockup-banner">
+  <strong>SOAVIZ Project Workbench</strong> · 개인으로 시작 → 팀으로 확장 · 샷 단위 생성·리뷰·승인·납품
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">SOAVIZ</div>
+    <div class="nav-item active" data-nav="projects" onclick="showPage('projects')">홈</div>
+    <div class="nav-item" data-nav="projects" onclick="showPage('projects')">프로젝트</div>
+    <div class="nav-item">라이브러리</div>
+    <div class="nav-item" onclick="needsTeamFeature('Members', 'Studio')">팀</div>
+    <div class="nav-item">설정</div>
+
+    <div class="nav-section">최근 프로젝트</div>
+    <div class="nav-item" data-nav="board" onclick="showPage('board')">Brand X Film</div>
+    <div class="nav-item">Music Video Y</div>
+    <div class="nav-item">Promo 2026</div>
+
+    <div style="margin-top: auto; padding: 12px 20px; font-size: 11px; color: var(--text-3); border-top: 1px solid var(--border);">
+      Studio Plan · 3 seats
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb" id="breadcrumb">
+        <span class="current">홈</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm">검색</button>
+
+        <div class="api-vault-btn">
+          <div class="api-vault-pill" onclick="toggleApiVault(event)">
+            <span class="pulse"></span>
+            <span>API Vault · <strong id="api-vault-count">3 connected</strong></span>
+            <span style="color: var(--text-3); font-size: 10px;">▾</span>
+          </div>
+          <div class="api-vault-dropdown" id="api-vault-dropdown">
+            <div class="api-vault-header">
+              <span>Connected Services</span>
+              <span class="api-vault-mode" id="api-vault-mode">Personal API</span>
+            </div>
+            <div class="api-service connected"><div class="svc-info"><span class="svc-dot"></span><strong>Kling AI</strong> 1.6</div><span style="color: var(--success); font-size: 11px;">connected</span></div>
+            <div class="api-service connected"><div class="svc-info"><span class="svc-dot"></span><strong>Runway</strong> Gen-3</div><span style="color: var(--success); font-size: 11px;">connected</span></div>
+            <div class="api-service connected"><div class="svc-info"><span class="svc-dot"></span><strong>OpenAI</strong> Sora</div><span style="color: var(--success); font-size: 11px;">connected</span></div>
+            <div class="api-service disconnected"><div class="svc-info"><span class="svc-dot"></span>ElevenLabs</div><span style="font-size: 11px;">connect</span></div>
+            <div class="api-service disconnected"><div class="svc-info"><span class="svc-dot"></span>Stability AI</div><span style="font-size: 11px;">connect</span></div>
+            <div class="api-vault-footer" onclick="toast('API Vault 관리 페이지로 이동', 'info')">+ Manage API Vault</div>
+          </div>
+        </div>
+
+        <div class="avatar" style="background: var(--accent); width:28px; height:28px; font-size: 12px;">은</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Projects page -->
+      <div class="page active" id="page-projects">
+        <div class="page-header">
+          <div class="page-title">진행 중인 프로젝트</div>
+          <button class="btn btn-primary" onclick="openNewProjectModal()">+ 새 프로젝트</button>
+        </div>
+
+        <div class="project-grid">
+          <div class="project-card" onclick="showPage('board')">
+            <div class="project-thumb" style="background: linear-gradient(135deg, #2a1f3a, #1a2540);">
+              BRAND FILM
+              <div class="project-type-badge" id="card-type-badge">Personal</div>
+            </div>
+            <div class="project-info">
+              <div class="project-name">Brand X Film</div>
+              <div class="project-client">클라이언트 · X Studio</div>
+              <div class="project-meta">
+                <div class="progress-dots">
+                  <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div>
+                  <div class="dot"></div><div class="dot"></div>
+                </div>
+                <div class="deadline urgent">D-7</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-thumb" style="background: linear-gradient(135deg, #1f3a2a, #2a3a1f);">
+              MUSIC VIDEO
+              <div class="project-type-badge team">Team · 4</div>
+            </div>
+            <div class="project-info">
+              <div class="project-name">Music Video Y</div>
+              <div class="project-client">클라이언트 · Indie Label</div>
+              <div class="project-meta">
+                <div class="progress-dots">
+                  <div class="dot filled"></div><div class="dot filled"></div><div class="dot"></div>
+                  <div class="dot"></div><div class="dot"></div>
+                </div>
+                <div class="deadline">D-12</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-thumb" style="background: linear-gradient(135deg, #3a1f2a, #3a2a1f);">
+              PROMO
+              <div class="project-type-badge team">Team · 5</div>
+            </div>
+            <div class="project-info">
+              <div class="project-name">Promo 2026</div>
+              <div class="project-client">클라이언트 · Tech Co.</div>
+              <div class="project-meta">
+                <div class="progress-dots">
+                  <div class="dot filled"></div><div class="dot filled"></div><div class="dot filled"></div>
+                  <div class="dot filled"></div><div class="dot"></div>
+                </div>
+                <div class="deadline urgent">D-3</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="project-card" style="border-style: dashed; opacity: 0.7;" onclick="openNewProjectModal()">
+            <div class="project-thumb" style="background: var(--surface-2);">+</div>
+            <div class="project-info">
+              <div class="project-name" style="color: var(--text-3);">새 프로젝트 만들기</div>
+              <div class="project-client">개인 또는 팀</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="activity-section">
+          <div class="section-title">최근 활동</div>
+          <div class="activity-item"><span class="time">12분 전</span><strong>지수</strong>가 <strong>S004</strong> v3 업로드 — Brand X Film</div>
+          <div class="activity-item"><span class="time">1시간 전</span><strong>클라이언트</strong>가 <strong>S002</strong> 승인 — Brand X Film</div>
+          <div class="activity-item"><span class="time">2시간 전</span><strong>S007 생성 실패</strong> (Kling 1.6) — 재시도 필요</div>
+          <div class="activity-item"><span class="time">어제</span>Promo 2026이 Personal에서 <strong>Team Project로 전환</strong>됨</div>
+        </div>
+      </div>
+
+      <!-- Workbench page -->
+      <div class="page" id="page-board">
+        <div class="workbench-header">
+          <div class="workbench-meta">
+            <div class="workbench-title-row">
+              <div class="workbench-title">Brand X Film</div>
+              <div class="project-type personal" id="project-type-badge">
+                <span>Personal Project</span>
+                <span style="color: var(--text-3); font-weight: 400;">· 혼자 작업 중</span>
+              </div>
+            </div>
+            <div class="workbench-sub">
+              <span>클라이언트 · X Studio</span><span>·</span>
+              <span style="color: var(--warning); font-weight: 600;">D-7</span><span>·</span>
+              <span>10 shots</span>
+            </div>
+          </div>
+          <div class="workbench-actions">
+            <div class="avatar-stack" id="member-stack">
+              <div class="avatar" style="background: #ff6b3f;">은</div>
+            </div>
+            <button class="btn" id="convert-btn" onclick="openConvertToTeamModal()">팀 프로젝트로 전환</button>
+            <button class="btn btn-primary">+ 샷 추가</button>
+          </div>
+        </div>
+
+        <div class="project-tabs">
+          <div class="tab active" data-tab="board" onclick="switchTab(this, 'board')">Workbench</div>
+          <div class="tab" data-tab="db" onclick="switchTab(this, 'db')">Shot DB</div>
+          <div class="tab" data-tab="deliver" onclick="switchTab(this, 'deliver')">Delivery</div>
+          <div class="tab-spacer"></div>
+          <button class="btn btn-sm" onclick="onClientReviewLink()">🔗 Client Review Link</button>
+        </div>
+
+        <div id="tab-board" class="tab-content">
+          <div class="filter-bar" id="filter-bar">
+            <span class="filter-chip active" data-filter="all" onclick="setFilter(this, 'all')">전체 <span class="count" id="cnt-all">9</span></span>
+            <span class="filter-chip" data-filter="mine" onclick="setFilter(this, 'mine')">내 샷 <span class="count" id="cnt-mine">3</span></span>
+            <span class="filter-chip" data-filter="feedback" onclick="setFilter(this, 'feedback')">피드백 <span class="count" id="cnt-feedback">1</span></span>
+            <span class="filter-chip" data-filter="failed" onclick="setFilter(this, 'failed')">실패 <span class="count" id="cnt-failed">1</span></span>
+            <span class="filter-chip" data-filter="due" onclick="setFilter(this, 'due')">마감 임박 <span class="count" id="cnt-due">2</span></span>
+            <span class="filter-chip" data-filter="client-review" onclick="setFilter(this, 'client-review')">클라이언트 리뷰 <span class="count" id="cnt-client">2</span></span>
+          </div>
+
+          <div class="board" id="board">
+            <div class="column">
+              <div class="column-header status-planning"><div class="column-title"><span class="status-dot"></span><span class="column-title-en">Planning</span><span class="column-title-ko">기획</span></div><div class="column-count" id="count-planning">0</div></div>
+              <div class="column-body" data-status="planning"></div>
+            </div>
+            <div class="column">
+              <div class="column-header status-production"><div class="column-title"><span class="status-dot"></span><span class="column-title-en">Production</span><span class="column-title-ko">제작 중</span></div><div class="column-count" id="count-production">0</div></div>
+              <div class="column-body" data-status="production"></div>
+            </div>
+            <div class="column">
+              <div class="column-header status-review"><div class="column-title"><span class="status-dot"></span><span class="column-title-en">In Review</span><span class="column-title-ko">리뷰 중</span></div><div class="column-count" id="count-review">0</div></div>
+              <div class="column-body" data-status="review"></div>
+            </div>
+            <div class="column">
+              <div class="column-header status-approved"><div class="column-title"><span class="status-dot"></span><span class="column-title-en">Approved</span><span class="column-title-ko">승인 완료</span></div><div class="column-count" id="count-approved">0</div></div>
+              <div class="column-body" data-status="approved"></div>
+            </div>
+            <div class="column">
+              <div class="column-header status-delivered"><div class="column-title"><span class="status-dot"></span><span class="column-title-en">Delivered</span><span class="column-title-ko">납품 완료</span></div><div class="column-count" id="count-delivered">0</div></div>
+              <div class="column-body" data-status="delivered"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-db" class="tab-content" style="display:none;">
+          <div class="db-toolbar">
+            <div class="view-switcher">
+              <button class="view-btn active" data-view="table" onclick="setDBView(this, 'table')">Table</button>
+              <button class="view-btn" data-view="board" onclick="setDBView(this, 'board')">Board</button>
+              <button class="view-btn" data-view="gallery" onclick="setDBView(this, 'gallery')">Gallery</button>
+              <button class="view-btn" data-view="review" onclick="setDBView(this, 'review')">Review</button>
+              <button class="view-btn" data-view="delivery" onclick="setDBView(this, 'delivery')">Delivery</button>
+            </div>
+            <div style="color: var(--text-3); font-size: 12px;">9 shots</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox"></th>
+                  <th>Code</th><th>Title</th><th>Status</th>
+                  <th>Due Date</th>
+                  <th>Next Action</th>
+                  <th>Model</th>
+                  <th>API Source</th>
+                  <th>Cost</th>
+                  <th>Approval</th>
+                  <th>담당</th>
+                  <th>버전</th>
+                </tr>
+              </thead>
+              <tbody id="db-table-body"></tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            선택 항목 → <span class="resolve-btn">상태 변경</span> · <span class="resolve-btn">담당 변경</span> · <span class="resolve-btn">재생성</span> · <span class="resolve-btn">내보내기</span>
+          </div>
+        </div>
+
+        <div id="tab-deliver" class="tab-content" style="display:none;">
+          <div class="delivery-card">
+            <div class="delivery-head">
+              <h3>📦 Delivery Package — Brand X Film</h3>
+              <p>Approved 상태 샷 <strong style="color: var(--success);">2개</strong>를 클라이언트 납품용으로 묶습니다.</p>
+            </div>
+            <div class="delivery-checklist" id="delivery-checklist"></div>
+            <div class="delivery-actions">
+              <div class="delivery-summary">
+                <strong id="checklist-progress">0 / 8</strong> 항목 준비됨
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn" onclick="onPackagePreview()">패키지 미리보기</button>
+                <button class="btn btn-primary" onclick="onPackageGenerate()">납품 패키지 생성</button>
+                <button class="btn" onclick="onClientReviewLink()">🔗 클라이언트 리뷰 링크</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile bottom tabs -->
+    <nav class="mobile-tabs">
+      <div class="mobile-tabs-inner">
+        <div class="mobile-tab active" onclick="showPage('projects')"><span class="icon">📋</span>오늘</div>
+        <div class="mobile-tab" onclick="showPage('projects')"><span class="icon">📁</span>프로젝트</div>
+        <div class="mobile-tab" onclick="showPage('board')"><span class="icon">🎬</span>샷</div>
+        <div class="mobile-tab" onclick="onMobileReview()"><span class="icon">💬</span>리뷰</div>
+        <div class="mobile-tab" onclick="onMobileDelivery()"><span class="icon">📦</span>납품</div>
+      </div>
+    </nav>
+  </main>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <span class="code" id="drawer-code">S004</span>
+      <span id="drawer-title-text">클로즈업</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="row-flex">
+      <div class="field">
+        <div class="field-label">상태</div>
+        <select id="drawer-status">
+          <option value="planning">Planning · 기획</option>
+          <option value="production">Production · 제작 중</option>
+          <option value="review">In Review · 리뷰 중</option>
+          <option value="approved">Approved · 승인 완료</option>
+          <option value="delivered">Delivered · 납품 완료</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label">담당</div>
+        <select id="drawer-assignee"><option>은교</option><option>지수</option><option>민호</option></select>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="video-preview"><div class="play-icon">▶</div></div>
+      <div class="drawer-section-title">버전 (3)</div>
+      <div class="versions">
+        <div class="version-pill" onclick="setActiveVersion(this)">v1</div>
+        <div class="version-pill" onclick="setActiveVersion(this)">v2</div>
+        <div class="version-pill active" onclick="setActiveVersion(this)">v3 ★</div>
+        <div class="version-pill add">+ 새 생성</div>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-title">프롬프트</div>
+      <div class="prompt-box">Cinematic close-up of a face under cold blue lighting,<br>shallow depth of field, slow zoom-in, subtle film grain,<br>6 seconds, 9:16 aspect ratio</div>
+      <div class="prompt-meta" id="prompt-meta">
+        <span class="api-source-tag workspace"><span class="tiny-dot"></span><strong>Kling 1.6</strong> · Workspace API</span>
+        <span>6초</span><span>9:16</span><span>Seed 8472</span>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-title">댓글 (3)</div>
+      <div class="comment">
+        <div class="comment-author"><span class="avatar" style="background:#ef4444;">클</span>클라이언트 <span class="time">· 30분 전</span></div>
+        <div class="comment-body">조명을 더 차갑게 해주세요. 블루톤 30% 정도.</div>
+        <div class="comment-actions"><span class="resolve-btn" onclick="toast('해결로 표시됨', 'success')">✓ 해결로 표시</span></div>
+      </div>
+      <div class="comment">
+        <div class="comment-author"><span class="avatar" style="background:#3b82f6;">지</span>지수 <span class="time">· 25분 전</span></div>
+        <div class="comment-body">v3에서 수정 시작합니다.</div>
+      </div>
+      <div class="comment">
+        <div class="comment-author"><span class="avatar" style="background:#ff6b3f;">은</span>은교 <span class="time">· 10분 전</span></div>
+        <div class="comment-body">v3 좋네요. 클라 컨펌 받겠습니다.</div>
+      </div>
+      <textarea class="comment-input" rows="2" placeholder="댓글 입력..."></textarea>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-title">권리 로그 (Rights Log)</div>
+      <div class="rights-grid" id="rights-grid"></div>
+    </div>
+  </div>
+
+  <!-- Drawer Footer -->
+  <div class="drawer-footer" id="drawer-footer">
+    <!-- buttons rendered dynamically based on shot status -->
+  </div>
+</div>
+
+<!-- AI Producer panel -->
+<div class="producer-panel" id="producer-panel">
+  <div class="producer-header" onclick="toggleProducer()">
+    <div class="producer-title">🎬 AI Producer</div>
+    <span style="color: var(--text-3); font-size: 16px;" id="producer-toggle">−</span>
+  </div>
+  <div class="producer-body">
+    <div class="producer-item">
+      <div class="producer-item-title" style="color: var(--danger);">⚠ S007 generation failed</div>
+      <div class="producer-item-desc">Kling timeout이 감지됐습니다. 프롬프트를 수정하거나 다시 시도하세요.</div>
+      <div class="producer-actions">
+        <button class="btn btn-sm btn-warn" onclick="onProducerAction('retry', 'S007')">↻ Retry Generation</button>
+        <button class="btn btn-sm btn-ghost" onclick="onProducerAction('edit-prompt', 'S007')">Edit Prompt</button>
+      </div>
+    </div>
+    <div class="producer-item">
+      <div class="producer-item-title" style="color: var(--warning);">🔴 S002 client feedback unresolved</div>
+      <div class="producer-item-desc">30분째 응답 없음. 자동 알림을 보낼까요?</div>
+      <div class="producer-actions">
+        <button class="btn btn-sm" onclick="onProducerAction('reminder', 'S002')">📨 Send Reminder</button>
+        <button class="btn btn-sm btn-ghost" onclick="onProducerAction('open-shot', 'S002')">Open Shot</button>
+      </div>
+    </div>
+    <div class="producer-item">
+      <div class="producer-item-title">📝 Planning 단계 3개 정체</div>
+      <div class="producer-item-desc">Brief를 자동으로 샷 단위로 분해할까요?</div>
+      <div class="producer-actions">
+        <button class="btn btn-sm btn-primary" onclick="onProducerAction('split-brief')">⚡ Split Brief into Shots</button>
+      </div>
+    </div>
+    <div class="producer-item">
+      <div class="producer-item-title">📦 Approved 2 shots 납품 가능</div>
+      <div class="producer-item-desc">Delivery Package 생성을 시작할 수 있습니다.</div>
+      <div class="producer-actions">
+        <button class="btn btn-sm btn-primary" onclick="onProducerAction('generate-package')">Generate Package</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generic modal -->
+<div class="modal-backdrop" id="modal" onclick="closeModalIfBackdrop(event)">
+  <div class="modal" id="modal-content">
+    <div class="modal-icon" id="modal-icon">🔗</div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+const state = {
+  projectType: 'personal', // 'personal' | 'team'
+  activeFilter: 'all',
+  currentShot: null,
+  me: '은교',
+  plan: 'studio'
+};
+
+// ============================================================
+// Dummy data
+// ============================================================
+const shots = [
+  { code:'S001', title:'오프닝 와이드', status:'planning', assignee:'지수', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-15', cost:0, thumb:'thumb-empty' },
+  { code:'S005', title:'전환 컷', status:'planning', assignee:'민호', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-13', cost:0, thumb:'thumb-empty' },
+  { code:'S006', title:'타이틀 인서트', status:'planning', assignee:'은교', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-09', cost:0, thumb:'thumb-empty' },
+  { code:'S004', title:'클로즈업', status:'production', assignee:'민호', model:'Kling 1.6', apiSource:'workspace', version:'v3', progress:60, comments:3, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-12', cost:0.84, thumb:'thumb-blue' },
+  { code:'S007', title:'B-roll 도시', status:'production', assignee:'지수', model:'Kling 1.6', apiSource:'workspace', version:'-', progress:0, comments:1, hasFeedback:false, hasFailed:true, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-08', cost:0.42, thumb:'thumb-red' },
+  { code:'S002', title:'인터뷰 컷', status:'review', assignee:'민호', model:'Runway Gen-3', apiSource:'workspace', version:'v3', comments:3, hasFeedback:true, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-11', cost:1.20, thumb:'thumb-warm' },
+  { code:'S003', title:'B-roll 자연', status:'review', assignee:'지수', model:'Kling 1.6', apiSource:'personal', version:'v2', comments:1, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-12', cost:0.65, thumb:'thumb-green' },
+  { code:'S008', title:'인서트 손', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v4', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.50, thumb:'thumb-purple' },
+  { code:'S010', title:'엔딩 페이드', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v5', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.65, thumb:'thumb-purple' },
+];
+
+const STATUS_LABELS = { planning:'Planning', production:'Production', review:'In Review', approved:'Approved', delivered:'Delivered' };
+const STATUS_LABELS_KO = { planning:'기획', production:'제작 중', review:'리뷰 중', approved:'승인 완료', delivered:'납품 완료' };
+const ASSIGNEE_BG = { '은교':'#ff6b3f', '지수':'#3b82f6', '민호':'#10b981' };
+const TIME_OPTIONS = ['12분 전','30분 전','1시간 전','2시간 전','어제','진행 중'];
+
+// ============================================================
+// Toast
+// ============================================================
+function toast(text, type = 'info', duration = 2400) {
+  const container = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = text;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('fade-out');
+    setTimeout(() => t.remove(), 200);
+  }, duration);
+}
+
+// ============================================================
+// Generic modal
+// ============================================================
+function openModal(html, opts = {}) {
+  const backdrop = document.getElementById('modal');
+  const body = document.getElementById('modal-body');
+  const icon = document.getElementById('modal-icon');
+  const content = document.getElementById('modal-content');
+  if (opts.icon) icon.textContent = opts.icon;
+  content.classList.toggle('wide', !!opts.wide);
+  body.innerHTML = html;
+  backdrop.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function closeModalIfBackdrop(e) {
+  if (e.target.id === 'modal') closeModal();
+}
+
+// ============================================================
+// Plan-gated feature trigger
+// ============================================================
+function needsTeamFeature(featureName, requiredPlan = 'Studio') {
+  if (state.projectType === 'team' && state.plan !== 'free') {
+    toast(`${featureName} 사용 가능`, 'success');
+    return true;
+  }
+  // Show conversion / upgrade modal
+  const html = `
+    <div class="modal-title">🔒 ${featureName}</div>
+    <div class="modal-text">
+      이 기능은 <strong style="color: var(--accent);">팀 프로젝트 (${requiredPlan} 플랜)</strong>에서 사용할 수 있습니다.
+      팀 프로젝트로 전환하면 다음 기능이 함께 활성화됩니다.
+    </div>
+    <div class="modal-list">
+      <div class="modal-list-item">멤버 초대 / 담당자 배정</div>
+      <div class="modal-list-item">댓글 / 멘션 / 리뷰 요청</div>
+      <div class="modal-list-item">승인 상태 / 클라이언트 리뷰 링크</div>
+      <div class="modal-list-item">납품 패키지 / 권리 리포트</div>
+      <div class="modal-list-item">Workspace API Vault</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">나중에</button>
+      <button class="btn btn-primary" onclick="confirmConvertToTeam()">팀 프로젝트로 전환</button>
+    </div>`;
+  openModal(html, { icon: '🔒' });
+  return false;
+}
+
+// ============================================================
+// New Project Modal
+// ============================================================
+function openNewProjectModal() {
+  const html = `
+    <div class="modal-title">어떻게 시작할까요?</div>
+    <div class="modal-text">프로젝트는 언제든지 팀으로 전환할 수 있습니다.</div>
+    <div class="pt-options">
+      <div class="pt-option selected" id="opt-personal" onclick="selectPtOption('personal')">
+        <div class="recommended">추천</div>
+        <div class="pt-icon">👤</div>
+        <div class="pt-name">개인 프로젝트</div>
+        <div class="pt-desc">혼자 빠르게 시작합니다.</div>
+        <div class="pt-features">스토리 · 캐릭터 · 샷리스트 · 생성 · Export</div>
+      </div>
+      <div class="pt-option" id="opt-team" onclick="selectPtOption('team')">
+        <div class="pt-icon">👥</div>
+        <div class="pt-name">팀 프로젝트</div>
+        <div class="pt-desc">팀과 함께 제작합니다.</div>
+        <div class="pt-features">멤버 · 담당 · 리뷰 · 승인 · 납품 · API Vault</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="confirmCreateProject()">프로젝트 만들기</button>
+    </div>`;
+  openModal(html, { icon: '✨' });
+  window._newProjectType = 'personal';
+}
+
+function selectPtOption(type) {
+  document.getElementById('opt-personal').classList.toggle('selected', type === 'personal');
+  document.getElementById('opt-team').classList.toggle('selected', type === 'team');
+  window._newProjectType = type;
+}
+
+function confirmCreateProject() {
+  const type = window._newProjectType || 'personal';
+  closeModal();
+  toast(`${type === 'team' ? '팀' : '개인'} 프로젝트가 생성되었습니다`, 'success');
+  setTimeout(() => showPage('board'), 300);
+}
+
+// ============================================================
+// Convert to Team modal
+// ============================================================
+function openConvertToTeamModal() {
+  if (state.projectType === 'team') {
+    toast('멤버 관리 페이지 열기', 'info');
+    return;
+  }
+  const html = `
+    <div class="modal-title">팀 프로젝트로 전환할까요?</div>
+    <div class="modal-text">
+      팀 프로젝트로 전환하면 멤버 초대, 담당자 배정, 댓글, 리뷰 요청, 승인 상태,
+      클라이언트 리뷰 링크, 납품 패키지를 사용할 수 있습니다.
+    </div>
+    <div class="modal-list">
+      <div class="modal-list-item">멤버 초대 / 담당자 배정</div>
+      <div class="modal-list-item">댓글 · 멘션 · 리뷰 요청</div>
+      <div class="modal-list-item">승인 흐름 · Approval History</div>
+      <div class="modal-list-item">Client Review Link</div>
+      <div class="modal-list-item">Delivery Package · Rights Report</div>
+      <div class="modal-list-item">Workspace API Vault</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">나중에</button>
+      <button class="btn btn-primary" onclick="confirmConvertToTeam()">팀 프로젝트로 전환</button>
+    </div>`;
+  openModal(html, { icon: '👥' });
+}
+
+function confirmConvertToTeam() {
+  closeModal();
+  setProjectType('team');
+  toast('팀 프로젝트로 전환되었습니다', 'success');
+}
+
+function setProjectType(type) {
+  state.projectType = type;
+  const badge = document.getElementById('project-type-badge');
+  const cardBadge = document.getElementById('card-type-badge');
+  const apiMode = document.getElementById('api-vault-mode');
+
+  if (type === 'team') {
+    badge.classList.remove('personal');
+    badge.classList.add('team');
+    badge.innerHTML = '<span>Team Project</span><span style="color: var(--text-3); font-weight: 400;">· 3 seats</span>';
+    document.getElementById('convert-btn').textContent = '멤버 관리';
+    document.getElementById('member-stack').innerHTML = `
+      <div class="avatar" style="background: #ff6b3f;">은</div>
+      <div class="avatar" style="background: #3b82f6;">지</div>
+      <div class="avatar" style="background: #10b981;">민</div>`;
+    if (cardBadge) { cardBadge.textContent = 'Team · 3'; cardBadge.classList.add('team'); }
+    if (apiMode) apiMode.textContent = 'Workspace API';
+  } else {
+    badge.classList.remove('team');
+    badge.classList.add('personal');
+    badge.innerHTML = '<span>Personal Project</span><span style="color: var(--text-3); font-weight: 400;">· 혼자 작업 중</span>';
+    document.getElementById('convert-btn').textContent = '팀 프로젝트로 전환';
+    document.getElementById('member-stack').innerHTML = `<div class="avatar" style="background: #ff6b3f;">은</div>`;
+    if (cardBadge) { cardBadge.textContent = 'Personal'; cardBadge.classList.remove('team'); }
+    if (apiMode) apiMode.textContent = 'Personal API';
+  }
+}
+
+// ============================================================
+// Client Review Link
+// ============================================================
+function onClientReviewLink() {
+  if (!needsTeamFeature('Client Review Link', 'Studio')) return;
+  // Team flow
+  const link = `https://soaviz.studio/review/brand-x-film/${Math.random().toString(36).slice(2, 8)}`;
+  const html = `
+    <div class="modal-title">🔗 Client Review Link 생성됨</div>
+    <div class="modal-text">클라이언트가 별도 계정 없이 영상을 검토하고 승인할 수 있는 링크입니다.</div>
+    <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: ui-monospace, monospace; font-size: 12px; word-break: break-all; margin-bottom: 16px;">
+      ${link}
+    </div>
+    <div class="modal-list">
+      <div class="modal-list-item">씬·시간 단위 댓글 작성</div>
+      <div class="modal-list-item">승인 / 수정 요청 자동 동기화</div>
+      <div class="modal-list-item">Approval History 자동 기록</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">닫기</button>
+      <button class="btn" onclick="toast('만료 7일로 설정됨', 'info'); closeModal()">만료 설정</button>
+      <button class="btn btn-primary" onclick="copyLink('${link}'); closeModal()">📋 링크 복사</button>
+    </div>`;
+  openModal(html, { icon: '🔗' });
+}
+
+function copyLink(link) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(() => toast('링크가 클립보드에 복사되었습니다', 'success'));
+  } else {
+    toast('링크가 복사되었습니다', 'success');
+  }
+}
+
+// ============================================================
+// Filter / View
+// ============================================================
+function passFilter(shot, filter) {
+  if (filter === 'all') return true;
+  if (filter === 'mine') return shot.assignee === state.me;
+  if (filter === 'feedback') return shot.hasFeedback;
+  if (filter === 'failed') return shot.hasFailed;
+  if (filter === 'due') return shot.dueSoon;
+  if (filter === 'client-review') return shot.status === 'review' && shot.clientReviewRequested;
+  return true;
+}
+
+function setFilter(el, filter) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.activeFilter = filter;
+  renderBoard();
+}
+
+function updateFilterCounts() {
+  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  set('cnt-all', shots.length);
+  set('cnt-mine', shots.filter(s => s.assignee === state.me).length);
+  set('cnt-feedback', shots.filter(s => s.hasFeedback).length);
+  set('cnt-failed', shots.filter(s => s.hasFailed).length);
+  set('cnt-due', shots.filter(s => s.dueSoon).length);
+  set('cnt-client', shots.filter(s => s.status === 'review' && s.clientReviewRequested).length);
+}
+
+function setDBView(el, view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  toast(`${view.charAt(0).toUpperCase() + view.slice(1)} 뷰로 전환`, 'info');
+  // For now keep table visible regardless; this is a stub for view switching
+}
+
+// ============================================================
+// Routing
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + name);
+  if (!target) return;
+  target.classList.add('active');
+
+  const bc = document.getElementById('breadcrumb');
+  if (name === 'projects') {
+    bc.innerHTML = '<span class="current">홈</span>';
+  } else if (name === 'board') {
+    bc.innerHTML = '<span class="link" onclick="showPage(\'projects\')">프로젝트</span> <span style="color: var(--text-3);">›</span> <span class="current">Brand X Film</span>';
+  }
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-nav]').forEach(n => {
+    if (n.dataset.nav === name) n.classList.add('active');
+  });
+
+  if (name === 'board') { renderBoard(); updateFilterCounts(); }
+}
+
+function switchTab(el, tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['board','db','deliver'].forEach(n => {
+    const tab = document.getElementById('tab-'+n);
+    if (tab) tab.style.display = (n === tabName) ? 'block' : 'none';
+  });
+  if (tabName === 'db') renderDB();
+  if (tabName === 'board') renderBoard();
+  if (tabName === 'deliver') renderDelivery();
+}
+
+// ============================================================
+// Next Action helper
+// ============================================================
+function getNextAction(shot) {
+  if (shot.hasFailed) return { label: '다음: 재생성', tone: 'warn' };
+  if (shot.status === 'planning') return { label: '다음: 생성', tone: 'accent' };
+  if (shot.status === 'production') {
+    if (shot.progress >= 100) return { label: '다음: 리뷰 요청', tone: 'accent' };
+    return { label: '렌더링 중', tone: '' };
+  }
+  if (shot.status === 'review') {
+    if (shot.hasFeedback) return { label: '다음: 수정', tone: 'warn' };
+    return { label: '다음: 승인', tone: 'success' };
+  }
+  if (shot.status === 'approved') return { label: '다음: 납품에 추가', tone: 'accent' };
+  if (shot.status === 'delivered') return { label: '완료', tone: '' };
+  return null;
+}
+
+// ============================================================
+// Render Board
+// ============================================================
+function renderBoard() {
+  const cols = ['planning','production','review','approved','delivered'];
+  cols.forEach(s => {
+    const body = document.querySelector(`[data-status="${s}"]`);
+    if (!body) return;
+    body.innerHTML = '';
+    body.addEventListener('dragover', handleDragOver);
+    body.addEventListener('dragleave', handleDragLeave);
+    body.addEventListener('drop', handleDrop);
+
+    const list = shots.filter(x => x.status === s && passFilter(x, state.activeFilter));
+    list.forEach(shot => body.appendChild(makeCard(shot)));
+    const counter = document.getElementById('count-' + s);
+    if (counter) counter.textContent = shots.filter(x => x.status === s).length;
+  });
+  updateFilterCounts();
+}
+
+function makeCard(shot) {
+  const card = document.createElement('div');
+  card.className = 'shot-card';
+  card.draggable = true;
+  card.dataset.code = shot.code;
+
+  const thumbCls = shot.thumb || 'thumb-empty';
+  const badges = [];
+  if (shot.hasFailed) badges.push('<span class="badge badge-danger">⚠ 실패</span>');
+  if (shot.hasFeedback) badges.push('<span class="badge badge-feedback">🔴 피드백</span>');
+  if (shot.dueSoon) badges.push('<span class="badge badge-due">⏰ 임박</span>');
+  if (shot.clientReviewRequested && shot.status === 'review') badges.push('<span class="badge">👁 클라</span>');
+
+  const commentBadge = (shot.comments && shot.comments > 0) ? `<span class="badge">💬 ${shot.comments}</span>` : '';
+  const modelLine = shot.model ? `<span>${shot.model}${shot.version && shot.version !== '-' ? ' · ' + shot.version : ''}</span>` : '';
+  const progressBar = (shot.status === 'production' && shot.progress > 0)
+    ? `<div class="shot-progress"><div class="shot-progress-bar" style="width:${shot.progress}%"></div></div>` : '';
+  const thumbContent = (shot.status === 'planning') ? '' : '▶';
+  const assigneeBg = ASSIGNEE_BG[shot.assignee] || '#666';
+  const assigneeShort = shot.assignee.charAt(0);
+  const next = getNextAction(shot);
+  const nextHTML = next
+    ? `<div class="next-action-pill ${next.tone ? 'tone-' + next.tone : ''}"><span class="arrow">›</span><span>${next.label}</span></div>`
+    : '';
+
+  card.innerHTML = `
+    <div class="shot-thumb ${thumbCls}">${thumbContent}${progressBar}</div>
+    <div class="shot-info">
+      <div class="shot-code-row">
+        <span>${shot.code}</span>
+        <span class="avatar" style="background:${assigneeBg}; width:16px; height:16px; font-size:9px;">${assigneeShort}</span>
+      </div>
+      <div class="shot-title">${shot.title}</div>
+      <div class="shot-meta">
+        ${modelLine}
+        ${badges.join('')}
+        ${commentBadge}
+      </div>
+      ${nextHTML}
+    </div>`;
+
+  let dragStarted = false;
+  card.addEventListener('dragstart', (e) => {
+    dragStarted = true;
+    card.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', shot.code);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    setTimeout(() => { dragStarted = false; }, 50);
+  });
+  card.addEventListener('click', () => {
+    if (dragStarted) return;
+    openDrawer(shot);
+  });
+
+  return card;
+}
+
+// ============================================================
+// Drag and Drop
+// ============================================================
+function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); }
+function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const code = e.dataTransfer.getData('text/plain');
+  const newStatus = e.currentTarget.dataset.status;
+  const shot = shots.find(s => s.code === code);
+  if (shot && shot.status !== newStatus) {
+    shot.status = newStatus;
+    renderBoard();
+    toast(`${shot.code} → ${STATUS_LABELS_KO[newStatus]}`, 'success', 1600);
+  }
+}
+
+// ============================================================
+// DB Table
+// ============================================================
+function renderDB() {
+  const tbody = document.getElementById('db-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  shots.forEach(shot => {
+    const tr = document.createElement('tr');
+    const statusClass = `status-${shot.status}`;
+    const apiSrc = shot.apiSource === 'workspace'
+      ? '<span class="api-source-tag workspace"><span class="tiny-dot"></span>Workspace</span>'
+      : shot.apiSource === 'personal'
+      ? '<span class="api-source-tag personal"><span class="tiny-dot"></span>Personal</span>'
+      : '<span style="color: var(--text-3);">-</span>';
+    const next = getNextAction(shot);
+    const nextHTML = next ? `<span style="color: ${next.tone === 'warn' ? 'var(--warning)' : next.tone === 'success' ? 'var(--success)' : next.tone === 'accent' ? 'var(--accent)' : 'var(--text-2)'};">${next.label.replace('다음: ','')}</span>` : '-';
+    const approval = shot.status === 'approved' || shot.status === 'delivered' ? '✓ Approved' :
+                     shot.hasFeedback ? '🔴 Revision' : '—';
+
+    tr.innerHTML = `
+      <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+      <td style="color: var(--text-3); font-family: ui-monospace, monospace;">${shot.code}</td>
+      <td><strong>${shot.title}</strong></td>
+      <td><span class="pill ${statusClass}"><span class="status-dot"></span>${STATUS_LABELS[shot.status]}</span></td>
+      <td>${shot.dueDate || '-'}</td>
+      <td>${nextHTML}</td>
+      <td>${shot.model || '-'}</td>
+      <td>${apiSrc}</td>
+      <td>${shot.cost ? '$' + shot.cost.toFixed(2) : '-'}</td>
+      <td style="color: ${shot.status === 'approved' || shot.status === 'delivered' ? 'var(--success)' : (shot.hasFeedback ? 'var(--danger)' : 'var(--text-2)')};">${approval}</td>
+      <td>${shot.assignee}</td>
+      <td>${shot.version || '-'}</td>
+    `;
+    tr.addEventListener('click', () => openDrawer(shot));
+    tbody.appendChild(tr);
+  });
+}
+
+// ============================================================
+// Delivery
+// ============================================================
+const DELIVERY_ITEMS = [
+  { id:'video', title:'Final Videos', desc:'MP4, 9:16, H.264 · Approved 2 files', state:'ready', plan:'studio' },
+  { id:'thumbs', title:'Thumbnails', desc:'각 샷의 대표 프레임 자동 추출', state:'ready', plan:'studio' },
+  { id:'subs', title:'Subtitles', desc:'.srt 또는 .vtt · 수동 업로드 필요', state:'missing', plan:'studio' },
+  { id:'prompts', title:'Prompt Log', desc:'전체 샷의 프롬프트 + 파라미터 PDF', state:'included', plan:'studio' },
+  { id:'usage', title:'Model Usage Log', desc:'사용 모델 / 토큰 / 비용 기록', state:'included', plan:'business' },
+  { id:'rights', title:'Rights Report', desc:'모델 라이선스 · 학습 데이터 · 초상권', state:'review-needed', plan:'business' },
+  { id:'history', title:'Approval History', desc:'리뷰 → 승인 흐름 + 클라 댓글 PDF', state:'review-needed', plan:'business' },
+  { id:'assets', title:'Asset List', desc:'JSON 메타데이터 (샷 ID, 버전, 모델 등)', state:'included', plan:'studio' },
+];
+
+const STATE_ICONS = { ready:'✓', included:'✓', missing:'×', 'review-needed':'△' };
+const STATE_LABELS = { ready:'Ready', included:'Included', missing:'Missing', 'review-needed':'Review needed' };
+
+function renderDelivery() {
+  const container = document.getElementById('delivery-checklist');
+  if (!container) return;
+  container.innerHTML = '';
+
+  DELIVERY_ITEMS.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item';
+    div.dataset.plan = item.plan;
+    const planTag = item.plan !== 'studio' ? `<span class="plan-lock-tag">${item.plan}+</span>` : '';
+    div.innerHTML = `
+      <div class="check-icon ${item.state}">${STATE_ICONS[item.state]}</div>
+      <div class="checklist-info">
+        <div class="checklist-title">${item.title} ${planTag}</div>
+        <div class="checklist-desc">${item.desc}</div>
+      </div>
+      <div class="checklist-status ${item.state}">${STATE_LABELS[item.state]}</div>`;
+    container.appendChild(div);
+  });
+
+  const ready = DELIVERY_ITEMS.filter(i => i.state === 'ready' || i.state === 'included').length;
+  const el = document.getElementById('checklist-progress');
+  if (el) el.textContent = `${ready} / ${DELIVERY_ITEMS.length}`;
+}
+
+function onPackagePreview() {
+  if (!needsTeamFeature('Delivery Package', 'Studio')) return;
+  toast('패키지 미리보기 생성 중...', 'info');
+}
+
+function onPackageGenerate() {
+  if (!needsTeamFeature('Delivery Package', 'Studio')) return;
+  toast('패키지 생성 시작 — Approval History 동기화 중', 'success');
+}
+
+// ============================================================
+// Drawer
+// ============================================================
+function openDrawer(shot) {
+  state.currentShot = shot;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-backdrop').classList.add('open');
+  document.getElementById('drawer-code').textContent = shot.code;
+  document.getElementById('drawer-title-text').textContent = shot.title;
+  document.getElementById('drawer-status').value = shot.status;
+  document.getElementById('drawer-assignee').value = shot.assignee;
+
+  // Update API source tag in prompt-meta
+  const promptMeta = document.getElementById('prompt-meta');
+  if (promptMeta) {
+    const sourceLabel = shot.apiSource === 'workspace' ? 'Workspace API' : shot.apiSource === 'personal' ? 'Personal API' : 'SOAVIZ Demo';
+    const sourceClass = shot.apiSource === 'workspace' ? 'workspace' : shot.apiSource === 'personal' ? 'personal' : 'demo';
+    const model = shot.model || 'Kling 1.6';
+    promptMeta.innerHTML = `
+      <span class="api-source-tag ${sourceClass}"><span class="tiny-dot"></span><strong>${model}</strong> · ${sourceLabel}</span>
+      <span>6초</span><span>9:16</span><span>Seed 8472</span>`;
+  }
+
+  renderRightsLog(shot);
+  renderDrawerFooter(shot);
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-backdrop').classList.remove('open');
+  state.currentShot = null;
+}
+
+function setActiveVersion(el) {
+  document.querySelectorAll('.version-pill').forEach(p => p.classList.remove('active'));
+  if (!el.classList.contains('add')) el.classList.add('active');
+}
+
+// Rights log (8 items)
+const RIGHTS_TEMPLATE = [
+  { id:'provider', label:'Model Provider', sub:'Kling AI 1.6', state:'ok' },
+  { id:'source', label:'API Source', sub:'Workspace API', state:'ok' },
+  { id:'prompt', label:'Prompt Saved', sub:'전체 프롬프트 + 파라미터', state:'ok' },
+  { id:'commercial', label:'Commercial Usage', sub:'상업 이용 가능', state:'ok' },
+  { id:'likeness', label:'Person / Likeness Check', sub:'인물 등장 시 동의서 필요', state:'pending' },
+  { id:'music', label:'Music License', sub:'BGM 라이선스 미적용', state:'missing' },
+  { id:'asset', label:'Asset Source', sub:'프로젝트 라이브러리 / 외부', state:'ok' },
+  { id:'approval', label:'Approval Status', sub:'클라이언트 승인 대기', state:'pending' },
+];
+
+function renderRightsLog(shot) {
+  const grid = document.getElementById('rights-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Adjust by shot status
+  const items = RIGHTS_TEMPLATE.map(r => ({ ...r }));
+  if (shot.status === 'approved' || shot.status === 'delivered') {
+    items.find(i => i.id === 'approval').state = 'ok';
+    items.find(i => i.id === 'approval').sub = '승인 완료';
+  }
+  if (shot.apiSource === 'personal') {
+    items.find(i => i.id === 'source').sub = 'Personal API';
+  } else if (shot.apiSource === null) {
+    items.find(i => i.id === 'source').state = 'missing';
+    items.find(i => i.id === 'source').sub = '미연결';
+  }
+  if (shot.model) items.find(i => i.id === 'provider').sub = shot.model;
+
+  items.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'rights-row';
+    row.innerHTML = `
+      <div class="rights-label"><strong>${r.label}</strong><div class="sub">${r.sub}</div></div>
+      <div class="rights-status ${r.state}">${r.state === 'ok' ? 'OK' : r.state === 'pending' ? 'Pending' : r.state === 'missing' ? 'Missing' : 'Risk'}</div>`;
+    grid.appendChild(row);
+  });
+}
+
+// Drawer footer with status-aware emphasis
+function renderDrawerFooter(shot) {
+  const footer = document.getElementById('drawer-footer');
+  if (!footer) return;
+  const s = shot.status;
+  const btn = (label, cls, action) =>
+    `<button class="btn ${cls}" onclick="onShotAction('${action}','${shot.code}')">${label}</button>`;
+
+  // Emphasis by status
+  let buttons = '';
+  if (s === 'planning') {
+    buttons = btn('▶ 생성하기', 'btn-primary', 'generate')
+            + btn('↻ 재생성', 'btn-warn', 'regenerate')
+            + btn('💬 리뷰 요청', '', 'request-review')
+            + btn('📦 납품에 추가', '', 'add-delivery');
+  } else if (s === 'production') {
+    buttons = btn('💬 리뷰 요청', 'btn-primary', 'request-review')
+            + btn('↻ 재생성', 'btn-warn', 'regenerate')
+            + btn('✎ 수정 요청', '', 'request-revision')
+            + btn('📦 납품에 추가', '', 'add-delivery');
+  } else if (s === 'review') {
+    buttons = btn('✓ 샷 승인', 'btn-success', 'approve')
+            + btn('✎ 수정 요청', 'btn-danger', 'request-revision')
+            + btn('↻ 재생성', '', 'regenerate')
+            + btn('📦 납품에 추가', '', 'add-delivery');
+  } else if (s === 'approved') {
+    buttons = btn('📦 납품에 추가', 'btn-primary', 'add-delivery')
+            + btn('↻ 재생성', '', 'regenerate')
+            + btn('✎ 수정 요청', '', 'request-revision')
+            + btn('💬 리뷰 요청', '', 'request-review');
+  } else {
+    buttons = btn('완료', 'btn-locked', 'noop')
+            + btn('↻ 재생성', '', 'regenerate')
+            + btn('📦 다시 납품', '', 'add-delivery')
+            + btn('아카이브', '', 'archive');
+  }
+  footer.innerHTML = buttons;
+}
+
+function onShotAction(action, code) {
+  const shot = shots.find(s => s.code === code);
+  if (!shot) return;
+
+  const labelMap = {
+    'generate': '생성 요청됨',
+    'regenerate': '재생성 시작',
+    'request-review': '리뷰 요청 전송',
+    'request-revision': '수정 요청 전송',
+    'approve': `${code} 승인됨`,
+    'add-delivery': `${code} 납품 추가됨`,
+    'archive': '아카이브됨',
+    'noop': ''
+  };
+
+  // Gate certain actions to team
+  if (action === 'request-review' && state.projectType === 'personal') {
+    needsTeamFeature('리뷰 요청', 'Studio');
+    return;
+  }
+  if (action === 'add-delivery' && state.projectType === 'personal') {
+    needsTeamFeature('납품 패키지', 'Studio');
+    return;
+  }
+
+  // State transitions
+  if (action === 'generate') shot.status = 'production';
+  if (action === 'request-review') shot.status = 'review';
+  if (action === 'approve') { shot.status = 'approved'; shot.hasFeedback = false; }
+  if (action === 'request-revision') { shot.hasFeedback = true; shot.status = 'review'; }
+  if (action === 'add-delivery') shot.status = 'delivered';
+
+  renderBoard();
+  renderDrawerFooter(shot);
+  document.getElementById('drawer-status').value = shot.status;
+
+  if (labelMap[action]) toast(labelMap[action], 'success');
+}
+
+// ============================================================
+// AI Producer
+// ============================================================
+function toggleProducer() {
+  const panel = document.getElementById('producer-panel');
+  panel.classList.toggle('collapsed');
+  document.getElementById('producer-toggle').textContent =
+    panel.classList.contains('collapsed') ? '+' : '−';
+}
+
+function onProducerAction(action, code) {
+  console.log('[AI Producer]', action, code || '');
+  if (action === 'retry') toast(`${code} 재생성 시작 — Kling`, 'warn');
+  else if (action === 'edit-prompt') { toast(`${code} 프롬프트 편집기 열기`, 'info'); const sh = shots.find(s => s.code === code); if (sh) openDrawer(sh); }
+  else if (action === 'reminder') toast(`${code} 클라이언트에게 알림 전송`, 'info');
+  else if (action === 'open-shot') { const sh = shots.find(s => s.code === code); if (sh) openDrawer(sh); }
+  else if (action === 'split-brief') toast('Brief를 자동으로 샷 단위로 분해 중...', 'info');
+  else if (action === 'generate-package') {
+    if (state.projectType === 'personal') needsTeamFeature('Delivery Package', 'Studio');
+    else toast('Delivery Package 생성 시작', 'success');
+  }
+}
+
+// ============================================================
+// API Vault dropdown
+// ============================================================
+function toggleApiVault(e) {
+  e.stopPropagation();
+  document.getElementById('api-vault-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('api-vault-dropdown').classList.remove('open');
+});
+
+// ============================================================
+// Mobile bottom tab handlers
+// ============================================================
+function onMobileReview() {
+  showPage('board');
+  setTimeout(() => {
+    const dbTab = document.querySelector('[data-tab="db"]');
+    if (dbTab) switchTab(dbTab, 'db');
+    document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+  }, 100);
+  toast('리뷰 모드 — 클라 피드백 우선 표시', 'info');
+}
+
+function onMobileDelivery() {
+  showPage('board');
+  setTimeout(() => {
+    const tab = document.querySelector('[data-tab="deliver"]');
+    if (tab) switchTab(tab, 'deliver');
+  }, 100);
+}
+
+// ============================================================
+// Init
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('drawer-status').addEventListener('change', (e) => {
+    if (state.currentShot) {
+      state.currentShot.status = e.target.value;
+      renderBoard();
+      renderDrawerFooter(state.currentShot);
+    }
+  });
+
+  document.getElementById('drawer-assignee').addEventListener('change', (e) => {
+    if (state.currentShot) {
+      state.currentShot.assignee = e.target.value;
+      renderBoard();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeDrawer();
+      closeModal();
+    }
+  });
+
+  renderBoard();
+  renderDelivery();
+  runSmokeTests();
+});
+
+// ============================================================
+// Smoke tests (console)
+// ============================================================
+function runSmokeTests() {
+  const tests = [];
+  const ok = (name, cond) => tests.push({ name, ok: !!cond });
+
+  ok('shots data loaded', shots.length === 9);
+  ok('all status keys valid', shots.every(s => Object.keys(STATUS_LABELS).includes(s.status)));
+  ok('renderBoard exists', typeof renderBoard === 'function');
+  ok('renderDB exists', typeof renderDB === 'function');
+  ok('renderDelivery exists', typeof renderDelivery === 'function');
+  ok('openDrawer exists', typeof openDrawer === 'function');
+  ok('toast exists', typeof toast === 'function');
+  ok('openModal exists', typeof openModal === 'function');
+  ok('needsTeamFeature exists', typeof needsTeamFeature === 'function');
+  ok('next-action returns for all statuses', ['planning','production','review','approved','delivered'].every(s => getNextAction({status:s, hasFailed:false, hasFeedback:false, progress:0})));
+  ok('filter passes all by default', shots.every(s => passFilter(s, 'all')));
+  ok('filter mine matches assignee', shots.filter(s => passFilter(s, 'mine')).every(s => s.assignee === state.me));
+  ok('drawer footer renders', document.getElementById('drawer-footer') !== null);
+  ok('mobile bottom tabs exist', document.querySelector('.mobile-tabs') !== null);
+  ok('view switcher exists', document.querySelector('.view-switcher') !== null);
+  ok('rights log container exists', document.getElementById('rights-grid') !== null);
+
+  const passed = tests.filter(t => t.ok).length;
+  console.log(`%c[SOAVIZ smoke tests] ${passed}/${tests.length} passed`, 'color: #ff6b3f; font-weight: 700;');
+  tests.forEach(t => console.log(`  ${t.ok ? '✓' : '✗'} ${t.name}`));
+}
+</script>
+</body>
+</html>

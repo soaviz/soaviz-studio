@@ -22160,6 +22160,173 @@
 <div class="layout">
 
   <aside class="sidebar">
+    <!-- ═══ WORKSPACE CONTEXT (Personal vs Team) ═══ -->
+    <style>
+      /* Workspace pill (legacy — hidden, JS still references it for state) */
+      .swb-ws-section-label { display:none; }
+      .swb-ws-pill { display:none; }
+
+      /* ═══ Workspace Tabs (top of sidebar) ═══ */
+      .swb-ws-list {
+        display: flex;
+        gap: 3px;
+        margin: 6px 12px 12px;
+        padding: 3px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .swb-ws-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 9px 6px;
+        border-radius: 8px;
+        color: var(--text-faint);
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        transition: 0.15s;
+        position: relative;
+      }
+      .swb-ws-item:hover { color: var(--text); background: var(--bg-elev); }
+      .swb-ws-item .swb-ws-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+      .swb-ws-item .swb-ws-dot.personal { background:#6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.20); }
+      .swb-ws-item .swb-ws-dot.team { background:#ff6b3f; box-shadow: 0 0 0 2px rgba(255,107,63,0.20); }
+      .swb-ws-item .swb-ws-label { font-size: 11px; line-height: 1.2; display: flex; align-items: center; gap: 5px; }
+      .swb-ws-item .swb-ws-meta { font-size: 9px; color: var(--text-faint); font-weight: 400; line-height: 1.1; }
+      .swb-ws-item.active { color: var(--text); }
+      .swb-ws-item.active[data-swb-ws="personal"] {
+        background: rgba(99,102,241,0.12);
+        border-color: rgba(99,102,241,0.45);
+      }
+      .swb-ws-item.active[data-swb-ws="personal"] .swb-ws-label { color: #6366f1; }
+      .swb-ws-item.active[data-swb-ws="team"] {
+        background: rgba(255,107,63,0.12);
+        border-color: rgba(255,107,63,0.45);
+      }
+      .swb-ws-item.active[data-swb-ws="team"] .swb-ws-label { color: #ff6b3f; }
+      .swb-ws-item.active .swb-ws-meta { opacity: 0.85; }
+
+      /* Sidebar global context line — vertical stripe follows tab */
+      body.swb-ctx-personal .sidebar { box-shadow: inset 3px 0 0 0 rgba(99,102,241,0.55); }
+      body.swb-ctx-team .sidebar { box-shadow: inset 3px 0 0 0 rgba(255,107,63,0.55); }
+
+      /* === COMPLETE SEPARATION: hide menu items belonging to inactive context === */
+      body.swb-ctx-personal [data-ws="team"] { display: none !important; }
+      body.swb-ctx-team [data-ws="personal"] { display: none !important; }
+
+      @media (max-width: 800px) {
+        .swb-ws-list, .swb-ws-section-label { display:none; }
+        body.swb-ctx-personal .sidebar, body.swb-ctx-team .sidebar { box-shadow: none; }
+      }
+    </style>
+    <div class="nav-section-label swb-ws-section-label">
+      <span>WORKSPACE</span>
+      <span id="swb-ws-pill" class="swb-ws-pill personal">PERSONAL</span>
+    </div>
+    <div class="swb-ws-list" role="tablist" aria-label="워크스페이스 전환">
+      <a class="swb-ws-item active" data-swb-ws="personal" role="tab" aria-selected="true" href="javascript:void(0)" onclick="setSwbWorkspace('personal'); return false;" title="개인 작업 — 인디고">
+        <span class="swb-ws-label"><span class="swb-ws-dot personal"></span>개인 작업</span>
+        <span class="swb-ws-meta">혼자 작업 중</span>
+      </a>
+      <a class="swb-ws-item" data-swb-ws="team" role="tab" aria-selected="false" href="javascript:void(0)" onclick="setSwbWorkspace('team'); return false;" title="팀 작업 — 오렌지">
+        <span class="swb-ws-label"><span class="swb-ws-dot team"></span>팀 작업</span>
+        <span class="swb-ws-meta">X Studio · 3 seats</span>
+      </a>
+    </div>
+
+    <!-- ═══ CONTEXT TOOLS (Personal vs Team) ═══ -->
+    <style>
+      .swb-ctx-label { display:flex; align-items:center; justify-content:space-between; padding-right: 12px; }
+      .swb-ctx-tag { padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:0.4px; text-transform:none; }
+      .swb-ctx-tag.personal { background: rgba(99,102,241,0.10); color:#6366f1; border:1px solid rgba(99,102,241,0.35); }
+      .swb-ctx-tag.team { background: rgba(255,107,63,0.10); color:#ff6b3f; border:1px solid rgba(255,107,63,0.35); }
+      .swb-ctx-link { display:flex !important; align-items:center; }
+      .swb-ctx-link-dot { width:7px; height:7px; border-radius:50%; margin-right:9px; flex-shrink:0; box-shadow: 0 0 0 2px rgba(0,0,0,0.0); }
+      .swb-ctx-link-dot.personal { background:#6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.18); }
+      .swb-ctx-link-dot.team { background:#ff6b3f; box-shadow: 0 0 0 2px rgba(255,107,63,0.18); }
+      .swb-ctx-link-meta { margin-left:auto; font-size:9px; color: var(--text-faint); font-weight:400; padding-left:6px; }
+      /* Inactive-context items dimmed */
+      body.swb-ctx-personal .swb-ctx-link.team { opacity: 0.45; }
+      body.swb-ctx-personal .swb-ctx-link.team:hover { opacity: 0.85; }
+      body.swb-ctx-team .swb-ctx-link.personal { opacity: 0.55; }
+      body.swb-ctx-team .swb-ctx-link.personal:hover { opacity: 0.9; }
+      /* Active-context items get subtle bg highlight on hover */
+      body.swb-ctx-personal .swb-ctx-link.personal:hover { background: rgba(99,102,241,0.06); }
+      body.swb-ctx-team .swb-ctx-link.team:hover { background: rgba(255,107,63,0.06); }
+      @media (max-width: 800px) {
+        .swb-ctx-label, .swb-ctx-link { display: none !important; }
+      }
+    </style>
+
+    <div class="nav-section-label swb-ctx-label" data-ws="personal">
+      <span>🟣 PERSONAL</span>
+      <span class="swb-ctx-tag personal">내 API</span>
+    </div>
+    <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 API Vault', false); return false;" title="개인 API Key 관리 — 본인 키 암호화 저장">
+      <span class="swb-ctx-link-dot personal"></span>
+      <span>내 API Vault</span>
+      <span class="swb-ctx-link-meta">BYOK</span>
+    </a>
+    <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 프로젝트', false, 'projects'); return false;" title="개인 프로젝트 목록">
+      <span class="swb-ctx-link-dot personal"></span>
+      <span>내 프로젝트</span>
+    </a>
+    <a class="nav-item swb-ctx-link personal" data-ws="personal" href="javascript:void(0)" onclick="openSwbCtxTool('내 라이브러리', false, 'library'); return false;" title="개인 라이브러리">
+      <span class="swb-ctx-link-dot personal"></span>
+      <span>내 라이브러리</span>
+    </a>
+
+    <div class="nav-section-label swb-ctx-label" data-ws="team">
+      <span>🟠 TEAM</span>
+      <span class="swb-ctx-tag team">Workspace API</span>
+    </div>
+    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('Workspace API Vault', true); return false;" title="팀이 공동으로 사용하는 API Key — Studio 플랜">
+      <span class="swb-ctx-link-dot team"></span>
+      <span>Workspace API Vault</span>
+      <span class="swb-ctx-link-meta">팀 공유</span>
+    </a>
+    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('팀 프로젝트', true); return false;" title="팀 프로젝트 목록 — Studio 플랜">
+      <span class="swb-ctx-link-dot team"></span>
+      <span>팀 프로젝트</span>
+    </a>
+    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('팀 멤버', true); return false;" title="팀 멤버 관리 — Studio 플랜">
+      <span class="swb-ctx-link-dot team"></span>
+      <span>팀 멤버</span>
+    </a>
+    <a class="nav-item swb-ctx-link team" data-ws="team" href="javascript:void(0)" onclick="openSwbCtxTool('Approval History', true); return false;" title="승인 흐름 + 클라 댓글 PDF — Business 플랜">
+      <span class="swb-ctx-link-dot team"></span>
+      <span>Approval History</span>
+      <span class="swb-ctx-link-meta">Biz+</span>
+    </a>
+
+    <script>
+      /* Context-tool 진입 핸들러 — 팀 전용은 Personal 컨텍스트에서 conversion 모달 */
+      function openSwbCtxTool(name, requiresTeam, pageRoute) {
+        const ws = (window.SwbState && window.SwbState.projectType) || (document.body.classList.contains('swb-ctx-team') ? 'team' : 'personal');
+        if (requiresTeam && ws !== 'team') {
+          if (typeof needsSwbTeam === 'function') { needsSwbTeam(name, 'Studio'); return; }
+          if (typeof swbToast === 'function') { swbToast(name + ' — Studio 플랜 필요', 'warn'); return; }
+          alert(name + ' 은 팀 프로젝트(Studio 플랜)에서 사용 가능합니다.');
+          return;
+        }
+        // 라우팅 가능한 항목은 실제 페이지로 이동
+        if (pageRoute && typeof showPage === 'function') {
+          showPage(pageRoute);
+          if (typeof swbToast === 'function') swbToast(name + ' 진입', 'info', 1500);
+          return;
+        }
+        // 그 외: placeholder 토스트
+        if (typeof swbToast === 'function') swbToast(name + ' (전용 페이지 준비 중)', 'info');
+        else alert(name);
+      }
+    </script>
+
     <!-- ═══ MAIN ═══ -->
     <div class="nav-section-label">MAIN</div>
     <a class="nav-item" data-page="today" title="Today">
@@ -25275,6 +25442,1254 @@
 
     </section>
 
+    <!-- ================ PAGE: PROJECT WORKBENCH (Shot Board OS) ================ -->
+    <style>
+      /* ===== Project Workbench (swb- prefix, scoped) ===== */
+      .swb-page { --swb-accent: var(--accent); --swb-success: #10b981; --swb-warning: #f59e0b; --swb-danger: #ef4444; --swb-info: #3b82f6;
+        --swb-st-planning:#6b7280; --swb-st-production:#f0c419; --swb-st-review:#3b82f6; --swb-st-approved:#10b981; --swb-st-delivered:#8b5cf6; }
+      .swb-header { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 16px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+      .swb-header-meta { flex:1; min-width:220px; }
+      .swb-back { display:inline-flex; align-items:center; gap:6px; color:var(--text-faint); font-size:12px; cursor:pointer; margin-bottom:6px; padding:4px 0; border:none; background:none; }
+      .swb-back:hover { color: var(--text); }
+      .swb-title-row { display:flex; align-items:center; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
+      .swb-title { font-size:22px; font-weight:700; font-family: var(--font-display); }
+      .swb-type-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+      /* ===== Context colors — Personal (Indigo) vs Team (Brand Orange) ===== */
+      .swb-page { --swb-ctx-personal:#6366f1; --swb-ctx-personal-soft:rgba(99,102,241,0.10); --swb-ctx-personal-border:rgba(99,102,241,0.45); }
+      .swb-type-badge.personal { background: rgba(99,102,241,0.10); color:#6366f1; border:1px solid rgba(99,102,241,0.45); }
+      .swb-type-badge.team { background: var(--accent-soft); color: var(--accent); border:1px solid var(--accent); }
+      /* Workbench header left context stripe */
+      .swb-header { border-left: 4px solid var(--accent); }
+      body.swb-ctx-personal .swb-header { border-left-color:#6366f1; }
+      body.swb-ctx-team .swb-header { border-left-color: var(--accent); }
+      /* API Vault mode label — context-aware */
+      body.swb-ctx-personal .swb-api-mode { background: rgba(99,102,241,0.12); color:#6366f1; }
+      /* AI Producer header — context-aware tint */
+      body.swb-ctx-personal .swb-producer-head { background: linear-gradient(135deg, rgba(99,102,241,0.18), var(--bg-elev)); }
+      /* Modal icon — context-aware tint */
+      body.swb-ctx-personal .swb-modal-icon { background: linear-gradient(135deg, rgba(99,102,241,0.18), var(--bg-elev)); }
+      /* Toast accent in personal context */
+      body.swb-ctx-personal .swb-toast { border-left-color:#6366f1; }
+      body.swb-ctx-personal .swb-toast.success { border-left-color: var(--swb-success); }
+      body.swb-ctx-personal .swb-toast.warn { border-left-color: var(--swb-warning); }
+      body.swb-ctx-personal .swb-toast.danger { border-left-color: var(--swb-danger); }
+      .swb-sub { color: var(--text-faint); font-size: 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+      .swb-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+      .swb-btn { background: var(--bg-elev); color: var(--text); border:1px solid var(--border); padding:7px 14px; border-radius:var(--r-md); cursor:pointer; font-size:13px; font-family:inherit; display:inline-flex; align-items:center; gap:6px; }
+      .swb-btn:hover { background: var(--bg-card); border-color: var(--border-strong, var(--border)); }
+      .swb-btn-primary { background: var(--accent); border-color: var(--accent); color:#0a0a0b; font-weight:600; }
+      .swb-btn-primary:hover { background: var(--accent-2, var(--accent)); }
+      .swb-btn-success { background: var(--swb-success); border-color: var(--swb-success); color:#0a0a0b; font-weight:600; }
+      .swb-btn-warn { background:transparent; border-color: var(--swb-warning); color: var(--swb-warning); }
+      .swb-btn-danger { background:transparent; border-color: var(--swb-danger); color: var(--swb-danger); }
+      .swb-btn-ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+      .swb-btn-ghost:hover { background: var(--bg-elev); }
+      .swb-btn-sm { padding: 4px 10px; font-size: 12px; }
+      .swb-avatar { width:22px; height:22px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#0a0a0b; flex-shrink:0; }
+      .swb-avatars { display:inline-flex; }
+      .swb-avatars .swb-avatar { border:2px solid var(--bg); margin-left:-6px; }
+      .swb-avatars .swb-avatar:first-child { margin-left:0; }
+
+      /* API Vault pill in workbench header */
+      .swb-api-vault { position:relative; }
+      .swb-api-pill { background: var(--bg-elev); border:1px solid var(--border); padding:6px 12px; border-radius:18px; cursor:pointer; font-size:12px; display:inline-flex; align-items:center; gap:8px; }
+      .swb-api-pill:hover { border-color: var(--accent); }
+      .swb-api-pill .swb-pulse { width:7px; height:7px; background: var(--swb-success); border-radius:50%; box-shadow:0 0 0 0 rgba(16,185,129,0.6); animation: swb-pulse 2s infinite; }
+      @keyframes swb-pulse { 0%{box-shadow:0 0 0 0 rgba(16,185,129,0.6);} 70%{box-shadow:0 0 0 6px rgba(16,185,129,0);} 100%{box-shadow:0 0 0 0 rgba(16,185,129,0);} }
+      .swb-api-dropdown { position:absolute; top:100%; right:0; margin-top:8px; width:300px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.4); z-index:100; overflow:hidden; display:none; }
+      .swb-api-dropdown.open { display:block; }
+      .swb-api-head { padding:10px 14px; border-bottom:1px solid var(--border); background:var(--bg-elev); font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.8px; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+      .swb-api-mode { background: var(--accent-soft); color: var(--accent); padding:2px 8px; border-radius:10px; font-size:10px; text-transform:none; letter-spacing:0; }
+      .swb-api-svc { padding:10px 14px; display:flex; align-items:center; justify-content:space-between; font-size:13px; border-bottom:1px solid var(--border); }
+      .swb-api-svc:last-of-type { border-bottom:none; }
+      .swb-api-svc .swb-svc-info { display:flex; align-items:center; gap:10px; }
+      .swb-api-svc .swb-svc-dot { width:8px; height:8px; border-radius:50%; }
+      .swb-api-svc.connected .swb-svc-dot { background: var(--swb-success); }
+      .swb-api-svc.disconnected .swb-svc-dot { background: var(--text-faint); }
+      .swb-api-svc.disconnected { color: var(--text-faint); }
+      .swb-api-foot { padding:10px 14px; border-top:1px solid var(--border); background:var(--bg-elev); cursor:pointer; font-size:12px; color:var(--accent); text-align:center; }
+      .swb-api-foot:hover { background: var(--bg-card); }
+
+      /* Tabs */
+      .swb-tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+      .swb-tab { padding:10px 16px; cursor:pointer; color: var(--text-faint); font-size:13px; border-bottom:2px solid transparent; margin-bottom:-1px; user-select:none; }
+      .swb-tab:hover { color: var(--text); }
+      .swb-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight:600; }
+      .swb-tab-spacer { flex:1; }
+
+      /* Filter chips */
+      .swb-filters { display:flex; align-items:center; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+      .swb-chip { padding:6px 14px; background: var(--bg-card); border:1px solid var(--border); border-radius:16px; font-size:12px; color:var(--text-faint); cursor:pointer; transition:0.15s; display:inline-flex; align-items:center; gap:6px; }
+      .swb-chip:hover { color: var(--text); border-color: var(--border-strong, var(--border)); }
+      .swb-chip.active { background: var(--accent); border-color: var(--accent); color:#0a0a0b; font-weight:600; }
+      .swb-chip .swb-cnt { background: rgba(255,255,255,0.15); padding:1px 6px; border-radius:10px; font-size:10px; }
+      .swb-chip.active .swb-cnt { background: rgba(0,0,0,0.2); }
+
+      /* Kanban board */
+      .swb-board { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; min-height:520px; }
+      .swb-col { background: var(--bg-card); border:1px solid var(--border); border-radius:var(--r-lg); display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+      .swb-col-head { padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; }
+      .swb-col-title { display:flex; align-items:center; gap:8px; }
+      .swb-col-title-en { font-size:11px; }
+      .swb-col-title-ko { font-size:10px; color: var(--text-faint); font-weight:500; text-transform:none; letter-spacing:0; }
+      .swb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+      .swb-st-planning .swb-dot, .swb-pill.swb-st-planning .swb-dot { background: var(--swb-st-planning); }
+      .swb-st-production .swb-dot, .swb-pill.swb-st-production .swb-dot { background: var(--swb-st-production); }
+      .swb-st-review .swb-dot, .swb-pill.swb-st-review .swb-dot { background: var(--swb-st-review); }
+      .swb-st-approved .swb-dot, .swb-pill.swb-st-approved .swb-dot { background: var(--swb-st-approved); }
+      .swb-st-delivered .swb-dot, .swb-pill.swb-st-delivered .swb-dot { background: var(--swb-st-delivered); }
+      .swb-col-cnt { background: var(--bg-elev); padding:2px 8px; border-radius:10px; font-size:11px; color: var(--text-faint); }
+      .swb-col-body { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; transition: 0.15s; max-height:calc(100vh - 360px); min-height:200px; }
+      .swb-col-body.swb-drag-over { background: var(--accent-soft); }
+      .swb-col-body:empty::after { content:'비어있음'; color: var(--text-faint); font-size:11px; text-align:center; padding:16px; font-style:italic; }
+
+      .swb-card { background: var(--bg-elev); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; transition:0.15s; }
+      .swb-card:hover { border-color: var(--border-strong, var(--border)); transform: translateY(-1px); }
+      .swb-card.swb-dragging { opacity:0.4; }
+      .swb-thumb { height:72px; background: #0f0f15; position:relative; display:flex; align-items:center; justify-content:center; color: rgba(255,255,255,0.4); font-size:16px; }
+      .swb-thumb.swb-empty { background: repeating-linear-gradient(45deg, var(--bg-card), var(--bg-card) 8px, var(--bg-elev) 8px, var(--bg-elev) 16px); }
+      .swb-thumb.swb-blue { background: linear-gradient(135deg, #1a2540, #2a3a5a); }
+      .swb-thumb.swb-warm { background: linear-gradient(135deg, #2a1f15, #3a2a1f); }
+      .swb-thumb.swb-purple { background: linear-gradient(135deg, #2a1a3a, #3a2540); }
+      .swb-thumb.swb-green { background: linear-gradient(135deg, #1a2a1f, #2a3a25); }
+      .swb-thumb.swb-red { background: linear-gradient(135deg, #2a1518, #3a2025); }
+      .swb-progress { position:absolute; bottom:0; left:0; right:0; height:3px; background: rgba(0,0,0,0.4); }
+      .swb-progress-bar { height:100%; background: var(--swb-st-production); }
+      .swb-info { padding:8px 10px; }
+      .swb-code-row { display:flex; justify-content:space-between; font-size:11px; color:var(--text-faint); margin-bottom:3px; align-items:center; }
+      .swb-card-title { font-size:13px; font-weight:500; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .swb-meta { display:flex; gap:6px; align-items:center; font-size:11px; color:var(--text-faint); flex-wrap:wrap; }
+      .swb-badge { background: var(--bg-card); padding:1px 6px; border-radius:4px; font-size:10px; }
+      .swb-badge-warn { background: rgba(245,158,11,0.15); color: var(--swb-warning); }
+      .swb-badge-danger { background: rgba(239,68,68,0.15); color: var(--swb-danger); }
+      .swb-next { margin-top:8px; padding:5px 10px; background: var(--bg-card); border:1px solid var(--border); border-radius:14px; font-size:11px; color:var(--text-faint); display:inline-flex; align-items:center; gap:6px; line-height:1.2; }
+      .swb-next.swb-tone-accent { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+      .swb-next.swb-tone-warn { border-color: var(--swb-warning); color: var(--swb-warning); background: rgba(245,158,11,0.08); }
+      .swb-next.swb-tone-success { border-color: var(--swb-success); color: var(--swb-success); background: rgba(16,185,129,0.08); }
+      .swb-next .swb-arrow { font-weight:700; }
+
+      /* Overview cards */
+      .swb-grid-2 { display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; }
+      .swb-grid-4 { display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:18px; }
+      .swb-stat-card { background: var(--bg-card); border:1px solid var(--border); border-radius: var(--r-lg); padding:16px 18px; }
+      .swb-stat-num { font-size:24px; font-weight:800; color: var(--accent); font-family: var(--font-display); }
+      .swb-stat-label { font-size:11px; color: var(--text-faint); text-transform:uppercase; letter-spacing:0.8px; margin-top:4px; }
+      .swb-info-card { background: var(--bg-card); border:1px solid var(--border); border-radius: var(--r-lg); padding:18px 20px; }
+      .swb-info-card h3 { font-size:14px; font-weight:700; margin:0 0 10px; color: var(--text); }
+      .swb-info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--border); font-size:13px; }
+      .swb-info-row:last-child { border-bottom:none; }
+      .swb-info-row .lbl { color: var(--text-faint); }
+
+      /* DB table */
+      .swb-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+      .swb-view { display:inline-flex; background: var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:2px; gap:2px; }
+      .swb-view-btn { padding:5px 12px; font-size:12px; color:var(--text-faint); cursor:pointer; border-radius:6px; background:transparent; border:none; font-family:inherit; }
+      .swb-view-btn:hover { color: var(--text); }
+      .swb-view-btn.active { background: var(--accent); color:#0a0a0b; font-weight:600; }
+      .swb-table-wrap { background: var(--bg-card); border:1px solid var(--border); border-radius: var(--r-lg); overflow:auto; }
+      .swb-table { width:100%; border-collapse:collapse; font-size:13px; min-width:1100px; }
+      .swb-table thead { background: var(--bg-elev); }
+      .swb-table th { text-align:left; padding:10px 14px; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
+      .swb-table td { padding:12px 14px; border-bottom:1px solid var(--border); white-space:nowrap; }
+      .swb-table tbody tr { cursor:pointer; }
+      .swb-table tbody tr:hover td { background: var(--bg-elev); }
+      .swb-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:12px; font-size:11px; background: var(--bg-elev); }
+      .swb-pill .swb-dot { width:6px; height:6px; }
+      .swb-api-tag { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; background: var(--bg-elev); border:1px solid var(--border); border-radius:4px; font-size:11px; }
+      .swb-api-tag.swb-workspace { border-color: var(--accent); color: var(--accent); }
+      .swb-api-tag.swb-personal { border-color: var(--text-faint); color: var(--text-dim); }
+      .swb-api-tag .swb-tiny { width:5px; height:5px; border-radius:50%; background: var(--swb-success); }
+
+      /* Drawer */
+      .swb-drawer-bd { position:fixed; inset:0; background: rgba(0,0,0,0.5); opacity:0; pointer-events:none; transition:0.2s; z-index:50; }
+      .swb-drawer-bd.open { opacity:1; pointer-events:auto; }
+      .swb-drawer { position:fixed; top:0; right:0; width:480px; max-width:92vw; height:100vh; background: var(--bg-card); border-left:1px solid var(--border); z-index:51; transform: translateX(100%); transition: 0.25s ease-out; display:flex; flex-direction:column; }
+      .swb-drawer.open { transform: translateX(0); }
+      .swb-drawer-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+      .swb-drawer-title { font-weight:600; font-size:15px; }
+      .swb-drawer-title .swb-code { color:var(--text-faint); margin-right:8px; font-weight:400; font-family: ui-monospace, monospace; }
+      .swb-drawer-body { flex:1; overflow-y:auto; padding:16px 20px; }
+      .swb-drawer-foot { border-top:1px solid var(--border); background: var(--bg-elev); padding:12px 20px; display:flex; flex-wrap:wrap; gap:8px; flex-shrink:0; }
+      .swb-drawer-foot .swb-btn { flex:1; min-width: calc(50% - 4px); justify-content:center; }
+      .swb-section { margin-bottom:22px; }
+      .swb-section-t { font-size:11px; text-transform:uppercase; color:var(--text-faint); letter-spacing:0.8px; margin-bottom:8px; font-weight:600; }
+      .swb-row-flex { display:flex; gap:12px; margin-bottom:14px; }
+      .swb-field { flex:1; }
+      .swb-field-l { font-size:11px; color: var(--text-faint); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+      .swb-select { background: var(--bg-elev); border:1px solid var(--border); color: var(--text); padding:7px 10px; border-radius:6px; font-size:13px; width:100%; font-family:inherit; }
+      .swb-prompt { background: var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:12px; color: var(--text-dim); line-height:1.6; font-family: ui-monospace, monospace; }
+      .swb-rights-row { padding:10px 0; border-bottom:1px dashed var(--border); font-size:12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+      .swb-rights-row:last-child { border-bottom:none; }
+      .swb-rights-l strong { color: var(--text); font-weight:500; display:block; font-size:12px; }
+      .swb-rights-l .sub { font-size:10px; color:var(--text-faint); margin-top:2px; }
+      .swb-rights-s { font-size:11px; padding:2px 10px; border-radius:10px; font-weight:600; white-space:nowrap; }
+      .swb-rights-s.ok { background: rgba(16,185,129,0.15); color: var(--swb-success); }
+      .swb-rights-s.pending { background: rgba(245,158,11,0.15); color: var(--swb-warning); }
+      .swb-rights-s.missing { background: rgba(239,68,68,0.15); color: var(--swb-danger); }
+
+      /* AI Producer */
+      .swb-producer { position:fixed; bottom:24px; right:24px; width:320px; background: var(--bg-card); border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.5); overflow:hidden; z-index:30; display:none; }
+      .swb-producer.show { display:block; }
+      .swb-producer.collapsed .swb-producer-body { display:none; }
+      .swb-producer-head { padding:12px 14px; background: linear-gradient(135deg, rgba(255,107,63,0.15), var(--bg-elev)); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+      .swb-producer-title { font-size:13px; font-weight:600; }
+      .swb-producer-body { max-height: 380px; overflow-y:auto; }
+      .swb-producer-item { padding:12px 14px; font-size:12px; border-bottom:1px solid var(--border); }
+      .swb-producer-item:last-child { border-bottom:none; }
+      .swb-producer-it { font-weight:600; margin-bottom:4px; }
+      .swb-producer-d { color: var(--text-faint); font-size:11px; margin-bottom:8px; line-height:1.5; }
+      .swb-producer-act { display:flex; gap:6px; flex-wrap:wrap; }
+
+      /* Delivery */
+      .swb-delivery { background: var(--bg-card); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; }
+      .swb-delivery-head { padding:18px 22px; border-bottom:1px solid var(--border); background: linear-gradient(135deg, rgba(255,107,63,0.08), var(--bg-card)); }
+      .swb-delivery-head h3 { font-size:17px; font-weight:700; margin:0 0 5px; }
+      .swb-delivery-head p { font-size:13px; color:var(--text-faint); margin:0; }
+      .swb-checklist { padding:8px 22px; }
+      .swb-check-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+      .swb-check-item:last-child { border-bottom:none; }
+      .swb-check-icon { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; font-weight:700; }
+      .swb-check-icon.ready, .swb-check-icon.included { background: rgba(16,185,129,0.15); color: var(--swb-success); }
+      .swb-check-icon.missing { background: rgba(239,68,68,0.15); color: var(--swb-danger); }
+      .swb-check-icon.review-needed { background: rgba(245,158,11,0.15); color: var(--swb-warning); }
+      .swb-check-info { flex:1; }
+      .swb-check-t { font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; }
+      .swb-check-d { font-size:11px; color:var(--text-faint); margin-top:2px; }
+      .swb-check-s { font-size:11px; padding:3px 10px; border-radius:10px; font-weight:600; white-space:nowrap; }
+      .swb-check-s.ready, .swb-check-s.included { background: rgba(16,185,129,0.15); color: var(--swb-success); }
+      .swb-check-s.missing { background: rgba(239,68,68,0.15); color: var(--swb-danger); }
+      .swb-check-s.review-needed { background: rgba(245,158,11,0.15); color: var(--swb-warning); }
+      .swb-plan-tag { font-size:9px; padding:1px 6px; border-radius:4px; background: var(--bg-elev); color: var(--text-faint); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+      .swb-delivery-foot { padding:14px 22px; border-top:1px solid var(--border); background: var(--bg-elev); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+      /* Modal (workbench scoped) */
+      .swb-modal-bd { position:fixed; inset:0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+      .swb-modal-bd.open { display:flex; }
+      .swb-modal { background: var(--bg-card); border:1px solid var(--border); border-radius:14px; width:460px; max-width:100%; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.6); max-height:90vh; display:flex; flex-direction:column; }
+      .swb-modal-icon { height:80px; background: linear-gradient(135deg, rgba(255,107,63,0.15), var(--bg-elev)); display:flex; align-items:center; justify-content:center; font-size:32px; border-bottom:1px solid var(--border); }
+      .swb-modal-body { padding:22px; overflow-y:auto; flex:1; }
+      .swb-modal-title { font-size:18px; font-weight:700; margin-bottom:8px; }
+      .swb-modal-text { color: var(--text-faint); font-size:13px; line-height:1.6; margin-bottom:16px; }
+      .swb-modal-list { background: var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-bottom:18px; }
+      .swb-modal-li { font-size:12px; color:var(--text-faint); padding:4px 0; display:flex; gap:8px; }
+      .swb-modal-li::before { content:'✓'; color: var(--accent); font-weight:700; }
+      .swb-modal-actions { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+
+      .swb-pt-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+      .swb-pt-option { background: var(--bg-elev); border:2px solid var(--border); border-radius:10px; padding:16px 14px; cursor:pointer; transition:0.15s; position:relative; }
+      .swb-pt-option:hover { border-color: var(--border-strong, var(--border)); }
+      .swb-pt-option.selected { border-color: var(--accent); background: var(--accent-soft); }
+      .swb-pt-option .ico { font-size:22px; margin-bottom:6px; }
+      .swb-pt-option .nm { font-weight:700; font-size:13px; margin-bottom:3px; }
+      .swb-pt-option .ds { font-size:11px; color:var(--text-faint); margin-bottom:6px; line-height:1.5; }
+      .swb-pt-option .ft { font-size:10px; color:var(--text-faint); }
+      .swb-pt-option .rec { position:absolute; top:6px; right:6px; background: var(--accent); color:#0a0a0b; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+
+      /* Toast (workbench scoped) */
+      .swb-toast-c { position:fixed; top:60px; right:24px; z-index:300; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+      .swb-toast { background: var(--bg-card); border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:8px; padding:10px 14px; font-size:13px; color: var(--text); box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:240px; max-width:360px; animation: swb-toast-in 0.2s ease-out; pointer-events:auto; }
+      .swb-toast.success { border-left-color: var(--swb-success); }
+      .swb-toast.warn { border-left-color: var(--swb-warning); }
+      .swb-toast.danger { border-left-color: var(--swb-danger); }
+      .swb-toast.info { border-left-color: var(--swb-info); }
+      .swb-toast.fade-out { animation: swb-toast-out 0.2s ease-in forwards; }
+      @keyframes swb-toast-in { from { transform: translateX(40px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+      @keyframes swb-toast-out { to { transform: translateX(40px); opacity:0; } }
+
+      /* Mobile bottom tabs scoped to workbench */
+      .swb-mobile-tabs { display:none; position:fixed; bottom:0; left:0; right:0; background: var(--bg-card); border-top:1px solid var(--border); z-index:40; padding:8px 0; }
+      .swb-mobile-tabs-in { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+      .swb-mobile-tab { text-align:center; padding:6px 4px; color: var(--text-faint); font-size:10px; cursor:pointer; }
+      .swb-mobile-tab .ic { font-size:17px; display:block; margin-bottom:2px; }
+      .swb-mobile-tab.active { color: var(--accent); }
+
+      /* Responsive */
+      @media (max-width: 1100px) {
+        .swb-board { grid-template-columns: repeat(3, 1fr); min-height:auto; }
+        .swb-grid-4 { grid-template-columns: repeat(2, 1fr); }
+        .swb-producer { width:280px; }
+      }
+      @media (max-width: 800px) {
+        .swb-board { grid-template-columns: 1fr; }
+        .swb-grid-2, .swb-grid-4 { grid-template-columns: 1fr; }
+        .swb-header { flex-direction: column; align-items: stretch; }
+        .swb-actions { flex-wrap: wrap; }
+        .swb-producer { width: calc(100vw - 28px); right:14px; bottom:76px; }
+        .swb-pt-options { grid-template-columns: 1fr; }
+        .swb-drawer { width: 100vw; }
+        .swb-mobile-tabs { display: block; }
+        .swb-page { padding-bottom: 80px; }
+      }
+    </style>
+    <section id="page-workbench" class="page swb-page">
+      <!-- Header -->
+      <div class="swb-header">
+        <div class="swb-header-meta">
+          <button class="swb-back" onclick="showPage('projects')">← 프로젝트로</button>
+          <div class="swb-title-row">
+            <div class="swb-title" id="swb-title">Brand X Film</div>
+            <div class="swb-type-badge personal" id="swb-type-badge">
+              <span>Personal Project</span><span style="color:var(--text-faint); font-weight:400">· 혼자 작업 중</span>
+            </div>
+          </div>
+          <div class="swb-sub" id="swb-sub">
+            <span>클라이언트 · X Studio</span><span>·</span>
+            <span style="color: var(--swb-warning); font-weight:600">D-7</span><span>·</span>
+            <span id="swb-shot-count">10 shots</span>
+          </div>
+        </div>
+        <div class="swb-actions">
+          <div class="swb-avatars" id="swb-members">
+            <div class="swb-avatar" style="background:#ff6b3f;">은</div>
+          </div>
+          <!-- API Vault pill -->
+          <div class="swb-api-vault">
+            <div class="swb-api-pill" onclick="toggleSwbApiVault(event)">
+              <span class="swb-pulse"></span>
+              <span>API Vault · <strong id="swb-api-cnt">3 connected</strong></span>
+              <span style="color:var(--text-faint); font-size:10px">▾</span>
+            </div>
+            <div class="swb-api-dropdown" id="swb-api-dd">
+              <div class="swb-api-head"><span>Connected Services</span><span class="swb-api-mode" id="swb-api-mode">Personal API</span></div>
+              <div class="swb-api-svc connected"><div class="swb-svc-info"><span class="swb-svc-dot"></span><strong>Kling AI</strong> 1.6</div><span style="color:var(--swb-success); font-size:11px">connected</span></div>
+              <div class="swb-api-svc connected"><div class="swb-svc-info"><span class="swb-svc-dot"></span><strong>Runway</strong> Gen-3</div><span style="color:var(--swb-success); font-size:11px">connected</span></div>
+              <div class="swb-api-svc connected"><div class="swb-svc-info"><span class="swb-svc-dot"></span><strong>OpenAI</strong> Sora</div><span style="color:var(--swb-success); font-size:11px">connected</span></div>
+              <div class="swb-api-svc disconnected"><div class="swb-svc-info"><span class="swb-svc-dot"></span>ElevenLabs</div><span style="font-size:11px">connect</span></div>
+              <div class="swb-api-svc disconnected"><div class="swb-svc-info"><span class="swb-svc-dot"></span>Stability AI</div><span style="font-size:11px">connect</span></div>
+              <div class="swb-api-foot" onclick="swbToast('API Vault 관리 페이지로 이동','info')">+ Manage API Vault</div>
+            </div>
+          </div>
+          <button class="swb-btn" id="swb-convert-btn" onclick="openSwbConvertModal()">팀 프로젝트로 전환</button>
+          <button class="swb-btn swb-btn-primary" onclick="swbToast('샷 추가 — 새 샷 생성','info')">+ 샷 추가</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="swb-tabs">
+        <div class="swb-tab active" data-swb-tab="overview" onclick="switchSwbTab(this,'overview')">Overview</div>
+        <div class="swb-tab" data-swb-tab="board" onclick="switchSwbTab(this,'board')">Shot Board</div>
+        <div class="swb-tab" data-swb-tab="db" onclick="switchSwbTab(this,'db')">Shot DB</div>
+        <div class="swb-tab" data-swb-tab="review" onclick="switchSwbTab(this,'review')">Review</div>
+        <div class="swb-tab" data-swb-tab="delivery" onclick="switchSwbTab(this,'delivery')">Delivery</div>
+        <div class="swb-tab-spacer"></div>
+        <button class="swb-btn swb-btn-sm" onclick="onSwbClientReviewLink()">🔗 Client Review Link</button>
+      </div>
+
+      <!-- Tab content -->
+      <div id="swb-tab-overview" class="swb-tab-content">
+        <div class="swb-grid-4" id="swb-stats"></div>
+        <div class="swb-grid-2">
+          <div class="swb-info-card">
+            <h3>📋 프로젝트 정보</h3>
+            <div class="swb-info-row"><span class="lbl">상태</span><span id="swb-ov-type">Personal Project</span></div>
+            <div class="swb-info-row"><span class="lbl">클라이언트</span><span>X Studio</span></div>
+            <div class="swb-info-row"><span class="lbl">마감</span><span style="color:var(--swb-warning); font-weight:600">D-7 (2026-05-14)</span></div>
+            <div class="swb-info-row"><span class="lbl">담당자</span><span id="swb-ov-members">은교</span></div>
+            <div class="swb-info-row"><span class="lbl">API 모드</span><span id="swb-ov-api">Personal API</span></div>
+          </div>
+          <div class="swb-info-card">
+            <h3>🎬 최근 활동</h3>
+            <div class="swb-info-row"><span class="lbl">12분 전</span><span>지수가 S004 v3 업로드</span></div>
+            <div class="swb-info-row"><span class="lbl">1시간 전</span><span>클라이언트가 S002 승인</span></div>
+            <div class="swb-info-row"><span class="lbl">2시간 전</span><span style="color:var(--swb-danger)">S007 생성 실패 (Kling 1.6)</span></div>
+            <div class="swb-info-row"><span class="lbl">어제</span><span>민호가 합류</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="swb-tab-board" class="swb-tab-content" style="display:none;">
+        <div class="swb-filters">
+          <span class="swb-chip active" data-swb-filter="all" onclick="setSwbFilter(this,'all')">전체 <span class="swb-cnt" id="swb-cnt-all">9</span></span>
+          <span class="swb-chip" data-swb-filter="mine" onclick="setSwbFilter(this,'mine')">내 샷 <span class="swb-cnt" id="swb-cnt-mine">3</span></span>
+          <span class="swb-chip" data-swb-filter="feedback" onclick="setSwbFilter(this,'feedback')">피드백 <span class="swb-cnt" id="swb-cnt-feedback">1</span></span>
+          <span class="swb-chip" data-swb-filter="failed" onclick="setSwbFilter(this,'failed')">실패 <span class="swb-cnt" id="swb-cnt-failed">1</span></span>
+          <span class="swb-chip" data-swb-filter="due" onclick="setSwbFilter(this,'due')">마감 임박 <span class="swb-cnt" id="swb-cnt-due">2</span></span>
+          <span class="swb-chip" data-swb-filter="client-review" onclick="setSwbFilter(this,'client-review')">클라이언트 리뷰 <span class="swb-cnt" id="swb-cnt-client">2</span></span>
+        </div>
+        <div class="swb-board" id="swb-board">
+          <div class="swb-col"><div class="swb-col-head swb-st-planning"><div class="swb-col-title"><span class="swb-dot"></span><span class="swb-col-title-en">Planning</span><span class="swb-col-title-ko">기획</span></div><div class="swb-col-cnt" id="swb-c-planning">0</div></div><div class="swb-col-body" data-swb-status="planning"></div></div>
+          <div class="swb-col"><div class="swb-col-head swb-st-production"><div class="swb-col-title"><span class="swb-dot"></span><span class="swb-col-title-en">Production</span><span class="swb-col-title-ko">제작 중</span></div><div class="swb-col-cnt" id="swb-c-production">0</div></div><div class="swb-col-body" data-swb-status="production"></div></div>
+          <div class="swb-col"><div class="swb-col-head swb-st-review"><div class="swb-col-title"><span class="swb-dot"></span><span class="swb-col-title-en">In Review</span><span class="swb-col-title-ko">리뷰 중</span></div><div class="swb-col-cnt" id="swb-c-review">0</div></div><div class="swb-col-body" data-swb-status="review"></div></div>
+          <div class="swb-col"><div class="swb-col-head swb-st-approved"><div class="swb-col-title"><span class="swb-dot"></span><span class="swb-col-title-en">Approved</span><span class="swb-col-title-ko">승인 완료</span></div><div class="swb-col-cnt" id="swb-c-approved">0</div></div><div class="swb-col-body" data-swb-status="approved"></div></div>
+          <div class="swb-col"><div class="swb-col-head swb-st-delivered"><div class="swb-col-title"><span class="swb-dot"></span><span class="swb-col-title-en">Delivered</span><span class="swb-col-title-ko">납품 완료</span></div><div class="swb-col-cnt" id="swb-c-delivered">0</div></div><div class="swb-col-body" data-swb-status="delivered"></div></div>
+        </div>
+      </div>
+
+      <div id="swb-tab-db" class="swb-tab-content" style="display:none;">
+        <div class="swb-toolbar">
+          <div class="swb-view">
+            <button class="swb-view-btn active" data-swb-view="table" onclick="setSwbDBView(this,'table')">Table</button>
+            <button class="swb-view-btn" data-swb-view="board" onclick="setSwbDBView(this,'board')">Board</button>
+            <button class="swb-view-btn" data-swb-view="gallery" onclick="setSwbDBView(this,'gallery')">Gallery</button>
+            <button class="swb-view-btn" data-swb-view="review" onclick="setSwbDBView(this,'review')">Review</button>
+            <button class="swb-view-btn" data-swb-view="delivery" onclick="setSwbDBView(this,'delivery')">Delivery</button>
+          </div>
+          <div style="color:var(--text-faint); font-size:12px">9 shots</div>
+        </div>
+        <div class="swb-table-wrap">
+          <table class="swb-table">
+            <thead><tr>
+              <th style="width:36px"><input type="checkbox"></th>
+              <th>Code</th><th>Title</th><th>Status</th><th>Due Date</th><th>Next Action</th>
+              <th>Model</th><th>API Source</th><th>Cost</th><th>Approval</th><th>담당</th><th>버전</th>
+            </tr></thead>
+            <tbody id="swb-db-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="swb-tab-review" class="swb-tab-content" style="display:none;">
+        <div class="swb-filters">
+          <span class="swb-chip active" data-swb-rfilter="pending" onclick="setSwbReviewFilter(this,'pending')">리뷰 대기</span>
+          <span class="swb-chip" data-swb-rfilter="feedback" onclick="setSwbReviewFilter(this,'feedback')">클라 피드백 있음</span>
+          <span class="swb-chip" data-swb-rfilter="approved" onclick="setSwbReviewFilter(this,'approved')">최근 승인</span>
+        </div>
+        <div id="swb-review-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+      </div>
+
+      <div id="swb-tab-delivery" class="swb-tab-content" style="display:none;">
+        <div class="swb-delivery">
+          <div class="swb-delivery-head">
+            <h3>📦 Delivery Package — <span id="swb-del-title">Brand X Film</span></h3>
+            <p>Approved 상태 샷 <strong id="swb-del-count" style="color:var(--swb-success)">2개</strong>를 클라이언트 납품용으로 묶습니다.</p>
+          </div>
+          <div class="swb-checklist" id="swb-checklist"></div>
+          <div class="swb-delivery-foot">
+            <div style="font-size:12px; color:var(--text-faint)"><strong id="swb-checklist-progress">0/8</strong> 항목 준비됨</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button class="swb-btn" onclick="onSwbPackagePreview()">패키지 미리보기</button>
+              <button class="swb-btn swb-btn-primary" onclick="onSwbPackageGenerate()">납품 패키지 생성</button>
+              <button class="swb-btn" onclick="onSwbClientReviewLink()">🔗 클라이언트 리뷰 링크</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile bottom tabs (scoped) -->
+      <nav class="swb-mobile-tabs">
+        <div class="swb-mobile-tabs-in">
+          <div class="swb-mobile-tab" onclick="showPage('today')"><span class="ic">📋</span>오늘</div>
+          <div class="swb-mobile-tab" onclick="showPage('projects')"><span class="ic">📁</span>프로젝트</div>
+          <div class="swb-mobile-tab active" onclick="switchSwbTab(document.querySelector('[data-swb-tab=board]'),'board')"><span class="ic">🎬</span>샷</div>
+          <div class="swb-mobile-tab" onclick="switchSwbTab(document.querySelector('[data-swb-tab=review]'),'review')"><span class="ic">💬</span>리뷰</div>
+          <div class="swb-mobile-tab" onclick="switchSwbTab(document.querySelector('[data-swb-tab=delivery]'),'delivery')"><span class="ic">📦</span>납품</div>
+        </div>
+      </nav>
+    </section>
+
+    <!-- Workbench drawer / modal / producer / toast -->
+    <div class="swb-drawer-bd" id="swb-drawer-bd" onclick="closeSwbDrawer()"></div>
+    <div class="swb-drawer" id="swb-drawer">
+      <div class="swb-drawer-head">
+        <div class="swb-drawer-title"><span class="swb-code" id="swb-d-code">S004</span><span id="swb-d-title">클로즈업</span></div>
+        <button class="swb-btn swb-btn-ghost swb-btn-sm" onclick="closeSwbDrawer()">✕</button>
+      </div>
+      <div class="swb-drawer-body">
+        <div class="swb-row-flex">
+          <div class="swb-field">
+            <div class="swb-field-l">상태</div>
+            <select class="swb-select" id="swb-d-status">
+              <option value="planning">Planning · 기획</option>
+              <option value="production">Production · 제작 중</option>
+              <option value="review">In Review · 리뷰 중</option>
+              <option value="approved">Approved · 승인 완료</option>
+              <option value="delivered">Delivered · 납품 완료</option>
+            </select>
+          </div>
+          <div class="swb-field">
+            <div class="swb-field-l">담당</div>
+            <select class="swb-select" id="swb-d-assignee"><option>은교</option><option>지수</option><option>민호</option></select>
+          </div>
+        </div>
+        <div class="swb-section">
+          <div class="swb-section-t">프롬프트</div>
+          <div class="swb-prompt">Cinematic close-up of a face under cold blue lighting,<br>shallow depth of field, slow zoom-in, 6 seconds, 9:16</div>
+          <div id="swb-d-prompt-meta" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--text-faint)"></div>
+        </div>
+        <div class="swb-section">
+          <div class="swb-section-t">댓글 (3)</div>
+          <div style="font-size:12px; color:var(--text-dim); padding:8px 0">
+            <strong>클라이언트</strong> · 30분 전 — "조명을 더 차갑게 해주세요. 블루톤 30% 정도."
+          </div>
+          <div style="font-size:12px; color:var(--text-dim); padding:8px 0; border-top:1px solid var(--border)">
+            <strong>지수</strong> · 25분 전 — v3에서 수정 시작합니다.
+          </div>
+          <div style="font-size:12px; color:var(--text-dim); padding:8px 0; border-top:1px solid var(--border)">
+            <strong>은교</strong> · 10분 전 — v3 좋네요. 클라 컨펌 받겠습니다.
+          </div>
+        </div>
+        <div class="swb-section">
+          <div class="swb-section-t">권리 로그 (Rights Log)</div>
+          <div id="swb-d-rights"></div>
+        </div>
+      </div>
+      <div class="swb-drawer-foot" id="swb-d-foot"></div>
+    </div>
+
+    <div class="swb-producer" id="swb-producer">
+      <div class="swb-producer-head" onclick="toggleSwbProducer()">
+        <div class="swb-producer-title">🎬 AI Producer</div>
+        <span style="color:var(--text-faint); font-size:16px" id="swb-prod-toggle">−</span>
+      </div>
+      <div class="swb-producer-body">
+        <div class="swb-producer-item">
+          <div class="swb-producer-it" style="color:var(--swb-danger)">⚠ S007 generation failed</div>
+          <div class="swb-producer-d">Kling timeout. 프롬프트를 수정하거나 다시 시도하세요.</div>
+          <div class="swb-producer-act">
+            <button class="swb-btn swb-btn-sm swb-btn-warn" onclick="onSwbProducer('retry','S007')">↻ Retry</button>
+            <button class="swb-btn swb-btn-sm swb-btn-ghost" onclick="onSwbProducer('open','S007')">Open Shot</button>
+          </div>
+        </div>
+        <div class="swb-producer-item">
+          <div class="swb-producer-it" style="color:var(--swb-warning)">🔴 S002 client feedback unresolved</div>
+          <div class="swb-producer-d">30분째 응답 없음. 자동 알림을 보낼까요?</div>
+          <div class="swb-producer-act">
+            <button class="swb-btn swb-btn-sm" onclick="onSwbProducer('reminder','S002')">📨 Send Reminder</button>
+            <button class="swb-btn swb-btn-sm swb-btn-ghost" onclick="onSwbProducer('open','S002')">Open Shot</button>
+          </div>
+        </div>
+        <div class="swb-producer-item">
+          <div class="swb-producer-it">📝 Planning 단계 3개 정체</div>
+          <div class="swb-producer-d">Brief를 자동으로 샷 단위로 분해할까요?</div>
+          <div class="swb-producer-act">
+            <button class="swb-btn swb-btn-sm swb-btn-primary" onclick="onSwbProducer('split-brief')">⚡ Split Brief</button>
+          </div>
+        </div>
+        <div class="swb-producer-item">
+          <div class="swb-producer-it">📦 Approved 2 shots 납품 가능</div>
+          <div class="swb-producer-d">Delivery Package 생성을 시작할 수 있습니다.</div>
+          <div class="swb-producer-act">
+            <button class="swb-btn swb-btn-sm swb-btn-primary" onclick="onSwbProducer('generate-package')">Generate Package</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="swb-modal-bd" id="swb-modal" onclick="if(event.target.id==='swb-modal')closeSwbModal()">
+      <div class="swb-modal" id="swb-modal-content">
+        <div class="swb-modal-icon" id="swb-modal-icon">🔗</div>
+        <div class="swb-modal-body" id="swb-modal-body"></div>
+      </div>
+    </div>
+
+    <div class="swb-toast-c" id="swb-toast-c"></div>
+
+    <script>
+    /* ===== Project Workbench (swb- prefix) ===== */
+    window.SwbState = window.SwbState || {
+      projectType: 'personal',
+      activeFilter: 'all',
+      reviewFilter: 'pending',
+      currentShot: null,
+      currentTab: 'overview',
+      me: '은교',
+      isInit: false,
+    };
+
+    window.SwbShots = window.SwbShots || [
+      { code:'S001', title:'오프닝 와이드', status:'planning', assignee:'지수', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-15', cost:0, thumb:'swb-empty' },
+      { code:'S005', title:'전환 컷', status:'planning', assignee:'민호', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-13', cost:0, thumb:'swb-empty' },
+      { code:'S006', title:'타이틀 인서트', status:'planning', assignee:'은교', model:null, apiSource:null, version:null, comments:0, hasFeedback:false, hasFailed:false, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-09', cost:0, thumb:'swb-empty' },
+      { code:'S004', title:'클로즈업', status:'production', assignee:'민호', model:'Kling 1.6', apiSource:'workspace', version:'v3', progress:60, comments:3, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-12', cost:0.84, thumb:'swb-blue' },
+      { code:'S007', title:'B-roll 도시', status:'production', assignee:'지수', model:'Kling 1.6', apiSource:'workspace', version:'-', progress:0, comments:1, hasFeedback:false, hasFailed:true, dueSoon:true, clientReviewRequested:false, dueDate:'2026-05-08', cost:0.42, thumb:'swb-red' },
+      { code:'S002', title:'인터뷰 컷', status:'review', assignee:'민호', model:'Runway Gen-3', apiSource:'workspace', version:'v3', comments:3, hasFeedback:true, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-11', cost:1.20, thumb:'swb-warm' },
+      { code:'S003', title:'B-roll 자연', status:'review', assignee:'지수', model:'Kling 1.6', apiSource:'personal', version:'v2', comments:1, hasFeedback:false, hasFailed:false, dueSoon:false, clientReviewRequested:true, dueDate:'2026-05-12', cost:0.65, thumb:'swb-green' },
+      { code:'S008', title:'인서트 손', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v4', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.50, thumb:'swb-purple' },
+      { code:'S010', title:'엔딩 페이드', status:'approved', assignee:'은교', model:'Sora', apiSource:'workspace', version:'v5', comments:0, dueSoon:false, clientReviewRequested:false, dueDate:'2026-05-10', cost:1.65, thumb:'swb-purple' },
+    ];
+
+    const SWB_LABELS = { planning:'Planning', production:'Production', review:'In Review', approved:'Approved', delivered:'Delivered' };
+    const SWB_LABELS_KO = { planning:'기획', production:'제작 중', review:'리뷰 중', approved:'승인 완료', delivered:'납품 완료' };
+    const SWB_BG = { '은교':'#ff6b3f', '지수':'#3b82f6', '민호':'#10b981' };
+
+    function swbToast(text, type='info', dur=2200) {
+      const c = document.getElementById('swb-toast-c'); if (!c) return;
+      const t = document.createElement('div');
+      t.className = `swb-toast ${type}`;
+      t.textContent = text;
+      c.appendChild(t);
+      setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 200); }, dur);
+    }
+
+    function openSwbModal(html, opts={}) {
+      const bd = document.getElementById('swb-modal'); const body = document.getElementById('swb-modal-body'); const icon = document.getElementById('swb-modal-icon');
+      if (opts.icon) icon.textContent = opts.icon;
+      body.innerHTML = html;
+      bd.classList.add('open');
+    }
+    function closeSwbModal() { document.getElementById('swb-modal')?.classList.remove('open'); }
+
+    function needsSwbTeam(featureName, plan='Studio') {
+      if (window.SwbState.projectType === 'team') { swbToast(`${featureName} 사용 가능`, 'success'); return true; }
+      const html = `
+        <div class="swb-modal-title">🔒 ${featureName}</div>
+        <div class="swb-modal-text">이 기능은 <strong style="color:var(--accent)">팀 프로젝트 (${plan} 플랜)</strong>에서 사용할 수 있습니다.</div>
+        <div class="swb-modal-list">
+          <div class="swb-modal-li">멤버 초대 / 담당자 배정</div>
+          <div class="swb-modal-li">댓글 / 멘션 / 리뷰 요청</div>
+          <div class="swb-modal-li">Client Review Link / Approval History</div>
+          <div class="swb-modal-li">Delivery Package / Rights Report</div>
+          <div class="swb-modal-li">Workspace API Vault</div>
+        </div>
+        <div class="swb-modal-actions">
+          <button class="swb-btn" onclick="closeSwbModal()">나중에</button>
+          <button class="swb-btn swb-btn-primary" onclick="confirmSwbConvertToTeam()">팀 프로젝트로 전환</button>
+        </div>`;
+      openSwbModal(html, { icon: '🔒' });
+      return false;
+    }
+
+    function openSwbConvertModal() {
+      if (window.SwbState.projectType === 'team') {
+        swbToast('멤버 관리 페이지로 이동', 'info');
+        return;
+      }
+      const html = `
+        <div class="swb-modal-title">팀 프로젝트로 전환할까요?</div>
+        <div class="swb-modal-text">팀 프로젝트로 전환하면 멤버 초대, 담당자 배정, 댓글, 리뷰 요청, 승인 상태,
+          클라이언트 리뷰 링크, 납품 패키지를 사용할 수 있습니다.</div>
+        <div class="swb-modal-list">
+          <div class="swb-modal-li">멤버 초대 / 담당자 배정</div>
+          <div class="swb-modal-li">댓글 · 멘션 · 리뷰 요청</div>
+          <div class="swb-modal-li">승인 흐름 · Approval History</div>
+          <div class="swb-modal-li">Client Review Link</div>
+          <div class="swb-modal-li">Delivery Package · Rights Report</div>
+          <div class="swb-modal-li">Workspace API Vault</div>
+        </div>
+        <div class="swb-modal-actions">
+          <button class="swb-btn" onclick="closeSwbModal()">나중에</button>
+          <button class="swb-btn swb-btn-primary" onclick="confirmSwbConvertToTeam()">팀 프로젝트로 전환</button>
+        </div>`;
+      openSwbModal(html, { icon: '👥' });
+    }
+
+    function confirmSwbConvertToTeam() {
+      closeSwbModal();
+      toggleSwbProjectType('team');
+      swbToast('팀 프로젝트로 전환되었습니다', 'success');
+    }
+
+    function _swbApplyCtxClass(type) {
+      document.body.classList.toggle('swb-ctx-personal', type === 'personal');
+      document.body.classList.toggle('swb-ctx-team', type === 'team');
+    }
+
+    function toggleSwbProjectType(force) {
+      const next = force || (window.SwbState.projectType === 'personal' ? 'team' : 'personal');
+      window.SwbState.projectType = next;
+      _swbApplyCtxClass(next);
+      const badge = document.getElementById('swb-type-badge');
+      const conv = document.getElementById('swb-convert-btn');
+      const stack = document.getElementById('swb-members');
+      const apiMode = document.getElementById('swb-api-mode');
+      const ovType = document.getElementById('swb-ov-type');
+      const ovApi = document.getElementById('swb-ov-api');
+      const ovMembers = document.getElementById('swb-ov-members');
+
+      if (next === 'team') {
+        if (badge) {
+          badge.classList.remove('personal'); badge.classList.add('team');
+          badge.innerHTML = '<span>Team Project</span><span style="color:var(--text-faint); font-weight:400">· 3 seats</span>';
+        }
+        if (conv) conv.textContent = '멤버 관리';
+        if (stack) stack.innerHTML = '<div class="swb-avatar" style="background:#ff6b3f;">은</div><div class="swb-avatar" style="background:#3b82f6;">지</div><div class="swb-avatar" style="background:#10b981;">민</div>';
+        if (apiMode) apiMode.textContent = 'Workspace API';
+        if (ovType) ovType.textContent = 'Team Project · 3 seats';
+        if (ovApi) ovApi.textContent = 'Workspace API';
+        if (ovMembers) ovMembers.textContent = '은교, 지수, 민호';
+      } else {
+        if (badge) {
+          badge.classList.remove('team'); badge.classList.add('personal');
+          badge.innerHTML = '<span>Personal Project</span><span style="color:var(--text-faint); font-weight:400">· 혼자 작업 중</span>';
+        }
+        if (conv) conv.textContent = '팀 프로젝트로 전환';
+        if (stack) stack.innerHTML = '<div class="swb-avatar" style="background:#ff6b3f;">은</div>';
+        if (apiMode) apiMode.textContent = 'Personal API';
+        if (ovType) ovType.textContent = 'Personal Project';
+        if (ovApi) ovApi.textContent = 'Personal API';
+        if (ovMembers) ovMembers.textContent = '은교';
+      }
+      // Sync sidebar workspace tab + ARIA
+      document.querySelectorAll('.swb-ws-item').forEach(el => {
+        const isActive = el.dataset.swbWs === next;
+        el.classList.toggle('active', isActive);
+        el.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      const wsPill = document.getElementById('swb-ws-pill');
+      if (wsPill) {
+        wsPill.textContent = next === 'team' ? 'TEAM' : 'PERSONAL';
+        wsPill.classList.toggle('personal', next === 'personal');
+        wsPill.classList.toggle('team', next === 'team');
+      }
+    }
+
+    /* Global workspace switcher (sidebar) — works from any page */
+    function setSwbWorkspace(type) {
+      // Ensure SwbState exists (workbench script may not have run yet)
+      window.SwbState = window.SwbState || { projectType:'personal', activeFilter:'all', reviewFilter:'pending', currentShot:null, currentTab:'overview', me:'은교', isInit:false };
+      // Use toggleSwbProjectType which already handles body class + sidebar UI + workbench UI (null-safe)
+      if (typeof toggleSwbProjectType === 'function') {
+        toggleSwbProjectType(type);
+      } else {
+        // Fallback: just set body class + sidebar UI
+        document.body.classList.toggle('swb-ctx-personal', type === 'personal');
+        document.body.classList.toggle('swb-ctx-team', type === 'team');
+        document.querySelectorAll('.swb-ws-item').forEach(el => el.classList.toggle('active', el.dataset.swbWs === type));
+        const wsPill = document.getElementById('swb-ws-pill');
+        if (wsPill) { wsPill.textContent = type === 'team' ? 'TEAM' : 'PERSONAL'; wsPill.classList.toggle('personal', type==='personal'); wsPill.classList.toggle('team', type==='team'); }
+      }
+      try { localStorage.setItem('soaviz_workspace_ctx', type); } catch (_) {}
+
+      // 팀 작업 탭으로 진입 시 → Sales Onepager(team-landing) 자동 노출
+      // (단, 이미 워크벤치/팀랜딩에 있는 경우는 그대로 유지)
+      if (type === 'team') {
+        const cur = window.currentPage;
+        const stayPages = new Set(['workbench','team-landing']);
+        if (!stayPages.has(cur) && typeof showPage === 'function') {
+          // 탭 UI가 먼저 갱신되도록 살짝 지연
+          setTimeout(() => { try { showPage('team-landing'); } catch (_) {} }, 80);
+        }
+      } else if (type === 'personal') {
+        // 개인 작업 탭으로 돌아갈 때, 팀 랜딩에 있었다면 프로젝트 페이지로 이탈
+        if (window.currentPage === 'team-landing' && typeof showPage === 'function') {
+          setTimeout(() => { try { showPage('projects'); } catch (_) {} }, 80);
+        }
+      }
+    }
+
+    /* Initialize workspace context from localStorage on page load */
+    (function _initSwbWorkspaceCtx() {
+      const apply = () => {
+        let saved = 'personal';
+        try { saved = localStorage.getItem('soaviz_workspace_ctx') || 'personal'; } catch (_) {}
+        setSwbWorkspace(saved);
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply);
+      else apply();
+    })();
+
+    function onSwbClientReviewLink() {
+      if (!needsSwbTeam('Client Review Link', 'Studio')) return;
+      const link = `https://soaviz.studio/review/brand-x-film/${Math.random().toString(36).slice(2,8)}`;
+      const html = `
+        <div class="swb-modal-title">🔗 Client Review Link 생성됨</div>
+        <div class="swb-modal-text">클라이언트가 별도 계정 없이 영상을 검토하고 승인할 수 있는 링크입니다.</div>
+        <div style="background: var(--bg-elev); border:1px solid var(--border); border-radius:8px; padding:12px; font-family: ui-monospace, monospace; font-size:12px; word-break:break-all; margin-bottom:16px">${link}</div>
+        <div class="swb-modal-list">
+          <div class="swb-modal-li">씬·시간 단위 댓글 작성</div>
+          <div class="swb-modal-li">승인 / 수정 요청 자동 동기화</div>
+          <div class="swb-modal-li">Approval History 자동 기록</div>
+        </div>
+        <div class="swb-modal-actions">
+          <button class="swb-btn" onclick="closeSwbModal()">닫기</button>
+          <button class="swb-btn" onclick="swbToast('만료 7일로 설정됨','info'); closeSwbModal()">만료 설정</button>
+          <button class="swb-btn swb-btn-primary" onclick="swbCopyLink('${link}'); closeSwbModal()">📋 링크 복사</button>
+        </div>`;
+      openSwbModal(html, { icon: '🔗' });
+    }
+    function swbCopyLink(link) {
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(() => swbToast('링크가 클립보드에 복사되었습니다','success'));
+      else swbToast('링크가 복사되었습니다','success');
+    }
+
+    function passSwbFilter(shot, f) {
+      if (f==='all') return true;
+      if (f==='mine') return shot.assignee === window.SwbState.me;
+      if (f==='feedback') return shot.hasFeedback;
+      if (f==='failed') return shot.hasFailed;
+      if (f==='due') return shot.dueSoon;
+      if (f==='client-review') return shot.status==='review' && shot.clientReviewRequested;
+      return true;
+    }
+
+    function setSwbFilter(el, f) {
+      document.querySelectorAll('[data-swb-filter]').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      window.SwbState.activeFilter = f;
+      renderSwbShotBoard();
+    }
+
+    function setSwbReviewFilter(el, f) {
+      document.querySelectorAll('[data-swb-rfilter]').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      window.SwbState.reviewFilter = f;
+      renderSwbReview();
+    }
+
+    function setSwbDBView(el, view) {
+      document.querySelectorAll('.swb-view-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      swbToast(`${view.charAt(0).toUpperCase() + view.slice(1)} 뷰 (Table 표시)`, 'info');
+    }
+
+    function updateSwbCounts() {
+      const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+      const S = window.SwbShots;
+      set('swb-cnt-all', S.length);
+      set('swb-cnt-mine', S.filter(s => s.assignee === window.SwbState.me).length);
+      set('swb-cnt-feedback', S.filter(s => s.hasFeedback).length);
+      set('swb-cnt-failed', S.filter(s => s.hasFailed).length);
+      set('swb-cnt-due', S.filter(s => s.dueSoon).length);
+      set('swb-cnt-client', S.filter(s => s.status==='review' && s.clientReviewRequested).length);
+      set('swb-shot-count', `${S.length} shots`);
+    }
+
+    function getSwbNext(shot) {
+      if (shot.hasFailed) return { label:'다음: 재생성', tone:'warn' };
+      if (shot.status==='planning') return { label:'다음: 생성', tone:'accent' };
+      if (shot.status==='production') {
+        if (shot.progress>=100) return { label:'다음: 리뷰 요청', tone:'accent' };
+        return { label:'렌더링 중', tone:'' };
+      }
+      if (shot.status==='review') return shot.hasFeedback ? { label:'다음: 수정', tone:'warn' } : { label:'다음: 승인', tone:'success' };
+      if (shot.status==='approved') return { label:'다음: 납품에 추가', tone:'accent' };
+      if (shot.status==='delivered') return { label:'완료', tone:'' };
+      return null;
+    }
+
+    function renderSwbShotBoard() {
+      const cols = ['planning','production','review','approved','delivered'];
+      const S = window.SwbShots;
+      cols.forEach(s => {
+        const body = document.querySelector(`[data-swb-status="${s}"]`);
+        if (!body) return;
+        body.innerHTML = '';
+        body.addEventListener('dragover', swbDragOver);
+        body.addEventListener('dragleave', swbDragLeave);
+        body.addEventListener('drop', swbDrop);
+        const list = S.filter(x => x.status === s && passSwbFilter(x, window.SwbState.activeFilter));
+        list.forEach(shot => body.appendChild(makeSwbCard(shot)));
+        const cnt = document.getElementById('swb-c-' + s);
+        if (cnt) cnt.textContent = S.filter(x => x.status === s).length;
+      });
+      updateSwbCounts();
+    }
+
+    function makeSwbCard(shot) {
+      const card = document.createElement('div');
+      card.className = 'swb-card';
+      card.draggable = true;
+      card.dataset.code = shot.code;
+      const thumbCls = shot.thumb || 'swb-empty';
+      const badges = [];
+      if (shot.hasFailed) badges.push('<span class="swb-badge swb-badge-danger">⚠ 실패</span>');
+      if (shot.hasFeedback) badges.push('<span class="swb-badge swb-badge-danger">🔴 피드백</span>');
+      if (shot.dueSoon) badges.push('<span class="swb-badge swb-badge-warn">⏰ 임박</span>');
+      if (shot.clientReviewRequested && shot.status==='review') badges.push('<span class="swb-badge">👁 클라</span>');
+      const cmt = (shot.comments && shot.comments>0) ? `<span class="swb-badge">💬 ${shot.comments}</span>` : '';
+      const modelLine = shot.model ? `<span>${shot.model}${shot.version && shot.version!=='-' ? ' · '+shot.version : ''}</span>` : '';
+      const prog = (shot.status==='production' && shot.progress>0) ? `<div class="swb-progress"><div class="swb-progress-bar" style="width:${shot.progress}%"></div></div>` : '';
+      const thumbContent = (shot.status==='planning') ? '' : '▶';
+      const bg = SWB_BG[shot.assignee] || '#666';
+      const next = getSwbNext(shot);
+      const nextHTML = next ? `<div class="swb-next ${next.tone?'swb-tone-'+next.tone:''}"><span class="swb-arrow">›</span><span>${next.label}</span></div>` : '';
+      card.innerHTML = `
+        <div class="swb-thumb ${thumbCls}">${thumbContent}${prog}</div>
+        <div class="swb-info">
+          <div class="swb-code-row"><span>${shot.code}</span><span class="swb-avatar" style="background:${bg}; width:16px; height:16px; font-size:9px">${shot.assignee.charAt(0)}</span></div>
+          <div class="swb-card-title">${shot.title}</div>
+          <div class="swb-meta">${modelLine}${badges.join('')}${cmt}</div>
+          ${nextHTML}
+        </div>`;
+      let dragStarted = false;
+      card.addEventListener('dragstart', (e) => { dragStarted = true; card.classList.add('swb-dragging'); e.dataTransfer.setData('text/plain', shot.code); e.dataTransfer.effectAllowed = 'move'; });
+      card.addEventListener('dragend', () => { card.classList.remove('swb-dragging'); setTimeout(() => { dragStarted = false; }, 50); });
+      card.addEventListener('click', () => { if (dragStarted) return; openSwbShotDrawer(shot); });
+      return card;
+    }
+
+    function swbDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('swb-drag-over'); }
+    function swbDragLeave(e) { e.currentTarget.classList.remove('swb-drag-over'); }
+    function swbDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('swb-drag-over');
+      const code = e.dataTransfer.getData('text/plain');
+      const newSt = e.currentTarget.dataset.swbStatus;
+      const shot = window.SwbShots.find(s => s.code === code);
+      if (shot && shot.status !== newSt) {
+        shot.status = newSt;
+        renderSwbShotBoard();
+        swbToast(`${shot.code} → ${SWB_LABELS_KO[newSt]}`, 'success', 1500);
+      }
+    }
+
+    function renderSwbDB() {
+      const tb = document.getElementById('swb-db-tbody'); if (!tb) return;
+      tb.innerHTML = '';
+      window.SwbShots.forEach(shot => {
+        const tr = document.createElement('tr');
+        const sc = `swb-st-${shot.status}`;
+        const apiSrc = shot.apiSource==='workspace' ? '<span class="swb-api-tag swb-workspace"><span class="swb-tiny"></span>Workspace</span>'
+                    : shot.apiSource==='personal' ? '<span class="swb-api-tag swb-personal"><span class="swb-tiny"></span>Personal</span>'
+                    : '<span style="color:var(--text-faint)">-</span>';
+        const next = getSwbNext(shot);
+        const nextHTML = next ? `<span style="color:${next.tone==='warn'?'var(--swb-warning)':next.tone==='success'?'var(--swb-success)':next.tone==='accent'?'var(--accent)':'var(--text-faint)'}">${next.label.replace('다음: ','')}</span>` : '-';
+        const appr = (shot.status==='approved' || shot.status==='delivered') ? '✓ Approved' : (shot.hasFeedback ? '🔴 Revision' : '—');
+        tr.innerHTML = `
+          <td><input type="checkbox" onclick="event.stopPropagation()"></td>
+          <td style="color:var(--text-faint); font-family:ui-monospace,monospace">${shot.code}</td>
+          <td><strong>${shot.title}</strong></td>
+          <td><span class="swb-pill ${sc}"><span class="swb-dot"></span>${SWB_LABELS[shot.status]}</span></td>
+          <td>${shot.dueDate || '-'}</td>
+          <td>${nextHTML}</td>
+          <td>${shot.model || '-'}</td>
+          <td>${apiSrc}</td>
+          <td>${shot.cost ? '$'+shot.cost.toFixed(2) : '-'}</td>
+          <td style="color:${(shot.status==='approved'||shot.status==='delivered')?'var(--swb-success)':(shot.hasFeedback?'var(--swb-danger)':'var(--text-faint)')}">${appr}</td>
+          <td>${shot.assignee}</td>
+          <td>${shot.version || '-'}</td>`;
+        tr.addEventListener('click', () => openSwbShotDrawer(shot));
+        tb.appendChild(tr);
+      });
+    }
+
+    function renderSwbReview() {
+      const list = document.getElementById('swb-review-list'); if (!list) return;
+      const f = window.SwbState.reviewFilter;
+      let shots;
+      if (f==='pending') shots = window.SwbShots.filter(s => s.status==='review');
+      else if (f==='feedback') shots = window.SwbShots.filter(s => s.hasFeedback);
+      else if (f==='approved') shots = window.SwbShots.filter(s => s.status==='approved');
+      else shots = window.SwbShots;
+
+      if (!shots.length) {
+        list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-faint); font-size:13px; border:1px dashed var(--border); border-radius:8px">해당 항목이 없습니다.</div>';
+        return;
+      }
+      list.innerHTML = shots.map(shot => `
+        <div class="swb-info-card" style="cursor:pointer" data-swb-rcode="${shot.code}">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px">
+            <div class="swb-thumb ${shot.thumb||'swb-empty'}" style="width:80px; height:48px; border-radius:6px"></div>
+            <div style="flex:1; min-width:0">
+              <div style="font-size:11px; color:var(--text-faint); font-family:ui-monospace,monospace">${shot.code}</div>
+              <div style="font-size:14px; font-weight:600">${shot.title}</div>
+              <div style="font-size:11px; color:var(--text-faint); margin-top:2px">${shot.model||'-'} · ${shot.version||'-'} · ${shot.assignee}</div>
+            </div>
+            <span class="swb-pill swb-st-${shot.status}"><span class="swb-dot"></span>${SWB_LABELS[shot.status]}</span>
+          </div>
+          ${shot.hasFeedback ? '<div style="font-size:12px; color:var(--swb-danger); padding:8px 0; border-top:1px dashed var(--border)">🔴 클라이언트 피드백 미해결 — "조명을 더 차갑게 해주세요."</div>' : ''}
+          <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap">
+            <button class="swb-btn swb-btn-sm swb-btn-success" onclick="event.stopPropagation(); onSwbShotAction('approve','${shot.code}')">✓ 승인</button>
+            <button class="swb-btn swb-btn-sm swb-btn-danger" onclick="event.stopPropagation(); onSwbShotAction('request-revision','${shot.code}')">✎ 수정 요청</button>
+            <button class="swb-btn swb-btn-sm" onclick="event.stopPropagation(); openSwbShotDrawer(window.SwbShots.find(s => s.code === '${shot.code}'))">상세 보기</button>
+          </div>
+        </div>`).join('');
+      list.querySelectorAll('[data-swb-rcode]').forEach(el => {
+        el.addEventListener('click', () => {
+          const c = el.dataset.swbRcode;
+          const sh = window.SwbShots.find(s => s.code === c);
+          if (sh) openSwbShotDrawer(sh);
+        });
+      });
+    }
+
+    /* Delivery */
+    const SWB_DELIVERY = [
+      { id:'video', title:'Final Videos', desc:'MP4, 9:16, H.264 · Approved 2 files', state:'ready', plan:'studio' },
+      { id:'thumbs', title:'Thumbnails', desc:'각 샷의 대표 프레임 자동 추출', state:'ready', plan:'studio' },
+      { id:'subs', title:'Subtitles', desc:'.srt 또는 .vtt · 수동 업로드 필요', state:'missing', plan:'studio' },
+      { id:'prompts', title:'Prompt Log', desc:'전체 샷의 프롬프트 + 파라미터 PDF', state:'included', plan:'studio' },
+      { id:'usage', title:'Model Usage Log', desc:'사용 모델 / 토큰 / 비용 기록', state:'included', plan:'business' },
+      { id:'rights', title:'Rights Report', desc:'모델 라이선스 · 학습 데이터 · 초상권', state:'review-needed', plan:'business' },
+      { id:'history', title:'Approval History', desc:'리뷰 → 승인 흐름 + 클라 댓글 PDF', state:'review-needed', plan:'business' },
+      { id:'assets', title:'Asset List', desc:'JSON 메타데이터 (샷 ID, 버전, 모델 등)', state:'included', plan:'studio' },
+    ];
+    const SWB_STATE_ICON = { ready:'✓', included:'✓', missing:'×', 'review-needed':'△' };
+    const SWB_STATE_LABEL = { ready:'Ready', included:'Included', missing:'Missing', 'review-needed':'Review needed' };
+
+    function renderSwbDeliveryPackage() {
+      const c = document.getElementById('swb-checklist'); if (!c) return;
+      c.innerHTML = '';
+      SWB_DELIVERY.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'swb-check-item';
+        const planTag = item.plan !== 'studio' ? `<span class="swb-plan-tag">${item.plan}+</span>` : '';
+        div.innerHTML = `
+          <div class="swb-check-icon ${item.state}">${SWB_STATE_ICON[item.state]}</div>
+          <div class="swb-check-info">
+            <div class="swb-check-t">${item.title} ${planTag}</div>
+            <div class="swb-check-d">${item.desc}</div>
+          </div>
+          <div class="swb-check-s ${item.state}">${SWB_STATE_LABEL[item.state]}</div>`;
+        c.appendChild(div);
+      });
+      const ready = SWB_DELIVERY.filter(i => i.state==='ready' || i.state==='included').length;
+      const el = document.getElementById('swb-checklist-progress');
+      if (el) el.textContent = `${ready} / ${SWB_DELIVERY.length}`;
+    }
+
+    function onSwbPackagePreview() {
+      if (!needsSwbTeam('Delivery Package', 'Studio')) return;
+      swbToast('패키지 미리보기 생성 중…', 'info');
+    }
+    function onSwbPackageGenerate() {
+      if (!needsSwbTeam('Delivery Package', 'Studio')) return;
+      swbToast('패키지 생성 시작 — Approval History 동기화 중', 'success');
+    }
+
+    /* Drawer */
+    function openSwbShotDrawer(shot) {
+      window.SwbState.currentShot = shot;
+      document.getElementById('swb-drawer').classList.add('open');
+      document.getElementById('swb-drawer-bd').classList.add('open');
+      document.getElementById('swb-d-code').textContent = shot.code;
+      document.getElementById('swb-d-title').textContent = shot.title;
+      document.getElementById('swb-d-status').value = shot.status;
+      document.getElementById('swb-d-assignee').value = shot.assignee;
+      // prompt meta
+      const meta = document.getElementById('swb-d-prompt-meta');
+      const sourceLabel = shot.apiSource==='workspace' ? 'Workspace API' : shot.apiSource==='personal' ? 'Personal API' : 'SOAVIZ Demo';
+      const sourceClass = shot.apiSource==='workspace' ? 'swb-workspace' : shot.apiSource==='personal' ? 'swb-personal' : '';
+      const model = shot.model || 'Kling 1.6';
+      meta.innerHTML = `<span class="swb-api-tag ${sourceClass}"><span class="swb-tiny"></span><strong>${model}</strong> · ${sourceLabel}</span><span>6초</span><span>9:16</span><span>Seed 8472</span>`;
+      renderSwbRights(shot);
+      renderSwbDrawerFoot(shot);
+    }
+    function closeSwbDrawer() {
+      document.getElementById('swb-drawer')?.classList.remove('open');
+      document.getElementById('swb-drawer-bd')?.classList.remove('open');
+      window.SwbState.currentShot = null;
+    }
+
+    const SWB_RIGHTS = [
+      { id:'provider', label:'Model Provider', sub:'Kling AI 1.6', state:'ok' },
+      { id:'source', label:'API Source', sub:'Workspace API', state:'ok' },
+      { id:'prompt', label:'Prompt Saved', sub:'전체 프롬프트 + 파라미터', state:'ok' },
+      { id:'commercial', label:'Commercial Usage', sub:'상업 이용 가능', state:'ok' },
+      { id:'likeness', label:'Person / Likeness Check', sub:'인물 등장 시 동의서 필요', state:'pending' },
+      { id:'music', label:'Music License', sub:'BGM 라이선스 미적용', state:'missing' },
+      { id:'asset', label:'Asset Source', sub:'프로젝트 라이브러리', state:'ok' },
+      { id:'approval', label:'Approval Status', sub:'클라이언트 승인 대기', state:'pending' },
+    ];
+    function renderSwbRights(shot) {
+      const grid = document.getElementById('swb-d-rights'); if (!grid) return;
+      grid.innerHTML = '';
+      const items = SWB_RIGHTS.map(r => ({...r}));
+      if (shot.status==='approved' || shot.status==='delivered') {
+        const a = items.find(i => i.id==='approval'); a.state='ok'; a.sub='승인 완료';
+      }
+      if (shot.apiSource==='personal') items.find(i => i.id==='source').sub = 'Personal API';
+      else if (shot.apiSource===null) { const x = items.find(i => i.id==='source'); x.state='missing'; x.sub='미연결'; }
+      if (shot.model) items.find(i => i.id==='provider').sub = shot.model;
+
+      items.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'swb-rights-row';
+        row.innerHTML = `<div class="swb-rights-l"><strong>${r.label}</strong><div class="sub">${r.sub}</div></div>
+          <div class="swb-rights-s ${r.state}">${r.state==='ok'?'OK':r.state==='pending'?'Pending':'Missing'}</div>`;
+        grid.appendChild(row);
+      });
+    }
+
+    function renderSwbDrawerFoot(shot) {
+      const f = document.getElementById('swb-d-foot'); if (!f) return;
+      const btn = (label, cls, action) => `<button class="swb-btn ${cls}" onclick="onSwbShotAction('${action}','${shot.code}')">${label}</button>`;
+      let html = '';
+      if (shot.status==='planning') {
+        html = btn('▶ 생성하기','swb-btn-primary','generate') + btn('↻ 재생성','swb-btn-warn','regenerate') + btn('💬 리뷰 요청','','request-review') + btn('📦 납품에 추가','','add-delivery');
+      } else if (shot.status==='production') {
+        html = btn('💬 리뷰 요청','swb-btn-primary','request-review') + btn('↻ 재생성','swb-btn-warn','regenerate') + btn('✎ 수정 요청','','request-revision') + btn('📦 납품에 추가','','add-delivery');
+      } else if (shot.status==='review') {
+        html = btn('✓ 샷 승인','swb-btn-success','approve') + btn('✎ 수정 요청','swb-btn-danger','request-revision') + btn('↻ 재생성','','regenerate') + btn('📦 납품에 추가','','add-delivery');
+      } else if (shot.status==='approved') {
+        html = btn('📦 납품에 추가','swb-btn-primary','add-delivery') + btn('↻ 재생성','','regenerate') + btn('✎ 수정 요청','','request-revision') + btn('💬 리뷰 요청','','request-review');
+      } else {
+        html = btn('완료','swb-btn-ghost','noop') + btn('↻ 재생성','','regenerate') + btn('📦 다시 납품','','add-delivery') + btn('아카이브','','archive');
+      }
+      f.innerHTML = html;
+    }
+
+    function onSwbShotAction(action, code) {
+      const shot = window.SwbShots.find(s => s.code === code); if (!shot) return;
+      const labels = { generate:'생성 요청됨', regenerate:'재생성 시작', 'request-review':'리뷰 요청 전송', 'request-revision':'수정 요청 전송', approve:`${code} 승인됨`, 'add-delivery':`${code} 납품 추가됨`, archive:'아카이브됨', noop:'' };
+      if (action==='request-review' && window.SwbState.projectType==='personal') { needsSwbTeam('리뷰 요청','Studio'); return; }
+      if (action==='add-delivery' && window.SwbState.projectType==='personal') { needsSwbTeam('납품 패키지','Studio'); return; }
+      if (action==='generate') shot.status='production';
+      if (action==='request-review') shot.status='review';
+      if (action==='approve') { shot.status='approved'; shot.hasFeedback=false; }
+      if (action==='request-revision') { shot.hasFeedback=true; shot.status='review'; }
+      if (action==='add-delivery') shot.status='delivered';
+      renderSwbShotBoard();
+      renderSwbReview();
+      if (window.SwbState.currentShot && window.SwbState.currentShot.code === code) renderSwbDrawerFoot(shot);
+      const sel = document.getElementById('swb-d-status'); if (sel) sel.value = shot.status;
+      if (labels[action]) swbToast(labels[action], 'success');
+    }
+
+    function toggleSwbProducer() {
+      const p = document.getElementById('swb-producer'); if (!p) return;
+      p.classList.toggle('collapsed');
+      const t = document.getElementById('swb-prod-toggle'); if (t) t.textContent = p.classList.contains('collapsed') ? '+' : '−';
+    }
+    function onSwbProducer(action, code) {
+      console.log('[SOAVIZ Workbench AI Producer]', action, code || '');
+      if (action==='retry') swbToast(`${code} 재생성 시작`, 'warn');
+      else if (action==='reminder') swbToast(`${code} 클라이언트에게 알림 전송`, 'info');
+      else if (action==='open') { const s = window.SwbShots.find(x => x.code === code); if (s) openSwbShotDrawer(s); }
+      else if (action==='split-brief') swbToast('Brief 자동 분해 시작', 'info');
+      else if (action==='generate-package') {
+        if (window.SwbState.projectType==='personal') needsSwbTeam('Delivery Package','Studio');
+        else swbToast('Delivery Package 생성 시작', 'success');
+      }
+    }
+
+    function toggleSwbApiVault(e) {
+      e.stopPropagation();
+      document.getElementById('swb-api-dd')?.classList.toggle('open');
+    }
+    document.addEventListener('click', () => {
+      document.getElementById('swb-api-dd')?.classList.remove('open');
+    });
+
+    function switchSwbTab(el, name) {
+      if (!el) return;
+      document.querySelectorAll('.swb-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      ['overview','board','db','review','delivery'].forEach(n => {
+        const tab = document.getElementById('swb-tab-'+n);
+        if (tab) tab.style.display = (n === name) ? 'block' : 'none';
+      });
+      window.SwbState.currentTab = name;
+      if (name==='board') renderSwbShotBoard();
+      else if (name==='db') renderSwbDB();
+      else if (name==='review') renderSwbReview();
+      else if (name==='delivery') renderSwbDeliveryPackage();
+      else if (name==='overview') renderSwbOverview();
+    }
+
+    function renderSwbOverview() {
+      const stats = document.getElementById('swb-stats'); if (!stats) return;
+      const S = window.SwbShots;
+      const counts = { planning:0, production:0, review:0, approved:0, delivered:0 };
+      S.forEach(s => counts[s.status] = (counts[s.status]||0) + 1);
+      stats.innerHTML = `
+        <div class="swb-stat-card"><div class="swb-stat-num">${S.length}</div><div class="swb-stat-label">전체 샷</div></div>
+        <div class="swb-stat-card"><div class="swb-stat-num" style="color:var(--swb-st-production)">${counts.production}</div><div class="swb-stat-label">제작 중</div></div>
+        <div class="swb-stat-card"><div class="swb-stat-num" style="color:var(--swb-st-review)">${counts.review}</div><div class="swb-stat-label">리뷰 중</div></div>
+        <div class="swb-stat-card"><div class="swb-stat-num" style="color:var(--swb-success)">${counts.approved + counts.delivered}</div><div class="swb-stat-label">승인+납품</div></div>`;
+    }
+
+    /* Public render entry — called from showPage */
+    function renderSwbWorkbench() {
+      window.SwbState.isInit = true;
+      _swbApplyCtxClass(window.SwbState.projectType);
+      const producer = document.getElementById('swb-producer');
+      if (producer) producer.classList.add('show');
+      // Bind drawer change handlers once
+      const ds = document.getElementById('swb-d-status');
+      if (ds && !ds.dataset.swbBound) {
+        ds.dataset.swbBound = '1';
+        ds.addEventListener('change', (e) => {
+          if (window.SwbState.currentShot) {
+            window.SwbState.currentShot.status = e.target.value;
+            renderSwbShotBoard();
+            renderSwbDrawerFoot(window.SwbState.currentShot);
+          }
+        });
+      }
+      const da = document.getElementById('swb-d-assignee');
+      if (da && !da.dataset.swbBound) {
+        da.dataset.swbBound = '1';
+        da.addEventListener('change', (e) => {
+          if (window.SwbState.currentShot) {
+            window.SwbState.currentShot.assignee = e.target.value;
+            renderSwbShotBoard();
+          }
+        });
+      }
+      // Active project name (best-effort): use real project if available
+      try {
+        const pid = window._soavizActiveProjectId || (window.SoavizPipeline && SoavizPipeline.getActiveId?.()) || localStorage.getItem('soaviz_active_project_id');
+        if (pid) {
+          const projects = JSON.parse(localStorage.getItem('soaviz_projects') || '[]');
+          const p = projects.find(x => String(x.id) === String(pid));
+          if (p && p.title) {
+            const tEl = document.getElementById('swb-title'); if (tEl) tEl.textContent = p.title;
+            const dt = document.getElementById('swb-del-title'); if (dt) dt.textContent = p.title;
+          }
+        }
+      } catch (_) {}
+      // Initial render based on current tab (default overview)
+      const tab = window.SwbState.currentTab || 'overview';
+      if (tab==='overview') renderSwbOverview();
+      else if (tab==='board') renderSwbShotBoard();
+      else if (tab==='db') renderSwbDB();
+      else if (tab==='review') renderSwbReview();
+      else if (tab==='delivery') renderSwbDeliveryPackage();
+      // ESC closes drawer + modal
+      document.addEventListener('keydown', _swbEsc);
+    }
+    function _swbEsc(e) {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('swb-drawer')?.classList.contains('open')) closeSwbDrawer();
+      if (document.getElementById('swb-modal')?.classList.contains('open')) closeSwbModal();
+    }
+
+    // Smoke check on first load (console)
+    (function swbSmokeCheck(){
+      const checks = [
+        ['SwbShots populated', Array.isArray(window.SwbShots) && window.SwbShots.length === 9],
+        ['renderSwbWorkbench defined', typeof renderSwbWorkbench === 'function'],
+        ['openSwbShotDrawer defined', typeof openSwbShotDrawer === 'function'],
+        ['toggleSwbProjectType defined', typeof toggleSwbProjectType === 'function'],
+        ['onSwbClientReviewLink defined', typeof onSwbClientReviewLink === 'function'],
+        ['renderSwbDeliveryPackage defined', typeof renderSwbDeliveryPackage === 'function'],
+        ['needsSwbTeam defined', typeof needsSwbTeam === 'function'],
+      ];
+      const passed = checks.filter(c => c[1]).length;
+      console.log('%c[SOAVIZ Workbench] ' + passed + '/' + checks.length + ' checks passed', 'color:#ff6b3f; font-weight:700;');
+    })();
+    </script>
+
+    <!-- ================ PAGE: TEAM LANDING (Sales Onepager when entering Team mode) ================ -->
+    <style>
+      .swb-team-landing-wrap { position: relative; width: 100%; height: calc(100vh - 80px); min-height: 600px; background: var(--bg, #0a0a0b); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+      .swb-team-landing-bar { position: sticky; top: 0; z-index: 10; display:flex; align-items:center; justify-content:space-between; padding: 10px 16px; background: linear-gradient(180deg, rgba(255,107,63,0.10), rgba(255,107,63,0.02)); border-bottom: 1px solid rgba(255,107,63,0.25); }
+      .swb-team-landing-bar .swb-tl-title { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:#ff6b3f; }
+      .swb-team-landing-bar .swb-tl-title .swb-tl-dot { width:8px; height:8px; border-radius:50%; background:#ff6b3f; box-shadow:0 0 0 2px rgba(255,107,63,0.20); }
+      .swb-team-landing-bar .swb-tl-actions { display:flex; gap:6px; }
+      .swb-team-landing-iframe { display: block; width: 100%; height: calc(100vh - 130px); min-height: 540px; border: 0; background: var(--bg, #0a0a0b); }
+      .swb-tl-btn { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); transition: 0.15s; }
+      .swb-tl-btn:hover { border-color: rgba(255,107,63,0.50); color: #ff6b3f; }
+      .swb-tl-btn.primary { background: #ff6b3f; border-color: #ff6b3f; color:#0a0a0b; }
+      .swb-tl-btn.primary:hover { background: #ff8050; }
+      @media (max-width: 800px) {
+        .swb-team-landing-wrap { height: auto; min-height: 0; border-radius: 0; border:none; }
+        .swb-team-landing-iframe { height: calc(100vh - 200px); }
+      }
+    </style>
+    <section id="page-team-landing" class="page">
+      <div class="swb-team-landing-wrap">
+        <div class="swb-team-landing-bar">
+          <div class="swb-tl-title">
+            <span class="swb-tl-dot"></span>
+            <span>팀 작업 — Studio 플랜으로 시작하기</span>
+          </div>
+          <div class="swb-tl-actions">
+            <button class="swb-tl-btn" onclick="setSwbWorkspace('personal'); showPage('projects');">← 개인 작업으로</button>
+            <button class="swb-tl-btn primary" onclick="onSwbStartTeam()">팀 시작하기 →</button>
+          </div>
+        </div>
+        <iframe class="swb-team-landing-iframe" src="sales-onepager.html" title="SOAVIZ Team Sales — Studio Plan" loading="lazy"></iframe>
+      </div>
+    </section>
+    <script>
+      /* 팀 시작 CTA — 임시: 토스트 + Workbench 진입 (실제 결제는 별도 단계) */
+      function onSwbStartTeam() {
+        if (typeof swbToast === 'function') swbToast('팀 워크스페이스 시작 — Studio 플랜 결제 페이지로 연결 (구현 예정)', 'success');
+        else alert('Studio 플랜 시작');
+        // 시연용: 활성 프로젝트가 있으면 Workbench로
+        try {
+          const pid = window._soavizActiveProjectId || localStorage.getItem('soaviz_active_project_id');
+          if (pid && typeof showPage === 'function') {
+            setTimeout(() => showPage('workbench'), 600);
+          } else if (typeof showPage === 'function') {
+            setTimeout(() => showPage('projects'), 600);
+          }
+        } catch (_) {}
+      }
+    </script>
+
     <!-- ================ PAGE: PROJECT ARCHIVE (프로젝트 라이브러리) ================ -->
     <section id="page-project-archive" class="page">
       <div class="page-head">
@@ -26784,28 +28199,47 @@ window.SoavizAuth = (() => {
       location.href = url;
       return;
     }
+    // 데스크톱 팝업 모드에서는 mobile 의 returnTo 가 끼어들지 않도록 사전 정리
+    try { localStorage.removeItem('soaviz.auth.returnTo.v1'); } catch {}
     // 자식 창에서 인증 완료 신호 수신 → 새로고침
+    let _authBC = null;
+    function _authSuccess() {
+      grantBetaAccessIfNeeded();
+      try { popup.close(); } catch {}
+      window.removeEventListener('message', onMsg);
+      window.removeEventListener('storage', onStorage);
+      try { _authBC?.close(); } catch {}
+      location.reload();
+    }
     function onMsg(e) {
-      if (e?.data === 'soaviz:auth-success') {
-        grantBetaAccessIfNeeded();
-        try { popup.close(); } catch {}
-        window.removeEventListener('message', onMsg);
-        location.reload();
-      }
+      if (e?.data === 'soaviz:auth-success') _authSuccess();
+    }
+    function onStorage(e) {
+      if (e.key === 'soaviz.auth.popup.success' && e.newValue) _authSuccess();
     }
     window.addEventListener('message', onMsg);
-    // 폴링: localStorage 변경 감지 (BroadcastChannel 폴백)
+    window.addEventListener('storage', onStorage);
+    // BroadcastChannel — file:// 등 크로스오리진 환경에서 가장 안전한 신호 채널
+    try {
+      _authBC = new BroadcastChannel('soaviz-auth');
+      _authBC.onmessage = (e) => { if (e?.data === 'soaviz:auth-success') _authSuccess(); };
+    } catch {}
+    // 폴링: localStorage 변경 감지 (모든 신호 채널 폴백)
     const poll = setInterval(() => {
       if (!isGuest()) {
         grantBetaAccessIfNeeded();
         clearInterval(poll);
         try { popup.close(); } catch {}
         window.removeEventListener('message', onMsg);
+        window.removeEventListener('storage', onStorage);
+        try { _authBC?.close(); } catch {}
         location.reload();
       }
       if (popup.closed) {
         clearInterval(poll);
         window.removeEventListener('message', onMsg);
+        window.removeEventListener('storage', onStorage);
+        try { _authBC?.close(); } catch {}
         // 닫혔는데 여전히 게스트면 그대로
       }
     }, 800);
@@ -27137,6 +28571,7 @@ function showPage(name) {
   if (name === 'today' && typeof renderTodayPage === 'function') renderTodayPage();
   if (name === 'extract' && typeof renderAudioAssetList === 'function') renderAudioAssetList();
   if (name === 'projects' && typeof renderProjectsPage === 'function') renderProjectsPage();
+  if (name === 'workbench' && typeof renderSwbWorkbench === 'function') renderSwbWorkbench();
   // renderCharactersPage: wrapper(line ~54780)에서 처리 — 여기서 중복 호출하면 race condition 발생
   if (name === 'admin' && typeof renderAdminPage === 'function') renderAdminPage();
   if (name === 'studio' && typeof refreshTtsCreditBar === 'function') refreshTtsCreditBar();
@@ -31297,7 +32732,8 @@ async function renderProjectsPage() {
             <div class="project-actions">
               ${p.archived
                 ? `<button class="project-btn primary" data-project-action="restore" data-project-id="${escapeHTML(p.id)}">복원</button>`
-                : `<button class="project-btn primary" data-project-action="open" data-project-id="${escapeHTML(p.id)}">Pipeline 열기</button>`}
+                : `<button class="project-btn primary" data-project-action="workbench" data-project-id="${escapeHTML(p.id)}">🎬 Workbench</button>
+                   <button class="project-btn" data-project-action="open" data-project-id="${escapeHTML(p.id)}">Pipeline</button>`}
               <button class="project-btn" data-project-action="edit" data-project-id="${escapeHTML(p.id)}">편집</button>
               <button class="project-btn" data-project-action="overflow" data-project-id="${escapeHTML(p.id)}" style="margin-left:auto;padding:0 10px;font-size:18px;letter-spacing:2px" title="더 보기">⋯</button>
               <div class="project-overflow-menu" style="display:none">${overflowItems}</div>
@@ -31488,6 +32924,16 @@ function openProjectExportModal(projectId) {
 
 function _projectPageOpen(page, project) {
   if (!project?.id) return;
+  if (page === 'workbench') {
+    // Set active project, then navigate to Project Workbench (swb-)
+    (async () => {
+      try { await SoavizPipeline?.setProject(project.id); } catch (_) {}
+      try { setActiveGoalId?.(project.id); } catch (_) {}
+      try { window._soavizActiveProjectId = project.id; localStorage.setItem('soaviz_active_project_id', String(project.id)); } catch (_) {}
+      showPage('workbench');
+    })();
+    return;
+  }
   if (page === 'pipeline') {
     showPage('pipeline');
     setTimeout(async () => {
@@ -31557,7 +33003,8 @@ function bindProjectsPage() {
     }
     await SoavizDB?.ready;
     const project = (await SoavizDB.db.projects.get(projectId)) || { id: projectId, ..._projectPageGoal(projectId) };
-    if (action === 'open') _projectPageOpen('pipeline', project);
+    if (action === 'workbench') _projectPageOpen('workbench', project);
+    else if (action === 'open') _projectPageOpen('pipeline', project);
     else if (action === 'edit') openProjectsProjectModal(project);
     else if (action === 'characters') _projectPageOpen('characters', project);
     else if (action === 'styles') _projectPageOpen('styles', project);
