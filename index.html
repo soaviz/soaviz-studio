@@ -867,6 +867,66 @@
       min-width: 0;
       padding-inline: clamp(18px, 2vw, 32px);
     }
+
+    /* ── Pipeline: 상단 고정 + 하단 스크롤 레이아웃 ── */
+    .main:has(#page-pipeline.active) {
+      padding: 0;
+      max-width: none;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #page-pipeline.active {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - var(--topbar-h, 56px) - var(--ctx-strip-h, 32px));
+      overflow: hidden;
+    }
+    /* 상단 고정 영역 */
+    .pl-sticky-top {
+      flex-shrink: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      z-index: 8;
+    }
+    .pl-sticky-inner {
+      padding: 28px 40px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    /* flow card — sticky 안에서 margin-bottom 줄임 */
+    .pl-sticky-top .workbench-flow-card {
+      margin-bottom: 16px;
+    }
+    /* tab bar — sticky 안에서 하단 여백 없앰, border-bottom으로 구분 */
+    .pl-sticky-top #pipeline-tab-bar {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    /* 탭 바 하단 래퍼 */
+    .pl-tab-bar-wrap {
+      padding: 12px 40px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    /* 하단 스크롤 콘텐츠 영역 */
+    .pl-tab-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 40px 60px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+    @media (max-width: 768px) {
+      .pl-sticky-inner { padding: 16px 16px 0; }
+      .pl-tab-bar-wrap { padding: 8px 16px 0; }
+      .pl-tab-body { padding: 16px 16px 60px; }
+    }
     .page { display: none; }
     .page.active { display: block; }
     :root {
@@ -24888,6 +24948,9 @@
 
     <!-- ================ PAGE: PROJECT WORKBENCH ================ -->
     <section id="page-pipeline" class="page">
+      <!-- ─ 상단 고정 영역 (sticky top) ─ -->
+      <div class="pl-sticky-top">
+        <div class="pl-sticky-inner">
       <div class="page-head">
         <h1>Project Workbench</h1>
         <p>기본 정보 → 캐릭터 → 키이미지 → 샷리스트 → 생성 → 편집 → 사운드 → Export를 한 프로젝트 안에서 이어갑니다.</p>
@@ -24969,6 +25032,11 @@
           5 스크립트
         </button>
       </div>
+        </div><!-- /pl-sticky-inner -->
+      </div><!-- /pl-sticky-top -->
+
+      <!-- ─ 탭 콘텐츠 스크롤 영역 ─ -->
+      <div class="pl-tab-body">
 
       <!-- ── 탭 1: 샷리스트 생성기 ── -->
       <div id="pl-tab-shotlist">
@@ -25472,6 +25540,7 @@
 
       </div><!-- /탭3 board -->
 
+      </div><!-- /pl-tab-body -->
     </section>
 
     <!-- ================ PAGE: COMPARE MODE (v3 M3) ================ -->
