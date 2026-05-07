@@ -152,6 +152,51 @@
     margin-top: 22px;
   }
 
+  /* "어디로 시작하시겠어요?" 분기 가이드 */
+  .entry-prompt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 8px 0 -8px;
+  }
+  .entry-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg,
+      rgba(99, 102, 241, 0.35),
+      rgba(255, 107, 63, 0.35));
+  }
+  .entry-line:first-child {
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.45));
+  }
+  .entry-line:last-child {
+    background: linear-gradient(90deg, rgba(255, 107, 63, 0.45), transparent);
+  }
+  .entry-q {
+    color: var(--text-2);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* 작업공간 배지 (카드 우상단) */
+  .ws-badge {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
   .choices {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -201,6 +246,27 @@
     position: relative;
     z-index: 1;
   }
+
+  .choice-body {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .meta-link {
+    color: var(--text-3);
+    text-decoration: none;
+    transition: color 140ms ease;
+  }
+
+  .meta-link:hover { color: var(--accent); }
+
+  .cta {
+    text-decoration: none;
+    transition: filter 140ms ease;
+  }
+
+  .cta:hover { filter: brightness(1.08); }
 
   .choice-kicker {
     color: var(--accent);
@@ -295,30 +361,38 @@
           <p>SOAVIZ는 AI 영상 제작의 시작점을 바꿉니다. 혼자라면 첫 컷까지 빠르게, 팀이라면 승인과 납품까지 한 흐름으로 바로 시작하세요.</p>
         </div>
 
+        <div class="entry-prompt" aria-hidden="true">
+          <span class="entry-line"></span>
+          <span class="entry-q">어디로 시작하시겠어요?</span>
+          <span class="entry-line"></span>
+        </div>
+
         <div class="choices" aria-label="Start options">
-          <a class="choice choice-personal" href="/personal" data-file-href="personal-onepager.html">
-            <div class="choice-body">
+          <div class="choice choice-personal">
+            <span class="ws-badge">● 개인 작업공간</span>
+            <a class="choice-body" href="/personal" data-file-href="personal-onepager.html">
               <div class="choice-kicker">Personal</div>
               <h2>혼자서도 첫 컷까지 바로</h2>
               <p>스토리, 캐릭터, 샷리스트, 생성, 편집을 한 화면에서 연결하고 내 API 키로 오늘 첫 장면을 만드세요.</p>
-            </div>
+            </a>
             <div class="choice-footer">
-              <span class="meta">Free · Creator · Studio</span>
-              <span class="cta">무료로 첫 컷 만들기</span>
+              <a class="meta meta-link" href="/personal" data-file-href="personal-onepager.html">자세히 보기 →</a>
+              <a class="cta" href="/app" data-file-href="soaviz-studio.html">무료로 첫 컷 만들기</a>
             </div>
-          </a>
+          </div>
 
-          <a class="choice choice-team" href="/team" data-file-href="sales-onepager.html">
-            <div class="choice-body">
+          <div class="choice choice-team">
+            <span class="ws-badge">● 팀 작업공간</span>
+            <a class="choice-body" href="/team" data-file-href="sales-onepager.html">
               <div class="choice-kicker">Team</div>
               <h2>팀 제작 속도를 오늘부터</h2>
               <p>프로젝트, 샷, 리뷰, 승인, 납품, 비용을 한 워크스페이스로 묶어 제작팀이 더 빨리 결정하고 끝내게 합니다.</p>
-            </div>
+            </a>
             <div class="choice-footer">
-              <span class="meta">Business · Enterprise</span>
-              <span class="cta">30분 데모 요청</span>
+              <a class="meta meta-link" href="/team" data-file-href="sales-onepager.html">자세히 보기 →</a>
+              <a class="cta" href="/contact?topic=team" data-file-href="contact.html?topic=team">30분 데모 요청</a>
             </div>
-          </a>
+          </div>
         </div>
       </section>
     </main>

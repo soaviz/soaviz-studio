@@ -215,16 +215,24 @@ SOAVIZ 서버
 | personal-onepager.html (개인용) | ✅ |
 | Push to origin/main | ✅ (commit `6b00e8e`) |
 
-### Phase 1 — 이번주 (5월 8일~12일)
+### Phase 1 — ✅ 완료 (5월 7일)
 
-| # | 작업 | 시간 | 파일 |
-|---|---|---|---|
-| 1 | `index.html`을 두 갈래 진입점으로 분기 | 2시간 | `index.html` |
-| 2 | `vercel.json` rewrite 추가 (`/personal`, `/team`) | 30분 | `vercel.json` |
-| 3 | personal-onepager 푸시 (이미 작업) | 5분 | git |
-| 4 | Phase 1 통합 push | 5분 | git |
+| # | 작업 | 상태 |
+|---|---|---|
+| 1 | `index.html` 메인 페이지 재작성 — 두 카드 진입 (Personal 인디고 / Team 오렌지) | ✅ |
+| 2 | `vercel.json` rewrite — `/personal`, `/team` clean URLs | ✅ |
+| 3 | `personal-onepager.html` 신규 (인디고 톤, 1인 크리에이터용) | ✅ |
+| 4 | `team.html`, `personal.html` clean URL alias | ✅ |
+| 5 | `beta.html`, `contact.html` 그라데이션 톤 (두 컨텍스트 진입) | ✅ |
+| 6 | `privacy.html`, `terms.html` 법적 페이지 | ✅ |
+| 7 | 로고 교체 — 인디고→오렌지 그라데이션 (정체성 시각화) | ✅ |
+| 8 | Personal 카드 CTA "무료로 첫 컷 만들기" → `/app` 직행 | ✅ |
+| 9 | `/app` rewrite 픽스 (cleanUrls 호환) | ✅ |
 
-**완료 기준**: `soaviz.studio/personal` 클릭 시 인디고 onepager / `/team` 클릭 시 오렌지 onepager가 라이브에서 보임.
+**완료 검증**:
+- `/`, `/personal`, `/team`, `/beta`, `/contact`, `/privacy`, `/terms` 7개 URL 모두 200 OK
+- `/app`은 cleanUrl 픽스 후 다음 푸시에 200 예상
+- 색상 일관성: personal.html 인디고 9:0, team.html 오렌지 9:0 (완벽 분리)
 
 ### Phase 2 — 다음주 (5월 13일~19일) — 핵심
 
@@ -337,21 +345,50 @@ SOAVIZ 서버
 
 ---
 
-## 부록 A — 현재 파일 구조
+## 부록 A — 현재 파일 구조 (Phase 1 완료 후)
 
 ```
 soaviz-studio/
-├── index.html                 ← 메인 (Phase 1에서 두 카드 분기)
-├── personal-onepager.html     ← 개인 onepager (인디고)
-├── sales-onepager.html        ← 팀 onepager (오렌지)
-├── soaviz-studio.html         ← 본 앱 (Workbench 통합 완료)
-├── signup.html                ← 로그인 (popup mobile redirect 픽스 완료)
-├── mobile.html                ← 모바일 앱
+├── index.html                 ← 메인 진입점 (두 카드 — Personal/Team)
+├── personal.html              ← /personal alias (1인 크리에이터, 인디고)
+├── team.html                  ← /team alias (스튜디오·에이전시, 오렌지)
+├── personal-onepager.html     ← 원본 onepager (인디고)
+├── sales-onepager.html        ← 원본 onepager (오렌지)
+├── beta.html                  ← /beta — 베타 신청 페이지
+├── contact.html               ← /contact — 연락처 (topic= 쿼리)
+├── privacy.html               ← /privacy — 개인정보처리방침
+├── terms.html                 ← /terms — 이용약관
+├── signup.html                ← /signup, /login — 로그인 (popup 픽스 완료)
+├── soaviz-studio.html         ← /app — 본 앱 (Workbench 통합 완료)
+├── mobile.html                ← /mobile — 모바일 앱
 ├── mockup-shot-board.html     ← Shot Board 디자인 목업
-├── server.js                  ← 백엔드 (CORS Vercel 도메인 추가됨)
-├── vercel.json                ← Phase 1에서 rewrite 추가 예정
-└── ACTION_PLAN_2026-05-07.md  ← 본 문서
+├── server.js                  ← 백엔드 (CORS Vercel 도메인 추가)
+├── vercel.json                ← rewrite 라우팅 (10+ clean URLs)
+├── assets/brand/
+│   ├── soaviz-logo-horizontal.png  ← 신규 로고 (인디고→오렌지 그라데이션)
+│   ├── soaviz-logo-symbol.png       ← 심볼만
+│   ├── favicon.png · apple-touch-icon.png · icon-192/512.png
+│   └── og-image.png
+├── ACTION_PLAN_2026-05-07.md  ← 본 문서 (전략 액션 플랜)
+└── DESIGN_SYSTEM.md           ← 디자인 시스템 v1.0
 ```
+
+## 부록 D — URL 라우팅 매핑 (vercel.json 기준)
+
+| Public URL | 파일 | 컨텍스트 |
+|---|---|---|
+| `/` | index.html | 중립 (분기 진입점) |
+| `/personal` | personal.html | 🟣 인디고 |
+| `/team` | team.html | 🟠 오렌지 |
+| `/app` | soaviz-studio | 본 앱 (컨텍스트 동적) |
+| `/beta` | beta.html | 그라데이션 |
+| `/contact` | contact.html | 그라데이션 |
+| `/privacy` | privacy.html | 인디고 |
+| `/terms` | terms.html | 오렌지 |
+| `/signup`, `/login` | signup.html | 중립 |
+| `/mobile` | mobile.html | 모바일 |
+| `/docs` | docs/index.html | 가이드 |
+| `/api/*` | Fly.io 백엔드 프록시 | API |
 
 ## 부록 B — 핵심 색상 코드
 

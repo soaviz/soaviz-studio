@@ -12,7 +12,7 @@
     { "source": "/",            "destination": "/index.html" },
     { "source": "/personal",    "destination": "/personal.html" },
     { "source": "/team",        "destination": "/team.html" },
-    { "source": "/app",         "destination": "/soaviz-studio.html" },
+    { "source": "/app",         "destination": "/soaviz-studio" },
     { "source": "/login",       "destination": "/signup.html" },
     { "source": "/signup",      "destination": "/signup.html" },
     { "source": "/beta",        "destination": "/beta.html" },

@@ -22,16 +22,34 @@
 
 ### 1.1 로고 / 워드마크
 
+**가로형 마스터 (메인 사용)**:
+- 파일: `assets/brand/soaviz-logo-horizontal.png`
+- 해상도: 2170×572 (8-bit RGB)
+- 적용 너비: 132px (nav) / 232px (랜딩 hero)
+
+**그라데이션 (★ 정체성)**:
 ```
-SOAVIZ
+왼쪽 #6366f1 (인디고 / Personal) → 오른쪽 #ff6b3f (오렌지 / Team)
 ```
+
+이 그라데이션은 SOAVIZ의 한 줄 메시지를 그대로 담는다:
+> **Personal에서 시작, Team으로 확장.**
 
 | 항목 | 값 |
 |---|---|
-| 폰트 | Inter / Pretendard (extra bold 800) |
-| 크기 | 18px |
-| 자간 | 1.5px |
-| 색상 | `var(--accent)` (컨텍스트에 따라 인디고/오렌지) |
+| 심볼 + 워드마크 | `soaviz-logo-horizontal.png` (가로형, 메인) |
+| 심볼만 | `soaviz-logo-symbol.png` / `@2x` (정사각, 앱아이콘) |
+| 파비콘 | `assets/brand/favicon.png` |
+| 앱 아이콘 | `assets/brand/apple-touch-icon.png`, `icon-192/512.png` |
+| OG 이미지 | `assets/brand/og-image.png` |
+| 워드마크 폰트 | 자체 디자인 (Pretendard 기반 변형) |
+| 다크 배경 전용 | 라이트 배경 사용 시 별도 어둡게 처리된 버전 필요 |
+
+**규칙**:
+- 다크 배경에만 사용 (현재 SOAVIZ는 다크 모드 only)
+- 절대 색상 변경 금지 (그라데이션이 정체성)
+- 로고 주변 여백: 심볼 높이의 0.5배 이상
+- 아이콘으로 줄일 때는 심볼만 사용 (`soaviz-logo-symbol.png`)
 
 ### 1.2 태그라인
 
@@ -675,19 +693,30 @@ font-weight: 600;
 
 ## 16. 다음 디자인 작업
 
-### 즉시 (Phase 1)
-- [ ] index.html 메인 페이지 — 두 카드 (Personal/Team) 진입 디자인
-- [ ] personal-onepager 푸시 후 라이브 검증
+### Phase 1 — ✅ 완료 (2026-05-07)
+- [x] index.html 메인 — 두 카드 (Personal/Team) 진입 디자인
+- [x] personal-onepager.html — 인디고 톤 1인 크리에이터용
+- [x] sales-onepager.html — 오렌지 톤 팀용
+- [x] beta.html / contact.html — 그라데이션 톤 (두 컨텍스트 진입)
+- [x] privacy.html / terms.html — 법적 페이지
+- [x] 새 로고 (인디고→오렌지 그라데이션)
+- [x] vercel.json clean URL 라우팅 (/personal, /team, /beta, /contact, /privacy, /terms)
+- [x] Personal 카드 CTA 분리 — "무료로 첫 컷 만들기" → /app 직행
+- [x] /app rewrite 픽스 (cleanUrls 호환)
 
-### 다음주 (Phase 2)
+### Phase 2 — 다음주 (예정)
 - [ ] 생성 직전 확인 모달 (모델 + API 출처 + 비용 카드)
 - [ ] BYOK 키 등록 마법사 (3-step wizard)
 - [ ] 컨텍스트 mismatch 경고 배너
+- [ ] 프로젝트 ↔ Vault 1:1 바인딩 UI
 
-### 결제 직전 (Phase 3)
+### Phase 3 — 결제 직전
 - [ ] Audit Log 화면 (테이블 + 필터)
 - [ ] Stripe 결제 흐름 디자인
 - [ ] 베타 → 정식 전환 모달
+
+### 작은 일관성 정리 (선택)
+- [ ] privacy.html / terms.html 색 통일 (현재 인디고/오렌지 다름 → 그라데이션 톤으로 통일)
 
 ---
 
