@@ -24238,8 +24238,403 @@
 
     <!-- ================ PAGE: LANDING ================ -->
     <section id="page-landing" class="page landing-page">
-      <!-- 로고 클릭 시 첫 화면: personal-onepager.html (마케팅·기능 소개) -->
+      <!-- 로고 클릭 시 첫 화면 — 새 단일 랜딩 (sl- prefix) -->
       <style>
+        /* === SOAVIZ Landing (sl- prefix) — 첫 화면 단일 페이지 === */
+        .sl-page {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 16px 24px 48px;
+        }
+        .sl-page * { box-sizing: border-box; }
+
+        /* === Hero === */
+        .sl-hero {
+          display: grid;
+          grid-template-columns: 1.15fr 1fr;
+          gap: 44px;
+          align-items: center;
+          padding: 40px 0 56px;
+          position: relative;
+        }
+        .sl-hero::before {
+          content: '';
+          position: absolute;
+          top: -40px; left: 50%;
+          transform: translateX(-50%);
+          width: 700px; height: 480px;
+          background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.10), transparent 65%);
+          pointer-events: none;
+          z-index: -1;
+        }
+        .sl-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          color: #6366f1;
+          background: rgba(99, 102, 241, 0.10);
+          border: 1px solid rgba(99, 102, 241, 0.35);
+          padding: 4px 12px;
+          border-radius: 14px;
+          margin-bottom: 16px;
+          text-transform: uppercase;
+        }
+        .sl-h1 {
+          font-size: 46px;
+          font-weight: 800;
+          line-height: 1.12;
+          letter-spacing: -0.025em;
+          margin: 0 0 14px;
+          color: var(--text);
+        }
+        .sl-h1 .accent { color: #6366f1; }
+        .sl-lead {
+          font-size: 17px;
+          color: var(--text-dim);
+          line-height: 1.6;
+          margin: 0 0 28px;
+          max-width: 520px;
+        }
+        .sl-lead strong { color: var(--text); font-weight: 600; }
+        .sl-cta-row {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-bottom: 22px;
+        }
+        .sl-btn {
+          padding: 11px 20px;
+          border-radius: 9px;
+          font-size: 13px;
+          font-weight: 600;
+          font-family: inherit;
+          cursor: pointer;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          color: var(--text);
+          transition: 0.15s;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          text-decoration: none;
+        }
+        .sl-btn:hover { border-color: var(--border-strong, var(--border-light)); transform: translateY(-1px); }
+        .sl-btn.primary {
+          background: #6366f1;
+          border-color: #6366f1;
+          color: #0a0a0b;
+          font-weight: 700;
+        }
+        .sl-btn.primary:hover { background: #7c7ff5; border-color: #7c7ff5; }
+        .sl-btn.lg { padding: 14px 26px; font-size: 14px; border-radius: 10px; }
+        .sl-meta-row {
+          display: flex;
+          gap: 18px;
+          font-size: 11px;
+          color: var(--text-faint);
+          flex-wrap: wrap;
+        }
+        .sl-meta-row .check { color: #6366f1; font-weight: 700; }
+
+        /* Hero visual — mini kanban preview */
+        .sl-visual {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 14px;
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+          position: relative;
+          overflow: hidden;
+        }
+        .sl-visual::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent 55%);
+          pointer-events: none;
+        }
+        .sl-mini-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 4px 8px 12px;
+          border-bottom: 1px solid var(--border);
+          margin-bottom: 10px;
+          position: relative;
+        }
+        .sl-mini-title {
+          font-size: 12px; font-weight: 700;
+          display: flex; align-items: center; gap: 6px;
+        }
+        .sl-mini-badge {
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          padding: 2px 7px;
+          border-radius: 8px;
+          background: rgba(99, 102, 241, 0.12);
+          color: #6366f1;
+          border: 1px solid rgba(99, 102, 241, 0.35);
+          text-transform: uppercase;
+        }
+        .sl-mini-board {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 6px;
+        }
+        .sl-mini-col {
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          padding: 7px;
+          min-height: 175px;
+        }
+        .sl-mini-col-h {
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.6px;
+          color: var(--text-faint);
+          text-transform: uppercase;
+          display: flex; align-items: center; gap: 5px;
+          margin-bottom: 6px;
+        }
+        .sl-mini-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .sl-mini-card {
+          background: var(--bg-elev);
+          border: 1px solid var(--border);
+          border-radius: 5px;
+          overflow: hidden;
+          margin-bottom: 5px;
+        }
+        .sl-mini-thumb {
+          height: 28px;
+          display: flex; align-items: center; justify-content: center;
+          color: rgba(255,255,255,0.4);
+          font-size: 9px;
+        }
+        .sl-mini-info { padding: 5px 7px; }
+        .sl-mini-code { font-size: 8px; color: var(--text-faint); font-family: ui-monospace, monospace; }
+        .sl-mini-mt { font-size: 9px; font-weight: 500; color: var(--text); }
+        .sl-mini-next {
+          margin-top: 3px;
+          font-size: 8px;
+          color: #6366f1;
+          padding: 1px 5px;
+          background: rgba(99, 102, 241, 0.10);
+          border: 1px solid rgba(99, 102, 241, 0.30);
+          border-radius: 6px;
+          display: inline-block;
+        }
+
+        /* === Stats Strip === */
+        .sl-stats {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+          padding: 22px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          margin-bottom: 56px;
+        }
+        .sl-stat { text-align: center; }
+        .sl-stat-num {
+          font-size: 28px;
+          font-weight: 800;
+          color: #6366f1;
+          font-family: var(--font-display, inherit);
+          line-height: 1.1;
+        }
+        .sl-stat-lbl {
+          font-size: 10px;
+          color: var(--text-faint);
+          text-transform: uppercase;
+          letter-spacing: 0.10em;
+          margin-top: 5px;
+          font-weight: 600;
+        }
+
+        /* === Section header === */
+        .sl-section-head {
+          text-align: center;
+          margin-bottom: 32px;
+        }
+        .sl-section-head h2 {
+          font-size: 30px;
+          font-weight: 800;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+          margin: 8px 0 8px;
+        }
+        .sl-section-head p {
+          font-size: 14px;
+          color: var(--text-dim);
+          max-width: 540px;
+          margin: 0 auto;
+          line-height: 1.6;
+        }
+
+        /* === Workflow === */
+        .sl-workflow {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 10px;
+          padding: 0 0 56px;
+        }
+        .sl-flow-step {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 18px 16px;
+          position: relative;
+          transition: 0.2s;
+        }
+        .sl-flow-step:hover { border-color: rgba(99, 102, 241, 0.40); transform: translateY(-2px); }
+        .sl-flow-step::after {
+          content: '→';
+          position: absolute;
+          top: 50%;
+          right: -12px;
+          transform: translateY(-50%);
+          color: #6366f1;
+          font-weight: 700;
+          font-size: 16px;
+          z-index: 1;
+        }
+        .sl-flow-step:last-child::after { display: none; }
+        .sl-flow-num {
+          font-size: 10px;
+          font-weight: 700;
+          color: #6366f1;
+          letter-spacing: 0.10em;
+          margin-bottom: 6px;
+        }
+        .sl-flow-title {
+          font-size: 14px;
+          font-weight: 700;
+          margin-bottom: 5px;
+        }
+        .sl-flow-desc {
+          font-size: 12px;
+          color: var(--text-dim);
+          line-height: 1.5;
+        }
+
+        /* === Features grid === */
+        .sl-features {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+          padding: 0 0 56px;
+        }
+        .sl-feat {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 22px 24px;
+          transition: 0.2s;
+        }
+        .sl-feat:hover { border-color: rgba(99, 102, 241, 0.45); transform: translateY(-2px); }
+        .sl-feat-icon {
+          width: 38px; height: 38px;
+          background: rgba(99, 102, 241, 0.10);
+          border: 1px solid rgba(99, 102, 241, 0.30);
+          border-radius: 10px;
+          display: grid; place-items: center;
+          margin-bottom: 12px;
+          color: #6366f1;
+        }
+        .sl-feat-icon svg { width: 18px; height: 18px; }
+        .sl-feat-title {
+          font-size: 16px;
+          font-weight: 700;
+          margin-bottom: 6px;
+        }
+        .sl-feat-desc {
+          font-size: 13px;
+          color: var(--text-dim);
+          line-height: 1.6;
+        }
+
+        /* === Quick access === */
+        .sl-quick {
+          padding: 0 0 56px;
+        }
+        .sl-quick-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 10px;
+        }
+        .sl-quick-tile {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 14px 16px;
+          cursor: pointer;
+          font-family: inherit;
+          color: var(--text);
+          text-align: left;
+          transition: 0.15s;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .sl-quick-tile:hover { border-color: rgba(99, 102, 241, 0.40); background: rgba(99, 102, 241, 0.05); }
+        .sl-quick-tile svg { width: 18px; height: 18px; color: #6366f1; flex-shrink: 0; }
+        .sl-quick-tile-text { flex: 1; }
+        .sl-quick-tile-name { font-size: 13px; font-weight: 700; }
+        .sl-quick-tile-sub { font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+
+        /* === Final CTA === */
+        .sl-cta-final {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.02));
+          border: 1px solid rgba(99, 102, 241, 0.30);
+          border-radius: 16px;
+          padding: 40px 32px;
+          text-align: center;
+        }
+        .sl-cta-final h2 {
+          font-size: 28px;
+          font-weight: 800;
+          line-height: 1.25;
+          margin: 0 0 12px;
+          letter-spacing: -0.02em;
+        }
+        .sl-cta-final p {
+          font-size: 14px;
+          color: var(--text-dim);
+          margin: 0 0 24px;
+          max-width: 480px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .sl-cta-final .sl-btn-row {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .sl-cta-final .sl-foot-note {
+          margin-top: 16px;
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+
+        /* Responsive */
+        @media (max-width: 920px) {
+          .sl-hero { grid-template-columns: 1fr; gap: 32px; padding: 28px 0 40px; }
+          .sl-h1 { font-size: 36px; }
+          .sl-stats { grid-template-columns: 1fr 1fr; }
+          .sl-workflow { grid-template-columns: 1fr 1fr; }
+          .sl-flow-step::after { display: none; }
+          .sl-features { grid-template-columns: 1fr; }
+          .sl-section-head h2 { font-size: 24px; }
+        }
+
+        /* Legacy compatibility (다른 곳에서 참조 가능) */
         .landing-onepager-wrap {
           position: relative;
           width: 100%;
@@ -24313,22 +24708,256 @@
           .landing-onepager-bar .lop-actions .lop-btn:not(:last-child) { display: none; }
         }
       </style>
-      <div class="landing-onepager-wrap">
-        <div class="landing-onepager-bar">
-          <div class="lop-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-            </svg>
-            SOAVIZ — 1인 AI 영상 크리에이터의 작업실
+      <div class="sl-page">
+
+        <!-- 1. HERO -->
+        <section class="sl-hero">
+          <div class="sl-hero-text">
+            <span class="sl-eyebrow">AI Video Production OS</span>
+            <h1 class="sl-h1">아이디어를 오늘 바로<br><span class="accent">영상으로</span></h1>
+            <p class="sl-lead">
+              SOAVIZ는 1인 AI 크리에이터의 작업실입니다. 스토리·캐릭터·샷리스트·생성·편집을 한 화면에서 본인 API 키로 끊김 없이 — <strong>탭 10개를 1개로</strong>.
+            </p>
+            <div class="sl-cta-row">
+              <button class="sl-btn primary lg" onclick="showPage('today')" type="button">바로 시작하기 →</button>
+              <button class="sl-btn lg" onclick="document.getElementById('sl-features-section')?.scrollIntoView({behavior:'smooth'})" type="button">기능 둘러보기</button>
+            </div>
+            <div class="sl-meta-row">
+              <span><span class="check">✓</span> 본인 API 키 (BYOK · 마진 0%)</span>
+              <span><span class="check">✓</span> 5분 내 첫 영상</span>
+              <span><span class="check">✓</span> 로컬 암호화 저장</span>
+            </div>
           </div>
-          <div class="lop-actions">
-            <a class="lop-btn" href="personal-onepager.html" target="_blank" title="새 탭에서 전체 페이지 열기">↗ 새 탭</a>
+
+          <!-- Hero visual: mini Shot Board -->
+          <div class="sl-visual">
+            <div class="sl-mini-head">
+              <div class="sl-mini-title">🎬 My Music Video</div>
+              <span class="sl-mini-badge">Personal</span>
+            </div>
+            <div class="sl-mini-board">
+              <div class="sl-mini-col">
+                <div class="sl-mini-col-h"><span class="sl-mini-dot" style="background:#6b7280"></span>Planning</div>
+                <div class="sl-mini-card">
+                  <div class="sl-mini-thumb" style="background:repeating-linear-gradient(45deg,#15151a,#15151a 4px,#1a1a22 4px,#1a1a22 8px)"></div>
+                  <div class="sl-mini-info">
+                    <div class="sl-mini-code">S001</div>
+                    <div class="sl-mini-mt">오프닝</div>
+                    <span class="sl-mini-next">› 생성</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sl-mini-col">
+                <div class="sl-mini-col-h"><span class="sl-mini-dot" style="background:#f0c419"></span>Production</div>
+                <div class="sl-mini-card">
+                  <div class="sl-mini-thumb" style="background:linear-gradient(135deg,#1a2540,#2a3a5a)">▶</div>
+                  <div class="sl-mini-info">
+                    <div class="sl-mini-code">S004</div>
+                    <div class="sl-mini-mt">클로즈업</div>
+                    <span class="sl-mini-next">› 리뷰</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sl-mini-col">
+                <div class="sl-mini-col-h"><span class="sl-mini-dot" style="background:#3b82f6"></span>Review</div>
+                <div class="sl-mini-card">
+                  <div class="sl-mini-thumb" style="background:linear-gradient(135deg,#2a1f15,#3a2a1f)">▶</div>
+                  <div class="sl-mini-info">
+                    <div class="sl-mini-code">S002</div>
+                    <div class="sl-mini-mt">인터뷰</div>
+                    <span class="sl-mini-next" style="color:#f0c419;border-color:rgba(240,196,25,0.30);background:rgba(240,196,25,0.08)">› 수정</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sl-mini-col">
+                <div class="sl-mini-col-h"><span class="sl-mini-dot" style="background:#10b981"></span>Approved</div>
+                <div class="sl-mini-card">
+                  <div class="sl-mini-thumb" style="background:linear-gradient(135deg,#2a1a3a,#3a2540)">▶</div>
+                  <div class="sl-mini-info">
+                    <div class="sl-mini-code">S010</div>
+                    <div class="sl-mini-mt">엔딩</div>
+                    <span class="sl-mini-next">› Export</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <iframe class="landing-onepager-iframe" src="personal-onepager.html" title="SOAVIZ Personal — 1인 크리에이터 소개" loading="lazy"></iframe>
+        </section>
+
+        <!-- 2. STATS STRIP -->
+        <section class="sl-stats">
+          <div class="sl-stat">
+            <div class="sl-stat-num">10→1</div>
+            <div class="sl-stat-lbl">탭 → 한 화면</div>
+          </div>
+          <div class="sl-stat">
+            <div class="sl-stat-num">12+</div>
+            <div class="sl-stat-lbl">AI 모델 통합</div>
+          </div>
+          <div class="sl-stat">
+            <div class="sl-stat-num">0%</div>
+            <div class="sl-stat-lbl">API 마진 (BYOK)</div>
+          </div>
+          <div class="sl-stat">
+            <div class="sl-stat-num">5분</div>
+            <div class="sl-stat-lbl">첫 영상까지</div>
+          </div>
+        </section>
+
+        <!-- 3. WORKFLOW -->
+        <section class="sl-section">
+          <div class="sl-section-head">
+            <span class="sl-eyebrow">How it works</span>
+            <h2>아이디어부터 Export까지, 5단계.</h2>
+            <p>좌측 사이드바 메뉴 순서가 곧 제작 흐름입니다. 위에서 아래로 진행하면 끝.</p>
+          </div>
+          <div class="sl-workflow">
+            <div class="sl-flow-step">
+              <div class="sl-flow-num">STEP 1</div>
+              <div class="sl-flow-title">스토리</div>
+              <div class="sl-flow-desc">한 줄 컨셉 → 시놉시스·캐릭터·세계관 자동 정리</div>
+            </div>
+            <div class="sl-flow-step">
+              <div class="sl-flow-num">STEP 2</div>
+              <div class="sl-flow-title">캐릭터·룩북</div>
+              <div class="sl-flow-desc">캐릭터·스타일 한 번 설정 → 모든 새 생성에 자동 주입</div>
+            </div>
+            <div class="sl-flow-step">
+              <div class="sl-flow-num">STEP 3</div>
+              <div class="sl-flow-title">샷 분해</div>
+              <div class="sl-flow-desc">스토리 → 샷 단위로 자동 분해. 본인 API 키 호출</div>
+            </div>
+            <div class="sl-flow-step">
+              <div class="sl-flow-num">STEP 4</div>
+              <div class="sl-flow-title">사운드</div>
+              <div class="sl-flow-desc">Voice·Music·SFX 한 화면에서 생성·합치기</div>
+            </div>
+            <div class="sl-flow-step">
+              <div class="sl-flow-num">STEP 5</div>
+              <div class="sl-flow-title">편집·Export</div>
+              <div class="sl-flow-desc">타임라인에 영상+사운드 합치고 MP4 한 번에</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. FEATURES -->
+        <section class="sl-section" id="sl-features-section">
+          <div class="sl-section-head">
+            <span class="sl-eyebrow">핵심 기능</span>
+            <h2>정리는 SOAVIZ가, 창작은 당신이.</h2>
+          </div>
+          <div class="sl-features">
+            <div class="sl-feat">
+              <div class="sl-feat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </div>
+              <div class="sl-feat-title">샷 단위 작업실</div>
+              <div class="sl-feat-desc">5단계 보드 (Planning → Delivered). 한 샷에 N개 버전·프롬프트·시드 자동 누적. 며칠 지나도 어느 시도가 어떤 결과였는지 즉시 보임.</div>
+            </div>
+            <div class="sl-feat">
+              <div class="sl-feat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              </div>
+              <div class="sl-feat-title">본인 API 키 (BYOK)</div>
+              <div class="sl-feat-desc">Kling·Runway·Sora·ElevenLabs를 본인 계정 키로 호출. AES-GCM 256 + PBKDF2 250k 로컬 암호화. SOAVIZ는 비용에 마진 0%.</div>
+            </div>
+            <div class="sl-feat">
+              <div class="sl-feat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+              </div>
+              <div class="sl-feat-title">Character & Style Bible</div>
+              <div class="sl-feat-desc">한 번 만든 캐릭터·룩북·세계관이 모든 새 생성에 자동 주입. 시리즈물·연속성 있는 작업이 마침내 가능해집니다.</div>
+            </div>
+            <div class="sl-feat">
+              <div class="sl-feat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="sl-feat-title">팀이 필요해지면 비즈니스 분리</div>
+              <div class="sl-feat-desc">외주가 늘면 좌하단 [팀 작업]에서 비즈니스 계정으로 별도 로그인. 토큰·결제·데이터가 절대 섞이지 않습니다 — 사고 0%.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. QUICK ACCESS -->
+        <section class="sl-section sl-quick">
+          <div class="sl-section-head">
+            <span class="sl-eyebrow">Quick Start</span>
+            <h2>바로 시작 — 한 클릭</h2>
+          </div>
+          <div class="sl-quick-grid">
+            <button type="button" class="sl-quick-tile" onclick="showPage('today')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">Today</span>
+                <span class="sl-quick-tile-sub">오늘 작업·진행 상황</span>
+              </span>
+            </button>
+            <button type="button" class="sl-quick-tile" onclick="showPage('personas')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.9 8l4.8.4-3.7 3.1 1.1 4.7-4.1-2.5-4.1 2.5 1.1-4.7-3.7-3.1 4.8-.4z"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">Story</span>
+                <span class="sl-quick-tile-sub">기획·스토리부터 시작</span>
+              </span>
+            </button>
+            <button type="button" class="sl-quick-tile" onclick="showPage('characters')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">캐릭터</span>
+                <span class="sl-quick-tile-sub">캐릭터 Bible 만들기</span>
+              </span>
+            </button>
+            <button type="button" class="sl-quick-tile" onclick="showPage('pipeline')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h8M18 8v8"/><path d="M6 8v6a2 2 0 0 0 2 2h6"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">샷 리스트</span>
+                <span class="sl-quick-tile-sub">스토리 → 샷 분해</span>
+              </span>
+            </button>
+            <button type="button" class="sl-quick-tile" onclick="showPage('video-studio')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">Generate</span>
+                <span class="sl-quick-tile-sub">AI 영상 생성</span>
+              </span>
+            </button>
+            <button type="button" class="sl-quick-tile" onclick="showPage('library')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-7l-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><polyline points="9 14 11 16 15 12"/></svg>
+              <span class="sl-quick-tile-text">
+                <span class="sl-quick-tile-name">Library</span>
+                <span class="sl-quick-tile-sub">결과물 보관·Export</span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 6. FINAL CTA -->
+        <section class="sl-cta-final">
+          <h2>탭 10개 띄우는 거,<br>오늘부터 그만하세요.</h2>
+          <p>본인 API 키만 연결하면 5분 안에 첫 영상이 나옵니다. 쓰던 도구는 그대로 두고, SOAVIZ를 한 번만 켜보세요.</p>
+          <div class="sl-btn-row">
+            <button class="sl-btn primary lg" type="button" onclick="showPage('personas')">스토리 만들기 →</button>
+            <a class="sl-btn lg" href="docs/index.html" title="사용자 가이드">사용자 가이드</a>
+            <a class="sl-btn lg" href="mailto:ai@soaviz.com" title="문의·피드백">ai@soaviz.com</a>
+          </div>
+          <div class="sl-foot-note">
+            개인 작업 · BYOK · 로컬 암호화 · 비즈니스 계정 별도 운영
+          </div>
+        </section>
+
       </div>
-
-
     </section>
 
     <!-- ================ PAGE: TODAY (resume dashboard) ================ -->
@@ -28262,10 +28891,10 @@ window.SoavizAuth = (() => {
         </div>
         <p>지금은 둘러보는 중입니다. <strong>저장 · 생성 · 동기화</strong>를 사용하려면 30초만에 무료 계정을 만드세요.</p>
         <ul style="font-size:12px;color:var(--text-dim);line-height:1.7;padding-left:20px;margin:0 0 14px">
-          <li>📁 프로젝트 / 캐릭터 / 스타일 영구 저장</li>
-          <li>⚡ 크레딧 기반 제작 실행 및 사용량 기록</li>
-          <li>⚡ Compare 결과 / 활동 로그 자동 기록</li>
-          <li>🎞 Pipeline · DaVinci XML · EDL Export</li>
+          <li>🎬 샷 단위 작업실 (Planning → Delivered)</li>
+          <li>🔑 본인 API 키 (BYOK · 마진 0%)</li>
+          <li>📚 캐릭터 · 스타일 자동 주입</li>
+          <li>📦 영상 + 사운드 + Export 한 화면</li>
         </ul>
         <div class="vault-modal-actions" style="flex-direction:column;align-items:stretch;gap:6px">
           <button class="vault-btn primary" id="sv-auth-signup" style="padding:12px;font-size:14px">✨ 무료 회원가입 (새 창)</button>
@@ -28277,7 +28906,7 @@ window.SoavizAuth = (() => {
     document.body.appendChild(root);
     if (isBetaLoginRequired()) {
       const p = root.querySelector('p');
-      if (p) p.innerHTML = 'SOAVIZ 베타는 로그인 후 <strong>앱 전체 화면</strong>에 접근할 수 있습니다. 단, AI 생성·렌더·음성·음악처럼 토큰 비용이 드는 제작 실행은 크레딧 결제 플랜에서 차감됩니다. API 키 등록은 전문 영상 크리에이터 이상에서만 선택 가능합니다.';
+      if (p) p.innerHTML = 'SOAVIZ 베타 — <strong>1인 AI 크리에이터의 작업실</strong>. 로그인하고 본인 API 키로 오늘 첫 영상을 만드세요.';
       root.querySelector('#sv-auth-keep')?.remove();
     }
     const close = () => { try { document.body.removeChild(root); } catch {} };
@@ -28596,7 +29225,7 @@ function showPage(name) {
   if (isCommercialGuestLocked(name)) {
     syncGuestLockedNavigation();
     window.SoavizAuth?.openAuthModal?.('SOAVIZ 베타 전체 액세스', { redirectPage: name });
-    showToast?.('SOAVIZ 베타는 로그인 후 앱 화면에 접근할 수 있습니다. 실제 제작 실행은 크레딧을 차감합니다.', 'warn');
+    showToast?.('베타는 로그인 후 사용 가능 — 본인 API 키로 시작하세요', 'warn');
     name = 'landing';
   }
   window.currentPage = name === 'landing' ? 'landing' : name;

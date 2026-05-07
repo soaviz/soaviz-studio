@@ -14,6 +14,40 @@
 
 ---
 
+## 0.5 현재 인수인계 — 2026-05-08 새벽
+
+Claude가 새 세션에서 바로 이어받아야 할 최신 상태:
+
+| 영역 | 현재 상태 |
+|---|---|
+| 브랜치 | `main` |
+| 최신 주요 커밋 | `2e29291 feat(sidebar+docs+signup): 제작 흐름 재정렬 + 좌하단 통합 + 창업자 스토리 + 로그인 hero` |
+| 직전 Codex 커밋 | `3ba3489 Polish studio branding and auth UI` |
+| 현재 미커밋 파일 | `soaviz-studio.html` 수정 있음. 먼저 `git status -sb`와 diff 확인 필수 |
+| 주의 | 사용자/코워크 수정 가능성이 높으므로 미커밋 변경 절대 revert 금지 |
+
+최근 반영된 사용자 결정:
+
+- 서비스 내부 좌측 상단 로고는 `assets/brand/soaviz-logo-horizontal.png` 가로형 로고를 사용한다.
+- `signup.html#login` 좌측 상단 로고는 `assets/brand/soaviz-logo-signup.png`를 사용한다. 크기는 작게, 체크무늬 배경 없이 보여야 한다.
+- 로그인 페이지 상단 문구는 짧게 유지한다: `AI 영상 제작, 바로 이어가세요.` / `SOAVIZ Studio에 로그인하고 작업을 계속하세요.`
+- Google 로그인 버튼 옆 초록색 `활성` 배지는 제거했다. 다시 넣지 마라.
+- 서비스 사이드바는 좁게 유지한다. 현재 기준 `--sidebar-w: 172px`.
+- 사이드바 메뉴는 아이콘 + 메뉴명 한 줄만. `v3`, `선택`, `BYOK`, `PERSONAL` 같은 보조 배지 노출 금지.
+- 로고 클릭 첫 화면의 예전 베타 섹션 `AI가 만든다. 당신이 완성한다...`는 삭제 대상이었다. 다시 복구하지 마라.
+- 현재 `soaviz-studio.html`에는 `sl-` prefix의 새 단일 랜딩 작업이 미커밋으로 들어와 있을 수 있다. 이 부분은 반드시 diff를 읽고 이어서 작업한다.
+
+Claude 첫 액션:
+
+```bash
+cd ~/Desktop/soaviz-studio
+git status -sb
+git log --oneline -5
+git diff --stat
+```
+
+---
+
 ## 1. 사용자 정체
 
 | 항목 | 값 |
