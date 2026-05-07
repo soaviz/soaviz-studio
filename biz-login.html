@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ Business — 팀 계정 로그인</title>
+<meta name="description" content="SOAVIZ Business — 팀 협업 OS 전용 계정 로그인. 개인 계정과 완전히 분리된 비즈니스 워크스페이스.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/brand/favicon.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --bg-2: #0f0f12;
+    --surface: #15151a;
+    --surface-2: #1c1c22;
+    --surface-3: #25252d;
+    --border: #2a2a32;
+    --border-light: #35353f;
+    --text: #e8e8ea;
+    --text-2: #8e8e95;
+    --text-3: #5e5e65;
+
+    /* Team / Business 컨텍스트 (오렌지) */
+    --team: #ff6b3f;
+    --team-2: #ffb84a;
+    --team-soft: rgba(255, 107, 63, 0.10);
+    --team-border: rgba(255, 107, 63, 0.45);
+
+    --success: #10b981;
+    --danger: #ef4444;
+  }
+
+  html, body { min-height: 100vh; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    /* 컨텍스트 그라데이션 배경 */
+    background:
+      radial-gradient(ellipse at top, rgba(255, 107, 63, 0.10), transparent 50%),
+      linear-gradient(180deg, var(--bg), #050506 80%);
+    /* 좌측 컨텍스트 라인 */
+    box-shadow: inset 4px 0 0 0 rgba(255, 107, 63, 0.55);
+  }
+
+  /* 비즈니스 컨텍스트 상단 배너 */
+  .ctx-banner {
+    background: linear-gradient(90deg, rgba(255, 107, 63, 0.12), rgba(255, 107, 63, 0.04));
+    border-bottom: 1px solid var(--team-border);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--team);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .ctx-banner .ctx-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--team);
+    box-shadow: 0 0 0 2px rgba(255,107,63,0.20);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,107,63,0.6); }
+    70% { box-shadow: 0 0 0 6px rgba(255,107,63,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,107,63,0); }
+  }
+  .ctx-close {
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .ctx-close:hover { color: var(--text); background: var(--surface-2); }
+
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 28px 40px;
+  }
+
+  /* Logo + 비즈니스 표기 */
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .brand-logo {
+    height: 28px;
+    width: auto;
+  }
+  .brand-suffix {
+    padding: 3px 8px;
+    background: var(--team-soft);
+    border: 1px solid var(--team-border);
+    border-radius: 6px;
+    color: var(--team);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Hero */
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .hero h1 .accent { color: var(--team); }
+  .hero p {
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  /* 분리 안내 카드 */
+  .separation-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--team);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 28px;
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+  .separation-card strong { color: var(--text); font-weight: 600; }
+
+  /* Form */
+  .form-section { display: grid; gap: 12px; }
+  .field-label {
+    font-size: 11px;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: 0.15s;
+  }
+  .field-input:focus {
+    outline: none;
+    border-color: var(--team);
+    background: var(--surface);
+  }
+
+  /* Buttons */
+  .btn {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    background: var(--surface-3);
+    color: var(--text);
+    transition: 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--border-light); }
+
+  .btn-primary {
+    background: var(--team);
+    border-color: var(--team);
+    color: #0a0a0b;
+    font-weight: 700;
+  }
+  .btn-primary:hover { background: var(--team-2); border-color: var(--team-2); }
+
+  .btn-google {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .btn-google img { width: 16px; height: 16px; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CTA secondary block */
+  .secondary-block {
+    margin-top: 28px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+  }
+  .secondary-block .label {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+  .secondary-block a {
+    color: var(--team);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .secondary-block a:hover { text-decoration: underline; }
+
+  /* Footer */
+  .foot {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .foot a { color: var(--text-2); text-decoration: none; }
+  .foot a:hover { color: var(--text); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--team);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    min-width: 220px;
+    z-index: 100;
+    animation: toast-in 0.2s ease-out;
+  }
+  @keyframes toast-in {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .toast.success { border-left-color: var(--success); }
+  .toast.danger { border-left-color: var(--danger); }
+</style>
+</head>
+<body>
+
+<!-- 비즈니스 컨텍스트 배너 -->
+<div class="ctx-banner">
+  <span style="display:inline-flex; align-items:center; gap:8px;">
+    <span class="ctx-dot"></span>
+    <span>BUSINESS · TEAM WORKSPACE</span>
+  </span>
+  <button class="ctx-close" onclick="closeBizLogin()" title="닫기" aria-label="닫기">✕</button>
+</div>
+
+<div class="wrap">
+  <!-- Logo + Business 라벨 -->
+  <div class="brand-row">
+    <a href="https://soaviz.studio" target="_blank">
+      <img class="brand-logo" src="assets/brand/soaviz-logo-horizontal.png" alt="SOAVIZ">
+    </a>
+    <span class="brand-suffix">Business</span>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>팀 계정으로<br><span class="accent">로그인하세요.</span></h1>
+    <p>SOAVIZ Business는 팀 협업·승인·납품 전용 워크스페이스입니다. 개인 계정과 완전히 분리됩니다.</p>
+  </div>
+
+  <!-- 분리 안내 카드 -->
+  <div class="separation-card">
+    🔒 <strong>완전 분리된 워크스페이스</strong> — 비즈니스 계정의 API 토큰·프로젝트·결제는
+    개인 계정과 절대 섞이지 않습니다. 토큰 혼동·청구 사고 0%.
+  </div>
+
+  <!-- Login form -->
+  <div class="form-section">
+    <button class="btn btn-google" onclick="onGoogleLogin()">
+      <svg width="16" height="16" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      Google 비즈니스 계정으로 로그인
+    </button>
+
+    <div class="divider">또는 이메일</div>
+
+    <form onsubmit="onEmailLogin(event)">
+      <div style="margin-bottom: 14px;">
+        <div class="field-label">비즈니스 이메일</div>
+        <input class="field-input" type="email" name="email" placeholder="you@company.com" required autocomplete="email">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <div class="field-label">비밀번호</div>
+        <input class="field-input" type="password" name="password" placeholder="비즈니스 계정 비밀번호" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" type="submit">로그인</button>
+    </form>
+  </div>
+
+  <!-- Secondary CTA -->
+  <div class="secondary-block">
+    <div class="label">비즈니스 계정이 없으신가요?</div>
+    <a href="https://soaviz.studio/contact?topic=business" target="_blank">팀 워크스페이스 신청 →</a>
+  </div>
+
+  <!-- Footer -->
+  <div class="foot">
+    <a href="https://soaviz.studio/privacy" target="_blank">개인정보</a>
+    <span style="color: var(--text-3); font-size: 10px;">SOAVIZ Business · 팀 협업 OS</span>
+    <a href="https://soaviz.studio/terms" target="_blank">이용약관</a>
+  </div>
+</div>
+
+<script>
+  // 부모 창에 비즈니스 로그인 결과 전달 + 자체 닫기
+  function notifyParentBizSuccess() {
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage('soaviz:biz-login-success', '*');
+      }
+      const bc = new BroadcastChannel('soaviz-biz-auth');
+      bc.postMessage('soaviz:biz-login-success');
+      bc.close();
+      try { localStorage.setItem('soaviz.biz.login.success', String(Date.now())); } catch (_) {}
+    } catch (_) {}
+    setTimeout(() => { try { window.close(); } catch (_) {} }, 400);
+  }
+
+  function showToast(text, type) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type || '');
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 2400);
+  }
+
+  function onEmailLogin(e) {
+    e.preventDefault();
+    const f = e.target;
+    const email = f.email.value;
+    if (!email.includes('@')) { showToast('올바른 이메일을 입력하세요', 'danger'); return; }
+    showToast('비즈니스 로그인 진행 — 베타 단계 (구현 예정)', 'success');
+    // 실제 로그인 백엔드 연결 자리
+    setTimeout(() => notifyParentBizSuccess(), 1200);
+  }
+
+  function onGoogleLogin() {
+    showToast('Google 비즈니스 계정 연결 — 구현 예정', 'success');
+    // 실제 Google OAuth 자리 (도메인 검증 + Workspace 매칭)
+    setTimeout(() => notifyParentBizSuccess(), 1200);
+  }
+
+  function closeBizLogin() {
+    try { window.close(); } catch (_) {}
+    // window.close가 차단되면 부모로 이동
+    setTimeout(() => {
+      if (window.opener && !window.opener.closed) {
+        window.opener.focus();
+      } else {
+        window.location.href = 'https://soaviz.studio';
+      }
+    }, 200);
+  }
+
+  // ESC로 닫기
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeBizLogin();
+  });
+</script>
+</body>
+</html>

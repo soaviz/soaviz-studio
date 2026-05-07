@@ -22274,12 +22274,8 @@
       <span>내 라이브러리</span>
     </a>
 
-    <!-- TEAM 메뉴 제거됨 — 비즈니스 계정은 별도 앱으로 분리 -->
-    <a class="nav-item" href="/contact?topic=business" target="_blank" title="비즈니스·팀 협업 별도 계정 문의">
-      <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#ff6b3f; margin-right:9px; box-shadow: 0 0 0 2px rgba(255,107,63,0.18);"></span>
-      <span>비즈니스 계정 문의</span>
-      <span style="margin-left:auto; font-size:9px; color: var(--text-faint); font-weight:400;">별도</span>
-    </a>
+    <!-- TEAM 메뉴 제거 + 비즈니스 계정 문의는 가이드 안으로 이동 (docs/index.html) -->
+    <!-- 좌하단 [팀 작업] 버튼은 그대로 유지 (별도 로그인 창) -->
 
     <script>
       /* Context-tool 진입 핸들러 — 팀 전용은 Personal 컨텍스트에서 conversion 모달 */
@@ -22462,6 +22458,122 @@
     <button class="nav-upgrade" id="nav-upgrade-btn">
       플랜 업그레이드
     </button>
+
+    <!-- 좌하단 팀 작업 버튼 — 비즈니스 계정 전용 로그인 (별도 창) -->
+    <style>
+      .biz-switch-btn {
+        margin: 8px 12px 14px;
+        padding: 10px 14px;
+        background: linear-gradient(135deg, rgba(255, 107, 63, 0.10), rgba(255, 107, 63, 0.04));
+        border: 1px solid rgba(255, 107, 63, 0.40);
+        border-radius: 10px;
+        color: #ff6b3f;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: 0.15s;
+        text-align: left;
+        line-height: 1.3;
+      }
+      .biz-switch-btn:hover {
+        background: linear-gradient(135deg, rgba(255, 107, 63, 0.18), rgba(255, 107, 63, 0.08));
+        border-color: rgba(255, 107, 63, 0.65);
+        transform: translateY(-1px);
+      }
+      .biz-switch-btn .biz-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: #ff6b3f;
+        box-shadow: 0 0 0 2px rgba(255, 107, 63, 0.20);
+        flex-shrink: 0;
+      }
+      .biz-switch-btn .biz-text { flex: 1; }
+      .biz-switch-btn .biz-label {
+        display: block;
+        color: #ff6b3f;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .biz-switch-btn .biz-sub {
+        display: block;
+        color: var(--text-faint);
+        font-size: 9.5px;
+        font-weight: 500;
+        margin-top: 2px;
+        letter-spacing: 0.02em;
+      }
+      .biz-switch-btn .biz-arrow {
+        font-size: 13px;
+        color: rgba(255, 107, 63, 0.7);
+        flex-shrink: 0;
+      }
+      @media (max-width: 800px) {
+        .biz-switch-btn { display: none; }
+      }
+    </style>
+    <button type="button" class="biz-switch-btn" onclick="openBizLoginPopup()" title="비즈니스 팀 워크스페이스로 로그인 — 새 창">
+      <span class="biz-dot"></span>
+      <span class="biz-text">
+        <span class="biz-label">팀 작업</span>
+        <span class="biz-sub">비즈니스 계정 로그인 ↗</span>
+      </span>
+      <span class="biz-arrow">→</span>
+    </button>
+    <script>
+      /* 비즈니스 계정 로그인 팝업 — 개인 앱과 완전 분리된 별도 창
+         메시지 채널: 'soaviz-biz-auth' BroadcastChannel + postMessage */
+      function openBizLoginPopup() {
+        const w = 480, h = 760;
+        const left = window.screenX + Math.max(0, (window.outerWidth - w) / 2);
+        const top  = window.screenY + Math.max(0, (window.outerHeight - h) / 2);
+        const url = (location.protocol === 'file:')
+          ? location.href.replace(/[^/]+$/, 'biz-login.html')
+          : '/biz-login';
+        const popup = window.open(
+          url,
+          'soaviz_biz_auth',
+          `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+        );
+        if (!popup) {
+          // 팝업 차단됨 → 새 탭으로
+          window.open(url, '_blank', 'noopener');
+          return;
+        }
+        // 비즈니스 로그인 성공 신호 수신 (개인 앱은 변동 없음 — 분리 운영)
+        let bizBC = null;
+        function onBizMsg(e) {
+          if (e?.data === 'soaviz:biz-login-success') {
+            try { popup.close(); } catch (_) {}
+            window.removeEventListener('message', onBizMsg);
+            try { bizBC?.close(); } catch (_) {}
+            // 비즈니스 앱(별도)으로 이동 — 향후 /biz/app 등으로 분기 예정
+            if (typeof showToast === 'function') {
+              showToast('비즈니스 계정 로그인 완료 — 비즈니스 워크스페이스 진입');
+            } else {
+              alert('비즈니스 계정 로그인 완료');
+            }
+          }
+        }
+        window.addEventListener('message', onBizMsg);
+        try {
+          bizBC = new BroadcastChannel('soaviz-biz-auth');
+          bizBC.onmessage = onBizMsg;
+        } catch (_) {}
+        // 팝업 종료 감지 (정리)
+        const poll = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(poll);
+            window.removeEventListener('message', onBizMsg);
+            try { bizBC?.close(); } catch (_) {}
+          }
+        }, 800);
+      }
+      window.openBizLoginPopup = openBizLoginPopup;
+    </script>
   </aside>
 
   <!-- ================ BOTTOM NAV (mobile only) — 새 IA 반영 ================ -->
