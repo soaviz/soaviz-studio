@@ -22338,7 +22338,7 @@
       Story
     </a>
 
-    <!-- ═══ 02 PRE-PRODUCTION ═══ -->
+    <!-- ═══ 02 PRE-PRODUCTION (제작 흐름 순서: 캐릭터 → 스타일 → 레퍼런스 → 샷 분해) ═══ -->
     <div class="nav-section-label">프리프로덕션</div>
     <a class="nav-item" data-page="characters" title="캐릭터 · IP Character Vault">
       <svg class="icon" viewBox="0 0 24 24">
@@ -22347,17 +22347,7 @@
       </svg>
       캐릭터
     </a>
-    <a class="nav-item" data-page="pipeline" title="샷 리스트 · 시나리오 · World Bible">
-      <svg class="icon" viewBox="0 0 24 24">
-        <circle cx="6" cy="6" r="2"/>
-        <circle cx="18" cy="6" r="2"/>
-        <circle cx="18" cy="18" r="2"/>
-        <path d="M8 6h8M18 8v8"/>
-        <path d="M6 8v6a2 2 0 0 0 2 2h6"/>
-      </svg>
-      샷 리스트
-    </a>
-    <a class="nav-item" data-page="styles" title="Style Bible · 참고 이미지">
+    <a class="nav-item" data-page="styles" title="Style Bible · 참고 이미지 (룩북)">
       <svg class="icon" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10"/>
         <circle cx="8" cy="9" r="1.5"/>
@@ -22376,6 +22366,16 @@
       </svg>
       Cinema
     </a>
+    <a class="nav-item" data-page="pipeline" title="샷 리스트 · 시나리오 분해 · World Bible">
+      <svg class="icon" viewBox="0 0 24 24">
+        <circle cx="6" cy="6" r="2"/>
+        <circle cx="18" cy="6" r="2"/>
+        <circle cx="18" cy="18" r="2"/>
+        <path d="M8 6h8M18 8v8"/>
+        <path d="M6 8v6a2 2 0 0 0 2 2h6"/>
+      </svg>
+      샷 리스트
+    </a>
 
     <!-- ═══ 03 VIDEO GENERATION ═══ -->
     <div class="nav-section-label">영상 생성</div>
@@ -22385,15 +22385,6 @@
         <rect x="1" y="5" width="15" height="14" rx="2"/>
       </svg>
       Generate
-    </a>
-    <a class="nav-item" data-page="video-editor" title="Editor · Project Workspace">
-      <svg class="icon" viewBox="0 0 24 24">
-        <path d="M4 6h16"/>
-        <path d="M4 18h16"/>
-        <rect x="6" y="9" width="7" height="6" rx="1"/>
-        <path d="m15 10 4 2-4 2z"/>
-      </svg>
-      Edit
     </a>
     <!-- ═══ 04 SOUND ═══ -->
     <div class="nav-section-label">사운드 제작</div>
@@ -22427,7 +22418,18 @@
       </svg>
       Audio
     </a>
-    <!-- ═══ 05 FINISH & PACKAGE ═══ -->
+    <!-- ═══ 05 EDIT (영상+사운드 합치는 단계 — 사운드 다음으로 이동) ═══ -->
+    <div class="nav-section-label">편집</div>
+    <a class="nav-item" data-page="video-editor" title="Editor · 타임라인에 영상·사운드 합치기">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M4 6h16"/>
+        <path d="M4 18h16"/>
+        <rect x="6" y="9" width="7" height="6" rx="1"/>
+        <path d="m15 10 4 2-4 2z"/>
+      </svg>
+      Edit
+    </a>
+    <!-- ═══ 06 FINISH & PACKAGE ═══ -->
     <div class="nav-section-label">후반/패키징</div>
     <a class="nav-item" data-page="library" title="Library · Saved Results">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -22469,64 +22471,143 @@
 
     <div class="nav-spacer"></div>
 
-    <button class="nav-upgrade" id="nav-upgrade-btn">
-      플랜 업그레이드
-    </button>
-
-    <!-- 좌하단 팀 작업 버튼 — 비즈니스 계정 전용 로그인 (별도 창) -->
+    <!-- 좌하단 통합 업그레이드 버튼 — 클릭 시 위로 메뉴 (개인/팀 두 옵션) -->
     <style>
-      .biz-switch-btn {
-        margin: 8px 12px 14px;
-        padding: 10px 14px;
-        background: linear-gradient(135deg, rgba(255, 107, 63, 0.10), rgba(255, 107, 63, 0.04));
-        border: 1px solid rgba(255, 107, 63, 0.40);
+      .upgrade-wrap { position: relative; margin: 0 4px; }
+      .upgrade-menu {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 8px;
+        right: 8px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
         border-radius: 10px;
-        color: #ff6b3f;
-        font-size: 12px;
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
+        box-shadow: 0 -4px 24px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.2);
+        padding: 6px;
+        display: none;
+        z-index: 50;
+      }
+      .upgrade-menu.open { display: block; animation: upMenuIn 0.15s ease-out; }
+      @keyframes upMenuIn {
+        from { opacity:0; transform: translateY(4px); }
+        to   { opacity:1; transform: translateY(0); }
+      }
+      .upgrade-menu-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 10px;
-        transition: 0.15s;
+        padding: 10px 11px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        background: transparent;
+        border: 1px solid transparent;
+        transition: 0.12s;
+        font-family: inherit;
         text-align: left;
-        line-height: 1.3;
+        width: 100%;
       }
-      .biz-switch-btn:hover {
-        background: linear-gradient(135deg, rgba(255, 107, 63, 0.18), rgba(255, 107, 63, 0.08));
-        border-color: rgba(255, 107, 63, 0.65);
-        transform: translateY(-1px);
+      .upgrade-menu-item:hover { background: var(--bg-elev); }
+      .upgrade-menu-item.personal:hover {
+        border-color: rgba(99,102,241,0.40);
+        background: rgba(99,102,241,0.06);
       }
-      .biz-switch-btn .biz-ico {
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
-        color: #ff6b3f;
+      .upgrade-menu-item.team:hover {
+        border-color: rgba(255,107,63,0.40);
+        background: rgba(255,107,63,0.06);
       }
-      .biz-switch-btn .biz-text { flex: 1; }
-      .biz-switch-btn .biz-label {
+      .upgrade-menu-item .um-ico {
+        width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px;
+      }
+      .upgrade-menu-item.personal .um-ico { color: #6366f1; }
+      .upgrade-menu-item.team .um-ico { color: #ff6b3f; }
+      .um-text { flex: 1; min-width: 0; }
+      .um-label {
         display: block;
-        color: #ff6b3f;
         font-size: 12px;
         font-weight: 700;
+        color: var(--text);
+        margin-bottom: 2px;
       }
-      @media (max-width: 800px) {
-        .biz-switch-btn { display: none; }
+      .um-sub {
+        display: block;
+        font-size: 10px;
+        color: var(--text-faint);
+        font-weight: 500;
+        line-height: 1.45;
+      }
+      .upgrade-menu-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 6px;
       }
     </style>
-    <button type="button" class="biz-switch-btn" onclick="openBizLoginPopup()" title="비즈니스 팀 워크스페이스로 로그인 — 새 창">
-      <svg class="biz-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-      <span class="biz-text">
-        <span class="biz-label">팀 작업</span>
-      </span>
-    </button>
+    <div class="upgrade-wrap">
+      <button class="nav-upgrade" id="nav-upgrade-btn" type="button" aria-haspopup="menu" aria-expanded="false">
+        플랜 업그레이드
+      </button>
+      <div class="upgrade-menu" id="upgrade-menu" role="menu" aria-labelledby="nav-upgrade-btn">
+        <button type="button" class="upgrade-menu-item personal" role="menuitem" onclick="onPlanUpgradePersonal()" title="개인 플랜 업그레이드 (Free → Creator)">
+          <svg class="um-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>
+          </svg>
+          <span class="um-text">
+            <span class="um-label">개인 플랜 업그레이드</span>
+            <span class="um-sub">Free → Creator $19/월 · BYOK 무제한</span>
+          </span>
+        </button>
+        <div class="upgrade-menu-divider"></div>
+        <button type="button" class="upgrade-menu-item team" role="menuitem" onclick="onPlanUpgradeTeam()" title="비즈니스 팀 워크스페이스 (별도 계정 — 새 창)">
+          <svg class="um-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span class="um-text">
+            <span class="um-label">팀 작업 — 비즈니스 계정 ↗</span>
+            <span class="um-sub">별도 워크스페이스 · 새 창 로그인</span>
+          </span>
+        </button>
+      </div>
+    </div>
     <script>
+      /* 통합 업그레이드 메뉴 — 두 옵션 (개인/팀) 토글 */
+      (function _initUpgradeMenu() {
+        const btn = document.getElementById('nav-upgrade-btn');
+        const menu = document.getElementById('upgrade-menu');
+        if (!btn || !menu) return;
+        // 기본 click(showPage 'credits')은 무력화 — 메뉴 토글로 대체
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = menu.classList.toggle('open');
+          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }, { capture: true });
+        document.addEventListener('click', (e) => {
+          if (!menu.contains(e.target) && e.target !== btn) {
+            menu.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && menu.classList.contains('open')) {
+            menu.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      })();
+
+      function onPlanUpgradePersonal() {
+        document.getElementById('upgrade-menu')?.classList.remove('open');
+        if (typeof showPage === 'function') showPage('credits');
+      }
+      function onPlanUpgradeTeam() {
+        document.getElementById('upgrade-menu')?.classList.remove('open');
+        if (typeof openBizLoginPopup === 'function') openBizLoginPopup();
+      }
+      window.onPlanUpgradePersonal = onPlanUpgradePersonal;
+      window.onPlanUpgradeTeam = onPlanUpgradeTeam;
+
       /* 비즈니스 계정 로그인 팝업 — 개인 앱과 완전 분리된 별도 창
          메시지 채널: 'soaviz-biz-auth' BroadcastChannel + postMessage */
       function openBizLoginPopup() {
@@ -34147,9 +34228,9 @@ $$('.nav-item[data-page], .bn-item[data-page]').forEach(n => {
     }
   });
 });
-$('#nav-upgrade-btn')?.addEventListener('click', () => {
-  showPage('credits');
-});
+/* nav-upgrade-btn 핸들러는 사이드바 inline 스크립트(_initUpgradeMenu)로 통합됨
+   클릭 시 위로 열리는 메뉴 (개인 플랜 / 팀 작업) 토글
+   기존 showPage('credits') 직행은 onPlanUpgradePersonal()로 위임 */
 
 function showExtractState(which) {
   ['drop', 'processing', 'result'].forEach(s => {

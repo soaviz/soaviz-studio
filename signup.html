@@ -114,7 +114,7 @@
     .hero-section { padding-right: 12px; }
     .brand-row {
       display: flex; align-items: center; gap: 12px;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
     }
     .brand-logo {
       width: 96px; height: 26px;
@@ -156,11 +156,11 @@
     }
 
     .hero-h1 {
-      font-size: clamp(32px, 5vw, 52px);
+      font-size: clamp(30px, 4.4vw, 46px);
       line-height: 1.05;
       font-weight: 700;
       letter-spacing: -0.03em;
-      margin: 0 0 20px;
+      margin: 0 0 14px;
     }
     .hero-h1 .grad {
       background: linear-gradient(135deg, var(--accent) 0%, #f472b6 60%, #fbbf24 100%);
@@ -170,11 +170,11 @@
       font-weight: 800;
     }
     .hero-sub {
-      font-size: 16px;
-      line-height: 1.65;
+      font-size: 15px;
+      line-height: 1.55;
       color: var(--text-dim);
       max-width: 480px;
-      margin: 0 0 36px;
+      margin: 0;
     }
 
     .hero-feats {
@@ -636,97 +636,10 @@
         <span class="brand-tag">v3</span>
       </div>
 
-      <h1 class="hero-h1">AI 영상,<br/><span class="grad">혼자 시작하세요.</span></h1>
+      <h1 class="hero-h1">AI 영상 제작,<br/><span class="grad">바로 이어가세요.</span></h1>
       <p class="hero-sub">
-        Kling·Runway·Sora·ElevenLabs를 본인 API 키로 한 화면에서 호출하고,<br/>
-        샷 단위로 생성·비교·편집까지 끊김 없이 — <strong>1인 AI 크리에이터의 작업실</strong>.
+        SOAVIZ Studio에 로그인하고 작업을 계속하세요.
       </p>
-
-      <div class="hero-feats">
-        <div class="hero-feat">
-          <div class="hero-feat-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-          </div>
-          <div class="hero-feat-body">
-            <div class="hero-feat-title">Shot Workbench · 5단계 보드</div>
-            <div class="hero-feat-desc">Planning → Production → Review → Approved → Delivered. 샷마다 N개 버전·프롬프트·시드 자동 누적</div>
-          </div>
-        </div>
-        <div class="hero-feat">
-          <div class="hero-feat-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-            </svg>
-          </div>
-          <div class="hero-feat-body">
-            <div class="hero-feat-title">BYOK Vault · 본인 API 키, 로컬 암호화</div>
-            <div class="hero-feat-desc">AES-GCM 256 + PBKDF2 250k. SOAVIZ는 마진 0% — 사용한 만큼만 본인이 결제</div>
-          </div>
-        </div>
-        <div class="hero-feat">
-          <div class="hero-feat-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          </div>
-          <div class="hero-feat-body">
-            <div class="hero-feat-title">Character & Style Bible</div>
-            <div class="hero-feat-desc">한 번 만든 캐릭터·룩북·세계관이 모든 새 생성에 자동 주입 — 시리즈 연속성 가능</div>
-          </div>
-        </div>
-        <div class="hero-feat">
-          <div class="hero-feat-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 8v4l3 3"/>
-              <path d="M3.5 13a9 9 0 0 0 17-1"/>
-            </svg>
-          </div>
-          <div class="hero-feat-body">
-            <div class="hero-feat-title">Compare Mode · 모델 동시 비교</div>
-            <div class="hero-feat-desc">Kling·Runway·Sora·Veo 등 N개 모델 같은 프롬프트로 동시 시도 + ★ 채택만 라이브러리 저장</div>
-          </div>
-        </div>
-        <div class="hero-feat">
-          <div class="hero-feat-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div class="hero-feat-body">
-            <div class="hero-feat-title">팀이 필요해지면 별도 비즈니스 계정</div>
-            <div class="hero-feat-desc">외주·협업이 늘면 비즈니스 계정으로 분리 운영 — 토큰·데이터 혼동 0%</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-stats">
-        <div>
-          <div class="hero-stat-num">5</div>
-          <div class="hero-stat-lbl">Shot Stages</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">12+</div>
-          <div class="hero-stat-lbl">AI 모델 통합</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">0%</div>
-          <div class="hero-stat-lbl">API 마진</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">5분</div>
-          <div class="hero-stat-lbl">첫 영상까지</div>
-        </div>
-      </div>
     </section>
 
     <!-- ═══ AUTH (Right) ═══ -->
