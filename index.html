@@ -47657,8 +47657,76 @@ function _wbNextActions(counts, meta) {
   return actions.slice(0, 4); // 최대 4개
 }
 
-// SoavizProductionOS에 등록
-window.SoavizProductionOS.register('nextAction', { getActions: _wbNextActions });
+// ── §8.3 NextActionEngine — 공식 IIFE 래퍼 ─────────────────────
+(function initNextActionEngine() {
+  /* ── 공개 API ── */
+  const NextActionEngine = {
+    /**
+     * 우선순위 순으로 최대 4개의 액션 배열 반환
+     * @param {object} counts  { episodes, characters, styles, shots, prompts, assets }
+     * @param {object} meta    { draftAssets, hasFinalAsset, staleMs }
+     */
+    getActions(counts, meta) {
+      return _wbNextActions(counts, meta);
+    },
+
+    /**
+     * 단일 1순위 액션 반환 (하위 호환)
+     * @param {object} counts
+     * @param {object} [meta]
+     */
+    getPrimary(counts, meta) {
+      return _wbNextActions(counts, meta)[0] || null;
+    },
+
+    /**
+     * 액션 카드 HTML을 containerEl에 렌더링
+     * @param {HTMLElement} containerEl  #wb-next-action-wrap 등
+     * @param {object}      counts
+     * @param {object}      [meta]
+     */
+    render(containerEl, counts, meta) {
+      if (!containerEl) return;
+      const actions = _wbNextActions(counts, meta);
+      if (!actions.length) return;
+      const [primary, ...rest] = actions;
+      const secHtml = rest.slice(0, 2).map(s => `
+        <div class="wb-next-secondary ${s.warn ? 'warn' : ''}" onclick="showPage('${s.page}')">
+          <span class="wbs-icon">${s.icon}</span>
+          <span class="wbs-tag">${s.tag}</span>
+          <span class="wbs-text">${s.text}</span>
+        </div>`).join('');
+
+      containerEl.innerHTML = `
+        <div class="wb-next-action" onclick="showPage('${primary.page}')">
+          <div class="wb-next-icon">${primary.icon}</div>
+          <div class="wb-next-body">
+            <div class="wb-next-tag">${primary.tag}</div>
+            <div class="wb-next-text">${primary.text}</div>
+            <p class="wb-next-desc">${primary.desc}</p>
+          </div>
+          <div class="wb-next-arrow">→</div>
+        </div>
+        ${secHtml ? `<div class="wb-next-row">${secHtml}</div>` : ''}`;
+    },
+
+    /**
+     * ID로 컨테이너를 찾아 렌더링 (편의 메서드)
+     * @param {string} containerId
+     * @param {object} counts
+     * @param {object} [meta]
+     */
+    renderToId(containerId, counts, meta) {
+      this.render(document.getElementById(containerId), counts, meta);
+    },
+  };
+
+  // SoavizProductionOS 등록 — 전체 engine 노출
+  window.SoavizProductionOS.register('nextAction', NextActionEngine);
+
+  // 글로벌 접근자 (콘솔 디버그용)
+  window.NextActionEngine = NextActionEngine;
+})();
 
 /** 상대 시간 포맷 */
 function _wbRelTime(ts) {
@@ -47818,30 +47886,8 @@ async function renderWorkbenchPage() {
     : (proj.updatedAt ? Date.now() - proj.updatedAt : 0);
 
   const meta = { draftAssets, hasFinalAsset, staleMs };
-  const actions = _wbNextActions(counts, meta);
-  const [primary, ...secondary] = actions;
-
-  const nextWrap = document.getElementById('wb-next-action-wrap');
-  if (nextWrap) {
-    const secHtml = secondary.slice(0, 2).map(s => `
-      <div class="wb-next-secondary ${s.warn ? 'warn' : ''}" onclick="showPage('${s.page}')">
-        <span class="wbs-icon">${s.icon}</span>
-        <span class="wbs-tag">${s.tag}</span>
-        <span class="wbs-text">${s.text}</span>
-      </div>`).join('');
-
-    nextWrap.innerHTML = `
-      <div class="wb-next-action" onclick="showPage('${primary.page}')">
-        <div class="wb-next-icon">${primary.icon}</div>
-        <div class="wb-next-body">
-          <div class="wb-next-tag">${primary.tag}</div>
-          <div class="wb-next-text">${primary.text}</div>
-          <p class="wb-next-desc">${primary.desc}</p>
-        </div>
-        <div class="wb-next-arrow">→</div>
-      </div>
-      ${secHtml ? `<div class="wb-next-row">${secHtml}</div>` : ''}`;
-  }
+  // §8.3 NextActionEngine에 위임
+  NextActionEngine.renderToId('wb-next-action-wrap', counts, meta);
 
   // 8-스테이지 트랙
   const trackEl = document.getElementById('wb-track');
