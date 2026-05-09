@@ -30,8 +30,3 @@ Paste BLOCK B here.
 ## Notes
 
 ## Reuse Tags
-
-## Production Status
-
-<!-- planning | in-production | in-review | approved | delivered -->
-Status:
