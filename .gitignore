@@ -39,7 +39,8 @@ out/
 *.log
 logs/
 output/
-outputs/
+# outputs/ 는 스토리보드 저장 폴더 — Git 추적 유지
+# outputs/
 uploads/
 temp/
 sample/

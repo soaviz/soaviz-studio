@@ -164,6 +164,47 @@ curl https://YOUR-BACKEND-URL.railway.app/api/health
 
 손익분기점: Pro 사용자 6명 (₩114K).
 
+## Saving Storyboard Outputs
+
+`/storyboard` 실행 후 결과물은 아래 경로에 마크다운 파일로 저장합니다.
+
+### 파일명 규칙
+
+```
+/outputs/YYYY-MM-DD_project-name_storyboard.md
+```
+
+예시:
+
+```
+/outputs/2026-05-09_soaviz-launch_storyboard.md
+/outputs/2026-05-10_character-teaser_storyboard.md
+```
+
+### 저장 절차
+
+1. `/storyboard` 실행 후 결과 확인
+2. `outputs/_storyboard-output-template.md`를 복사
+3. 파일명을 위 규칙에 맞게 변경
+4. 생성된 프롬프트를 BLOCK A / BLOCK B에 붙여넣기
+5. Meta 항목(프로젝트명, URL, 날짜, 목표, 타겟, 비주얼 방향) 채우기
+6. Reuse Tags 추가 후 저장
+
+### 포함 항목
+
+| 섹션 | 내용 |
+|---|---|
+| Meta | 프로젝트명, Brand URL, 날짜, 목표, 타겟, 비주얼 방향 |
+| BLOCK A | GPT Image 스토리보드 프롬프트 + 장면 구성 |
+| BLOCK B | Seedance / Kling 세로형 영상 프롬프트 + 파라미터 |
+| Notes | 작업 메모, 수정 이력, 피드백 |
+| Reuse Tags | 검색·분류용 태그 |
+
+> `outputs/` 폴더는 Git에서 추적됩니다. `.gitignore`에 추가하지 마세요.
+> API 키나 시크릿은 절대 이 파일에 포함하지 않습니다.
+
+---
+
 ## 라이선스
 
 Proprietary — (주)소아비즈
