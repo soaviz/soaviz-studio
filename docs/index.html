@@ -253,6 +253,9 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
     <div class="sb-link" onclick="show('archive')">
       <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><path d="M5 7v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"/><line x1="10" y1="12" x2="14" y2="12"/></svg>최종 출력
     </div>
+    <div class="sb-link" onclick="show('storyboard-output')">
+      <svg class="sb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>스토리보드 저장 <span class="pill new">NEW</span>
+    </div>
   </div>
 
   <div class="sb-section">
@@ -1263,6 +1266,63 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
   </ol>
 </section>
 
+<!-- ══════════════════ 스토리보드 저장 ══════════════════ -->
+<section class="doc-page" id="page-storyboard-output">
+  <div class="crumbs">후반/패키징</div>
+  <h1 class="doc-title">스토리보드 저장</h1>
+  <p class="doc-sub">스토리보드 생성 결과물을 마크다운 파일로 저장하고 Git으로 관리합니다.</p>
+
+  <h2>파일 구조</h2>
+  <ul>
+    <li>저장 경로: <code>outputs/YYYY-MM-DD_project-name_storyboard.md</code></li>
+    <li>템플릿: <code>outputs/_storyboard-output-template.md</code> (수정 금지)</li>
+    <li>같은 이름 파일이 있으면 덮어쓰지 않고 에러 출력</li>
+  </ul>
+
+  <h2>How to — CLI 스크립트로 저장 (권장)</h2>
+  <ol class="step-list">
+    <li><span>터미널에서 프로젝트 폴더로 이동: <code>cd ~/Desktop/soaviz-studio</code></span></li>
+    <li><span>저장 명령어 실행 (프로젝트명 입력): <code>npm run save:storyboard -- &lt;project-name&gt;</code></span></li>
+    <li><span>예시: <code>npm run save:storyboard -- soaviz-launch</code></span></li>
+    <li><span><code>outputs/2026-05-10_soaviz-launch_storyboard.md</code> 파일이 자동 생성됨</span></li>
+    <li><span>생성된 파일의 BLOCK A / BLOCK B 섹션에 생성된 프롬프트를 붙여넣기</span></li>
+  </ol>
+
+  <h2>How to — 수동 저장</h2>
+  <ol class="step-list">
+    <li><span><code>outputs/_storyboard-output-template.md</code> 복사</span></li>
+    <li><span>파일명을 <code>YYYY-MM-DD_project-name_storyboard.md</code> 규칙에 맞게 변경</span></li>
+    <li><span>BLOCK A / BLOCK B에 생성된 프롬프트 붙여넣기</span></li>
+    <li><span>Meta 항목 및 Production Status 채우기 후 저장</span></li>
+  </ol>
+
+  <h2>저장 파일 섹션 구성</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:8px 12px;color:var(--text-faint);font-weight:600">섹션</th>
+        <th style="text-align:left;padding:8px 12px;color:var(--text-faint);font-weight:600">내용</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">Project</td><td style="padding:8px 12px">프로젝트명, Brand URL, 날짜, 작성자</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">Goal</td><td style="padding:8px 12px">캠페인 또는 콘텐츠 목표</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">Visual Direction</td><td style="padding:8px 12px">색감, 스타일, 분위기</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">BLOCK A</td><td style="padding:8px 12px">GPT Image 스토리보드 프롬프트</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">BLOCK B</td><td style="padding:8px 12px">Seedance / Kling 세로형 영상 프롬프트</td></tr>
+      <tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px">Reuse Tags</td><td style="padding:8px 12px">검색·분류용 태그</td></tr>
+      <tr><td style="padding:8px 12px">Production Status</td><td style="padding:8px 12px">planning → in-production → in-review → approved → delivered</td></tr>
+    </tbody>
+  </table>
+
+  <h2>참고</h2>
+  <ul>
+    <li><code>outputs/</code> 폴더는 Git에서 추적됩니다. API 키나 시크릿은 포함하지 마세요.</li>
+    <li>프로젝트명은 영문 소문자, 숫자, 하이픈만 사용 가능 (한글 입력 시 자동 제거됨)</li>
+    <li>날짜는 UTC 기준으로 자동 입력됩니다.</li>
+  </ul>
+</section>
+
 <!-- ══════════════════ 단축키 ══════════════════ -->
 <!-- ══════════════════ 모바일 앱 ══════════════════ -->
 <section class="doc-page" id="page-mobile">
@@ -1513,6 +1573,18 @@ code{font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,0.0
 
   <div class="changelog-item" style="border-left:2px solid var(--green);padding-left:14px">
     <div class="changelog-date">2026년 5월 <span class="pill new" style="font-size:10px">최신</span></div>
+    <div class="changelog-title">v3.11 — 스토리보드 저장 시스템 · 모바일 랜덤 UX 수정</div>
+    <div class="changelog-body">
+      <ul>
+        <li>📄 <strong>스토리보드 출력 저장 시스템 신규</strong>: <code>npm run save:storyboard -- &lt;project-name&gt;</code> CLI 명령어로 결과물을 <code>outputs/YYYY-MM-DD_project-name_storyboard.md</code> 파일로 저장. 원자적 쓰기(OS wx 플래그)로 덮어쓰기 방지</li>
+        <li>📝 <strong>스토리보드 템플릿</strong>: BLOCK A (GPT Image), BLOCK B (Seedance/Kling), Production Status 5단계 포함</li>
+        <li>📱 <strong>모바일 랜덤 아이디어 UX 수정</strong>: "랜덤 아이디어" 탭에서 전체 목록이 한꺼번에 표시되던 문제 수정 → 주사위 굴리기로 하나씩만 표시</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="changelog-item" style="border-left:2px solid var(--border);padding-left:14px">
+    <div class="changelog-date">2026년 5월</div>
     <div class="changelog-title">v3.10 — 모바일 앱 · Microsoft OAuth · 캐릭터 3단계 플로우</div>
     <div class="changelog-body">
       <ul>

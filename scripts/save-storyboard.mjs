@@ -4,11 +4,12 @@
  * Usage: node scripts/save-storyboard.mjs <project-name>
  * Example: node scripts/save-storyboard.mjs soaviz-launch
  *
- * Creates /outputs/YYYY-MM-DD_project-name_storyboard.md from a template.
- * Will not overwrite an existing file.
+ * Creates /outputs/YYYY-MM-DD_project-name_storyboard.md
+ * by reading outputs/_storyboard-output-template.md at runtime.
+ * Uses atomic 'wx' open flag — will never overwrite an existing file.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { openSync, writeSync, closeSync, mkdirSync, readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,6 +17,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT      = resolve(__dirname, '..');
 const OUTPUTS   = resolve(ROOT, 'outputs');
+const TEMPLATE  = resolve(OUTPUTS, '_storyboard-output-template.md');
 
 // ── CLI argument ───────────────────────────────────────────────
 const rawName = process.argv[2];
@@ -27,80 +29,59 @@ if (!rawName) {
   process.exit(1);
 }
 
-// Sanitise: lowercase, spaces → hyphens, strip unsafe chars
+// Sanitise: lowercase, spaces → hyphens, strip unsafe chars, trim edge hyphens
 const projectName = rawName
   .toLowerCase()
   .replace(/\s+/g, '-')
-  .replace(/[^a-z0-9\-_]/g, '');
+  .replace(/[^a-z0-9_-]/g, '')
+  .replace(/^[-_]+|[-_]+$/g, '');
 
 if (!projectName) {
   console.error('Error: project name produced an empty string after sanitising.');
+  console.error('Use English letters, numbers, or hyphens. (e.g. soaviz-launch)');
   process.exit(1);
 }
 
-// ── Date ───────────────────────────────────────────────────────
-const today = new Date();
-const yyyy  = today.getFullYear();
-const mm    = String(today.getMonth() + 1).padStart(2, '0');
-const dd    = String(today.getDate()).padStart(2, '0');
-const dateStr = `${yyyy}-${mm}-${dd}`;
+// ── Date (UTC — consistent regardless of local timezone) ───────
+const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-// ── Output path ────────────────────────────────────────────────
-const filename = `${dateStr}_${projectName}_storyboard.md`;
-const outPath  = resolve(OUTPUTS, filename);
-
-// ── Guard: do not overwrite ────────────────────────────────────
-if (existsSync(outPath)) {
-  console.error(`Error: file already exists — ${outPath}`);
-  console.error('Rename the existing file or use a different project name.');
+// ── 1. Validate template exists FIRST (hard dependency) ────────
+if (!existsSync(TEMPLATE)) {
+  console.error(`Error: template not found — ${TEMPLATE}`);
+  console.error('Make sure outputs/_storyboard-output-template.md exists.');
   process.exit(1);
 }
 
-// ── Ensure /outputs exists ─────────────────────────────────────
+// ── 2. Ensure /outputs exists ──────────────────────────────────
 if (!existsSync(OUTPUTS)) {
   mkdirSync(OUTPUTS, { recursive: true });
 }
 
-// ── Template ───────────────────────────────────────────────────
-const template = `# Storyboard Output
+// ── 3. Build output path ───────────────────────────────────────
+const filename = `${dateStr}_${projectName}_storyboard.md`;
+const outPath  = resolve(OUTPUTS, filename);
 
-## Project
+// ── 4. Load and inject template values ────────────────────────
+const content = readFileSync(TEMPLATE, 'utf8')
+  .replace(/^Project name:.*$/m, `Project name: ${projectName}`)
+  .replace(/^Date:.*$/m,         `Date: ${dateStr}`);
 
-Project name: ${projectName}
-Brand URL / Source:
-Date: ${dateStr}
-Created by:
+// ── 5. Atomic write — 'wx' flag fails if file already exists ──
+//    existsSync + writeFileSync 사이의 TOCTOU 경쟁 조건을 OS 레벨에서 제거.
+//    openSync('wx') 는 파일 생성과 존재 확인이 단일 syscall로 처리됨.
+try {
+  const fd = openSync(outPath, 'wx');
+  writeSync(fd, content);
+  closeSync(fd);
+} catch (err) {
+  if (err.code === 'EEXIST') {
+    console.error(`Error: file already exists — ${outPath}`);
+    console.error('Rename the existing file or use a different project name.');
+    process.exit(1);
+  }
+  // 그 외 예상치 못한 에러 (권한, 디스크 풀 등) 는 원문 그대로 출력
+  console.error(`Error: could not write file — ${err.message}`);
+  process.exit(1);
+}
 
-## Goal
-
-## Target Audience
-
-## Visual Direction
-
-## Strategic Notes
-
-## BLOCK A — GPT Image Storyboard Prompt
-
-\`\`\`txt
-Paste BLOCK A here.
-\`\`\`
-
-## BLOCK B — Seedance / Kling Vertical Video Prompt
-
-\`\`\`txt
-Paste BLOCK B here.
-\`\`\`
-
-## Notes
-
-## Reuse Tags
-
-## Production Status
-
-<!-- planning | in-production | in-review | approved | delivered -->
-Status: planning
-`;
-
-// ── Write ──────────────────────────────────────────────────────
-writeFileSync(outPath, template, 'utf8');
 console.log(`Saved: ${outPath}`);

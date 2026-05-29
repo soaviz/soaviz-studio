@@ -177,12 +177,13 @@ curl https://YOUR-BACKEND-URL.railway.app/api/health
 **저장 방법 — CLI 스크립트 사용 (권장)**
 
 ```bash
-npm run save:storyboard <project-name>
+npm run save:storyboard -- <project-name>
 # 예시
-npm run save:storyboard soaviz-launch
+npm run save:storyboard -- soaviz-launch
 ```
 
-실행하면 `outputs/2026-05-09_soaviz-launch_storyboard.md` 가 자동 생성됩니다.
+실행하면 `outputs/YYYY-MM-DD_soaviz-launch_storyboard.md` 가 오늘 날짜로 자동 생성됩니다.
+`Project name`과 `Date` 필드는 자동으로 채워집니다.
 같은 이름의 파일이 이미 존재하면 덮어쓰지 않고 에러를 출력합니다.
 
 **저장 방법 — 수동**
