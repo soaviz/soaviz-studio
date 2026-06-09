@@ -1687,10 +1687,35 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ success: false, error: err.message });
 });
 
+/* ── Supabase Keep-Alive ────────────────────────────────────────
+ * Supabase Free 플랜은 7일 비활성 시 자동 일시정지된다.
+ * 정식 출시 전 트래픽이 적은 시기를 위해, 백엔드에서 24시간마다
+ * Supabase REST 엔드포인트를 가볍게 ping 해 활동 시그널을 유지한다.
+ * 사용자 트래픽이 충분해지면 (Pro 업그레이드 시) 이 블록 제거 가능.
+ */
+const SUPABASE_PING_URL = process.env.SUPABASE_PING_URL
+  || 'https://yfzhvuyrdabpzowprupa.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+async function pingSupabase() {
+  try {
+    const headers = SUPABASE_ANON_KEY
+      ? { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+      : {};
+    const r = await fetch(SUPABASE_PING_URL, { method: 'GET', headers });
+    console.log(`[keep-alive] supabase ping ${r.status} @ ${new Date().toISOString()}`);
+  } catch (e) {
+    console.warn('[keep-alive] supabase ping failed:', e.message);
+  }
+}
+// 부팅 30초 후 1회 + 이후 24시간마다 반복
+setTimeout(pingSupabase, 30 * 1000);
+setInterval(pingSupabase, 24 * 60 * 60 * 1000);
+
 /* ── Start ──────────────────────────────────────────────────── */
 app.listen(PORT, () => {
   console.log(`\n✅ soaviz render server`);
   console.log(`   http://localhost:${PORT}/soaviz-studio.html`);
   console.log(`   POST http://localhost:${PORT}/api/analyze-video`);
-  console.log(`   POST http://localhost:${PORT}/api/render-video\n`);
+  console.log(`   POST http://localhost:${PORT}/api/render-video`);
+  console.log(`   keep-alive ping: every 24h to Supabase\n`);
 });

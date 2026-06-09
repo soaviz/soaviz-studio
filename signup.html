@@ -721,7 +721,9 @@
         </button>
         <div id="gsi-status" style="font-size:11px;color:var(--text-faint);text-align:center;margin-top:-2px;display:none"></div>
 
-        <button class="auth-btn ms-btn" id="ms-login-btn">
+        <!-- Microsoft 로그인 일시 비활성 — Supabase Azure Provider 미설정 상태
+             정식 활성화 시 style 속성 제거 후 Supabase Dashboard에서 Azure provider 등록 -->
+        <button class="auth-btn ms-btn" id="ms-login-btn" style="display:none">
           <span class="auth-btn-icon">
             <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
               <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
