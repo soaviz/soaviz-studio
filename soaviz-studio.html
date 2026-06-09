@@ -29141,7 +29141,10 @@ function resolvePageName(name) {
 window._pageHistory = window._pageHistory || ['landing'];
 window._isBackNav = false;
 window.currentPage = window.currentPage || 'landing';
-window.SOAVIZ_BETA_LOGIN_REQUIRED = true;
+// 베타 게이트 임시 해제 — Google OAuth 콜백 URL 등록 전까지 게스트도 내부 진입 허용
+// (BYOK 구조라 로그인 없이도 본인 API 키만 있으면 생성 가능)
+// 정식 출시 또는 OAuth 설정 완료 후 true로 복귀
+window.SOAVIZ_BETA_LOGIN_REQUIRED = false;
 window.SOAVIZ_BETA_FULL_ACCESS_PLAN = null; // 로그인 = 앱 접근, 유료 제작/Pro 권한은 플랜·크레딧으로 판정
 window.SOAVIZ_BETA_FREE_TOKEN_ACTIONS = false;
 window.SOAVIZ_BETA_BYOK_TOKEN_ACCESS = false;
