@@ -48,13 +48,26 @@ git status -sb                # main = origin/main 동기화 확인
 git log --oneline -5          # d4ae725 가 최신인지 확인
 ```
 
+### 6/10 오후 — 포지셔닝 + 개인 SaaS 크레딧 개편 (이 세션, 푸시 대기)
+
+1. **포지셔닝 헌장 §2.4 신설** + 한 줄 메시지 §2.1 개정 ("AI 창작, 흐름을 잃지 마세요.") — 마케팅 4파일 hero·meta 적용 완료
+2. **개인 = 크레딧 / BYOK = Team OS 전용 개편** (약속 1 개정):
+   - 새 플랜: Free 100cr / Creator ₩19,900 1,000cr / Pro Creator ₩49,900 3,000cr(추천) / Team OS 도입 문의
+   - 내부 plan id는 레거시 유지 (`standard`=Creator, `pro`=Pro Creator) — `openUpgradeCheckout`에 alias 매핑
+   - 개인 플랜 API Vault 3곳 숨김 (`data-entitlement="apiKeyVaultEnabled"` 마킹: top-vault-btn, swb-api-vault, settings vault-card)
+   - `requireCredits()` 크레딧 소진 모달 / `openTeamOsInquiry()` 인앱 8필드 문의 폼 / 설정 "플랜 & 크레딧" 카드 (`refreshPlanSummaryCard`)
+   - `supabase/migration-2026-06-10-credits.sql`: plan_entitlements + credit_wallet + credit_transactions + spend_credits() RPC + RLS
+   - supabase-keepalive.yml에 매월 1일 KST 12:10 크레딧 리셋 cron 추가 (Secret `SUPABASE_SERVICE_ROLE_KEY` 필요)
+3. **사용자 실행 대기**: ① 커밋·푸시 ② Supabase 마이그레이션 SQL 적용 ③ GitHub Secret 등록
+
 ### 남은 작업 (다음 세션 우선순위)
 
 1. **Google OAuth 콜백 URL 등록** (Supabase Dashboard → Authentication → URL Configuration) — 최우선
    - Site URL: `https://soaviz.com`
    - Redirect URLs: `https://soaviz.com/**`, `https://soaviz.com/app`, `https://soaviz.com/signup`, `https://soaviz-studio.vercel.app/**`
-2. (선택) 정식 출시 시 `SOAVIZ_BETA_LOGIN_REQUIRED = true` 복귀
-3. (선택) `soaviz.mobile` 서브 저장소 변경분 확인 후 커밋 여부 결정 (`.git/index.lock` 잔존 — 사용자 Terminal에서 `rm -f` 필요)
+2. **생성 버튼들에 `requireCredits()` 배선** — 크레딧 차감 실동작 연결 (video/voice/music/sfx 실행 지점)
+3. (선택) 정식 출시 시 `SOAVIZ_BETA_LOGIN_REQUIRED = true` 복귀
+4. (선택) `soaviz.mobile` 서브 저장소 변경분 확인 후 커밋 여부 결정 (`.git/index.lock` 잔존 — 사용자 Terminal에서 `rm -f` 필요)
 
 ### 변하지 않은 결정 (직전 세션과 동일)
 
