@@ -27684,6 +27684,14 @@
           <p id="acc-summary">로컬 프로필 · 이름·이메일·아바타·통계</p>
           <button class="settings-cta" id="acc-manage-btn">관리</button>
         </article>
+        <article class="settings-card" id="settings-plan-card">
+          <div class="settings-icon">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </div>
+          <h3>플랜 &amp; 크레딧</h3>
+          <p id="plan-summary">플랜 · AI 크레딧 확인 중…</p>
+          <button class="settings-cta" onclick="showPage('credits')">요금제 보기</button>
+        </article>
         <article class="settings-card" id="settings-workspace-card">
           <div class="settings-icon">
             <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -30735,8 +30743,9 @@ function consumeCredits(amount, label = '') {
     used += Math.round(amount);
     localStorage.setItem(CREDIT_USED_KEY, String(used));
   } catch (_) {}
-  // 모든 활성 pill 갱신
+  // 모든 활성 pill + 설정 카드 갱신
   document.querySelectorAll('.credit-pill').forEach(p => _renderCreditPill(p));
+  try { refreshPlanSummaryCard(); } catch (_) {}
   return getCreditBalance();
 }
 window.consumeCredits = consumeCredits;
@@ -30817,8 +30826,13 @@ function openMonetizationGate({
       <div style="font-size:20px;font-weight:700;color:var(--text,#fff);margin-bottom:8px">${title}</div>
       <div style="font-size:14px;color:var(--text-dim,rgba(255,255,255,0.6));margin-bottom:6px;line-height:1.5">${message || planName + ' 플랜에서 사용할 수 있습니다.'}</div>
       ${reason ? `<div style="font-size:12px;color:var(--text-faint,rgba(255,255,255,0.4));margin-bottom:16px">${reason}</div>` : '<div style="margin-bottom:16px"></div>'}
-      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(167,139,250,0.15);border-radius:8px;font-size:12px;color:var(--accent,#a78bfa);font-weight:600;margin-bottom:20px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(167,139,250,0.15);border-radius:8px;font-size:12px;color:var(--accent,#a78bfa);font-weight:600;margin-bottom:12px">
         추천: ${planName} · ${price}
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:20px">
+        <span style="flex:1;padding:7px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;text-align:center;font-size:11px;color:var(--text-dim,rgba(255,255,255,0.55))">Free<br><strong style="color:var(--text,#fff);font-size:12px">100cr</strong><br>프로젝트 3개</span>
+        <span style="flex:1;padding:7px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:8px;text-align:center;font-size:11px;color:var(--text-dim,rgba(255,255,255,0.55))">Creator<br><strong style="color:var(--text,#fff);font-size:12px">1,000cr</strong><br>프로젝트 20개</span>
+        <span style="flex:1;padding:7px 6px;background:rgba(167,139,250,0.10);border:1px solid rgba(167,139,250,0.35);border-radius:8px;text-align:center;font-size:11px;color:var(--text-dim,rgba(255,255,255,0.55))">Pro Creator<br><strong style="color:var(--accent,#a78bfa);font-size:12px">3,000cr</strong><br>프로젝트 100개</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="sz-gate-upgrade" style="flex:1;min-width:140px;padding:11px 16px;background:linear-gradient(135deg,var(--accent,#a78bfa),rgba(236,72,153,0.8));color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">요금제 보기</button>
@@ -31012,11 +31026,28 @@ function refreshCreditPill() {
 }
 window.refreshCreditPill = refreshCreditPill;
 
+/** Settings — 플랜 & 크레딧 카드 요약 갱신 */
+function refreshPlanSummaryCard() {
+  const el = document.getElementById('plan-summary');
+  if (!el) return;
+  try {
+    const b = getCreditBalance();
+    let storage = '';
+    try {
+      const u = getLibraryStorageUsage();
+      storage = ` · 저장공간 ${(u.used / 1024 / 1024 / 1024).toFixed(2)} / ${Math.round(u.limit / 1024 / 1024 / 1024)}GB`;
+    } catch (_) {}
+    el.textContent = `${b.planLabel} 플랜 · AI 크레딧 ${b.remaining.toLocaleString()} / ${b.total.toLocaleString()}${storage}`;
+  } catch (_) {}
+}
+window.refreshPlanSummaryCard = refreshPlanSummaryCard;
+
 // 부팅 시 + 플랜 변경 시
 (function _initNavLocks() {
   function go() {
     try { refreshNavLockBadges(); } catch (_) {}
     try { refreshCreditPill(); } catch (_) {}
+    try { refreshPlanSummaryCard(); } catch (_) {}
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
   else setTimeout(go, 100);
@@ -62410,22 +62441,54 @@ setInterval(checkR2Health, 30000);
 
   window.openUpgradeCheckout = openUpgradeCheckout;
 
-  /** Team OS 도입 문의 — 셀프서브 BYOK 가입 없음. 문의 양식(mailto 템플릿) */
+  /** Team OS 도입 문의 — 셀프서브 BYOK 가입 없음. 인앱 양식 → mailto 전송 */
   function openTeamOsInquiry() {
-    const subject = encodeURIComponent('SOAVIZ Team OS 도입 문의');
-    const body = encodeURIComponent(
-      '아래 내용을 작성해 보내주시면 SOAVIZ가 직접 사용 방법과 BYOK 설정을 안내드립니다.\n' +
-      '(API Key는 기관 관리자만 직접 입력하며, SOAVIZ는 키를 전달받거나 보관하지 않습니다.)\n\n' +
-      '· 성함:\n' +
-      '· 소속(기관/팀):\n' +
-      '· 역할:\n' +
-      '· 이메일:\n' +
-      '· 팀 규모:\n' +
-      '· 사용 목적(제작 분야):\n' +
-      '· 희망 온보딩 방식(원격/방문/파일럿):\n' +
-      '· 기타 메시지:\n'
-    );
-    window.open(`mailto:ai@soaviz.com?subject=${subject}&body=${body}`, '_self');
+    const existing = document.getElementById('teamos-inquiry-modal');
+    if (existing) existing.remove();
+    const inputCss = 'width:100%;padding:9px 12px;background:var(--bg-1,rgba(255,255,255,0.05));border:1px solid var(--border,rgba(255,255,255,0.12));border-radius:8px;color:var(--text,#fff);font-size:13px;box-sizing:border-box';
+    const labelCss = 'display:block;text-align:left;font-size:12px;color:var(--text-dim,rgba(255,255,255,0.6));margin:10px 0 4px';
+    const F = (label, id, ph, type = 'text') =>
+      `<label style="${labelCss}" for="${id}">${label}</label><input id="${id}" type="${type}" placeholder="${ph}" style="${inputCss}">`;
+    const wrap = document.createElement('div');
+    wrap.id = 'teamos-inquiry-modal';
+    wrap.className = 'vault-modal-backdrop';
+    wrap.innerHTML = `
+      <div class="vault-modal" style="max-width:460px;max-height:86vh;overflow:auto;text-align:left">
+        <h3 style="margin-bottom:4px">Team OS 도입 문의</h3>
+        <p style="font-size:12px;color:var(--text-dim,rgba(255,255,255,0.6));margin-bottom:6px;line-height:1.5">
+          문의 후 SOAVIZ가 직접 사용 방법과 BYOK 설정을 안내합니다.<br>
+          API Key는 기관 관리자만 직접 입력하며, SOAVIZ는 키를 전달받거나 보관하지 않습니다.
+        </p>
+        ${F('성함', 'toi-name', '홍길동')}
+        ${F('소속 (기관/팀)', 'toi-org', '방송국 · 스튜디오 · 에이전시 · 대학 등')}
+        ${F('역할', 'toi-role', '예: 제작 총괄 PD')}
+        ${F('이메일', 'toi-email', 'you@org.com', 'email')}
+        ${F('팀 규모', 'toi-size', '예: 12명')}
+        ${F('사용 목적 (제작 분야)', 'toi-usecase', '예: 다큐 시리즈 AI 프리프로덕션')}
+        ${F('희망 온보딩', 'toi-onboard', '원격 / 방문 / 파일럿 운영')}
+        <label style="${labelCss}" for="toi-msg">메시지</label>
+        <textarea id="toi-msg" rows="3" style="${inputCss};resize:vertical" placeholder="현재 워크플로우와 도입 일정 등"></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+          <button class="vault-btn" id="toi-cancel">취소</button>
+          <button class="vault-btn primary" id="toi-send">문의 보내기 →</button>
+        </div>
+        <p style="font-size:11px;color:var(--text-faint,rgba(255,255,255,0.35));margin-top:10px">전송 시 메일 앱이 열립니다. 직접 문의: ai@soaviz.com</p>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
+    wrap.querySelector('#toi-cancel').onclick = close;
+    wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
+    wrap.querySelector('#toi-send').onclick = () => {
+      const v = id => (document.getElementById(id)?.value || '').trim() || '-';
+      const body = encodeURIComponent(
+        `· 성함: ${v('toi-name')}\n· 소속(기관/팀): ${v('toi-org')}\n· 역할: ${v('toi-role')}\n` +
+        `· 이메일: ${v('toi-email')}\n· 팀 규모: ${v('toi-size')}\n· 사용 목적: ${v('toi-usecase')}\n` +
+        `· 희망 온보딩: ${v('toi-onboard')}\n· 메시지: ${v('toi-msg')}\n`
+      );
+      window.open(`mailto:ai@soaviz.com?subject=${encodeURIComponent('SOAVIZ Team OS 도입 문의')}&body=${body}`, '_self');
+      close();
+      showToast?.('문의 메일 작성 창을 열었습니다', 'info');
+    };
   }
   window.openTeamOsInquiry = openTeamOsInquiry;
 })();
