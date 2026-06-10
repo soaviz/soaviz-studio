@@ -14,37 +14,64 @@
 
 ---
 
-## 0.5 현재 인수인계 — 2026-05-08 새벽
+## 0.5 현재 인수인계 — 2026-06-10 (모델 교체 시점)
 
 Claude가 새 세션에서 바로 이어받아야 할 최신 상태:
 
 | 영역 | 현재 상태 |
 |---|---|
 | 브랜치 | `main` |
-| 최신 주요 커밋 | `2e29291 feat(sidebar+docs+signup): 제작 흐름 재정렬 + 좌하단 통합 + 창업자 스토리 + 로그인 hero` |
-| 직전 Codex 커밋 | `3ba3489 Polish studio branding and auth UI` |
-| 현재 미커밋 파일 | `soaviz-studio.html` 수정 있음. 먼저 `git status -sb`와 diff 확인 필수 |
-| 주의 | 사용자/코워크 수정 가능성이 높으므로 미커밋 변경 절대 revert 금지 |
+| 도메인 | `soaviz.com` 정식 운영 (custom domain 연결 완료). `/app` → `/soaviz-studio` 라우팅 |
+| Supabase | **Healthy** (yfzhvuyrdabpzowprupa.supabase.co, Seoul, t4g.nano) — 오늘 일시정지에서 Resume 완료 |
+| 직전 main 커밋 | `5516683 hotfix(auth): SOAVIZ_BETA_LOGIN_REQUIRED 임시 해제` |
+| 미푸시 변경 | **5개 파일** — 사용자가 푸시 명령어 실행 필요 (아래 참조) |
 
-최근 반영된 사용자 결정:
+### 오늘(2026-06-10) 세션에서 픽스한 것 — 모두 미푸시
 
-- 서비스 내부 좌측 상단 로고는 `assets/brand/soaviz-logo-horizontal.png` 가로형 로고를 사용한다.
-- `signup.html#login` 좌측 상단 로고는 `assets/brand/soaviz-logo-signup.png`를 사용한다. 크기는 작게, 체크무늬 배경 없이 보여야 한다.
-- 로그인 페이지 상단 문구는 짧게 유지한다: `AI 영상 제작, 바로 이어가세요.` / `SOAVIZ Studio에 로그인하고 작업을 계속하세요.`
-- Google 로그인 버튼 옆 초록색 `활성` 배지는 제거했다. 다시 넣지 마라.
-- 서비스 사이드바는 좁게 유지한다. 현재 기준 `--sidebar-w: 172px`.
-- 사이드바 메뉴는 아이콘 + 메뉴명 한 줄만. `v3`, `선택`, `BYOK`, `PERSONAL` 같은 보조 배지 노출 금지.
-- 로고 클릭 첫 화면의 예전 베타 섹션 `AI가 만든다. 당신이 완성한다...`는 삭제 대상이었다. 다시 복구하지 마라.
-- 현재 `soaviz-studio.html`에는 `sl-` prefix의 새 단일 랜딩 작업이 미커밋으로 들어와 있을 수 있다. 이 부분은 반드시 diff를 읽고 이어서 작업한다.
+1. **soaviz-studio.html:62690** — `'평온'` 작은따옴표 충돌로 발생한 `Uncaught SyntaxError` 픽스. `"평온"` 큰따옴표로 변경. **이게 모든 JS 정지의 근본 원인이었음.**
+2. **vercel.json CSP** — `connect-src` 에 `https://cdn.jsdelivr.net` 추가 (dexie IndexedDB 로드 차단 해소). `style-src` + `font-src` 에 Google Fonts 추가.
+3. **signup.html** — Microsoft 로그인 버튼 `style="display:none"` (Supabase Azure Provider 미설정 상태. 정식 활성화 시 style 한 줄 제거).
+4. **server.js 끝부분** — Supabase 자동 keep-alive ping 추가 (24h 주기, 부팅 30초 후 첫 실행).
+5. **.github/workflows/supabase-keepalive.yml** — GitHub Actions cron 매일 KST 12:00 Supabase REST GET. Fly.io ping 과 이중화.
 
-Claude 첫 액션:
+### 오늘 사고 원인 정리 (재발 방지)
+
+- `soaviz.com` 으로 도메인 바꾼 직후 사이트 동작 안 함 → 원인은 도메인이 아니라 **(A) JS 파싱 에러(평온) + (B) Supabase 프로젝트 일시정지** 두 가지 누적.
+- Supabase Free 플랜은 **7일 비활성 시 자동 일시정지** → 도메인 NXDOMAIN. 89일 안에 Restore 가능. 오늘 복구 완료.
+- 향후 방지: server.js + GitHub Actions 이중 ping. **Pro 업그레이드($25/월)는 보류** — 사용자 50명+ 생기면 그때 고려.
+
+### 새 세션 Claude 첫 액션
 
 ```bash
 cd ~/Desktop/soaviz-studio
-git status -sb
-git log --oneline -5
-git diff --stat
+git status -sb                # 위 5개 미푸시 파일 확인
+git log --oneline -5          # 5516683 이 최신인지 확인
+git diff --stat               # 변경 통계
 ```
+
+미푸시 5개를 같이 묶어서 푸시할 명령어를 사용자에게 제공해야 함. 직전 세션이 만들어둔 추천 커밋 메시지:
+
+```
+hotfix+infra: 평온 파싱 + CSP + Microsoft 숨김 + Supabase keep-alive 이중화
+```
+
+### 남은 작업 (다음 세션 우선순위)
+
+1. **위 5개 파일 푸시** (사용자 Terminal 실행) — 최우선
+2. **Google OAuth 콜백 URL 등록** (Supabase Dashboard → Authentication → URL Configuration)
+   - Site URL: `https://soaviz.com`
+   - Redirect URLs: `https://soaviz.com/**`, `https://soaviz.com/app`, `https://soaviz.com/signup`, `https://soaviz-studio.vercel.app/**`
+3. (선택) 정식 출시 시 `SOAVIZ_BETA_LOGIN_REQUIRED = true` 복귀
+
+### 변하지 않은 결정 (직전 세션과 동일)
+
+- 가로형 로고: `assets/brand/soaviz-logo-horizontal.png`
+- signup 로고: `assets/brand/soaviz-logo-signup.png` (작게, 체크무늬 배경 X)
+- 로그인 페이지 문구: `AI 영상 제작, 바로 이어가세요.` / `SOAVIZ Studio에 로그인하고 작업을 계속하세요.`
+- Google 버튼 옆 `활성` 배지 없음
+- 사이드바 `--sidebar-w: 172px`
+- 사이드바 보조 배지 없음 (`v3`, `선택`, `BYOK`, `PERSONAL` 금지)
+- 예전 베타 섹션 `AI가 만든다. 당신이 완성한다...` 복구 금지
 
 ---
 
