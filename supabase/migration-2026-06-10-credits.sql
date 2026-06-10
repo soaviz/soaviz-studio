@@ -163,6 +163,11 @@ create policy "own wallet read" on credit_wallet for select using (auth.uid() = 
 drop policy if exists "own tx read" on credit_transactions;
 create policy "own tx read" on credit_transactions for select using (auth.uid() = user_id);
 
+-- ─── 함수 실행 권한 잠금 — 리셋/차감은 service_role 전용 ────
+revoke execute on function reset_monthly_credits() from anon, authenticated;
+revoke execute on function spend_credits(uuid, int, text, text, text) from anon;
+-- spend_credits는 authenticated 유지 (로그인 유저 본인 차감) — 서버 경유로 바꾸려면 authenticated도 revoke
+
 -- ─── 끝. 검증 쿼리 ──────────────────────────────────────────
 -- select * from plan_entitlements order by coalesce(price_krw_month, 999999);
 -- select spend_credits(auth.uid(), 12, 'video: Kling 1.6 5s', 'kling', null);

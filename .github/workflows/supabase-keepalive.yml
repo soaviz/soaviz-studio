@@ -7,13 +7,15 @@ name: Supabase Keep-Alive
 
 on:
   schedule:
-    - cron: '0 3 * * *'   # 매일 UTC 03:00 = KST 12:00
+    - cron: '0 3 * * *'    # 매일 UTC 03:00 = KST 12:00 — keep-alive
+    - cron: '10 3 1 * *'   # 매월 1일 UTC 03:10 = KST 12:10 — 크레딧 월간 리셋
   workflow_dispatch: {}   # GitHub UI에서 수동 실행 가능
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 3 * * *'
     steps:
       - name: Ping Supabase REST endpoint
         run: |
@@ -27,3 +29,28 @@ jobs:
             exit 1
           fi
           echo "✅ Supabase alive — keep-alive 성공"
+
+  # 매월 1일 크레딧 리셋 — reset_monthly_credits() RPC 호출
+  # 필요 Secret: SUPABASE_SERVICE_ROLE_KEY (repo Settings → Secrets → Actions)
+  monthly-credit-reset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    if: github.event.schedule == '10 3 1 * *'
+    steps:
+      - name: Reset monthly credits via RPC
+        run: |
+          if [ -z "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY secret 미설정 — repo Settings에서 추가 필요"
+            exit 1
+          fi
+          STATUS=$(curl -s -o /tmp/out.json -w "%{http_code}" -X POST \
+            "https://yfzhvuyrdabpzowprupa.supabase.co/rest/v1/rpc/reset_monthly_credits" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" -d '{}')
+          echo "HTTP status: $STATUS / 리셋된 지갑 수: $(cat /tmp/out.json)"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::크레딧 리셋 실패 — 응답: $(cat /tmp/out.json)"
+            exit 1
+          fi
+          echo "✅ 월간 크레딧 리셋 완료"
