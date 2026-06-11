@@ -23862,7 +23862,8 @@
         <p>① 생성 결과 확인 &nbsp;→&nbsp; ② 채택·후보·탈락 분류 &nbsp;→&nbsp; ③ 시나리오·샷리스트 아카이브 &nbsp;→&nbsp; ④ 다음 작업 <strong>자산으로 재활용</strong></p>
         <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <button class="settings-cta" onclick="openExternalIntake()" style="margin:0">＋ 외부 결과물 가져오기</button>
-          <span style="font-size:11px;color:var(--text-faint)">Midjourney·Sora·Runway 웹에서 만든 결과도 프롬프트·엔진 기록과 함께 자산으로 남기세요</span>
+          <button class="settings-cta" onclick="openPromptDiff()" style="margin:0">프롬프트 비교</button>
+          <span style="font-size:11px;color:var(--text-faint)">Midjourney·Sora·Runway 웹에서 만든 결과도 프롬프트·엔진 기록과 함께 자산으로 남기세요 · 퀵 캡처 단축키 <strong style="color:var(--text-dim)">C</strong></span>
         </div>
       </div>
 
@@ -68640,6 +68641,18 @@ function openQuickCapture() {
 }
 window.openQuickCapture = openQuickCapture;
 
+/* 전역 단축키 C — 입력 중·모달 열림·수식키 조합은 제외 */
+document.addEventListener('keydown', (e) => {
+  if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key !== 'c' && e.key !== 'C' && e.key !== 'ㅊ') return;
+  const t = e.target;
+  const tag = (t?.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select' || t?.isContentEditable) return;
+  if (document.querySelector('.vault-modal-backdrop, #sz-monetization-gate')) return;
+  e.preventDefault();
+  openQuickCapture();
+});
+
 /* ── ② 외부 결과물 인테이크 ── */
 function openExternalIntake() {
   const existing = document.getElementById('sz-intake-modal');
@@ -68716,6 +68729,85 @@ function openExternalIntake() {
   };
 }
 window.openExternalIntake = openExternalIntake;
+
+/* ── ③ 프롬프트 Diff — "무엇이 바뀌어 좋아졌나" (2026-06-11) ──
+   버전 v1→v3 사이 프롬프트 변화를 단어 단위로 시각화.
+   드리프트 원인 추적·좋았던 표현 재사용의 기본기. */
+function szWordDiff(aText, bText) {
+  const a = (aText || '').split(/(\s+)/), b = (bText || '').split(/(\s+)/);
+  // LCS 기반 단어 diff
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--)
+    dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const outA = [], outB = [];
+  let i = 0, j = 0;
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  while (i < m && j < n) {
+    if (a[i] === b[j]) { outA.push(esc(a[i])); outB.push(esc(b[j])); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { outA.push(`<del style="background:rgba(248,113,113,0.22);color:#fda4af;text-decoration:line-through">${esc(a[i])}</del>`); i++; }
+    else { outB.push(`<ins style="background:rgba(52,211,153,0.20);color:#6ee7b7;text-decoration:none">${esc(b[j])}</ins>`); j++; }
+  }
+  while (i < m) { outA.push(`<del style="background:rgba(248,113,113,0.22);color:#fda4af;text-decoration:line-through">${esc(a[i++])}</del>`); }
+  while (j < n) { outB.push(`<ins style="background:rgba(52,211,153,0.20);color:#6ee7b7;text-decoration:none">${esc(b[j++])}</ins>`); }
+  return { a: outA.join(''), b: outB.join('') };
+}
+
+function openPromptDiff(preA = '', preB = '') {
+  const existing = document.getElementById('sz-diff-modal');
+  if (existing) existing.remove();
+  const taCss = 'width:100%;box-sizing:border-box;padding:10px 12px;background:var(--bg-1,rgba(255,255,255,0.05));border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:12.5px;resize:vertical;font-family:inherit';
+  const wrap = document.createElement('div');
+  wrap.id = 'sz-diff-modal';
+  wrap.className = 'vault-modal-backdrop';
+  wrap.innerHTML = `
+    <div class="vault-modal" style="max-width:720px;max-height:88vh;overflow:auto;text-align:left">
+      <h3 style="margin-bottom:4px">프롬프트 비교 — 무엇이 바뀌어 좋아졌나</h3>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">두 버전의 프롬프트를 붙여넣으면 바뀐 단어를 표시합니다. <span style="color:#fda4af">삭제</span> · <span style="color:#6ee7b7">추가</span></p>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:4px">이전 버전 (예: v1)</div>
+          <textarea id="sz-diff-a" rows="5" style="${taCss}" placeholder="이전 프롬프트 붙여넣기">${preA}</textarea>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:var(--text-dim);margin-bottom:4px">이후 버전 (예: v3 ★)</div>
+          <textarea id="sz-diff-b" rows="5" style="${taCss}" placeholder="채택된 프롬프트 붙여넣기">${preB}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin:12px 0">
+        <button class="vault-btn" id="sz-diff-close">닫기</button>
+        <button class="vault-btn primary" id="sz-diff-run">비교하기</button>
+      </div>
+      <div id="sz-diff-out" style="display:none">
+        <div style="height:1px;background:var(--border);margin:4px 0 12px"></div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:700;color:#fda4af;margin-bottom:4px">이전</div>
+            <div id="sz-diff-ra" style="padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;font-size:12.5px;line-height:1.7;color:var(--text-dim);word-break:break-word"></div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:700;color:#6ee7b7;margin-bottom:4px">이후</div>
+            <div id="sz-diff-rb" style="padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;font-size:12.5px;line-height:1.7;color:var(--text-dim);word-break:break-word"></div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-faint);margin-top:10px">좋아진 버전의 추가 표현은 다음 작품의 프롬프트 자산입니다 — 퀵 캡처(C)로 저장해 두세요.</p>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
+  wrap.querySelector('#sz-diff-close').onclick = close;
+  wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
+  wrap.querySelector('#sz-diff-run').onclick = () => {
+    const A = wrap.querySelector('#sz-diff-a')?.value || '';
+    const B = wrap.querySelector('#sz-diff-b')?.value || '';
+    if (!A.trim() && !B.trim()) { showToast?.('비교할 프롬프트를 입력하세요', 'warn'); return; }
+    const d = szWordDiff(A, B);
+    wrap.querySelector('#sz-diff-ra').innerHTML = d.a || '<em>비어 있음</em>';
+    wrap.querySelector('#sz-diff-rb').innerHTML = d.b || '<em>비어 있음</em>';
+    wrap.querySelector('#sz-diff-out').style.display = 'block';
+  };
+}
+window.openPromptDiff = openPromptDiff;
 </script>
 </body>
 </html>
