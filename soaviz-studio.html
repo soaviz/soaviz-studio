@@ -24946,10 +24946,10 @@
       <div class="td-command-hero">
         <div class="td-command-main">
           <div>
-            <div class="td-kicker">SOAVIZ TODAY</div>
-            <h1 class="td-command-title">오늘의 제작 흐름</h1>
+            <div class="td-kicker">TODAY</div>
+            <h1 class="td-command-title">이어가던 흐름부터.</h1>
             <p class="td-command-copy">
-              마지막 작업을 바로 이어가고, 새 작품을 시작하고, 결과물을 정리하는 핵심 동선을 한 화면에서 제어하세요.
+              마지막 컷, 마지막 프롬프트, 다음 할 일 — 어제의 컨텍스트가 그대로 남아 있습니다.
             </p>
           </div>
           <div class="td-command-actions">
@@ -28605,6 +28605,99 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   border: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
+
+/* ── 7. Today 메인 화면 리디자인 — 2026-06-10 ──
+   원칙: 한 화면에 디스플레이 모먼트는 하나(헤드라인).
+   숫자는 tabular-nums, 색은 2px 틱으로만, 버튼 위계는 명도로. */
+#page-today .td-kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+}
+#page-today .td-command-title {
+  font-size: clamp(27px, 3.2vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.032em;
+  line-height: 1.1;
+}
+#page-today .td-command-copy {
+  color: var(--text-faint);
+  font-size: 14px;
+  max-width: 46ch;
+}
+#page-today .td-command-hero {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(167,139,250,0.07), transparent 52%),
+    var(--bg-1);
+}
+/* 버튼 위계 — primary는 밝은 면(고급 툴의 문법), 보조는 헤어라인 */
+#page-today .td-command-btn {
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: transform 0.14s ease, background 0.14s ease,
+              color 0.14s ease, border-color 0.14s ease;
+}
+#page-today .td-command-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+#page-today .td-command-btn.primary {
+  background: #ECEAFD;
+  border-color: transparent;
+  color: #16143A;
+  font-weight: 700;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 8px 22px rgba(0,0,0,0.35);
+}
+#page-today .td-command-btn.primary:hover { background: #F5F4FF; }
+#page-today .td-command-btn.primary .icon { stroke: #16143A; }
+/* 메트릭 — 무지개 숫자 제거, 조용한 컬러 틱 + 고정폭 숫자 */
+#page-today .td-hero-metric {
+  border-left: 2px solid var(--metric-c, var(--border-strong));
+  padding-left: 10px;
+}
+#page-today .td-hero-metric .num {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+#page-today .td-hero-metric .label {
+  color: var(--text-faint);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#page-today .td-command-panel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-card);
+}
+/* 퀵 레인 — 카드 아닌 도구 버튼처럼 낮게 */
+#page-today .td-lane-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+#page-today .td-lane-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+#page-today .td-lane-btn small { color: var(--text-faint); }
+/* 작업 카드·캘린더 — 동일 헤어라인 언어 */
+#page-today .td-todo-card,
+#page-today .td-cal {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%);
+}
+#page-today .td-cal { font-variant-numeric: tabular-nums; }
 </style>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
