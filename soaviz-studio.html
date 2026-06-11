@@ -2,9 +2,22 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <script>
+  /* OAuth 팝업 가드 (2026-06-11): 구글 콜백이 앱으로 떨어진 경우
+     팝업(soaviz_auth)이면 토큰을 들고 /signup으로 회송 → 세션 완성 + 자동 닫기.
+     좁은 팝업이 MobileApp 모드로 보이는 현상 방지 */
+  (function () {
+    try {
+      var t = (location.hash || '') + (location.search || '');
+      if (window.name === 'soaviz_auth' && /access_token=|refresh_token=|[?&]code=/.test(t)) {
+        location.replace('/signup' + location.search + location.hash);
+      }
+    } catch (_) {}
+  })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>soaviz studio — AI 영상 제작 OS</title>
-  <meta name="description" content="AI로 영상 만드는 가장 쉬운 방법. 스토리·캐릭터·룩북·보이스·음악·영상까지 한 화면에서." />
+  <title>soaviz studio — Creative Production OS</title>
+  <meta name="description" content="AI 창작, 흐름을 잃지 마세요. 스토리·캐릭터·룩북·보이스·음악·영상까지 — 창작 컨텍스트를 보존하는 작업실." />
   <meta name="keywords" content="AI 영상, 영상 제작, AI 콘텐츠, soaviz, 시나리오, 보이스, 음악 생성" />
   <meta name="robots" content="index, follow" />
 
