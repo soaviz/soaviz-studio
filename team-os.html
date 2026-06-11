@@ -1230,11 +1230,11 @@
     <div class="logo">SOAVIZ <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:var(--accent);vertical-align:2px">TEAM OS</span></div>
     <div class="nav-item active" data-nav="projects" onclick="showPage('projects')">홈</div>
     <div class="nav-item" data-nav="projects" onclick="showPage('projects')">프로젝트</div>
-    <div class="nav-item">공유 라이브러리</div>
-    <div class="nav-item" onclick="needsTeamFeature('Members', 'Team OS')">팀 · 권한</div>
-    <div class="nav-item" onclick="toast('사용량/비용 로그 — 파일럿에서 제공됩니다','info')">사용량 로그</div>
-    <div class="nav-item" onclick="toast('관리자 대시보드 — 파일럿에서 제공됩니다','info')">관리자</div>
-    <div class="nav-item">설정</div>
+    <div class="nav-item" data-nav="library" onclick="showPage('library')">공유 라이브러리</div>
+    <div class="nav-item" data-nav="team" onclick="showPage('team')">팀 · 권한</div>
+    <div class="nav-item" data-nav="usage" onclick="showPage('usage')">사용량 로그</div>
+    <div class="nav-item" data-nav="admin" onclick="showPage('admin')">관리자</div>
+    <div class="nav-item" data-nav="settings" onclick="showPage('settings')">설정</div>
 
     <div class="nav-section">최근 프로젝트</div>
     <div class="nav-item" data-nav="board" onclick="showPage('board')">Brand X Film</div>
@@ -1491,6 +1491,104 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      <!-- ════ TEAM OS 세부페이지 (2026-06-11, tos- prefix) ════ -->
+
+      <!-- 공유 라이브러리 -->
+      <div class="page" id="page-library">
+        <div class="page-header">
+          <div class="page-title">공유 에셋 라이브러리</div>
+          <div style="display:flex;gap:8px">
+            <select id="tos-lib-filter" class="tos-select" onchange="renderTosLibrary()">
+              <option value="all">전체 상태</option>
+              <option value="approved">승인 완료만</option>
+              <option value="review">리뷰 중만</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="tosExportLibraryCsv()">CSV 내보내기</button>
+          </div>
+        </div>
+        <p class="tos-sub">팀이 만든 결과물이 조직 자산으로 누적됩니다 — 프롬프트·엔진·버전·승인 기록 포함.</p>
+        <div id="tos-lib-grid" class="tos-lib-grid"></div>
+      </div>
+
+      <!-- 팀 · 권한 -->
+      <div class="page" id="page-team">
+        <div class="page-header">
+          <div class="page-title">팀 · 권한</div>
+          <button class="btn btn-primary" onclick="tosOpenInvite()">+ 멤버 초대</button>
+        </div>
+        <p class="tos-sub">Admin만 Team API Vault·결제·멤버 관리에 접근할 수 있습니다. Editor는 제작·승인 요청, Viewer는 열람·댓글만 가능합니다.</p>
+        <div class="tos-table-wrap">
+          <table class="tos-table" id="tos-team-table">
+            <thead><tr><th></th><th>이름</th><th>이메일</th><th>역할</th><th>상태</th><th style="text-align:right">관리</th></tr></thead>
+            <tbody id="tos-team-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 사용량 로그 -->
+      <div class="page" id="page-usage">
+        <div class="page-header">
+          <div class="page-title">사용량 · 비용 로그</div>
+          <button class="btn btn-ghost btn-sm" onclick="tosExportUsageCsv()">CSV 내보내기</button>
+        </div>
+        <div class="tos-kpis" id="tos-usage-kpis"></div>
+        <div class="tos-table-wrap">
+          <table class="tos-table">
+            <thead><tr><th>일시</th><th>멤버</th><th>샷</th><th>작업</th><th>엔진</th><th style="text-align:right">비용 (USD)</th></tr></thead>
+            <tbody id="tos-usage-tbody"></tbody>
+          </table>
+        </div>
+        <p class="tos-sub" style="margin-top:10px">비용은 기관 BYOK 키 기준 실 API 청구액입니다. SOAVIZ는 API 비용에 마진을 더하지 않습니다.</p>
+      </div>
+
+      <!-- 관리자 대시보드 -->
+      <div class="page" id="page-admin">
+        <div class="page-header">
+          <div class="page-title">관리자 대시보드</div>
+          <span class="tos-role-pill">ADMIN 전용</span>
+        </div>
+        <div class="tos-kpis" id="tos-admin-kpis"></div>
+        <div class="tos-2col">
+          <div class="tos-panel">
+            <div class="tos-panel-h">승인 대기</div>
+            <div id="tos-admin-pending"></div>
+          </div>
+          <div class="tos-panel">
+            <div class="tos-panel-h">Team API Vault — 연결 상태</div>
+            <div id="tos-admin-vault"></div>
+            <p class="tos-sub" style="margin-top:8px">키는 관리자 브라우저에 AES-GCM 256으로 암호화 저장됩니다. SOAVIZ 서버는 키를 전달받지 않습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 설정 -->
+      <div class="page" id="page-settings">
+        <div class="page-header">
+          <div class="page-title">워크스페이스 설정</div>
+        </div>
+        <div class="tos-panel" style="max-width:560px">
+          <div class="tos-panel-h">기본 정보</div>
+          <label class="tos-label">워크스페이스 이름</label>
+          <div style="display:flex;gap:8px">
+            <input id="tos-ws-name" class="tos-input" placeholder="예: 국립현대미술관 디지털콘텐츠팀">
+            <button class="btn btn-primary" onclick="tosSaveSettings()">저장</button>
+          </div>
+          <label class="tos-label" style="margin-top:14px">조직 유형</label>
+          <select id="tos-ws-type" class="tos-select" style="width:100%">
+            <option value="culture">문화기관 · 미술관 · 전시기관</option>
+            <option value="edu">대학 · 교육기관</option>
+            <option value="public">지자체 · 공공기관</option>
+            <option value="studio">제작사 · 스튜디오</option>
+            <option value="broadcast">방송국 · 미디어</option>
+          </select>
+          <div class="tos-divider"></div>
+          <div class="tos-panel-h">파일럿 상태</div>
+          <p class="tos-sub">Team OS Pilot 진행 중 — 정식 전환·계정 구조 협의는 <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
+          <div class="tos-divider"></div>
+          <div class="tos-panel-h">데이터</div>
+          <button class="btn btn-ghost btn-sm" onclick="tosResetWorkspace()">워크스페이스 데이터 초기화</button>
         </div>
       </div>
     </div>
@@ -1925,10 +2023,13 @@ function showPage(name) {
   target.classList.add('active');
 
   const bc = document.getElementById('breadcrumb');
+  const TOS_BC = { library:'공유 라이브러리', team:'팀 · 권한', usage:'사용량 로그', admin:'관리자', settings:'설정' };
   if (name === 'projects') {
     bc.innerHTML = '<span class="current">홈</span>';
   } else if (name === 'board') {
     bc.innerHTML = '<span class="link" onclick="showPage(\'projects\')">프로젝트</span> <span style="color: var(--text-3);">›</span> <span class="current">Brand X Film</span>';
+  } else if (TOS_BC[name]) {
+    bc.innerHTML = '<span class="link" onclick="showPage(\'projects\')">홈</span> <span style="color: var(--text-3);">›</span> <span class="current">' + TOS_BC[name] + '</span>';
   }
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1937,6 +2038,11 @@ function showPage(name) {
   });
 
   if (name === 'board') { renderBoard(); updateFilterCounts(); }
+  if (name === 'library')  { try { renderTosLibrary(); } catch (e) { console.warn(e); } }
+  if (name === 'team')     { try { renderTosTeam(); } catch (e) { console.warn(e); } }
+  if (name === 'usage')    { try { renderTosUsage(); } catch (e) { console.warn(e); } }
+  if (name === 'admin')    { try { renderTosAdmin(); } catch (e) { console.warn(e); } }
+  if (name === 'settings') { try { renderTosSettings(); } catch (e) { console.warn(e); } }
 }
 
 function switchTab(el, tabName) {
@@ -2430,6 +2536,251 @@ function runSmokeTests() {
   const passed = tests.filter(t => t.ok).length;
   console.log(`%c[SOAVIZ smoke tests] ${passed}/${tests.length} passed`, 'color: #ff6b3f; font-weight: 700;');
   tests.forEach(t => console.log(`  ${t.ok ? '✓' : '✗'} ${t.name}`));
+}
+</script>
+<style>
+/* ════ TOS 세부페이지 공통 (2026-06-11) ════ */
+.tos-sub { font-size:12px; color:var(--text-2); margin:-6px 0 16px; line-height:1.6; }
+.tos-select, .tos-input {
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+  border-radius:8px; padding:8px 12px; font-size:13px; font-family:inherit;
+}
+.tos-input { flex:1; }
+.tos-label { display:block; font-size:11px; color:var(--text-2); margin:0 0 5px; font-weight:700; }
+.tos-table-wrap { border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.tos-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tos-table th { text-align:left; padding:10px 14px; background:var(--surface-2);
+  font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3);
+  border-bottom:1px solid var(--border); }
+.tos-table td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-2); }
+.tos-table tr:last-child td { border-bottom:none; }
+.tos-table tr:hover td { background:rgba(255,255,255,0.02); }
+.tos-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px; }
+.tos-kpi { border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:var(--surface); }
+.tos-kpi .n { font-size:22px; font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+.tos-kpi .l { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); margin-top:2px; }
+.tos-kpi.hot .n { color:var(--accent); }
+.tos-2col { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:900px) { .tos-2col { grid-template-columns:1fr; } }
+.tos-panel { border:1px solid var(--border); border-radius:10px; padding:16px 18px; background:var(--surface); }
+.tos-panel-h { font-size:11px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--text-2); margin-bottom:12px; }
+.tos-divider { height:1px; background:var(--border); margin:16px 0; }
+.tos-role-pill { font-size:10px; font-weight:700; letter-spacing:0.08em; padding:4px 10px;
+  border-radius:999px; background:rgba(255,107,63,0.12); border:1px solid rgba(255,107,63,0.35); color:var(--accent); }
+.tos-lib-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+.tos-lib-card { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--surface);
+  transition:border-color 0.15s ease, transform 0.15s ease; cursor:pointer; }
+.tos-lib-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.tos-lib-thumb { height:110px; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; letter-spacing:0.08em; color:rgba(255,255,255,0.75); }
+.tos-lib-body { padding:10px 12px; }
+.tos-lib-title { font-size:13px; font-weight:700; }
+.tos-lib-meta { font-size:11px; color:var(--text-3); margin-top:3px; }
+.tos-row-actions button { background:none; border:none; color:var(--text-3); cursor:pointer; font-size:11px; padding:2px 6px; }
+.tos-row-actions button:hover { color:var(--danger,#f87171); }
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   TEAM OS 세부페이지 로직 (2026-06-11) — tos- prefix
+   영속: localStorage 'soaviz.teamos.ws.v1'
+   ════════════════════════════════════════════════════════════ */
+const TOS_LS = 'soaviz.teamos.ws.v1';
+const TOS_THUMB_BG = { 'thumb-blue':'linear-gradient(135deg,#1e3a5f,#2d1f4f)', 'thumb-red':'linear-gradient(135deg,#5f1e1e,#4f2d1f)',
+  'thumb-warm':'linear-gradient(135deg,#5f3e1e,#4f1f2d)', 'thumb-green':'linear-gradient(135deg,#1e5f3a,#1f4f2d)',
+  'thumb-purple':'linear-gradient(135deg,#3e1e5f,#2d1f4f)', 'thumb-empty':'linear-gradient(135deg,#26262e,#1c1c22)' };
+
+function tosLoad() {
+  try { const d = JSON.parse(localStorage.getItem(TOS_LS) || 'null'); if (d) return d; } catch (_) {}
+  // 시드 — 파일럿 데모 데이터
+  return {
+    wsName: '', wsType: 'culture',
+    members: [
+      { id:'m1', name:'은교', email:'ai@soaviz.com',      role:'admin',  status:'active' },
+      { id:'m2', name:'지수', email:'jisoo@studio-x.kr',  role:'editor', status:'active' },
+      { id:'m3', name:'민호', email:'minho@studio-x.kr',  role:'editor', status:'active' },
+    ],
+    usage: [
+      { ts:'06-10 14:22', member:'민호', shot:'S004', kind:'영상 생성', engine:'Kling 1.6',    cost:0.84 },
+      { ts:'06-10 11:05', member:'지수', shot:'S007', kind:'영상 생성(실패·과금 無)', engine:'Kling 1.6', cost:0 },
+      { ts:'06-09 17:40', member:'민호', shot:'S002', kind:'영상 생성', engine:'Runway Gen-3', cost:1.20 },
+      { ts:'06-09 15:12', member:'지수', shot:'S003', kind:'영상 생성', engine:'Kling 1.6',    cost:0.65 },
+      { ts:'06-08 10:30', member:'은교', shot:'S008', kind:'영상 생성', engine:'Sora',         cost:1.50 },
+      { ts:'06-08 09:02', member:'은교', shot:'S010', kind:'영상 생성', engine:'Sora',         cost:1.65 },
+    ],
+  };
+}
+function tosSave(d) { try { localStorage.setItem(TOS_LS, JSON.stringify(d)); } catch (_) {} }
+let TOS = tosLoad();
+
+/* ── 공유 라이브러리 — 버전 있는 샷 = 팀 자산 ── */
+function renderTosLibrary() {
+  const grid = document.getElementById('tos-lib-grid'); if (!grid) return;
+  const filter = document.getElementById('tos-lib-filter')?.value || 'all';
+  const assets = shots.filter(s => s.version && s.version !== '-')
+    .filter(s => filter === 'all' || s.status === filter);
+  grid.innerHTML = assets.length ? assets.map(s => `
+    <div class="tos-lib-card" onclick="openDrawer('${s.code}')">
+      <div class="tos-lib-thumb" style="background:${TOS_THUMB_BG[s.thumb] || TOS_THUMB_BG['thumb-empty']}">${s.code} · ${s.version}</div>
+      <div class="tos-lib-body">
+        <div class="tos-lib-title">${s.title}</div>
+        <div class="tos-lib-meta">${s.model || '—'} · ${STATUS_LABELS_KO[s.status]} · 담당 ${s.assignee}</div>
+      </div>
+    </div>`).join('')
+    : '<p class="tos-sub">조건에 맞는 에셋이 없습니다.</p>';
+}
+function tosExportLibraryCsv() {
+  const rows = [['code','title','status','version','model','assignee']]
+    .concat(shots.filter(s => s.version && s.version !== '-')
+      .map(s => [s.code, s.title, s.status, s.version, s.model || '', s.assignee]));
+  tosDownloadCsv(rows, 'soaviz-team-library.csv');
+}
+
+/* ── 팀 · 권한 ── */
+const TOS_ROLES = { admin:'Admin', editor:'Editor', viewer:'Viewer' };
+function renderTosTeam() {
+  const tb = document.getElementById('tos-team-tbody'); if (!tb) return;
+  tb.innerHTML = TOS.members.map(m => `
+    <tr>
+      <td style="width:36px"><span class="avatar" style="background:${ASSIGNEE_BG[m.name] || '#6b7280'};width:24px;height:24px;font-size:11px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%">${m.name[0]}</span></td>
+      <td style="color:var(--text);font-weight:600">${m.name}</td>
+      <td>${m.email}</td>
+      <td>
+        <select class="tos-select" style="padding:4px 8px;font-size:12px" onchange="tosChangeRole('${m.id}', this.value)" ${m.role==='admin' && TOS.members.filter(x=>x.role==='admin').length===1 ? 'disabled title="마지막 Admin은 변경 불가"' : ''}>
+          ${Object.entries(TOS_ROLES).map(([k,v]) => `<option value="${k}" ${m.role===k?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>${m.status === 'active' ? '<span style="color:var(--success)">활성</span>' : '<span style="color:var(--text-3)">초대됨</span>'}</td>
+      <td class="tos-row-actions" style="text-align:right">
+        ${m.role==='admin' && TOS.members.filter(x=>x.role==='admin').length===1 ? '' : `<button onclick="tosRemoveMember('${m.id}')">제거</button>`}
+      </td>
+    </tr>`).join('');
+}
+function tosOpenInvite() {
+  openModal(`
+    <div class="modal-title">멤버 초대</div>
+    <label class="tos-label" style="margin-top:10px">이름</label>
+    <input id="tos-inv-name" class="tos-input" style="width:100%" placeholder="홍길동">
+    <label class="tos-label" style="margin-top:10px">이메일</label>
+    <input id="tos-inv-email" class="tos-input" style="width:100%" placeholder="name@org.kr">
+    <label class="tos-label" style="margin-top:10px">역할</label>
+    <select id="tos-inv-role" class="tos-select" style="width:100%">
+      <option value="editor">Editor — 제작·승인 요청</option>
+      <option value="viewer">Viewer — 열람·댓글</option>
+      <option value="admin">Admin — Vault·멤버 관리</option>
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="tosInvite()">초대 보내기</button>
+    </div>`, { icon:'👥' });
+}
+function tosInvite() {
+  const name = document.getElementById('tos-inv-name')?.value.trim();
+  const email = document.getElementById('tos-inv-email')?.value.trim();
+  const role = document.getElementById('tos-inv-role')?.value || 'editor';
+  if (!name) { toast('이름을 입력하세요', 'error'); return; }
+  if (!email || !email.includes('@')) { toast('올바른 이메일을 입력하세요', 'error'); return; }
+  TOS.members.push({ id:'m'+Date.now(), name, email, role, status:'invited' });
+  tosSave(TOS); closeModal(); renderTosTeam();
+  toast(`${name}님에게 초대를 보냈습니다`, 'success');
+}
+function tosChangeRole(id, role) {
+  const m = TOS.members.find(x => x.id === id); if (!m) return;
+  m.role = role; tosSave(TOS); renderTosTeam();
+  toast(`${m.name} → ${TOS_ROLES[role]}`, 'success');
+}
+function tosRemoveMember(id) {
+  const m = TOS.members.find(x => x.id === id); if (!m) return;
+  if (!confirm(`${m.name}님을 워크스페이스에서 제거할까요?`)) return;
+  TOS.members = TOS.members.filter(x => x.id !== id);
+  tosSave(TOS); renderTosTeam(); toast(`${m.name}님을 제거했습니다`, 'info');
+}
+
+/* ── 사용량 · 비용 로그 ── */
+function renderTosUsage() {
+  const tb = document.getElementById('tos-usage-tbody'); if (!tb) return;
+  tb.innerHTML = TOS.usage.map(u => `
+    <tr><td>${u.ts}</td><td>${u.member}</td>
+      <td style="color:var(--text)">${u.shot}</td><td>${u.kind}</td><td>${u.engine}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text)">$${u.cost.toFixed(2)}</td></tr>`).join('');
+  const total = TOS.usage.reduce((s,u) => s+u.cost, 0);
+  const byEngine = {};
+  TOS.usage.forEach(u => { byEngine[u.engine] = (byEngine[u.engine]||0) + u.cost; });
+  const top = Object.entries(byEngine).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('tos-usage-kpis').innerHTML = `
+    <div class="tos-kpi hot"><div class="n">$${total.toFixed(2)}</div><div class="l">이번 달 총 비용</div></div>
+    <div class="tos-kpi"><div class="n">${TOS.usage.length}</div><div class="l">생성 작업</div></div>
+    <div class="tos-kpi"><div class="n">${top ? top[0] : '—'}</div><div class="l">최다 사용 엔진</div></div>
+    <div class="tos-kpi"><div class="n">${TOS.members.filter(m=>m.status==='active').length}</div><div class="l">활성 멤버</div></div>`;
+}
+function tosExportUsageCsv() {
+  const rows = [['datetime','member','shot','kind','engine','cost_usd']]
+    .concat(TOS.usage.map(u => [u.ts, u.member, u.shot, u.kind, u.engine, u.cost]));
+  tosDownloadCsv(rows, 'soaviz-team-usage.csv');
+}
+function tosDownloadCsv(rows, filename) {
+  const csv = '﻿' + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+  toast(`${filename} 다운로드`, 'success');
+}
+
+/* ── 관리자 대시보드 ── */
+function renderTosAdmin() {
+  const approved = shots.filter(s => s.status === 'approved').length;
+  const review = shots.filter(s => s.status === 'review');
+  const total = TOS.usage.reduce((s,u) => s+u.cost, 0);
+  document.getElementById('tos-admin-kpis').innerHTML = `
+    <div class="tos-kpi"><div class="n">${shots.length}</div><div class="l">전체 샷</div></div>
+    <div class="tos-kpi"><div class="n">${approved}</div><div class="l">승인 완료</div></div>
+    <div class="tos-kpi hot"><div class="n">${review.length}</div><div class="l">승인 대기</div></div>
+    <div class="tos-kpi"><div class="n">${TOS.members.length}</div><div class="l">멤버</div></div>
+    <div class="tos-kpi"><div class="n">$${total.toFixed(2)}</div><div class="l">이번 달 비용</div></div>`;
+  document.getElementById('tos-admin-pending').innerHTML = review.length ? review.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+      <span style="color:var(--text);font-weight:700">${s.code}</span>
+      <span style="color:var(--text-2);flex:1">${s.title} · ${s.version}</span>
+      <button class="btn btn-sm btn-primary" onclick="tosApprove('${s.code}')">승인</button>
+      <button class="btn btn-sm btn-ghost" onclick="tosReject('${s.code}')">반려</button>
+    </div>`).join('') : '<p class="tos-sub">승인 대기 항목이 없습니다.</p>';
+  document.getElementById('tos-admin-vault').innerHTML = [
+    ['Kling AI 1.6','connected'],['Runway Gen-3','connected'],['OpenAI Sora','connected'],
+    ['ElevenLabs','—'],['Stability AI','—'],
+  ].map(([n,st]) => `
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+      <span style="color:var(--text)">${n}</span>
+      <span style="color:${st==='connected'?'var(--success)':'var(--text-3)'}">${st==='connected'?'연결됨':'미연결'}</span>
+    </div>`).join('');
+}
+function tosApprove(code) {
+  const s = shots.find(x => x.code === code); if (!s) return;
+  s.status = 'approved'; s.clientReviewRequested = false;
+  renderTosAdmin(); toast(`${code} 승인 완료`, 'success');
+}
+function tosReject(code) {
+  const s = shots.find(x => x.code === code); if (!s) return;
+  s.status = 'production'; s.hasFeedback = true;
+  renderTosAdmin(); toast(`${code} 반려 — 제작으로 되돌림`, 'info');
+}
+
+/* ── 설정 ── */
+function renderTosSettings() {
+  const n = document.getElementById('tos-ws-name'); if (n) n.value = TOS.wsName || '';
+  const t = document.getElementById('tos-ws-type'); if (t) t.value = TOS.wsType || 'culture';
+}
+function tosSaveSettings() {
+  TOS.wsName = document.getElementById('tos-ws-name')?.value.trim() || '';
+  TOS.wsType = document.getElementById('tos-ws-type')?.value || 'culture';
+  tosSave(TOS);
+  toast('워크스페이스 설정 저장됨', 'success');
+}
+function tosResetWorkspace() {
+  if (!confirm('멤버·사용량·설정 데이터를 초기 상태로 되돌릴까요?')) return;
+  localStorage.removeItem(TOS_LS); TOS = tosLoad();
+  renderTosTeam(); renderTosSettings();
+  toast('워크스페이스 데이터 초기화 완료', 'info');
 }
 </script>
 </body>

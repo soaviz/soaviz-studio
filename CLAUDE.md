@@ -61,7 +61,7 @@ git log --oneline -5          # d4ae725 가 최신인지 확인
 3. **Team OS 앱 v0.1 신설** (`team-os.html`, mockup-shot-board 기반 분리 — §2.3 기존 결정 이행):
    - 오렌지 컨텍스트, PILOT 배너, Team API Vault 프레이밍(관리자만 키 입력 안내), `TEAMOS_PILOT=true`로 팀 기능 전부 개방
    - 라우팅 `/team-os` (vercel.json) · biz-login 성공 시 직접 진입이면 `/team-os` 이동, 팝업이면 닫고 부모에 통지
-   - 다음 단계: 멤버·권한 실화면, 사용량/비용 로그, 관리자 대시보드 (현재 토스트 placeholder)
+   - **세부페이지 5종 실동작 구현 완료 (2026-06-11)**: 공유 라이브러리(필터·CSV) · 팀/권한(초대·역할 변경·제거, 마지막 Admin 보호) · 사용량 로그(KPI·CSV) · 관리자(승인/반려·Vault 상태) · 설정(워크스페이스명·초기화). `tos-` prefix, localStorage `soaviz.teamos.ws.v1` 영속
 4. **크레딧 경제 확정** (market fit 감사 2026-06-10): 1cr ≈ ₩20. 영상 5s 720p=20cr / 1080p=40cr / 프리미엄(Sora·Veo)=60cr / 이미지=2cr / 보이스 1천자=5cr / 음악=15cr. LTX Studio 호환 스케일. `SOAVIZ_CREDIT_COSTS` + `getGenerationCost()`. 월간 크레딧 매월 1일 리셋, 충전분(topup)은 이월. 가격 앵커 검증: Creator ₩19,900≈Runway Standard($12-15), Pro Creator ₩49,900≈Runway Pro($35)·Krea Pro($35) — 적정
 5. **사용자 실행 대기**: ① 커밋·푸시 ② Supabase 마이그레이션 SQL 적용 ③ GitHub Secret 등록
 
