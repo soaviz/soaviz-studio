@@ -1514,6 +1514,7 @@
           <span class="tos-sub" style="margin:0">Brand X Film 기준 · 실시간</span>
         </div>
         <div class="tos-kpis" id="tos-dash-kpis"></div>
+        <div id="tos-dash-alerts" style="margin-bottom:14px"></div>
         <div class="tos-2col" style="margin-bottom:14px">
           <div class="tos-panel">
             <div class="tos-panel-h">파이프라인 — 상태별 샷 분포</div>
@@ -1625,6 +1626,15 @@
           <div class="tos-howto-step">
             <div class="tos-howto-num">2</div>
             <div class="tos-howto-body">
+              <div class="tos-howto-t">제작 현황 — 팀의 지금</div>
+              <div class="tos-howto-d">승인 진행률, 단계별 정체, 엔진 비용, 멤버 부하가 한 화면에. 병목 신호가 자동으로 표시됩니다 — 관리자가 아침에 가장 먼저 여는 화면입니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('dashboard')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">3</div>
+            <div class="tos-howto-body">
               <div class="tos-howto-t">Shot Board — 제작의 중심</div>
               <div class="tos-howto-d">샷 단위로 기획→제작→리뷰→승인→납품이 흐릅니다. 샷을 클릭하면 프롬프트·시드·버전(v1·v2·v3★)·댓글이 전부 기록돼 있습니다. <strong style="color:var(--text)">"이 영상이 어떻게 만들어졌는지"가 사라지지 않는 게 핵심입니다.</strong></div>
             </div>
@@ -1632,7 +1642,7 @@
           </div>
 
           <div class="tos-howto-step">
-            <div class="tos-howto-num">3</div>
+            <div class="tos-howto-num">4</div>
             <div class="tos-howto-body">
               <div class="tos-howto-t">관리자 — 승인/반려</div>
               <div class="tos-howto-d">리뷰 중인 샷을 관리자가 승인하거나 반려합니다. 반려하면 자동으로 제작 단계로 돌아가고 피드백 플래그가 붙습니다. 기관 결재 구조가 그대로 기록으로 남습니다.</div>
@@ -1641,7 +1651,7 @@
           </div>
 
           <div class="tos-howto-step">
-            <div class="tos-howto-num">4</div>
+            <div class="tos-howto-num">5</div>
             <div class="tos-howto-body">
               <div class="tos-howto-t">공유 라이브러리 — 조직 자산</div>
               <div class="tos-howto-d">승인된 결과물이 팀 자산으로 누적됩니다. 외주가 만들었든 내부가 만들었든, 프롬프트와 제작 이력째로 남습니다. 담당자가 바뀌어도 맥락이 사라지지 않습니다.</div>
@@ -1650,7 +1660,7 @@
           </div>
 
           <div class="tos-howto-step">
-            <div class="tos-howto-num">5</div>
+            <div class="tos-howto-num">6</div>
             <div class="tos-howto-body">
               <div class="tos-howto-t">사용량 로그 — 예산 보고</div>
               <div class="tos-howto-d">누가 어떤 엔진으로 얼마를 썼는지 자동 기록됩니다. CSV로 내보내 예산 보고에 바로 사용하세요. 기관 자체 API(BYOK) 기준 실비 — SOAVIZ는 마진을 더하지 않습니다.</div>
@@ -1668,7 +1678,7 @@
           </div>
 
         </div>
-        <p class="tos-sub" style="margin-top:14px">데모 팁 — 2번에서 샷 <strong style="color:var(--text)">S004</strong>를 열어 버전 히스토리와 클라이언트 댓글을 보여주면 "과정이 기억된다"는 가치가 30초 만에 전달됩니다.</p>
+        <p class="tos-sub" style="margin-top:14px">데모 팁 — 3번에서 샷 <strong style="color:var(--text)">S004</strong>를 열어 버전 히스토리와 클라이언트 댓글을 보여주고, 2번 제작 현황의 병목 신호로 돌아오면 "과정이 기억되고, 정체가 보인다"는 두 가치가 1분 안에 전달됩니다.</p>
       </div>
 
       <!-- 설정 -->
@@ -2710,6 +2720,14 @@ function runSmokeTests() {
 .tos-vbar.empty { background:rgba(255,255,255,0.06); }
 .tos-vbar-day { font-size:9.5px; color:var(--text-3); }
 .tos-vbar-num { font-size:10px; color:var(--text-2); font-variant-numeric:tabular-nums; font-weight:700; }
+/* 병목 경고 스트립 */
+.tos-alert { display:flex; align-items:center; gap:10px; padding:9px 14px; margin-bottom:6px;
+  border:1px solid var(--border); border-left:3px solid var(--warn,#f0c419);
+  border-radius:9px; background:rgba(240,196,25,0.05); font-size:12px; color:var(--text-2); }
+.tos-alert.danger { border-left-color:var(--danger,#f87171); background:rgba(248,113,113,0.06); }
+.tos-alert b { color:var(--text); }
+.tos-alert .go { margin-left:auto; background:none; border:none; color:var(--accent);
+  font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; }
 </style>
 
 <script>
@@ -2923,6 +2941,23 @@ function renderTosDashboard() {
     <div class="tos-kpi"><div class="n">${inFlight}</div><div class="l">제작·리뷰 중</div></div>
     <div class="tos-kpi"><div class="n">${failed}</div><div class="l">재시도 필요</div></div>
     <div class="tos-kpi"><div class="n">$${cost.toFixed(2)}</div><div class="l">이번 달 비용</div></div>`;
+
+  // ①-b 병목 신호 — 기관이 돈 내는 이유: 정체의 가시화
+  const alertsEl = document.getElementById('tos-dash-alerts');
+  if (alertsEl) {
+    const alerts = [];
+    const planning = shots.filter(s => s.status === 'planning').length;
+    const failedShots = shots.filter(s => s.hasFailed);
+    const dueSoon = shots.filter(s => s.dueSoon && s.status !== 'approved' && s.status !== 'delivered');
+    const unresolved = shots.filter(s => s.status === 'review' && s.hasFeedback);
+    if (failedShots.length) alerts.push({ level:'danger', html:`<b>생성 실패 ${failedShots.length}건</b> — ${failedShots.map(s=>s.code).join(', ')} 재시도 필요` });
+    if (unresolved.length)  alerts.push({ level:'danger', html:`<b>클라이언트 피드백 미해결 ${unresolved.length}건</b> — ${unresolved.map(s=>s.code).join(', ')}` });
+    if (dueSoon.length)     alerts.push({ level:'warn',   html:`<b>마감 임박 ${dueSoon.length}건</b> — ${dueSoon.map(s=>`${s.code}(${s.dueDate?.slice(5)})`).join(', ')}` });
+    if (planning >= 3)      alerts.push({ level:'warn',   html:`<b>기획 단계 정체 ${planning}건</b> — 샷 분해 또는 제작 착수가 필요합니다` });
+    alertsEl.innerHTML = alerts.length
+      ? alerts.map(a => `<div class="tos-alert ${a.level === 'danger' ? 'danger' : ''}">${a.html}<button class="go" onclick="showPage('board')">보드에서 보기 →</button></div>`).join('')
+      : '<div class="tos-alert" style="border-left-color:var(--success,#10b981);background:rgba(16,185,129,0.05)">병목 신호 없음 — 파이프라인이 원활합니다</div>';
+  }
 
   // ② 상태별 분포 (가로 막대 — DESIGN_SYSTEM Status 5색)
   const stEl = document.getElementById('tos-dash-status');
