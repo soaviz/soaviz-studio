@@ -22090,6 +22090,14 @@
 
   <div class="top-actions">
     <span class="kbd">⌘K · 빠른 실행</span>
+    <!-- 인앱 가이드 — How to (2026-06-11) -->
+    <button class="icon-btn" id="top-guide-btn" aria-label="워크플로우 가이드" title="워크플로우 가이드 · How to" onclick="showPage('guide')">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <path d="M9 7h7M9 11h5"/>
+      </svg>
+    </button>
     <button class="icon-btn" aria-label="알림">
       <svg class="icon" viewBox="0 0 24 24"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5"/><path d="M9 17a3 3 0 0 0 6 0"/></svg>
     </button>
@@ -28498,6 +28506,80 @@
 
     </section>
 
+    <!-- ================ PAGE: GUIDE (인앱 워크플로우 가이드 · How to) ================ -->
+    <section id="page-guide" class="page">
+      <div class="page-head">
+        <h1>워크플로우 가이드</h1>
+        <p>SOAVIZ는 생성기가 아니라 당신의 창작 흐름을 보존하는 작업실입니다. 이 순서대로 한 바퀴 돌면 전체 흐름이 손에 익습니다.</p>
+      </div>
+
+      <div class="szg-steps">
+        <div class="szg-step">
+          <div class="szg-num">1</div>
+          <div class="szg-body">
+            <div class="szg-t">오늘 — 이어가던 흐름부터</div>
+            <div class="szg-d">어제의 마지막 컷, 마지막 프롬프트, 다음 할 일이 그대로 남아 있습니다. 매 세션은 여기서 시작하세요. 새 작품도 여기서 [새 작품 시작]으로 출발합니다.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('today')">바로 가기 →</button>
+        </div>
+
+        <div class="szg-step">
+          <div class="szg-num">2</div>
+          <div class="szg-body">
+            <div class="szg-t">스토리 — 세계 만들기</div>
+            <div class="szg-d">세계관·스토리텔링·시나리오를 만듭니다. 여기서 쓴 설정은 사라지지 않고 이후 모든 단계(샷·프롬프트·캐릭터)에 자동으로 연결됩니다.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('personas')">바로 가기 →</button>
+        </div>
+
+        <div class="szg-step">
+          <div class="szg-num">3</div>
+          <div class="szg-body">
+            <div class="szg-t">캐릭터 · 룩북 — IP 축적</div>
+            <div class="szg-d">캐릭터 Bible과 스타일 룩북을 만들어 두면 시리즈 내내 같은 얼굴, 같은 톤이 유지됩니다. 생성할 때마다 자동 주입 — 한 번 만든 세계는 계속 자산이 됩니다.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('characters')">바로 가기 →</button>
+        </div>
+
+        <div class="szg-step">
+          <div class="szg-num">4</div>
+          <div class="szg-body">
+            <div class="szg-t">샷 리스트 → 생성 엔진</div>
+            <div class="szg-d">스토리가 샷 단위로 분해됩니다. 샷마다 Kling·Runway·Sora 등 엔진을 크레딧으로 호출하세요 — API 키는 필요 없습니다. 시도한 버전(v1·v2·v3)은 샷에 자동 누적됩니다.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('pipeline')">바로 가기 →</button>
+        </div>
+
+        <div class="szg-step">
+          <div class="szg-num">5</div>
+          <div class="szg-body">
+            <div class="szg-t">사운드 · 편집 — 한 화면에서 완성</div>
+            <div class="szg-d">보이스·음악·효과음을 만들고, 편집 타임라인에서 영상과 합칩니다. 도구를 옮겨 다니며 다운로드·업로드를 반복할 필요가 없습니다.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('video-editor')">바로 가기 →</button>
+        </div>
+
+        <div class="szg-step">
+          <div class="szg-num">6</div>
+          <div class="szg-body">
+            <div class="szg-t">라이브러리 — ★ 채택과 아카이브</div>
+            <div class="szg-d">마음에 드는 결과만 ★ 채택하면 라이브러리에 정리됩니다. 최종 export와 함께, 그 결과가 나온 프롬프트·설정까지 보존 — 다음 작품에서 그대로 재사용하세요.</div>
+          </div>
+          <button class="szg-go" onclick="showPage('library')">바로 가기 →</button>
+        </div>
+      </div>
+
+      <div class="szg-credit">
+        <div class="szg-credit-t">크레딧은 이렇게 동작합니다</div>
+        <div class="szg-credit-d">
+          매달 자동 충전됩니다 (Free 100 · Creator 1,000 · Pro Creator 3,000).
+          영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스 1,000자 5cr · 음악 1곡 15cr.<br>
+          <strong>정리 · 저장 · 프로젝트 메모리 · 버전 비교는 크레딧을 쓰지 않습니다</strong> — 창작 컨텍스트 보존은 SOAVIZ의 기본입니다.
+        </div>
+        <button class="szg-go" onclick="showPage('credits')" style="margin-top:10px">요금제 보기 →</button>
+      </div>
+    </section>
+
     <!-- ================ PAGE: KEY IMAGE STUDIO (독립 페이지) ================ -->
     <section id="page-keyimage-studio" class="page">
       <div id="ck-studio-mount" style="min-height:100vh"></div>
@@ -28700,6 +28782,42 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   background-image: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%);
 }
 #page-today .td-cal { font-variant-numeric: tabular-nums; }
+
+/* ── 8. 인앱 가이드 (page-guide) — 디자인 리프레시와 동일 언어 ── */
+.szg-steps { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.szg-step {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.022), transparent 38%);
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+.szg-step:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.szg-num {
+  width: 28px; height: 28px; flex: none; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.szg-body { flex: 1; min-width: 0; }
+.szg-t { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+.szg-d { font-size: 12.5px; color: var(--text-dim); line-height: 1.65; margin-top: 3px; }
+.szg-go {
+  flex: none; padding: 8px 14px; border-radius: 10px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: transform 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+  font-family: inherit;
+}
+.szg-go:hover { color: var(--text); border-color: var(--border-strong); transform: translateY(-1px); }
+.szg-credit {
+  max-width: 760px; margin-top: 18px; padding: 16px 18px;
+  border: 1px solid rgba(167,139,250,0.28); border-radius: 14px;
+  background: var(--accent-soft);
+}
+.szg-credit-t { font-size: 13px; font-weight: 800; color: var(--accent-3, #c4b5fd); }
+.szg-credit-d { font-size: 12.5px; color: var(--text-dim); line-height: 1.7; margin-top: 6px; }
 </style>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
