@@ -131,9 +131,12 @@
       // Creator ₩19,900/월 · Pro Creator ₩49,900/월 (내부 id: standard/pro)
       // 예: 'https://buy.stripe.com/xxxxxxxx'
       stripeUrls: {
-        standard: null,   // ← Creator ₩19,900/월 결제 링크
-        pro:      null,   // ← Pro Creator ₩49,900/월 결제 링크
+        standard: null,   // ← Creator ₩19,900/월 결제 링크 (🔒 결제 동결 — 모두의 창업 종료 후)
+        pro:      null,   // ← Pro Creator ₩49,900/월 결제 링크 (🔒 결제 동결)
       },
+      // ── Formspree (웨이트리스트 자동 수집 → leeeunkyo@soaviz.com) ──
+      // formspree.io 가입 → New Form → ID를 입력하면 메일앱 없이 즉시 수신
+      formspreeId: null,  // ← 예: 'xabcdefg'
       // 레거시 — 하위 호환용 (사용 안 함)
       checkoutUrl: null,
     };
@@ -24964,7 +24967,7 @@
           <div class="sl-btn-row">
             <button class="sl-btn primary lg" type="button" onclick="showPage('personas')">스토리 만들기 →</button>
             <a class="sl-btn lg" href="docs/index.html" title="사용자 가이드">사용자 가이드</a>
-            <a class="sl-btn lg" href="mailto:ai@soaviz.com" title="문의·피드백">ai@soaviz.com</a>
+            <a class="sl-btn lg" href="mailto:leeeunkyo@soaviz.com" title="문의·피드백">leeeunkyo@soaviz.com</a>
           </div>
           <div class="sl-foot-note">
             개인 작업 · BYOK · 로컬 암호화 · 비즈니스 계정 별도 운영
@@ -28525,7 +28528,7 @@
       <div class="credits-notice">
         <p>💡 개인 플랜은 API 키 없이 SOAVIZ 크레딧으로 바로 시작합니다. 크레딧은 AI 결과물 생성에만 사용되며, 프로젝트 메모리 · 프롬프트 저장 · 에셋 정리 · 버전 비교는 크레딧을 소모하지 않습니다.</p>
         <p>📐 크레딧 가이드 — 영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스(1,000자) 5cr · 음악 1곡 15cr. 예: Creator 1,000cr ≈ 영상 50컷 또는 이미지 500장. 월간 크레딧은 매월 1일 충전되며, 추가 구매 크레딧은 소멸 없이 이월됩니다. <strong>생성이 실패하면 크레딧은 차감되지 않습니다</strong> — 성공한 결과에만 과금합니다.</p>
-        <p>Team OS는 도입 문의 후 SOAVIZ가 직접 사용 방법과 BYOK 설정을 안내합니다. API Key는 기관 관리자만 직접 입력하며, SOAVIZ는 키를 전달받거나 보관하지 않습니다. 문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
+        <p>Team OS는 도입 문의 후 SOAVIZ가 직접 사용 방법과 BYOK 설정을 안내합니다. API Key는 기관 관리자만 직접 입력하며, SOAVIZ는 키를 전달받거나 보관하지 않습니다. 문의: <a href="mailto:leeeunkyo@soaviz.com" style="color:var(--accent)">leeeunkyo@soaviz.com</a></p>
       </div>
 
     </section>
@@ -34489,7 +34492,7 @@ async function openAccountModal() {
           </div>
           <div class="bible-field">
             <label>이메일</label>
-            <input id="acc-email" type="email" value="${escapeHTML(p.email || '')}" placeholder="ai@soaviz.com" />
+            <input id="acc-email" type="email" value="${escapeHTML(p.email || '')}" placeholder="leeeunkyo@soaviz.com" />
           </div>
         </div>
         <div class="bible-field">
@@ -62847,7 +62850,7 @@ setInterval(checkR2Health, 30000);
           <button class="vault-btn" id="toi-cancel">취소</button>
           <button class="vault-btn primary" id="toi-send">문의 보내기 →</button>
         </div>
-        <p style="font-size:11px;color:var(--text-faint,rgba(255,255,255,0.35));margin-top:10px">전송 시 메일 앱이 열립니다. 직접 문의: ai@soaviz.com</p>
+        <p style="font-size:11px;color:var(--text-faint,rgba(255,255,255,0.35));margin-top:10px">전송 시 메일 앱이 열립니다. 직접 문의: leeeunkyo@soaviz.com</p>
       </div>`;
     document.body.appendChild(wrap);
     const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
@@ -62860,7 +62863,7 @@ setInterval(checkR2Health, 30000);
         `· 이메일: ${v('toi-email')}\n· 팀 규모: ${v('toi-size')}\n· 사용 목적: ${v('toi-usecase')}\n` +
         `· 희망 온보딩: ${v('toi-onboard')}\n· 메시지: ${v('toi-msg')}\n`
       );
-      window.open(`mailto:ai@soaviz.com?subject=${encodeURIComponent('SOAVIZ Team OS 도입 문의')}&body=${body}`, '_self');
+      window.open(`mailto:leeeunkyo@soaviz.com?subject=${encodeURIComponent('SOAVIZ Team OS 도입 문의')}&body=${body}`, '_self');
       close();
       showToast?.('문의 메일 작성 창을 열었습니다', 'info');
     };
@@ -62868,7 +62871,7 @@ setInterval(checkR2Health, 30000);
   window.openTeamOsInquiry = openTeamOsInquiry;
 
   /* ── 유료 전환 웨이트리스트 (2026-06-11) ──
-     결제 오픈 전(예비창업 기간) 수요 수집 — 신청은 mailto로 ai@soaviz.com 수신.
+     결제 오픈 전(예비창업 기간) 수요 수집 — 신청은 mailto로 leeeunkyo@soaviz.com 수신.
      "유료 전환 의향자 N명"이 매출 없이 만드는 가장 강한 트랙션 지표. */
   function openWaitlistModal(plan = 'standard') {
     const planLabel = plan === 'pro' ? 'Pro Creator ₩49,900/월' : 'Creator ₩19,900/월';
@@ -62897,13 +62900,30 @@ setInterval(checkR2Health, 30000);
     const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
     wrap.querySelector('#sz-wl-cancel').onclick = close;
     wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
-    wrap.querySelector('#sz-wl-send').onclick = () => {
+    wrap.querySelector('#sz-wl-send').onclick = async () => {
       const email = (wrap.querySelector('#sz-wl-email')?.value || '').trim();
       if (!email.includes('@')) { showToast?.('올바른 이메일을 입력하세요', 'warn'); return; }
       try { localStorage.setItem('soaviz.waitlist.optin', JSON.stringify({ email, plan, at: Date.now() })); } catch (_) {}
+      // 1순위: Formspree 자동 수집 (방문자 메일앱 불필요 — leeeunkyo@soaviz.com 즉시 수신)
+      const fsId = window.__SOAVIZ_CONFIG__?.formspreeId;
+      if (fsId) {
+        try {
+          const res = await fetch(`https://formspree.io/f/${fsId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ _subject: `[웨이트리스트] ${planLabel} 유료 전환 의향`, email, plan: planLabel, source: 'app-upgrade' }),
+          });
+          if (res.ok) {
+            close();
+            showToast?.('알림 신청 완료 — 오픈 소식을 가장 먼저 보내드릴게요', 'success');
+            return;
+          }
+        } catch (e) { console.warn('[waitlist] formspree 실패 — mailto 폴백', e); }
+      }
+      // 폴백: mailto 초안
       const subject = encodeURIComponent(`[웨이트리스트] ${planLabel} 유료 전환 의향`);
       const body = encodeURIComponent(`이메일: ${email}\n의향 플랜: ${planLabel}\n경로: 앱 내 업그레이드 버튼\n`);
-      window.open(`mailto:ai@soaviz.com?subject=${subject}&body=${body}`, '_self');
+      window.open(`mailto:leeeunkyo@soaviz.com?subject=${subject}&body=${body}`, '_self');
       close();
       showToast?.('알림 신청 완료 — 오픈 소식을 가장 먼저 보내드릴게요', 'success');
     };
@@ -62934,7 +62954,7 @@ setInterval(checkR2Health, 30000);
     saveMembers([{
       id: 'owner_' + Date.now(),
       name: '은교',
-      email: 'ai@soaviz.com',
+      email: 'leeeunkyo@soaviz.com',
       role: 'owner',
       status: 'active',
       joinedAt: new Date().toISOString(),

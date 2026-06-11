@@ -343,7 +343,7 @@
             <div class="eyebrow">Apply</div>
             <h2 class="panel-title" id="beta-title">베타 신청서</h2>
           </div>
-          <a class="mail-chip" href="mailto:ai@soaviz.com">ai@soaviz.com</a>
+          <a class="mail-chip" href="mailto:leeeunkyo@soaviz.com">leeeunkyo@soaviz.com</a>
         </div>
 
         <form id="beta-form">
@@ -415,7 +415,7 @@
   </main>
 
   <script>
-    const CONTACT_EMAIL = 'ai@soaviz.com';
+    const CONTACT_EMAIL = 'leeeunkyo@soaviz.com';
     const LABELS = {
       useType: {
         personal: '혼자 사용',
@@ -505,10 +505,41 @@
       field.addEventListener('change', updatePreview);
     });
 
-    document.getElementById('beta-form').addEventListener('submit', function(event) {
+    /* ── 자동 수집 (2026-06-11): Formspree ID 설정 시 메일앱 없이 즉시 leeeunkyo@soaviz.com 수신.
+       설정법: formspree.io 가입(leeeunkyo@soaviz.com) → New Form → ID(예: xabcdefg)를 아래에 입력 */
+    const FORMSPREE_ID = null;  // ← 'xabcdefg' 형태로 교체하면 자동 전송 활성화
+
+    async function submitViaFormspree(draft) {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: draft.subject,
+          email: document.getElementById('email').value.trim(),
+          message: draft.body,
+        }),
+      });
+      if (!res.ok) throw new Error('formspree ' + res.status);
+    }
+
+    document.getElementById('beta-form').addEventListener('submit', async function(event) {
       event.preventDefault();
       if (!event.currentTarget.reportValidity()) return;
       updatePreview();
+      const draft = getDraft();
+      if (FORMSPREE_ID) {
+        const btn = event.currentTarget.querySelector('button[type="submit"]');
+        if (btn) { btn.disabled = true; btn.textContent = '전송 중…'; }
+        try {
+          await submitViaFormspree(draft);
+          document.getElementById('status').textContent = '베타 신청이 접수되었습니다. 검토 후 안내 메일을 보내드릴게요.';
+          if (btn) btn.textContent = '신청 완료 ✓';
+          return;
+        } catch (e) {
+          console.warn('[beta] formspree 실패 — 메일앱 폴백', e);
+          if (btn) { btn.disabled = false; btn.textContent = '베타 신청 메일 보내기'; }
+        }
+      }
       openMailClient();
     });
 
