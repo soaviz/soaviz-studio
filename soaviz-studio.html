@@ -65466,9 +65466,19 @@ function getMobileGenerationModel(modelId) {
 }
 
 function estimateMobileGenerationCost(modelId, mode, duration) {
+  // 2026-06-11 크레딧 경제 정렬 — 데스크톱과 동일 스케일 (영상 5s 720p=20cr · 프리미엄 40/60 · 이미지 2cr)
+  const C = window.SOAVIZ_CREDIT_COSTS || {};
   const m = getMobileGenerationModel(modelId);
-  const fallback = mode === 'video' ? 320 : 60;
-  const amount = Math.max(1, Number(m?.cost || fallback));
+  let amount;
+  if (mode === 'video') {
+    const tier = m?.tier;
+    const base = tier === 'exclusive' ? (C.video_5s_premium ?? 60)
+               : tier === 'premium'   ? (C.video_5s_1080p ?? 40)
+               : (C.video_5s_720p ?? 20);
+    amount = Math.ceil(base * Math.max(1, (Number(duration) || 5) / 5));
+  } else {
+    amount = C.image ?? 2;
+  }
   return { amount, unit: 'credits', label: `${amount.toLocaleString()} credits/샷` };
 }
 

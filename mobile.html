@@ -6,7 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#0B1020" />
-  <title>soaviz studio</title>
+  <title>SOAVIZ — Creative Production OS</title>
+  <meta name="description" content="AI 창작, 흐름을 잃지 마세요. 이동 중에도 아이디어·샷·버전을 이어가는 크리에이터의 모바일 작업실. API 키 없이 크레딧으로." />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
   <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.8/dist/dexie.min.js"></script>
@@ -543,7 +544,8 @@
       <span id="hdr-logotext" style="display:none">soaviz</span>
     </div>
     <div class="m-header-right">
-      <button class="m-icon-btn" onclick="openVault()" title="Vault">
+      <!-- Vault 버튼 — 개인 플랜 비노출 (2026-06-11): BYOK는 Team OS 전용 -->
+      <button class="m-icon-btn" onclick="openVault()" title="Vault" style="display:none" data-entitlement="apiKeyVaultEnabled">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5"/></svg>
       </button>
       <button class="m-icon-btn" onclick="showPage('pg-settings')" title="설정">
@@ -831,11 +833,12 @@
         </div>
 
         <div class="m-plan">
-          <div class="m-plan-title">🚀 SOAVIZ Pro</div>
-          <div class="m-plan-desc">무제한 프로젝트, 고급 AI 모델, 우선 지원을 경험하세요.</div>
-          <div class="m-plan-btn" onclick="showToast('Pro 플랜 준비 중입니다.')">
+          <div class="m-plan-title">플랜 &amp; 크레딧</div>
+          <div class="m-plan-desc" id="m-credit-summary">AI 크레딧 확인 중…</div>
+          <div class="m-plan-desc" style="opacity:0.75;margin-top:4px">Creator ₩19,900 · 1,000cr &nbsp;|&nbsp; Pro Creator ₩49,900 · 3,000cr — API 키 없이, 생성 실패 시 차감 없음</div>
+          <div class="m-plan-btn" onclick="showToast('업그레이드는 soaviz.com 요금제 화면에서 진행하세요')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Pro 업그레이드
+            요금제 보기
           </div>
         </div>
 
@@ -857,7 +860,8 @@
           </div>
         </div>
 
-        <div class="set-group">
+        <!-- API 설정 그룹 — 개인 플랜 비노출 (2026-06-11): BYOK는 Team OS 전용. 코드 보존, 노출 X -->
+        <div class="set-group" style="display:none" data-entitlement="apiKeyVaultEnabled">
           <div class="set-group-title">API 설정</div>
           <div class="set-item" onclick="openVault()">
             <div class="set-item-left">
@@ -1257,7 +1261,26 @@ async function boot() {
   }
 
   updateVaultStatusLabel();
+  updateMobileCreditSummary();
   await loadHome();
+}
+
+/* ── 크레딧 요약 (2026-06-11) — 본앱(/app)과 같은 localStorage 키 공유 ──
+   개인 = 크레딧 헌장: 모바일에서도 API 키 없이, 잔여 크레딧만 보여준다 */
+function updateMobileCreditSummary() {
+  const el = document.getElementById('m-credit-summary');
+  if (!el) return;
+  try {
+    const PLAN_CREDITS = { free: 100, standard: 1000, pro: 3000, team: 30000 };
+    const PLAN_LABELS  = { free: 'Free', standard: 'Creator', pro: 'Pro Creator', team: 'Team OS' };
+    const plan = localStorage.getItem('soaviz.user.plan') || 'free';
+    const used = parseInt(localStorage.getItem('soaviz.credits.usedThisMonth') || '0', 10) || 0;
+    const total = PLAN_CREDITS[plan] ?? 100;
+    const remaining = Math.max(0, total - used);
+    el.textContent = `${PLAN_LABELS[plan] || plan} 플랜 · AI 크레딧 ${remaining.toLocaleString()} / ${total.toLocaleString()} — 매월 1일 자동 충전`;
+    const badge = document.querySelector('.set-plan-badge');
+    if (badge) badge.textContent = PLAN_LABELS[plan] || plan;
+  } catch (_) { el.textContent = 'Free 플랜 · 월 100 크레딧'; }
 }
 
 boot();
