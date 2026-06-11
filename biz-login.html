@@ -372,7 +372,14 @@
       bc.close();
       try { localStorage.setItem('soaviz.biz.login.success', String(Date.now())); } catch (_) {}
     } catch (_) {}
-    setTimeout(() => { try { window.close(); } catch (_) {} }, 400);
+    // Team OS 워크벤치로 이동 (2026-06-10) — 팝업이면 닫고 부모가 받게, 직접 진입이면 본인이 이동
+    setTimeout(() => {
+      if (window.opener && !window.opener.closed) {
+        try { window.close(); } catch (_) {}
+      } else {
+        window.location.href = '/team-os';
+      }
+    }, 400);
   }
 
   function showToast(text, type) {

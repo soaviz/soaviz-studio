@@ -58,7 +58,11 @@ git log --oneline -5          # d4ae725 가 최신인지 확인
    - `requireCredits()` 크레딧 소진 모달 / `openTeamOsInquiry()` 인앱 8필드 문의 폼 / 설정 "플랜 & 크레딧" 카드 (`refreshPlanSummaryCard`)
    - `supabase/migration-2026-06-10-credits.sql`: plan_entitlements + credit_wallet + credit_transactions + spend_credits() RPC + RLS
    - supabase-keepalive.yml에 매월 1일 KST 12:10 크레딧 리셋 cron 추가 (Secret `SUPABASE_SERVICE_ROLE_KEY` 필요)
-3. **사용자 실행 대기**: ① 커밋·푸시 ② Supabase 마이그레이션 SQL 적용 ③ GitHub Secret 등록
+3. **Team OS 앱 v0.1 신설** (`team-os.html`, mockup-shot-board 기반 분리 — §2.3 기존 결정 이행):
+   - 오렌지 컨텍스트, PILOT 배너, Team API Vault 프레이밍(관리자만 키 입력 안내), `TEAMOS_PILOT=true`로 팀 기능 전부 개방
+   - 라우팅 `/team-os` (vercel.json) · biz-login 성공 시 직접 진입이면 `/team-os` 이동, 팝업이면 닫고 부모에 통지
+   - 다음 단계: 멤버·권한 실화면, 사용량/비용 로그, 관리자 대시보드 (현재 토스트 placeholder)
+4. **사용자 실행 대기**: ① 커밋·푸시 ② Supabase 마이그레이션 SQL 적용 ③ GitHub Secret 등록
 
 ### 남은 작업 (다음 세션 우선순위)
 
