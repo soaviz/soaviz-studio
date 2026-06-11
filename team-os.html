@@ -1235,6 +1235,7 @@
     <div class="nav-item" data-nav="usage" onclick="showPage('usage')">사용량 로그</div>
     <div class="nav-item" data-nav="admin" onclick="showPage('admin')">관리자</div>
     <div class="nav-item" data-nav="settings" onclick="showPage('settings')">설정</div>
+    <div class="nav-item" data-nav="howto" onclick="showPage('howto')" style="color:var(--accent)">▶ 워크플로우 가이드</div>
 
     <div class="nav-section">최근 프로젝트</div>
     <div class="nav-item" data-nav="board" onclick="showPage('board')">Brand X Film</div>
@@ -1253,7 +1254,8 @@
     <div style="display:flex;align-items:center;gap:10px;padding:8px 24px;background:rgba(255,107,63,0.08);border-bottom:1px solid rgba(255,107,63,0.25);font-size:12px;color:var(--text-2)">
       <span style="display:inline-block;padding:2px 8px;background:rgba(255,107,63,0.16);border:1px solid rgba(255,107,63,0.4);border-radius:999px;color:var(--accent);font-size:10px;font-weight:700;letter-spacing:0.08em">PILOT</span>
       <span>Team OS는 4주 파일럿으로 시작합니다 — 워크스페이스 세팅 · 관리자 온보딩 · 팀 교육 · 샘플 프로젝트 · BYOK 가이드 · 사용 리포트 포함.</span>
-      <a href="mailto:ai@soaviz.com?subject=SOAVIZ%20Team%20OS%20도입%20문의" style="margin-left:auto;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap">도입 문의 →</a>
+      <a href="javascript:void(0)" onclick="showPage('howto')" style="margin-left:auto;color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap">▶ 워크플로우 가이드</a>
+      <a href="mailto:ai@soaviz.com?subject=SOAVIZ%20Team%20OS%20도입%20문의" style="color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap">도입 문의 →</a>
     </div>
     <div class="topbar">
       <div class="breadcrumb" id="breadcrumb">
@@ -1561,6 +1563,73 @@
             <p class="tos-sub" style="margin-top:8px">키는 관리자 브라우저에 AES-GCM 256으로 암호화 저장됩니다. SOAVIZ 서버는 키를 전달받지 않습니다.</p>
           </div>
         </div>
+      </div>
+
+      <!-- 워크플로우 가이드 (How to — 데모 동선 겸 온보딩) -->
+      <div class="page" id="page-howto">
+        <div class="page-header">
+          <div class="page-title">Team OS 워크플로우 가이드</div>
+          <span class="tos-role-pill">5분 데모 동선</span>
+        </div>
+        <p class="tos-sub">처음 오신 분과 파일럿 데모 모두 이 순서대로 따라가면 됩니다. 각 단계의 [바로 가기]를 누르면 해당 화면으로 이동합니다.</p>
+        <div id="tos-howto-steps">
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">1</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">프로젝트에서 시작</div>
+              <div class="tos-howto-d">진행 중인 프로젝트와 최근 활동을 확인합니다. 누가 어떤 샷을 올렸고, 클라이언트가 무엇을 승인했는지 — 팀의 현재 상태가 한 화면에 모입니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('projects')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">2</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">Shot Board — 제작의 중심</div>
+              <div class="tos-howto-d">샷 단위로 기획→제작→리뷰→승인→납품이 흐릅니다. 샷을 클릭하면 프롬프트·시드·버전(v1·v2·v3★)·댓글이 전부 기록돼 있습니다. <strong style="color:var(--text)">"이 영상이 어떻게 만들어졌는지"가 사라지지 않는 게 핵심입니다.</strong></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('board')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">3</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">관리자 — 승인/반려</div>
+              <div class="tos-howto-d">리뷰 중인 샷을 관리자가 승인하거나 반려합니다. 반려하면 자동으로 제작 단계로 돌아가고 피드백 플래그가 붙습니다. 기관 결재 구조가 그대로 기록으로 남습니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('admin')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">4</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">공유 라이브러리 — 조직 자산</div>
+              <div class="tos-howto-d">승인된 결과물이 팀 자산으로 누적됩니다. 외주가 만들었든 내부가 만들었든, 프롬프트와 제작 이력째로 남습니다. 담당자가 바뀌어도 맥락이 사라지지 않습니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('library')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step">
+            <div class="tos-howto-num">5</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">사용량 로그 — 예산 보고</div>
+              <div class="tos-howto-d">누가 어떤 엔진으로 얼마를 썼는지 자동 기록됩니다. CSV로 내보내 예산 보고에 바로 사용하세요. 기관 자체 API(BYOK) 기준 실비 — SOAVIZ는 마진을 더하지 않습니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('usage')">바로 가기 →</button>
+          </div>
+
+          <div class="tos-howto-step" style="border-left-color:var(--accent)">
+            <div class="tos-howto-num" style="background:var(--accent);color:#fff">+</div>
+            <div class="tos-howto-body">
+              <div class="tos-howto-t">팀 세팅 (관리자 1회)</div>
+              <div class="tos-howto-d">[팀 · 권한]에서 멤버를 초대하고 역할을 정합니다. [설정]에서 워크스페이스 이름·조직 유형을 지정하세요. Team API Vault 키 입력은 기관 관리자만 가능합니다.</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('team')">바로 가기 →</button>
+          </div>
+
+        </div>
+        <p class="tos-sub" style="margin-top:14px">데모 팁 — 2번에서 샷 <strong style="color:var(--text)">S004</strong>를 열어 버전 히스토리와 클라이언트 댓글을 보여주면 "과정이 기억된다"는 가치가 30초 만에 전달됩니다.</p>
       </div>
 
       <!-- 설정 -->
@@ -2023,7 +2092,7 @@ function showPage(name) {
   target.classList.add('active');
 
   const bc = document.getElementById('breadcrumb');
-  const TOS_BC = { library:'공유 라이브러리', team:'팀 · 권한', usage:'사용량 로그', admin:'관리자', settings:'설정' };
+  const TOS_BC = { library:'공유 라이브러리', team:'팀 · 권한', usage:'사용량 로그', admin:'관리자', settings:'설정', howto:'워크플로우 가이드' };
   if (name === 'projects') {
     bc.innerHTML = '<span class="current">홈</span>';
   } else if (name === 'board') {
@@ -2579,6 +2648,14 @@ function runSmokeTests() {
 .tos-lib-meta { font-size:11px; color:var(--text-3); margin-top:3px; }
 .tos-row-actions button { background:none; border:none; color:var(--text-3); cursor:pointer; font-size:11px; padding:2px 6px; }
 .tos-row-actions button:hover { color:var(--danger,#f87171); }
+.tos-howto-step { display:flex; align-items:center; gap:14px; padding:14px 16px;
+  border:1px solid var(--border); border-left:3px solid var(--border);
+  border-radius:10px; background:var(--surface); margin-bottom:10px; }
+.tos-howto-num { width:26px; height:26px; flex:none; border-radius:50%; background:var(--surface-3,#25252d);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:var(--text-2); }
+.tos-howto-body { flex:1; min-width:0; }
+.tos-howto-t { font-size:13.5px; font-weight:700; }
+.tos-howto-d { font-size:12px; color:var(--text-2); line-height:1.6; margin-top:2px; }
 </style>
 
 <script>
