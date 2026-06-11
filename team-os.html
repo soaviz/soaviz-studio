@@ -1229,6 +1229,7 @@
   <aside class="sidebar">
     <div class="logo">SOAVIZ <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;color:var(--accent);vertical-align:2px">TEAM OS</span></div>
     <div class="nav-item active" data-nav="projects" onclick="showPage('projects')">홈</div>
+    <div class="nav-item" data-nav="dashboard" onclick="showPage('dashboard')">제작 현황</div>
     <div class="nav-item" data-nav="projects" onclick="showPage('projects')">프로젝트</div>
     <div class="nav-item" data-nav="library" onclick="showPage('library')">공유 라이브러리</div>
     <div class="nav-item" data-nav="team" onclick="showPage('team')">팀 · 권한</div>
@@ -1505,6 +1506,35 @@
         </div>
       </div>
       <!-- ════ TEAM OS 세부페이지 (2026-06-11, tos- prefix) ════ -->
+
+      <!-- 제작 현황 대시보드 -->
+      <div class="page" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-title">제작 현황</div>
+          <span class="tos-sub" style="margin:0">Brand X Film 기준 · 실시간</span>
+        </div>
+        <div class="tos-kpis" id="tos-dash-kpis"></div>
+        <div class="tos-2col" style="margin-bottom:14px">
+          <div class="tos-panel">
+            <div class="tos-panel-h">파이프라인 — 상태별 샷 분포</div>
+            <div id="tos-dash-status"></div>
+          </div>
+          <div class="tos-panel">
+            <div class="tos-panel-h">최근 7일 제작 활동</div>
+            <div id="tos-dash-week" class="tos-vbars"></div>
+          </div>
+        </div>
+        <div class="tos-2col">
+          <div class="tos-panel">
+            <div class="tos-panel-h">엔진별 비용 (이번 달)</div>
+            <div id="tos-dash-engine"></div>
+          </div>
+          <div class="tos-panel">
+            <div class="tos-panel-h">멤버별 담당 샷</div>
+            <div id="tos-dash-member"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- 공유 라이브러리 -->
       <div class="page" id="page-library">
@@ -2101,7 +2131,7 @@ function showPage(name) {
   target.classList.add('active');
 
   const bc = document.getElementById('breadcrumb');
-  const TOS_BC = { library:'공유 라이브러리', team:'팀 · 권한', usage:'사용량 로그', admin:'관리자', settings:'설정', howto:'워크플로우 가이드' };
+  const TOS_BC = { dashboard:'제작 현황', library:'공유 라이브러리', team:'팀 · 권한', usage:'사용량 로그', admin:'관리자', settings:'설정', howto:'워크플로우 가이드' };
   if (name === 'projects') {
     bc.innerHTML = '<span class="current">홈</span>';
   } else if (name === 'board') {
@@ -2116,6 +2146,7 @@ function showPage(name) {
   });
 
   if (name === 'board') { renderBoard(); updateFilterCounts(); }
+  if (name === 'dashboard') { try { renderTosDashboard(); } catch (e) { console.warn(e); } }
   if (name === 'library')  { try { renderTosLibrary(); } catch (e) { console.warn(e); } }
   if (name === 'team')     { try { renderTosTeam(); } catch (e) { console.warn(e); } }
   if (name === 'usage')    { try { renderTosUsage(); } catch (e) { console.warn(e); } }
@@ -2665,6 +2696,20 @@ function runSmokeTests() {
 .tos-howto-body { flex:1; min-width:0; }
 .tos-howto-t { font-size:13.5px; font-weight:700; }
 .tos-howto-d { font-size:12px; color:var(--text-2); line-height:1.6; margin-top:2px; }
+/* ── 대시보드 차트 (순수 CSS — 외부 라이브러리 없음) ── */
+.tos-hbar-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
+.tos-hbar-label { width:92px; flex:none; font-size:11.5px; color:var(--text-2); }
+.tos-hbar-track { flex:1; height:14px; background:rgba(255,255,255,0.04); border-radius:7px; overflow:hidden; }
+.tos-hbar-fill { height:100%; border-radius:7px; transition:width 0.3s ease; }
+.tos-hbar-val { width:58px; flex:none; text-align:right; font-size:11.5px; color:var(--text);
+  font-variant-numeric:tabular-nums; font-weight:700; }
+.tos-vbars { display:flex; align-items:flex-end; gap:10px; height:150px; padding-top:8px; }
+.tos-vbar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+.tos-vbar { width:100%; max-width:34px; background:linear-gradient(180deg, var(--accent), rgba(255,107,63,0.45));
+  border-radius:5px 5px 2px 2px; min-height:3px; }
+.tos-vbar.empty { background:rgba(255,255,255,0.06); }
+.tos-vbar-day { font-size:9.5px; color:var(--text-3); }
+.tos-vbar-num { font-size:10px; color:var(--text-2); font-variant-numeric:tabular-nums; font-weight:700; }
 </style>
 
 <script>
@@ -2849,6 +2894,91 @@ function tosReject(code) {
   const s = shots.find(x => x.code === code); if (!s) return;
   s.status = 'production'; s.hasFeedback = true;
   renderTosAdmin(); toast(`${code} 반려 — 제작으로 되돌림`, 'info');
+}
+
+/* ── 제작 현황 대시보드 — shots + 사용량 로그 실데이터 (2026-06-11) ── */
+const TOS_STATUS_COLORS = { planning:'#6b7280', production:'#f0c419', review:'#3b82f6', approved:'#10b981', delivered:'#8b5cf6' };
+
+function tosHbar(label, value, max, color, valText) {
+  const pct = max > 0 ? Math.round(value / max * 100) : 0;
+  return `<div class="tos-hbar-row">
+    <div class="tos-hbar-label">${label}</div>
+    <div class="tos-hbar-track"><div class="tos-hbar-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="tos-hbar-val">${valText !== undefined ? valText : value}</div>
+  </div>`;
+}
+
+function renderTosDashboard() {
+  // ① KPI
+  const total = shots.length;
+  const inFlight = shots.filter(s => s.status === 'production' || s.status === 'review').length;
+  const approved = shots.filter(s => s.status === 'approved' || s.status === 'delivered').length;
+  const failed = shots.filter(s => s.hasFailed).length;
+  const cost = TOS.usage.reduce((a, u) => a + u.cost, 0);
+  const progress = total ? Math.round(approved / total * 100) : 0;
+  const kpiEl = document.getElementById('tos-dash-kpis');
+  if (kpiEl) kpiEl.innerHTML = `
+    <div class="tos-kpi"><div class="n">${total}</div><div class="l">전체 샷</div></div>
+    <div class="tos-kpi hot"><div class="n">${progress}%</div><div class="l">승인 진행률</div></div>
+    <div class="tos-kpi"><div class="n">${inFlight}</div><div class="l">제작·리뷰 중</div></div>
+    <div class="tos-kpi"><div class="n">${failed}</div><div class="l">재시도 필요</div></div>
+    <div class="tos-kpi"><div class="n">$${cost.toFixed(2)}</div><div class="l">이번 달 비용</div></div>`;
+
+  // ② 상태별 분포 (가로 막대 — DESIGN_SYSTEM Status 5색)
+  const stEl = document.getElementById('tos-dash-status');
+  if (stEl) {
+    const order = ['planning', 'production', 'review', 'approved', 'delivered'];
+    const counts = {};
+    shots.forEach(s => { counts[s.status] = (counts[s.status] || 0) + 1; });
+    const max = Math.max(1, ...order.map(k => counts[k] || 0));
+    stEl.innerHTML = order.map(k =>
+      tosHbar(STATUS_LABELS_KO[k] || k, counts[k] || 0, max, TOS_STATUS_COLORS[k])
+    ).join('');
+  }
+
+  // ③ 최근 7일 활동 (사용량 로그 기반 세로 막대)
+  const wkEl = document.getElementById('tos-dash-week');
+  if (wkEl) {
+    const days = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now); d.setDate(now.getDate() - i);
+      const key = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      days.push({ key, label: `${d.getMonth() + 1}/${d.getDate()}` });
+    }
+    const perDay = days.map(d => TOS.usage.filter(u => (u.ts || '').startsWith(d.key)).length);
+    const maxD = Math.max(1, ...perDay);
+    wkEl.innerHTML = days.map((d, i) => `
+      <div class="tos-vbar-col">
+        <div class="tos-vbar-num">${perDay[i] || ''}</div>
+        <div class="tos-vbar ${perDay[i] ? '' : 'empty'}" style="height:${Math.max(3, Math.round(perDay[i] / maxD * 100))}%"></div>
+        <div class="tos-vbar-day">${d.label}</div>
+      </div>`).join('');
+  }
+
+  // ④ 엔진별 비용
+  const enEl = document.getElementById('tos-dash-engine');
+  if (enEl) {
+    const byEngine = {};
+    TOS.usage.forEach(u => { byEngine[u.engine] = (byEngine[u.engine] || 0) + u.cost; });
+    const entries = Object.entries(byEngine).sort((a, b) => b[1] - a[1]);
+    const maxC = Math.max(0.01, ...entries.map(e => e[1]));
+    enEl.innerHTML = entries.length
+      ? entries.map(([name, c], i) => tosHbar(name, c, maxC, ['#ff6b3f', '#f0a06b', '#d9825a', '#b06548'][i % 4], '$' + c.toFixed(2))).join('')
+      : '<p class="tos-sub">이번 달 생성 기록이 없습니다.</p>';
+  }
+
+  // ⑤ 멤버별 담당 샷
+  const mbEl = document.getElementById('tos-dash-member');
+  if (mbEl) {
+    const byMember = {};
+    shots.forEach(s => { byMember[s.assignee] = (byMember[s.assignee] || 0) + 1; });
+    const entries = Object.entries(byMember).sort((a, b) => b[1] - a[1]);
+    const maxM = Math.max(1, ...entries.map(e => e[1]));
+    mbEl.innerHTML = entries.map(([name, n]) =>
+      tosHbar(name, n, maxM, ASSIGNEE_BG[name] || '#6b7280', n + '개')
+    ).join('');
+  }
 }
 
 /* ── 설정 ── */
