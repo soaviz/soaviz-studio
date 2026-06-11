@@ -22103,6 +22103,12 @@
 
   <div class="top-actions">
     <span class="kbd">⌘K · 빠른 실행</span>
+    <!-- 퀵 캡처 — 아이디어 휘발 방지 (2026-06-11) -->
+    <button class="icon-btn" id="top-capture-btn" aria-label="퀵 캡처" title="퀵 캡처 — 떠오른 아이디어·프롬프트를 흐름 안 끊고 저장" onclick="openQuickCapture()">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </button>
     <!-- 인앱 가이드 — How to (2026-06-11) -->
     <button class="icon-btn" id="top-guide-btn" aria-label="워크플로우 가이드" title="워크플로우 가이드 · How to" onclick="showPage('guide')">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -23854,6 +23860,10 @@
       <div class="page-head">
         <h1>결과 보관</h1>
         <p>① 생성 결과 확인 &nbsp;→&nbsp; ② 채택·후보·탈락 분류 &nbsp;→&nbsp; ③ 시나리오·샷리스트 아카이브 &nbsp;→&nbsp; ④ 다음 작업 <strong>자산으로 재활용</strong></p>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button class="settings-cta" onclick="openExternalIntake()" style="margin:0">＋ 외부 결과물 가져오기</button>
+          <span style="font-size:11px;color:var(--text-faint)">Midjourney·Sora·Runway 웹에서 만든 결과도 프롬프트·엔진 기록과 함께 자산으로 남기세요</span>
+        </div>
       </div>
 
       <!-- ═══ Decision Status 탭 (Phase 1) ═══ -->
@@ -28513,7 +28523,7 @@
 
       <div class="credits-notice">
         <p>💡 개인 플랜은 API 키 없이 SOAVIZ 크레딧으로 바로 시작합니다. 크레딧은 AI 결과물 생성에만 사용되며, 프로젝트 메모리 · 프롬프트 저장 · 에셋 정리 · 버전 비교는 크레딧을 소모하지 않습니다.</p>
-        <p>📐 크레딧 가이드 — 영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스(1,000자) 5cr · 음악 1곡 15cr. 예: Creator 1,000cr ≈ 영상 50컷 또는 이미지 500장. 월간 크레딧은 매월 1일 충전되며, 추가 구매 크레딧은 소멸 없이 이월됩니다.</p>
+        <p>📐 크레딧 가이드 — 영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스(1,000자) 5cr · 음악 1곡 15cr. 예: Creator 1,000cr ≈ 영상 50컷 또는 이미지 500장. 월간 크레딧은 매월 1일 충전되며, 추가 구매 크레딧은 소멸 없이 이월됩니다. <strong>생성이 실패하면 크레딧은 차감되지 않습니다</strong> — 성공한 결과에만 과금합니다.</p>
         <p>Team OS는 도입 문의 후 SOAVIZ가 직접 사용 방법과 BYOK 설정을 안내합니다. API Key는 기관 관리자만 직접 입력하며, SOAVIZ는 키를 전달받거나 보관하지 않습니다. 문의: <a href="mailto:ai@soaviz.com" style="color:var(--accent)">ai@soaviz.com</a></p>
       </div>
 
@@ -28586,7 +28596,8 @@
         <div class="szg-credit-t">크레딧은 이렇게 동작합니다</div>
         <div class="szg-credit-d">
           매달 자동 충전됩니다 (Free 100 · Creator 1,000 · Pro Creator 3,000).
-          영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스 1,000자 5cr · 음악 1곡 15cr.<br>
+          영상 1컷(5초·720p) 20cr · 고화질 40cr · 이미지 2cr · 보이스 1,000자 5cr · 음악 1곡 15cr.
+          생성이 실패하면 차감되지 않습니다.<br>
           <strong>정리 · 저장 · 프로젝트 메모리 · 버전 비교는 크레딧을 쓰지 않습니다</strong> — 창작 컨텍스트 보존은 SOAVIZ의 기본입니다.
         </div>
         <button class="szg-go" onclick="showPage('credits')" style="margin-top:10px">요금제 보기 →</button>
@@ -68574,5 +68585,137 @@ window.handleMobileReviewShareUrl = handleMobileReviewShareUrl;
 </script>
 <script src="scenarios-data.js"></script>
 <script src="characters-data.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   창작자 고통 보강 2종 (2026-06-11)
+   ① 퀵 캡처 — 아이디어 휘발 방지 (떠오른 순간, 흐름 안 끊고 저장)
+   ② 외부 결과물 인테이크 — Midjourney·Sora 웹 등 SOAVIZ 밖에서 만든
+      결과를 프롬프트·엔진·시드와 함께 자산으로 (Context Loss의 마지막 구멍)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── ① 퀵 캡처 ── */
+function openQuickCapture() {
+  const existing = document.getElementById('sz-capture-modal');
+  if (existing) existing.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'sz-capture-modal';
+  wrap.className = 'vault-modal-backdrop';
+  wrap.innerHTML = `
+    <div class="vault-modal" style="max-width:440px;text-align:left">
+      <h3 style="margin-bottom:4px">퀵 캡처</h3>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">떠오른 아이디어·프롬프트 조각을 흐름을 끊지 않고 저장합니다. 라이브러리 → 프롬프트에 쌓입니다.</p>
+      <textarea id="sz-cap-text" rows="4" placeholder="예: 비 오는 옥상, 네온 반사, 느린 줌아웃 — 엔딩 컷 후보"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--bg-1,rgba(255,255,255,0.05));border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit"></textarea>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+        <button class="vault-btn" id="sz-cap-cancel">취소</button>
+        <button class="vault-btn primary" id="sz-cap-save">저장 (⌘↵)</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const ta = wrap.querySelector('#sz-cap-text');
+  setTimeout(() => ta?.focus(), 50);
+  const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
+  const save = () => {
+    const text = (ta?.value || '').trim();
+    if (!text) { showToast?.('내용을 입력하세요', 'warn'); return; }
+    try {
+      saveLibraryAsset({
+        type: 'prompt',
+        title: '[캡처] ' + text.slice(0, 42) + (text.length > 42 ? '…' : ''),
+        prompt: text,
+        source: 'quick-capture',
+        tags: ['idea', 'quick-capture'],
+      });
+      showToast?.('캡처 저장됨 — 라이브러리 → 프롬프트', 'success');
+    } catch (e) { console.warn('[quick-capture]', e); showToast?.('저장 실패', 'error'); }
+    close();
+  };
+  wrap.querySelector('#sz-cap-cancel').onclick = close;
+  wrap.querySelector('#sz-cap-save').onclick = save;
+  wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
+  ta?.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); save(); }
+    if (e.key === 'Escape') close();
+  });
+}
+window.openQuickCapture = openQuickCapture;
+
+/* ── ② 외부 결과물 인테이크 ── */
+function openExternalIntake() {
+  const existing = document.getElementById('sz-intake-modal');
+  if (existing) existing.remove();
+  const inputCss = 'width:100%;box-sizing:border-box;padding:9px 12px;background:var(--bg-1,rgba(255,255,255,0.05));border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit';
+  const labelCss = 'display:block;font-size:11px;color:var(--text-dim);margin:10px 0 4px;font-weight:700';
+  const wrap = document.createElement('div');
+  wrap.id = 'sz-intake-modal';
+  wrap.className = 'vault-modal-backdrop';
+  wrap.innerHTML = `
+    <div class="vault-modal" style="max-width:480px;max-height:86vh;overflow:auto;text-align:left">
+      <h3 style="margin-bottom:4px">외부 결과물 가져오기</h3>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:6px">
+        SOAVIZ 밖(Midjourney·Sora·Runway 웹 등)에서 만든 결과를 <strong style="color:var(--text)">만든 방법과 함께</strong> 자산으로 남깁니다.
+        프롬프트를 같이 적어두면 다음 작품에서 그대로 재현할 수 있습니다.</p>
+      <label style="${labelCss}">제목</label>
+      <input id="sz-in-title" style="${inputCss}" placeholder="예: 네온 시티 B-roll 04">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label style="${labelCss}">종류</label>
+          <select id="sz-in-type" style="${inputCss}">
+            <option value="video">영상</option>
+            <option value="image">이미지</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="${labelCss}">엔진</label>
+          <select id="sz-in-engine" style="${inputCss}">
+            <option>Midjourney</option><option>Sora</option><option>Runway</option>
+            <option>Kling</option><option>Luma</option><option>Suno</option><option>기타</option>
+          </select>
+        </div>
+      </div>
+      <label style="${labelCss}">결과물 URL (선택)</label>
+      <input id="sz-in-url" style="${inputCss}" placeholder="https:// — 공유 링크 또는 파일 경로 메모">
+      <label style="${labelCss}">프롬프트 — 재현의 열쇠</label>
+      <textarea id="sz-in-prompt" rows="3" style="${inputCss};resize:vertical" placeholder="이 결과를 만든 프롬프트를 그대로 붙여넣으세요"></textarea>
+      <label style="${labelCss}">시드 · 설정 메모 (선택)</label>
+      <input id="sz-in-seed" style="${inputCss}" placeholder="예: seed 8472 · ar 9:16 · stylize 250">
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="vault-btn" id="sz-in-cancel">취소</button>
+        <button class="vault-btn primary" id="sz-in-save">자산으로 저장</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const close = () => { try { document.body.removeChild(wrap); } catch (_) {} };
+  wrap.querySelector('#sz-in-cancel').onclick = close;
+  wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
+  wrap.querySelector('#sz-in-save').onclick = () => {
+    const v = id => (wrap.querySelector('#' + id)?.value || '').trim();
+    const title = v('sz-in-title');
+    if (!title) { showToast?.('제목을 입력하세요', 'warn'); return; }
+    const type = v('sz-in-type') || 'video';
+    const url = v('sz-in-url');
+    try {
+      saveLibraryAsset({
+        type,
+        title,
+        url: url || '',
+        videoUrl: type === 'video' ? url : '',
+        imageUrl: type === 'image' ? url : '',
+        prompt: v('sz-in-prompt'),
+        model: v('sz-in-engine'),
+        seed: v('sz-in-seed'),
+        source: 'external',
+        external: true,
+        tags: ['external-intake'],
+      });
+      showToast?.('외부 결과물이 자산으로 저장됐습니다', 'success');
+      // 라이브러리 화면이면 즉시 갱신
+      try { if (window._soavizCurrentPage === 'library' && typeof renderLibrary === 'function') renderLibrary(); } catch (_) {}
+    } catch (e) { console.warn('[external-intake]', e); showToast?.('저장 실패', 'error'); }
+    close();
+  };
+}
+window.openExternalIntake = openExternalIntake;
+</script>
 </body>
 </html>
