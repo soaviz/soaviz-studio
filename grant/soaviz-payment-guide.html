@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOAVIZ 결제·인프라 집행 가이드 — 2026.06</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#0B0A14; --panel:#151424; --panel2:#1B1A2E; --border:#34324F;
+    --tx:#F0EFF8; --dim:#B4B2C8; --faint:#8A88A3;
+    --ind:#6366F1; --vio:#A78BFA; --org:#FF6B3F; --grn:#34D399; --yel:#F0C419; --red:#F87171;
+  }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo',sans-serif;
+    background:var(--bg); color:var(--tx); font-size:14px; line-height:1.65; padding:48px 24px 80px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  .kicker { font-size:11px; font-weight:700; letter-spacing:0.16em; color:var(--org); margin-bottom:10px; }
+  h1 { font-size:28px; font-weight:800; letter-spacing:-0.02em; margin-bottom:8px; }
+  .sub { color:var(--dim); margin-bottom:8px; }
+  .meta { font-size:12px; color:var(--faint); margin-bottom:32px; }
+  h2 { font-size:17px; font-weight:800; margin:40px 0 6px; display:flex; align-items:center; gap:8px; }
+  h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--org); flex:none; }
+  .h2sub { font-size:12.5px; color:var(--faint); margin-bottom:14px; }
+  .callout { border:1px solid rgba(255,107,63,0.4); background:rgba(255,107,63,0.07);
+    border-radius:12px; padding:16px 18px; margin:18px 0 28px; }
+  .callout b { color:var(--org); }
+  .callout.green { border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.06); }
+  .callout.green b { color:var(--grn); }
+  table { width:100%; border-collapse:collapse; font-size:13px; background:var(--panel);
+    border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  th { text-align:left; padding:11px 14px; background:var(--panel2); color:var(--faint);
+    font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; border-bottom:1px solid var(--border); }
+  td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--dim); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  td b { color:var(--tx); }
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:10.5px; font-weight:700; white-space:nowrap; }
+  .p-pay { background:rgba(255,107,63,0.14); color:var(--org); border:1px solid rgba(255,107,63,0.4); }
+  .p-free { background:rgba(52,211,153,0.12); color:var(--grn); border:1px solid rgba(52,211,153,0.35); }
+  .p-hold { background:rgba(240,196,25,0.12); color:var(--yel); border:1px solid rgba(240,196,25,0.35); }
+  .p-no { background:rgba(248,113,113,0.12); color:var(--red); border:1px solid rgba(248,113,113,0.35); }
+  .p-ask { background:rgba(99,102,241,0.14); color:#A5B4FC; border:1px solid rgba(99,102,241,0.4); }
+  .amount { font-variant-numeric:tabular-nums; font-weight:800; color:var(--tx); white-space:nowrap; }
+  .total { margin-top:14px; display:flex; gap:12px; flex-wrap:wrap; }
+  .total .card { flex:1; min-width:200px; border:1px solid var(--border); border-radius:12px;
+    background:var(--panel); padding:14px 16px; }
+  .total .n { font-size:22px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .total .l { font-size:11px; color:var(--faint); letter-spacing:0.06em; text-transform:uppercase; margin-top:2px; }
+  ol.steps { margin:10px 0 0 18px; color:var(--dim); }
+  ol.steps li { margin-bottom:7px; }
+  ol.steps b { color:var(--tx); }
+  .note { font-size:11.5px; color:var(--faint); margin-top:10px; }
+  .foot { margin-top:48px; padding-top:16px; border-top:1px solid var(--border);
+    font-size:11px; color:var(--faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  @media print { body { background:#fff; color:#111; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">SOAVIZ · 내부 운영 문서</div>
+  <h1>결제 · 인프라 집행 가이드</h1>
+  <p class="sub">어디서, 얼마를, 언제 결제하고 — 무엇은 절대 결제하지 않는지.</p>
+  <p class="meta">기준일 2026.06.11 · 창업활동자금 사용기간 6.15 ~ 8.31 · 결제 동결(모두의 창업 기간) 적용 중</p>
+
+  <div class="callout">
+    <b>한 줄 원칙 —</b> 창업활동자금(₩200만)으로 결제하는 곳은 <b>개발 용역 단 1건</b>이다.
+    인프라(서버·호스팅·폼)는 전부 무료 플랜으로 0원 유지가 가능하며,
+    자금 인정이 불확실한 구독·사용료는 <b>멘토기관 확인 전까지 결제하지 않는다.</b>
+  </div>
+
+  <!-- ═══ A. 창업활동자금으로 결제 ═══ -->
+  <h2><span class="dot"></span>A. 창업활동자금으로 결제하는 것 (유일한 1건)</h2>
+  <p class="h2sub">비목: 시제품 제작 — 일반용역비 · 본인 카드/계좌로 선지출 → 후정산</p>
+
+  <table>
+    <tr><th style="width:160px">결제처</th><th>무엇인가</th><th style="width:110px">금액</th><th style="width:120px">결제 시점</th><th style="width:90px">상태</th></tr>
+    <tr>
+      <td><b>외주 개발사 1곳</b><br><span class="note">(사업자 보유 필수)</span></td>
+      <td>SOAVIZ 웹 서비스 시제품 고도화 개발 용역 — DB 구축·인증 연동·동기화 엔진·이용 한도 서버화·Storage·문의 접수·QA (상세: <b>grant/soaviz-backend-spec-2026.md</b> §2)</td>
+      <td class="amount">₩2,000,000<br><span class="note">공급가 1,818,182<br>+ VAT 181,818</span></td>
+      <td><b>6.16 이후</b><br><span class="note">중도금 S2 후 50%<br>잔금 검수 후 50%</span></td>
+      <td><span class="pill p-pay">자금 집행</span></td>
+    </tr>
+  </table>
+
+  <p style="margin-top:16px; font-weight:700; color:var(--tx)">개발사는 어디서 구하나 — 3채널 비교</p>
+  <table style="margin-top:8px">
+    <tr><th style="width:120px">채널</th><th>설명</th><th>증빙(전자세금계산서)</th><th style="width:90px">권장도</th></tr>
+    <tr>
+      <td><b>위시켓</b><br><span class="note">wishket.com</span></td>
+      <td>IT 외주 전문 플랫폼. 프로젝트 등록 → 지원 업체 견적 비교(비교견적서 확보에 최적). 사업자 보유 업체 위주</td>
+      <td>업체 직접 발행 가능 — 계약·검수 절차 표준화</td>
+      <td><span class="pill p-free">1순위</span></td>
+    </tr>
+    <tr>
+      <td><b>크몽</b><br><span class="note">kmong.com</span></td>
+      <td>프리랜서 마켓. 빠르고 저렴하나 개인(비사업자) 판매자 많음</td>
+      <td>⚠ 판매자별 상이 — <b>"전자세금계산서 발행 가능" 판매자만</b> 후보로</td>
+      <td><span class="pill p-hold">2순위</span></td>
+    </tr>
+    <tr>
+      <td><b>직접 계약</b><br><span class="note">지인·소개 개발사</span></td>
+      <td>소개받은 개발사/스튜디오와 직접 계약 — 명세 이해도가 높으면 최선</td>
+      <td>사업자등록증·통장사본·날인 계약서 직접 수취</td>
+      <td><span class="pill p-free">조건부 1순위</span></td>
+    </tr>
+  </table>
+  <ol class="steps">
+    <li><b>6.11~6.14</b> — backend-spec 문서로 견적 요청 2곳 이상 (비교견적서 확보)</li>
+    <li><b>6.15 이전 계약·지급 금지</b> — 계약 체결·계약금도 6.16 이후</li>
+    <li>결제는 <b>본인 명의 카드 또는 계좌이체</b>만 (타인 대납 불인정)</li>
+    <li>수취 서류: 전자세금계산서 + 업체 사업자등록증 + 업체 통장사본 + 날인 계약서 + 거래명세서</li>
+  </ol>
+
+  <!-- ═══ B. 무료 유지 ═══ -->
+  <h2><span class="dot" style="background:var(--grn)"></span>B. 결제하지 않는 것 — 무료 플랜 유지 (월 0원)</h2>
+  <p class="h2sub">현재 전부 무료 티어로 운영 중. 아래 전환 조건 전까지 지갑을 열 일이 없다.</p>
+
+  <table>
+    <tr><th style="width:150px">프로그램</th><th>역할</th><th>현재 플랜</th><th>유료 전환 조건 (그 전엔 0원)</th><th style="width:80px">상태</th></tr>
+    <tr>
+      <td><b>Supabase</b><br><span class="note">supabase.com</span></td>
+      <td>DB · 인증(구글 로그인) · Storage — 백엔드의 심장. 이번 용역의 작업 무대</td>
+      <td>Free (Seoul)</td>
+      <td>Pro $25/월 — <b>유저 50명+ 또는 파일럿 기관 도입 시.</b> 일시정지는 keep-alive 이중화로 방지 중</td>
+      <td><span class="pill p-free">0원 유지</span></td>
+    </tr>
+    <tr>
+      <td><b>Vercel</b><br><span class="note">vercel.com</span></td>
+      <td>soaviz.com 호스팅·배포 (푸시하면 자동 배포)</td>
+      <td>Hobby (무료)</td>
+      <td>Pro $20/월 — 트래픽 급증 또는 팀 시트 필요 시</td>
+      <td><span class="pill p-free">0원 유지</span></td>
+    </tr>
+    <tr>
+      <td><b>Fly.io</b><br><span class="note">fly.io</span></td>
+      <td>server.js API 서버 (보조 백엔드 · keep-alive ping)</td>
+      <td>무료 티어 내</td>
+      <td>사용량 초과 시 종량 — 현재 미미</td>
+      <td><span class="pill p-free">0원 유지</span></td>
+    </tr>
+    <tr>
+      <td><b>Formspree</b><br><span class="note">formspree.io</span></td>
+      <td>베타 신청·웨이트리스트 자동 수집 → leeeunkyo@soaviz.com 수신 (가입만 하면 됨 — 코드 슬롯 준비 완료)</td>
+      <td>Free (월 50건)</td>
+      <td>$10/월 — 신청 월 50건 초과 시 (좋은 문제)</td>
+      <td><span class="pill p-free">0원 가입</span></td>
+    </tr>
+    <tr>
+      <td><b>GitHub</b><br><span class="note">github.com</span></td>
+      <td>코드 저장소 + Actions(keep-alive·크레딧 리셋 cron)</td>
+      <td>Free</td>
+      <td>사실상 없음</td>
+      <td><span class="pill p-free">0원 유지</span></td>
+    </tr>
+  </table>
+
+  <!-- ═══ C. 동결/보류 ═══ -->
+  <h2><span class="dot" style="background:var(--red)"></span>C. 절대 결제하지 않는 것 — 동결 · 보류</h2>
+  <table>
+    <tr><th style="width:150px">프로그램</th><th>이유</th><th style="width:100px">해제 조건</th><th style="width:90px">상태</th></tr>
+    <tr>
+      <td><b>Stripe</b> (결제 PG)</td>
+      <td>실결제 오픈 = 매출 발생 = 사업자등록 강제 → <b>예비창업 자격 훼손 리스크.</b> 코드 슬롯은 준비 완료, 링크만 안 꽂은 상태</td>
+      <td>프로그램 종료 또는 사업자등록 후</td>
+      <td><span class="pill p-no">🔒 동결</span></td>
+    </tr>
+    <tr>
+      <td><b>Supabase Pro</b> 선결제</td>
+      <td>현재 불필요 + 자금 인정 불확실</td>
+      <td>유저 50+ </td>
+      <td><span class="pill p-no">보류</span></td>
+    </tr>
+    <tr>
+      <td><b>50만원 이상 장비</b><br><span class="note">노트북·모니터 등</span></td>
+      <td>안내자료 명시 불인정 (자산성 물품)</td>
+      <td>자금으로는 불가</td>
+      <td><span class="pill p-no">자금 불가</span></td>
+    </tr>
+  </table>
+
+  <!-- ═══ D. 멘토기관 확인 후 ═══ -->
+  <h2><span class="dot" style="background:var(--ind)"></span>D. 멘토기관 확인 후 결정 (지금은 결제 금지)</h2>
+  <p class="h2sub">집행가능항목에 명시가 없어 인정 여부 불확실 — 권역 멘토기관(안내자료 붙임4)에 유선 확인 후 진행</p>
+  <table>
+    <tr><th style="width:170px">항목</th><th>질의 포인트</th><th style="width:110px">예상 금액</th><th style="width:90px">상태</th></tr>
+    <tr>
+      <td><b>AI API 사용료</b><br><span class="note">Replicate · OpenAI 등</span></td>
+      <td>베타 무료 운영용 생성 비용. "선불포인트는 기간 내 전액 소진 시만 인정" 조항 적용 여부</td>
+      <td class="amount">월 ₩5~15만<br><span class="note">사용량 따라</span></td>
+      <td><span class="pill p-ask">문의</span></td>
+    </tr>
+    <tr>
+      <td><b>클라우드 사용료</b><br><span class="note">Supabase·Vercel 유료분</span></td>
+      <td>"임차비(기기·장비 임차)" 해석 가능 여부 + 6~8월 월결제 한정 시 인정 여부</td>
+      <td class="amount">해당 시 월 $20~25</td>
+      <td><span class="pill p-ask">문의</span></td>
+    </tr>
+    <tr>
+      <td><b>Google Workspace</b><br><span class="note">leeeunkyo@soaviz.com</span></td>
+      <td>도메인 메일 수신 계정 — <b>이미 보유 중인지 먼저 확인.</b> 미보유면 Business Starter 월 ₩8,000대 (사비 처리 권장 — 소액·운영성)</td>
+      <td class="amount">월 ~₩8,400</td>
+      <td><span class="pill p-hold">확인</span></td>
+    </tr>
+    <tr>
+      <td><b>도메인 갱신</b><br><span class="note">soaviz.com</span></td>
+      <td>등록처에서 갱신일 확인 (연 1회). 갱신 도래 시 사비 처리 (소액)</td>
+      <td class="amount">연 ₩2~4만</td>
+      <td><span class="pill p-hold">확인</span></td>
+    </tr>
+  </table>
+
+  <!-- 합계 -->
+  <h2><span class="dot" style="background:var(--vio)"></span>요약 — 6~8월 지갑 시뮬레이션</h2>
+  <div class="total">
+    <div class="card"><div class="n" style="color:var(--org)">₩2,000,000</div><div class="l">창업활동자금 집행 (개발 용역 1건 · 후정산 전액 환급)</div></div>
+    <div class="card"><div class="n" style="color:var(--grn)">₩0</div><div class="l">인프라 고정비 (전부 무료 플랜)</div></div>
+    <div class="card"><div class="n" style="color:var(--yel)">월 0~15만</div><div class="l">변동: AI API 사용료 — 멘토 확인 전 사비·최소화</div></div>
+  </div>
+  <div class="callout green" style="margin-top:20px">
+    <b>실부담 결론 —</b> 용역비 200만원은 선지출 후 <b>전액 환급</b>(정산 승인 시)되므로,
+    이번 분기 실제 고정 지출은 0원에 수렴한다. 변동비는 베타 생성량을 조절해 통제한다.
+  </div>
+
+  <div class="foot">
+    <span>SOAVIZ 내부 문서 · 회계/법률 자문 아님 — 자금 인정 최종 판단은 권역 멘토기관</span>
+    <span>grant/soaviz-backend-spec-2026.md 와 함께 사용</span>
+  </div>
+
+</div>
+</body>
+</html>
